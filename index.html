@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V16</title>
+    <title>SISTEMA EVOLUTION - V17</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
         .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px solid #444; box-sizing: border-box; }
@@ -50,8 +50,17 @@
     <label>TERNO:</label>
     <input type="text" id="ternoInput" placeholder="Ex: 1º TERNO">
     
+    <label>TURNO PARA RELATÓRIO:</label>
+    <select id="turnoRel" onchange="ajustarRel()">
+        <option value="">Selecione o Turno</option>
+        <option value="07x15">07x15</option>
+        <option value="15x23">15x23</option>
+        <option value="23x07">23x07</option>
+    </select>
+    <div id="camposRel"></div>
     <button class="btn-gerar" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
     <div id="relatorioArea" style="display:none; margin-top:15px; padding:10px; background:#000; color:#00ffca; border:1px solid #00d1b2; font-family:monospace; font-size:11px; white-space:pre-line;"></div>
+    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR MENSAGEM</button>
 
     <hr style="border:0; border-top:1px solid #444; margin:25px 0;">
 
@@ -109,6 +118,32 @@
             document.getElementById('saudacao').innerText = "OLÁ, " + logado;
             ajustarCalc(); carregarHistorico();
         } else { alert("Senha incorreta."); }
+    }
+
+    function ajustarRel() {
+        const t = document.getElementById('turnoRel').value;
+        const div = document.getElementById('camposRel');
+        div.innerHTML = (t === "15x23") ? '<label>PROD 15x19:</label><input type="number" id="p1"><label>PROD 20x23:</label><input type="number" id="p2">' : (t===""?"":'<label>PRODUÇÃO TOTAL:</label><input type="number" id="pGeral">');
+    }
+
+    function gerarRel() {
+        const tur = document.getElementById('turnoRel').value;
+        if(!tur) return alert("Selecione o turno!");
+        const n = (document.getElementById('navio').value || "S/N").toUpperCase();
+        const terno = (document.getElementById('ternoInput').value || "S/T").toUpperCase();
+        const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
+        let p = "", tot = 0;
+        if(tur === "15x23") {
+            const v1 = parseInt(document.getElementById('p1').value) || 0;
+            const v2 = parseInt(document.getElementById('p2').value) || 0;
+            p = `15x19: ${v1}\n20x23: ${v2}`; tot = v1 + v2;
+        } else {
+            tot = parseInt(document.getElementById('pGeral').value) || 0;
+            p = `PRODUÇÃO: ${tot}`;
+        }
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${n}\nDATA: ${d}\nTERNO: ${terno}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        document.getElementById('relatorioArea').style.display = 'block';
+        document.getElementById('btnCopiar').style.display = 'block';
     }
 
     function ajustarCalc() {
@@ -183,6 +218,7 @@
         }
     }
 
+    function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
     function limparHistorico() { if(confirm("Limpar tudo?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
 </script>
 </body>
