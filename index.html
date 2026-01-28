@@ -2,34 +2,39 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA EVOLUTION - V13</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SISTEMA EVOLUTION - V15</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
-        .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px solid #444; }
+        .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px solid #444; box-sizing: border-box; }
         h2 { text-align: center; color: #00d1b2; text-transform: uppercase; margin-bottom: 20px; font-size: 18px; }
         label { display: block; margin-top: 12px; font-weight: bold; color: #00d1b2; font-size: 11px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #333; background: #262626; color: white; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        /* Campos de Input Maiores para facilitar edição */
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: #262626; color: white; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; display: block; }
+        input:focus { border-color: #00d1b2; background: #333; }
+
         button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-acessar { background: #00d1b2; color: #000; }
         .btn-gerar { background: #48c774; color: #000; }
+        
         .calc-section { display: none; margin-top: 20px; padding: 15px; background: #222; border: 1px solid #ffdd57; border-radius: 12px; }
         #resCalc { display:none; margin-top:15px; text-align: center; border-top: 1px solid #444; padding-top: 10px; }
-        .res-total { color: #ffdd57; font-size: 20px; font-weight: bold; margin-bottom: 5px; }
         
-        /* HISTÓRICO */
-        .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; background: #111; }
-        th { background: #333; color: #00d1b2; padding: 8px; text-align: left; }
-        td { padding: 10px 5px; border-bottom: 1px solid #333; vertical-align: middle; }
+        /* HISTÓRICO AJUSTADO V15 */
+        .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; width: 100%; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+        th { background: #333; color: #00d1b2; padding: 8px 4px; text-align: left; }
+        td { padding: 12px 4px; border-bottom: 1px solid #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        /* BOTÕES V13 */
-        .btn-pay { background: #48c774 !important; color: #000 !important; padding: 10px; border-radius: 6px; border: 2px solid #fff; font-weight: bold; font-size: 12px; }
-        .btn-del { background: #ff3860 !important; color: #fff !important; padding: 10px; border-radius: 6px; border: 2px solid #fff; margin-left: 5px; font-weight: bold; font-size: 12px; }
-        .status-pago { background: #333; color: #48c774; font-weight: bold; padding: 8px; border-radius: 6px; border: 1px dashed #48c774; cursor: pointer; display: inline-block; font-size: 10px; }
+        /* BOTÕES NA TABELA */
+        .action-cell { display: flex; gap: 4px; align-items: center; justify-content: flex-start; }
+        .btn-pay { background: #48c774; color: #000; padding: 8px 4px; border-radius: 4px; border: 1px solid #fff; font-weight: bold; font-size: 9px; flex: 2; text-align: center; text-decoration: none; }
+        .btn-del { background: #ff3860; color: #fff; padding: 8px 4px; border-radius: 4px; border: 1px solid #fff; font-weight: bold; font-size: 10px; flex: 1; text-align: center; }
+        .status-pago { color: #48c774; font-weight: bold; font-size: 9px; flex: 2; text-align: center; border: 1px dashed #48c774; padding: 7px 2px; border-radius: 4px; }
         
-        .val-bruto { color: #aaa; font-size: 10px; }
-        .val-liquido { color: #ffdd57; font-weight: bold; font-size: 12px; }
+        .val-bruto { color: #aaa; font-size: 9px; display: block; }
+        .val-liquido { color: #ffdd57; font-weight: bold; font-size: 11px; display: block; }
         .resumo-box { background: #000; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ffdd57; }
     </style>
 </head>
@@ -43,14 +48,17 @@
 
 <div class="container" id="main-panel" style="display: none;">
     <h2 id="saudacao">PAINEL</h2>
+    
     <label>DATA:</label>
     <input type="date" id="dataTurno">
+    
     <label>NAVIO:</label>
-    <input type="text" id="navio" placeholder="NOME DO NAVIO">
+    <input type="text" id="navio" placeholder="NOME DO NAVIO" autocomplete="off">
+    
     <label>TERNO:</label>
     <input type="text" id="ternoInput" placeholder="Ex: 1º TERNO">
     
-    <label>TURNO PARA RELATÓRIO:</label>
+    <label>TURNO WHATSAPP:</label>
     <select id="turnoRel" onchange="ajustarRel()">
         <option value="">Selecione o Turno</option>
         <option value="07x15">07x15</option>
@@ -74,12 +82,12 @@
             <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
         </select>
         <div id="camposCalc"></div>
-        <label>CONFERENTES NO TERNO:</label>
+        <label>CONFERENTES:</label>
         <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
         <button class="btn-gerar" style="background:#ffdd57; color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR</button>
         <div id="resCalc">
-            <div id="resBruto" style="color:#aaa; font-size:14px;"></div>
-            <div id="resLiquido" class="res-total"></div>
+            <div id="resBruto" style="color:#aaa; font-size:13px;"></div>
+            <div id="resLiquido" style="color: #ffdd57; font-size: 19px; font-weight: bold;"></div>
         </div>
     </div>
 
@@ -89,18 +97,18 @@
             <thead>
                 <tr>
                     <th style="width: 18%;">DATA</th>
-                    <th style="width: 32%;">NAVIO</th>
-                    <th style="width: 50%;">VALORES / AÇÃO</th>
+                    <th style="width: 27%;">NAVIO</th>
+                    <th style="width: 25%;">VALOR</th>
+                    <th style="width: 30%;">AÇÃO</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
         <div class="resumo-box">
             <div style="font-size: 12px;">TOTAL LÍQUIDO: <span id="totalAcumulado" style="float:right;">R$ 0,00</span></div>
-            <div style="font-size: 15px; margin-top:8px; font-weight:bold; color:#ffdd57;">A RECEBER: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
+            <div style="font-size: 14px; margin-top:8px; font-weight:bold; color:#ffdd57;">A RECEBER: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
         </div>
-        <button style="background:#3273dc; color:white; margin-top: 20px;" onclick="exportarTXT()">📥 BAIXAR BACKUP</button>
-        <button style="background:#ff3860; color:white; font-size:10px; width:auto; margin-top: 10px;" onclick="limparHistorico()">APAGAR TUDO</button>
+        <button style="background:#ff3860; color:white; font-size:10px; width:auto; margin-top: 15px;" onclick="limparHistorico()">APAGAR TUDO</button>
     </div>
 </div>
 
@@ -186,19 +194,16 @@
         corpo.innerHTML = ""; let totalMes = 0, pendente = 0;
         lista.forEach(item => {
             totalMes += item.liquido; if(!item.pago) pendente += item.liquido;
-            const statusHtml = item.pago ? `<span class="status-pago" onclick="alternarPago(${item.id})">PAGO (voltar)</span>` : `<button class="btn-pay" onclick="alternarPago(${item.id})">PAGAR</button>`;
+            const statusHtml = item.pago ? `<span class="status-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button class="btn-pay" onclick="alternarPago(${item.id})">PAGAR</button>`;
             corpo.innerHTML += `<tr>
                 <td>${item.data.substring(0,5)}</td>
                 <td>${item.navio}</td>
-                <td>
-                    <div class="val-bruto">B: R$ ${item.bruto ? item.bruto.toFixed(2) : '---'}</div>
-                    <div class="val-liquido">L: R$ ${item.liquido.toFixed(2)}</div>
-                    <div style="margin-top:8px;">${statusHtml}<button class="btn-del" onclick="excluirItem(${item.id})">X</button></div>
-                </td>
+                <td><span class="val-bruto">B:${item.bruto.toFixed(2)}</span><span class="val-liquido">L:${item.liquido.toFixed(2)}</span></td>
+                <td><div class="action-cell">${statusHtml}<button class="btn-del" onclick="excluirItem(${item.id})">X</button></div></td>
             </tr>`;
         });
-        document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
-        document.getElementById('totalPendente').innerText = "R$ " + pendente.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toFixed(2);
+        document.getElementById('totalPendente').innerText = "R$ " + pendente.toFixed(2);
     }
 
     function alternarPago(id) {
@@ -208,23 +213,15 @@
     }
 
     function excluirItem(id) {
-        if(confirm("Deseja apagar este serviço?")) {
+        if(confirm("Apagar este serviço?")) {
             let hist = JSON.parse(localStorage.getItem('hist_' + logado));
             hist = hist.filter(item => item.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico();
         }
     }
 
-    function exportarTXT() {
-        const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        let txt = `RELATÓRIO - ${logado}\n\n`;
-        lista.forEach(i => txt += `${i.data} | ${i.navio} | B: ${i.bruto?i.bruto.toFixed(2):'0'} | L: ${i.liquido.toFixed(2)} | ${i.pago?'PAGO':'PENDENTE'}\n`);
-        const blob = new Blob([txt], {type: 'text/plain'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Controle_Evolution.txt`; a.click();
-    }
-
     function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
-    function limparHistorico() { if(confirm("Limpar todo o histórico?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
+    function limparHistorico() { if(confirm("Deseja mesmo limpar todo o histórico?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
 </script>
 </body>
 </html>
