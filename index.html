@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA EVOLUTION - V9</title>
+    <title>SISTEMA EVOLUTION - V10</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; padding: 10px; display: flex; justify-content: center; margin: 0; }
-        .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { font-family: 'Segoe UI', sans-serif; background: #000; color: #e0e0e0; padding: 10px; display: flex; justify-content: center; margin: 0; }
+        .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         h2 { text-align: center; color: #00d1b2; text-transform: uppercase; margin-bottom: 20px; font-size: 18px; }
         label { display: block; margin-top: 12px; font-weight: bold; color: #00d1b2; font-size: 11px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #333; background: #262626; color: white; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
@@ -14,17 +14,20 @@
         .btn-acessar { background: #00d1b2; color: #1a1a1a; }
         .btn-gerar { background: #48c774; color: white; }
         .calc-section { display: none; margin-top: 20px; padding: 15px; background: #222; border: 1px solid #ffdd57; border-radius: 12px; }
-        #resCalc { display:none; margin-top:15px; border-top:1px solid #444; padding-top:10px; }
         .res-total { color: #ffdd57; font-size: 20px; text-align: center; margin-top: 10px; font-weight: bold; }
-        #relatorioArea { display:none; margin-top:15px; padding:15px; background:#000; color:#00ffca; border-left:5px solid #00d1b2; font-family: monospace; font-size: 12px; white-space: pre-line; }
+        #relatorioArea { display:none; margin-top:15px; padding:15px; background:#000; color:#00ffca; border:1px solid #00d1b2; font-family: monospace; font-size: 12px; white-space: pre-line; }
+        
+        /* TABELA E BOTÕES DE AÇÃO */
         .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; table-layout: fixed; }
-        th { background: #333; color: #00d1b2; padding: 8px; text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .btn-pay { background: #48c774; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; cursor:pointer; border:none; }
-        .btn-del { background: #ff3860; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; cursor:pointer; border:none; margin-left: 5px; }
-        .status-pago { color: #48c774; font-weight: bold; }
-        .resumo-box { background: #222; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #48c774; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; background: #222; border-radius: 8px; overflow: hidden; }
+        th { background: #333; color: #00d1b2; padding: 10px; text-align: left; border-bottom: 2px solid #444; }
+        td { padding: 10px; border-bottom: 1px solid #333; color: #fff; }
+        
+        .btn-pay { background: #48c774; color: #000; padding: 6px 10px; font-size: 10px; border-radius: 4px; cursor:pointer; border: 1px solid #fff; font-weight: bold; }
+        .btn-del { background: #ff3860; color: #fff; padding: 6px 10px; font-size: 10px; border-radius: 4px; cursor:pointer; border: 1px solid #fff; margin-left: 5px; font-weight: bold; }
+        .status-pago { color: #48c774; font-weight: bold; border: 1px solid #48c774; padding: 2px 5px; border-radius: 4px; }
+        
+        .resumo-box { background: #000; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ffdd57; }
     </style>
 </head>
 <body>
@@ -72,28 +75,27 @@
         <label>CONFERENTES:</label>
         <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
         <button class="btn-gerar" style="background:#ffdd57; color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR</button>
-        <div id="resCalc"><div class="res-total" id="liquidoFinalVal"></div></div>
+        <div id="resCalc" style="display:none;"><div class="res-total" id="liquidoFinalVal"></div></div>
     </div>
 
     <div class="history-section">
-        <h3>MEU HISTÓRICO</h3>
+        <h3 style="font-size: 14px; color: #00d1b2;">MEU HISTÓRICO</h3>
         <table id="tabelaHistorico">
             <thead>
                 <tr>
-                    <th style="width: 20%;">DATA</th>
-                    <th style="width: 30%;">NAVIO</th>
-                    <th style="width: 25%;">R$</th>
-                    <th style="width: 25%;">AÇÃO</th>
+                    <th style="width: 25%;">DATA</th>
+                    <th style="width: 35%;">NAVIO</th>
+                    <th style="width: 40%;">AÇÕES</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
         <div class="resumo-box">
-            <div style="font-size: 11px;">ACUMULADO: <span id="totalAcumulado" style="float:right;">R$ 0,00</span></div>
-            <div style="font-size: 14px; margin-top:5px; font-weight:bold; color:#ffdd57;">A RECEBER: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
+            <div style="font-size: 12px; color: #fff;">ACUMULADO: <span id="totalAcumulado" style="float:right;">R$ 0,00</span></div>
+            <div style="font-size: 15px; margin-top:8px; font-weight:bold; color:#ffdd57;">A RECEBER: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
         </div>
-        <button style="background:#3273dc; color:white;" onclick="exportarTXT()">📥 BAIXAR BACKUP</button>
-        <button style="background:#ff3860; color:white; font-size:10px; width:auto;" onclick="limparHistorico()">LIMPAR TUDO</button>
+        <button style="background:#3273dc; color:white; margin-top: 20px;" onclick="exportarTXT()">📥 BAIXAR BACKUP</button>
+        <button style="background:#ff3860; color:white; font-size:10px; width:auto; margin-top: 10px;" onclick="limparHistorico()">APAGAR TUDO</button>
     </div>
 </div>
 
@@ -126,8 +128,8 @@
     }
 
     function gerarRel() {
-        const n = document.getElementById('navio').value.toUpperCase();
-        const terno = document.getElementById('ternoInput').value.toUpperCase();
+        const n = (document.getElementById('navio').value || "S/N").toUpperCase();
+        const terno = (document.getElementById('ternoInput').value || "S/T").toUpperCase();
         const tur = document.getElementById('turnoRel').value;
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         if(!tur) return alert("Selecione o turno!");
@@ -185,7 +187,11 @@
             totalMes += item.liquido; if(!item.pago) pendente += item.liquido;
             const statusBtn = item.pago ? '<span class="status-pago">PAGO</span>' : `<button class="btn-pay" onclick="marcarPago(${item.id})">OK</button>`;
             const deleteBtn = `<button class="btn-del" onclick="excluirItem(${item.id})">X</button>`;
-            corpo.innerHTML += `<tr><td>${item.data.substring(0,5)}</td><td>${item.navio}</td><td>${item.liquido.toFixed(2)}</td><td>${statusBtn}${deleteBtn}</td></tr>`;
+            corpo.innerHTML += `<tr>
+                <td>${item.data.substring(0,5)}<br><small style="color:#aaa">R$ ${item.liquido.toFixed(2)}</small></td>
+                <td>${item.navio}</td>
+                <td>${statusBtn}${deleteBtn}</td>
+            </tr>`;
         });
         document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
         document.getElementById('totalPendente').innerText = "R$ " + pendente.toLocaleString('pt-BR', {minimumFractionDigits:2});
