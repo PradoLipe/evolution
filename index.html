@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA EVOLUTION - V8</title>
+    <title>SISTEMA EVOLUTION - V9</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; padding: 10px; display: flex; justify-content: center; margin: 0; }
         .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -18,10 +18,11 @@
         .res-total { color: #ffdd57; font-size: 20px; text-align: center; margin-top: 10px; font-weight: bold; }
         #relatorioArea { display:none; margin-top:15px; padding:15px; background:#000; color:#00ffca; border-left:5px solid #00d1b2; font-family: monospace; font-size: 12px; white-space: pre-line; }
         .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; table-layout: fixed; }
         th { background: #333; color: #00d1b2; padding: 8px; text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid #333; }
-        .btn-pay { background: #48c774; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; cursor:pointer; }
+        td { padding: 8px; border-bottom: 1px solid #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-pay { background: #48c774; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; cursor:pointer; border:none; }
+        .btn-del { background: #ff3860; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; cursor:pointer; border:none; margin-left: 5px; }
         .status-pago { color: #48c774; font-weight: bold; }
         .resumo-box { background: #222; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #48c774; }
     </style>
@@ -77,7 +78,14 @@
     <div class="history-section">
         <h3>MEU HISTÓRICO</h3>
         <table id="tabelaHistorico">
-            <thead><tr><th>DATA</th><th>NAVIO</th><th>LÍQUIDO</th><th>STATUS</th></tr></thead>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">DATA</th>
+                    <th style="width: 30%;">NAVIO</th>
+                    <th style="width: 25%;">R$</th>
+                    <th style="width: 25%;">AÇÃO</th>
+                </tr>
+            </thead>
             <tbody></tbody>
         </table>
         <div class="resumo-box">
@@ -122,6 +130,7 @@
         const terno = document.getElementById('ternoInput').value.toUpperCase();
         const tur = document.getElementById('turnoRel').value;
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
+        if(!tur) return alert("Selecione o turno!");
         let p = "", tot = 0;
         if(tur === "15x23") {
             const v1 = parseInt(document.getElementById('p1').value) || 0;
@@ -174,8 +183,9 @@
         corpo.innerHTML = ""; let totalMes = 0, pendente = 0;
         lista.forEach(item => {
             totalMes += item.liquido; if(!item.pago) pendente += item.liquido;
-            const statusTxt = item.pago ? '<span class="status-pago">PAGO</span>' : `<button class="btn-pay" onclick="marcarPago(${item.id})">PAGAR</button>`;
-            corpo.innerHTML += `<tr><td>${item.data}</td><td>${item.navio}</td><td>R$ ${item.liquido.toFixed(2)}</td><td>${statusTxt}</td></tr>`;
+            const statusBtn = item.pago ? '<span class="status-pago">PAGO</span>' : `<button class="btn-pay" onclick="marcarPago(${item.id})">OK</button>`;
+            const deleteBtn = `<button class="btn-del" onclick="excluirItem(${item.id})">X</button>`;
+            corpo.innerHTML += `<tr><td>${item.data.substring(0,5)}</td><td>${item.navio}</td><td>${item.liquido.toFixed(2)}</td><td>${statusBtn}${deleteBtn}</td></tr>`;
         });
         document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toLocaleString('pt-BR', {minimumFractionDigits:2});
         document.getElementById('totalPendente').innerText = "R$ " + pendente.toLocaleString('pt-BR', {minimumFractionDigits:2});
@@ -187,6 +197,15 @@
         localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico();
     }
 
+    function excluirItem(id) {
+        if(confirm("Deseja apagar este serviço?")) {
+            let hist = JSON.parse(localStorage.getItem('hist_' + logado));
+            hist = hist.filter(item => item.id !== id);
+            localStorage.setItem('hist_' + logado, JSON.stringify(hist));
+            carregarHistorico();
+        }
+    }
+
     function exportarTXT() {
         const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         let txt = `RELATÓRIO - ${logado}\n\n`;
@@ -196,7 +215,7 @@
     }
 
     function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
-    function limparHistorico() { if(confirm("Limpar tudo?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
+    function limparHistorico() { if(confirm("Limpar todo o histórico?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
 </script>
 </body>
 </html>
