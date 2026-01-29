@@ -64,7 +64,7 @@
         
         <div id="resCalc" style="display:none; text-align:center; margin-top:15px; background: #000; padding: 15px; border-radius: 10px; border: 1px solid var(--accent);">
             <div id="resLiquido" style="font-size:20px; color:var(--accent); font-weight:bold;"></div>
-            <div style="font-size: 10px; color: #888; margin-top: 5px;">(Já calculado com 18% de desconto e divisão por 3)</div>
+            <div style="font-size: 10px; color: #888; margin-top: 5px;">(Cálculo: Taxa - 18% desc. / 3 Conferentes)</div>
         </div>
     </div>
 
@@ -78,9 +78,75 @@
 </div>
 
 <script>
-    // Usuários e Senhas Fixas (conforme combinado)
-    const USERS = { "002451": "FELIPE PRADO", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA" };
-    let logado = "";
+    // Usuários Fixos
+    const USERS = { 
+        "002451": "FELIPE PRADO", 
+        "1980": "ANDERSON PRADO", 
+        "2026": "FABRICIO DIAS", 
+        "302466": "RODRIGO COSTA" 
+    };
     
-    // Define data de hoje por padrão
-    document.getElementById('dataTurno').value = new Date().
+    let logado = "";
+    document.getElementById('dataTurno').value = new Date().toISOString().split('T')[0];
+
+    function login() {
+        const s = document.getElementById('senhaInput').value.trim();
+        if (USERS[s]) {
+            logado = USERS[s];
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-panel').style.display = 'block';
+            document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+            carregarHist();
+        } else { alert("Chave inválida!"); }
+    }
+
+    function gerarRel() {
+        const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
+        const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
+        
+        // Rastreador Discreto (Ex: PROT: A22RkV35)
+        const dev = navigator.userAgent.includes("Android") ? "A" : (navigator.userAgent.includes("iPhone") ? "I" : "P");
+        const userCode = btoa(logado).substring(0,3);
+        const protocol = `PROT: ${dev}${new Date().getHours()}${userCode}${Math.floor(Math.random()*89)+10}`;
+
+        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nCONF: ${logado}\n----------------\n${protocol}`;
+        document.getElementById('relArea').innerText = msg;
+        document.getElementById('relArea').style.display = 'block';
+        document.getElementById('btnCopiar').style.display = 'block';
+    }
+
+    function calcular() {
+        const prod = parseFloat(document.getElementById('prodCalc').value) || 0;
+        const tipo = document.getElementById('tipoDia').value;
+        const turno = document.getElementById('turnoCalc').value;
+        const navio = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
+        
+        // Regras de Taxas
+        let taxa = (turno === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
+        let brutoIndiv = (prod * taxa) / 3;
+        let liquido = brutoIndiv * 0.82; // 18% de desconto
+
+        document.getElementById('resLiquido').innerText = `LÍQUIDO: R$ ${liquido.toFixed(2)}`;
+        document.getElementById('resCalc').style.display = 'block';
+
+        // Histórico salvo no dispositivo
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        hist.push({ data: new Date().toLocaleDateString('pt-BR'), navio: navio, valor: liquido.toFixed(2) });
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist));
+        carregarHist();
+    }
+
+    function carregarHist() {
+        const hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        const corpo = document.querySelector('#tabelaHist tbody');
+        corpo.innerHTML = "";
+        hist.reverse().slice(0, 5).forEach(item => {
+            corpo.innerHTML += `<tr><td>${item.data}</td><td>${item.navio}</td><td style="color:var(--accent); text-align:right;">R$ ${item.valor}</td></tr>`;
+        });
+    }
+
+    function limparHist() { if(confirm("Apagar histórico de ganhos?")) { localStorage.removeItem('hist_'+logado); carregarHist(); } }
+    function copiar() { navigator.clipboard.writeText(document.getElementById('relArea').innerText); alert("Relatório copiado!"); }
+</script>
+</body>
+</html>
