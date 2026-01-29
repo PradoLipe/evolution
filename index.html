@@ -1,131 +1,220 @@
-<!DOCTYPE html><html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SISTEMA EVOLUTION - V29 FINAL</title>
+
 <style>
-:root{--primary:#00d1b2;--accent:#ffdd57;--danger:#ff3860;--bg:#0a0a0a;--card:#1a1a1a;--input:#262626}
+:root{
+ --primary:#00d1b2;--accent:#ffdd57;--danger:#ff3860;
+ --bg:#0a0a0a;--card:#1a1a1a;--input:#262626
+}
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none}
 input,select{user-select:text}
-body{margin:0;font-family:'Segoe UI',sans-serif;background:var(--bg);color:#fff;padding:10px;display:flex;justify-content:center}
-.container{max-width:480px;width:100%;background:var(--card);padding:24px;border-radius:20px;border:1px solid #333;box-shadow:0 10px 30px rgba(0,0,0,.6)}
-h2{text-align:center;color:var(--primary);letter-spacing:2px;margin-bottom:20px}
-.section-title{font-size:13px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin:18px 0 10px}
-label{font-size:10px;color:#aaa;font-weight:bold;text-transform:uppercase;margin-top:12px;display:block}
-input,select{width:100%;padding:14px;margin-top:5px;background:var(--input);border:1px solid #333;border-radius:10px;color:#fff;font-size:15px}
-input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(0,209,178,.2)}
-button{width:100%;padding:15px;margin-top:12px;border:none;border-radius:10px;font-weight:bold;font-size:12px;text-transform:uppercase;cursor:pointer;transition:.15s}
-button:active{transform:scale(.97);opacity:.85}
+body{
+ margin:0;padding:10px;font-family:Segoe UI,sans-serif;
+ background:var(--bg);color:#fff;display:flex;justify-content:center
+}
+.container{
+ width:100%;max-width:480px;background:var(--card);
+ padding:22px;border-radius:20px;border:1px solid #333
+}
+h2{text-align:center;color:var(--primary)}
+label{font-size:10px;color:#aaa;font-weight:bold;margin-top:12px;display:block}
+input,select{
+ width:100%;padding:14px;margin-top:5px;
+ background:var(--input);border:1px solid #333;
+ border-radius:10px;color:#fff;font-size:15px
+}
+button{
+ width:100%;padding:15px;margin-top:12px;
+ border:none;border-radius:10px;
+ font-weight:bold;font-size:12px;text-transform:uppercase
+}
 .btn-main{background:var(--primary);color:#000}
-.btn-whatsapp{background:#48c774;color:#000}
 .btn-calc{background:var(--accent);color:#000}
-.btn-backup{background:#3273dc;color:#fff}
-.section-card{background:#222;border:1px solid #333;border-radius:15px;padding:18px;margin-top:15px;display:none}
-.fixed-action{position:sticky;bottom:10px;z-index:99}
-.pix-banner{background:#111;border:1px solid var(--accent);border-left:5px solid var(--accent);padding:12px;border-radius:12px;margin-bottom:15px;display:none;text-align:center}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{color:var(--primary);font-size:10px;text-align:left;border-bottom:2px solid #333;padding:8px}
-td{padding:10px 5px;border-bottom:1px solid #222}
-.val-bruto-hist{font-size:9px;color:#777;display:block}
-.val-liquido-hist{font-size:13px;color:var(--accent);font-weight:bold}
-.badge-pago{color:#48c774;border:1px solid #48c774;border-radius:5px;font-size:9px;padding:3px 6px;text-align:center}
-.resumo-financeiro{margin-top:15px;background:#000;border:1px solid var(--accent);border-radius:15px;padding:15px}
-.copyright{text-align:center;font-size:9px;color:#555;margin-top:25px;font-weight:bold}
+.btn-whats{background:#48c774;color:#000}
+.section{display:none;background:#222;padding:18px;border-radius:15px;margin-top:20px}
+table{width:100%;font-size:11px;border-collapse:collapse}
+th{color:var(--primary);border-bottom:1px solid #333;padding:6px}
+td{padding:8px;border-bottom:1px solid #222}
+.badge{font-size:9px;padding:4px;border-radius:5px}
+.pago{color:#48c774;border:1px solid #48c774}
 </style>
 </head>
-<body oncontextmenu="return false;"><div class="container" id="login">
-<h2>SISTEMA EVOLUTION</h2>
-<label>Chave de acesso</label>
-<input type="tel" id="senha" placeholder="••••••" style="-webkit-text-security:disc">
-<button class="btn-main" onclick="login()">Acessar painel</button>
-<p id="erro" style="color:var(--danger);font-size:11px;text-align:center;display:none;font-weight:bold"></p>
-<div class="copyright">© 2026 FELIPE PRADO</div>
-</div><div class="container" id="painel" style="display:none">
-<h2 id="user"></h2><div class="pix-banner" id="pix">
-<div style="font-size:11px">Ajude a manter o sistema via PIX</div>
-<div style="font-size:14px;font-weight:bold;color:var(--accent);margin:6px 0">92994821868</div>
-<button style="font-size:9px;background:#333;color:#fff" onclick="fecharPix()">Ocultar</button>
-</div><h3 class="section-title">📝 Relatório Diário</h3>
-<label>Data</label><input type="date" id="data">
-<label>Navio</label><input id="navioRel">
-<label>Terno</label><input id="terno" type="number">
-<label>Turno</label>
-<select id="turnoRel" onchange="ajustarRel()"><option value="">Selecione</option><option>07x15</option><option>15x23</option><option>23x07</option></select>
-<div id="camposRel"></div>
-<button class="btn-whatsapp" onclick="gerarRel()">Gerar texto WhatsApp</button>
-<pre id="saidaRel" style="display:none;background:#000;border:1px solid var(--primary);padding:10px;border-radius:8px;color:var(--primary)"></pre>
-<button id="copiarBtn" onclick="copiar()" style="display:none;background:#3273dc;color:#fff">Copiar</button><button class="btn-calc fixed-action" onclick="toggleCalc()">📊 Calculadora</button>
 
-<div class="section-card" id="calc">
-<h3 class="section-title">💰 Novo lançamento</h3>
-<label>Navio</label><input id="navioCalc">
-<label>Tipo</label><select id="tipo"><option value="n">Normal</option><option value="f">Feriado</option></select>
-<label>Turno</label><select id="turnoCalc" onchange="ajustarCalc()"><option>07x15</option><option selected>15x23</option><option>23x07</option></select>
-<div id="camposCalc"></div>
-<label>Quantidade de Containers</label><input id="qtdContainer" type="number" placeholder="Ex: 120">
-<label>Conferentes</label><select id="conf"><option>1</option><option>2</option><option selected>3</option></select>
-<button class="btn-main" onclick="salvar()">Salvar</button>
-</div><h3 class="section-title">📅 Histórico</h3>
-<table><thead><tr><th>Data</th><th>Navio</th><th>Valores</th><th>Ação</th></tr></thead><tbody id="hist"></tbody></table>
-<div class="resumo-financeiro"><div style="display:flex;justify-content:space-between"><span>Total líquido</span><span id="total" style="color:var(--accent);font-weight:bold">R$ 0,00</span></div></div>
-<button class="btn-backup" onclick="backup()">Baixar backup</button>
-<div class="copyright">SISTEMA EVOLUTION V29 FINAL</div>
-</div><script>
-const USERS={"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
-let userKey='',user='';
-const $=id=>document.getElementById(id);
+<body oncontextmenu="return false">
+<div class="container" id="login">
+ <h2>SISTEMA EVOLUTION</h2>
+ <label>CHAVE DE ACESSO</label>
+ <input id="senha" type="tel" style="-webkit-text-security:disc">
+ <button class="btn-main" onclick="login()">ACESSAR</button>
+ <p id="erro" style="color:var(--danger);font-size:11px;text-align:center"></p>
+</div>
 
-function login(){userKey=$('senha').value.trim();if(!USERS[userKey])return erro('Chave inválida');const dev=navigator.userAgent+screen.width;const saved=localStorage.getItem('dev_'+userKey);if(userKey!=="002451"&&saved&&saved!==dev)return erro('Acesso vinculado a outro dispositivo');localStorage.setItem('dev_'+userKey,dev);user=USERS[userKey];$('login').style.display='none';$('painel').style.display='block';$('user').innerText='OLÁ, '+user;const d=new Date();$('data').value=d.toISOString().slice(0,10);if(Math.random()>0.5)$('pix').style.display='block';carregar();}
-function erro(t){$('erro').innerText=t;$('erro').style.display='block'}
-function fecharPix(){$('pix').style.display='none'}
-function toggleCalc(){$('calc').style.display=$('calc').style.display==='block'?'none':'block'}
-function ajustarRel(){const t=$('turnoRel').value;$('camposRel').innerHTML=t==='15x23'?'<label>15x19</label><input id="r1"><label>20x23</label><input id="r2">':t?'<label>Produção</label><input id="rG">':''}
-function gerarRel(){
-const t=$('turnoRel').value;if(!t)return;
-const nav=$('navioRel').value.toUpperCase()||'S/N';
-const numTerno=$('terno').value;
-const ter=numTerno?numTerno+'° TERNO':'S/T';
-const d=$('data').value.split('-').reverse().join('/');
-let tot=0,txt='';
-if(t==='15x23'){
- const a=+$('r1').value||0,b=+$('r2').value||0;
- tot=a+b;txt=`15x19: ${a}
-20x23: ${b}`;
-}else{
- tot=+$('rG').value||0;txt=`PRODUÇÃO: ${tot}`;
+<div class="container" id="painel" style="display:none">
+ <h2 id="saudacao"></h2>
+
+ <!-- RELATÓRIO WHATSAPP -->
+ <h3>📝 Relatório WhatsApp</h3>
+ <label>Data</label><input type="date" id="dataRel">
+ <label>Navio</label><input id="navioRel">
+ <label>Nº do Terno</label><input id="ternoRel" type="number">
+ <label>Turno</label>
+ <select id="turnoRel" onchange="ajustarRel()">
+  <option value="">Selecione</option>
+  <option value="07x15">07x15</option>
+  <option value="15x23">15x23</option>
+  <option value="23x07">23x07</option>
+ </select>
+ <div id="camposRel"></div>
+ <button class="btn-whats" onclick="gerarRel()">GERAR TEXTO</button>
+ <pre id="saidaRel" style="display:none;background:#000;padding:10px;margin-top:10px"></pre>
+
+ <!-- CALCULADORA -->
+ <button class="btn-calc" onclick="toggleCalc()">📊 CALCULADORA / HISTÓRICO</button>
+
+ <div class="section" id="calc">
+  <label>Navio</label><input id="navioCalc">
+  <label>Tipo do Dia</label>
+  <select id="tipoDia">
+   <option value="n">NORMAL</option>
+   <option value="f">FERIADO/DOM</option>
+  </select>
+
+  <label>Turno</label>
+  <select id="turnoCalc" onchange="ajustarCalc()">
+   <option value="07x15">07x15</option>
+   <option value="15x23">15x23</option>
+   <option value="23x07">23x07</option>
+  </select>
+
+  <div id="camposCalc"></div>
+
+  <label>Conferentes</label>
+  <select id="conf">
+   <option>1</option><option>2</option><option selected>3</option>
+  </select>
+
+  <button class="btn-main" onclick="salvar()">SALVAR</button>
+ </div>
+
+ <!-- HISTÓRICO -->
+ <h3>📅 Histórico Financeiro</h3>
+ <table>
+  <thead><tr><th>Data</th><th>Navio</th><th>Valores</th><th>Ação</th></tr></thead>
+  <tbody id="hist"></tbody>
+ </table>
+ <p style="text-align:right;margin-top:10px">
+  TOTAL: <b id="total">R$ 0,00</b>
+ </p>
+</div>
+
+<script>
+const USERS={"002451":"FELIPE PRADO","3373":"RICARDO PRADO"};
+let user="";
+
+function $(id){return document.getElementById(id)}
+
+function login(){
+ const k=$('senha').value.trim();
+ if(!USERS[k]){ $('erro').innerText="Chave inválida";return }
+ const dev=navigator.userAgent+screen.width;
+ const d=localStorage.getItem("dev_"+k);
+ if(k!=="002451" && d && d!==dev){
+  $('erro').innerText="Acesso bloqueado em outro aparelho";return
+ }
+ localStorage.setItem("dev_"+k,dev);
+ user=USERS[k];
+ $('login').style.display="none";
+ $('painel').style.display="block";
+ $('saudacao').innerText="OLÁ, "+user;
+ $('dataRel').value=new Date().toISOString().slice(0,10);
+ ajustarCalc();carregar();
 }
-$('saidaRel').innerText=`NAVIO: ${nav}
-DATA: ${d}
-TERNO: ${ter}
+
+function ajustarRel(){
+ const t=$('turnoRel').value;
+ $('camposRel').innerHTML=
+ t==="15x23"
+ ?'<label>15x19</label><input id="r1"><label>20x23</label><input id="r2">'
+ :'<label>Produção Total</label><input id="rG">'
+}
+
+function gerarRel(){
+ const t=$('turnoRel').value;if(!t)return;
+ let prod=0,txt="";
+ if(t==="15x23"){
+  const a=+$('r1').value||0,b=+$('r2').value||0;
+  prod=a+b;txt=`15x19: ${a}\n20x23: ${b}`;
+ }else{prod=+$('rG').value||0;txt=`PRODUÇÃO: ${prod}`}
+
+ $('saidaRel').style.display="block";
+ $('saidaRel').innerText=
+`NAVIO: ${$('navioRel').value.toUpperCase()}
+DATA: ${$('dataRel').value.split('-').reverse().join('/')}
+TERNO: ${$('ternoRel').value}° TERNO
 TURNO: ${t}
 ${txt}
-TOTAL: ${tot}
+TOTAL: ${prod}
 CONF: ${user}`;
-$('saidaRel').style.display='block';$('copiarBtn').style.display='block';}
-
-function copiar(){navigator.clipboard.writeText($('saidaRel').innerText)}
-function ajustarCalc(){const t=$('turnoCalc').value;$('camposCalc').innerHTML=t==='15x23'?'<label>15x19</label><input id="c1"><label>20x23</label><input id="c2">':'<label>Produção</label><input id="cG">'}
-function getHist(){return JSON.parse(localStorage.getItem('hist_'+user))||[]}
-function setHist(h){localStorage.setItem('hist_'+user,JSON.stringify(h))}
-function salvar(){
-const nav=$('navioCalc').value.toUpperCase();
-if(!nav)return alert('Navio?');
-const t=$('turnoCalc').value,tp=$('tipo').value,n=+$('conf').value;
-const qtd=+$('qtdContainer').value||0;
-let bruto=0;
-if(t==='15x23'){
- const a=+$('c1').value||0,b=+$('c2').value||0;
- bruto=tp==='f'?(a*8.61+b*10.32):(a*5.73+b*6.88);
-}else{
- const tx=t==='07x15'?(tp==='f'?8.61:5.73):6.88;
- bruto=qtd*tx;
 }
-const liq=(bruto/n)*0.82;
-const h=getHist();
-h.push({id:Date.now(),data:$('data').value.split('-').reverse().join('/'),navio:nav,bruto:(bruto/n),liq,pago:false});
-setHist(h);carregar();alert('Salvo');}
-function carregar(){const h=getHist();let html='',total=0;h.forEach(i=>{total+=i.liq;html+=`<tr><td>${i.data.slice(0,5)}</td><td>${i.navio}</td><td><span class='val-bruto-hist'>B: ${i.bruto.toFixed(2)}</span><span class='val-liquido-hist'>L: ${i.liq.toFixed(2)}</span></td><td>${i.pago?'<span class="badge-pago" onclick="pagar('+i.id+')">PAGO</span>':'<button onclick="pagar('+i.id+')" style="font-size:9px">PAGAR</button>'}</td></tr>`});$('hist').innerHTML=html;$('total').innerText='R$ '+total.toFixed(2)}
-function pagar(id){let h=getHist();h=h.map(i=>i.id===id?{...i,pago:!i.pago}:i);setHist(h);carregar()}
-function backup(){const h=getHist();let t='BACKUP - '+user+'\n\n';h.forEach(i=>t+=`${i.data} | ${i.navio} | ${i.liq.toFixed(2)} | ${i.pago?'PAGO':'PEND'}\n`);const b=new Blob([t]);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Backup_'+user+'.txt';a.click()}
-</script></body>
+
+function ajustarCalc(){
+ const t=$('turnoCalc').value;
+ $('camposCalc').innerHTML=
+ t==="15x23"
+ ?'<label>15x19</label><input id="c1"><label>20x23</label><input id="c2">'
+ :'<label>Produção Total</label><input id="cG">'
+}
+
+function salvar(){
+ const nav=$('navioCalc').value.toUpperCase();if(!nav)return;
+ const t=$('turnoCalc').value,tp=$('tipoDia').value,n=+$('conf').value;
+ let bruto=0;
+ if(t==="15x23"){
+  const a=+$('c1').value||0,b=+$('c2').value||0;
+  bruto=tp==="f"?(a*8.61+b*10.32):(a*5.73+b*6.88);
+ }else{
+  const p=+$('cG').value||0;
+  const tx=t==="07x15"?(tp==="f"?8.61:5.73):6.88;
+  bruto=p*tx;
+ }
+ const indiv=bruto/n,liq=indiv*0.82;
+ const h=getHist();
+ h.push({id:Date.now(),data:new Date().toLocaleDateString(),navio:nav,bruto:indiv,liq,pago:false});
+ setHist(h);carregar();alert("Salvo");
+}
+
+function getHist(){return JSON.parse(localStorage.getItem("hist_"+user))||[]}
+function setHist(h){localStorage.setItem("hist_"+user,JSON.stringify(h))}
+
+function carregar(){
+ const h=getHist();let html="",tot=0;
+ h.forEach(i=>{
+  tot+=i.liq;
+  html+=`<tr>
+   <td>${i.data}</td>
+   <td>${i.navio}</td>
+   <td>B: ${i.bruto.toFixed(2)}<br>L: ${i.liq.toFixed(2)}</td>
+   <td><span class="badge ${i.pago?'pago':''}" onclick="pagar(${i.id})">${i.pago?'PAGO':'PAGAR'}</span></td>
+  </tr>`
+ });
+ $('hist').innerHTML=html;
+ $('total').innerText="R$ "+tot.toFixed(2);
+}
+
+function pagar(id){
+ let h=getHist();
+ h=h.map(i=>i.id===id?{...i,pago:!i.pago}:i);
+ setHist(h);carregar();
+}
+
+function toggleCalc(){
+ const s=$('calc');
+ s.style.display=s.style.display==="block"?"none":"block"
+}
+</script>
+</body>
 </html>
