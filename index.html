@@ -3,124 +3,865 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V31</title>
+    <title>SISTEMA EVOLUTION - V32 PRO</title>
     <style>
-        :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0a0a0a; --card: #1a1a1a; --input: #262626; }
-        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
+        :root { 
+            --primary: #00d1b2; 
+            --primary-dark: #00b89c;
+            --accent: #ffd700; 
+            --danger: #ff3860;
+            --success: #48c774;
+            --info: #3273dc;
+            --bg: #0a0a0f; 
+            --card: rgba(26, 26, 30, 0.98);
+            --input: #25252a;
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; }
         input, select { user-select: text; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
-        .container { max-width: 480px; width: 100%; background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #333; }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 10px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: var(--input); color: white; border-radius: 10px; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-main { background: var(--primary); color: #000; }
-        .btn-whatsapp { background: #48c774; color: #000; }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%); 
+            color: #fff; 
+            padding: 10px; 
+            min-height: 100vh;
+            display: flex; 
+            justify-content: center; 
+        }
+        
+        .container { 
+            max-width: 480px; 
+            width: 100%; 
+            background: var(--card); 
+            padding: 25px; 
+            border-radius: 24px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0,209,178,0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        h2 { 
+            text-align: center; 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            letter-spacing: 3px;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        h3 { font-size: 1rem; margin-bottom: 15px; color: #fff; display: flex; align-items: center; gap: 8px; }
+        h3::before { content: ''; display: inline-block; width: 4px; height: 20px; background: var(--primary); border-radius: 2px; }
+        
+        label { 
+            display: block; 
+            margin-top: 18px; 
+            font-weight: 600;
+            color: #888; 
+            font-size: 10px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 6px; 
+            border: 2px solid var(--border); 
+            background: var(--input); 
+            color: white; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,209,178,0.1);
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            margin-top: 15px; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:active { transform: scale(0.98); }
+        
+        .btn-main { 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+            color: #000; 
+            box-shadow: 0 4px 15px rgba(0,209,178,0.3);
+        }
+        
+        .btn-whatsapp { background: #25d366; color: #fff; }
         .btn-calc { background: var(--accent); color: #000; }
-        .section-card { background: #222; padding: 18px; border-radius: 15px; border: 1px solid #333; margin-top: 20px; display: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; }
-        td { padding: 12px 5px; border-bottom: 1px solid #222; }
-        .val-liquido-hist { font-size: 14px; color: var(--accent); font-weight: bold; }
-        .resumo-financeiro { background: #000; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--accent); text-align: center; }
-        .copyright { text-align: center; font-size: 9px; color: #555; margin-top: 25px; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 10px; }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .section-card { 
+            background: rgba(40,40,45,0.6); 
+            padding: 20px; 
+            border-radius: 18px; 
+            border: 1px solid var(--border);
+            margin-top: 20px; 
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 12px; 
+            margin-top: 10px; 
+        }
+        
+        th { 
+            color: var(--primary); 
+            padding: 12px 8px; 
+            text-align: left; 
+            border-bottom: 2px solid var(--border);
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        td { 
+            padding: 12px 8px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+        
+        tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .val-liquido-hist { 
+            font-size: 13px; 
+            color: var(--accent); 
+            font-weight: bold; 
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .badge-pendente { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
+        
+        .resumo-financeiro { 
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(40,40,45,0.8));
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-top: 20px; 
+            border: 1px solid rgba(255,215,0,0.2);
+            text-align: center;
+        }
+        
+        .total-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(255,215,0,0.3);
+            margin-top: 10px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .filters input {
+            flex: 1;
+            margin-top: 0;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .actions-cell {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            margin: 0;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--primary);
+            font-size: 13px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 350px;
+            border: 1px solid var(--border);
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-header {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .modal-body { color: #aaa; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .copyright { 
+            text-align: center; 
+            font-size: 9px; 
+            color: #555; 
+            margin-top: 30px; 
+            letter-spacing: 1px;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* Animação de entrada suave */
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div class="modal-header" id="modalTitle">Confirmação</div>
+        <div class="modal-body" id="modalBody">Deseja realmente excluir?</div>
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-danger" id="modalConfirm">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
     <label>CHAVE DE ACESSO</label>
-    <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;">
+    <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
     <button class="btn-main" onclick="login()">ACESSAR PAINEL</button>
-    <div class="copyright">© 2026 FELIPE PRADO</div>
+    <div class="copyright">© 2026 FELIPE PRADO - V32 PRO</div>
 </div>
 
-<div class="container" id="main-panel" style="display: none;">
+<div class="container hidden fade-in" id="main-panel">
     <h2 id="saudacao">PAINEL</h2>
+    
+    <!-- Dashboard Estatístico -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Líquido</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="statDias">0</div>
+            <div class="stat-label">Dias Trab.</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="statMedia">0</div>
+            <div class="stat-label">Média/Dia</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="statPendente">0</div>
+            <div class="stat-label">Pendente</div>
+        </div>
+    </div>
 
     <div id="relatorio-box">
-        <label>Data:</label><input type="date" id="dataTurno">
-        <label>Navio:</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO">
-        <label>Número do Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
-        <label>Turno:</label>
+        <label>Data</label>
+        <input type="date" id="dataTurno">
+        
+        <label>Navio</label>
+        <input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
+        <datalist id="listaNavios"></datalist>
+        
+        <label>Número do Terno</label>
+        <input type="number" id="ternoRelInput" placeholder="Ex: 1" min="1">
+        
+        <label>Turno</label>
         <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
             <option value="">Selecione</option>
             <option value="07x15">07x15</option>
             <option value="15x23">15x23</option>
             <option value="23x07">23x07</option>
         </select>
+        
         <div id="camposRel"></div>
+        
         <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
-        <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); white-space:pre-line; font-size:12px; font-family: monospace;"></div>
-        <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR MENSAGEM</button>
+        
+        <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); white-space:pre-line; font-size:12px; font-family: monospace; position: relative;"></div>
+        
+        <div class="btn-group" id="btnCopiarGroup" style="display:none;">
+            <button class="btn-main" onclick="copiar()" style="margin-top:10px;">COPIAR</button>
+            <button class="btn-secondary" onclick="limparRel()" style="margin-top:10px;">LIMPAR</button>
+        </div>
     </div>
 
-    <button class="btn-calc" onclick="abrirCalc()">📊 CALCULADORA E LANÇAMENTO</button>
+    <button class="btn-calc" onclick="toggleCalc()">📊 CALCULADORA E LANÇAMENTO</button>
     
     <div class="section-card" id="calcSection">
         <h3>💰 Novo Lançamento</h3>
-        <label>Navio:</label><input type="text" id="navioCalc">
-        <label>Dia:</label><select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-        <label>Turno:</label>
+        
+        <label>Navio</label>
+        <input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
+        
+        <label>Tipo de Dia</label>
+        <select id="tipoDia">
+            <option value="n">DIA NORMAL</option>
+            <option value="f">DOMINGO/FERIADO</option>
+        </select>
+        
+        <label>Turno</label>
         <select id="turnoCalc" onchange="salvarTurno('calc', this.value)">
             <option value="07x15">07x15</option>
-            <option value="15x23">15x23</option>
+            <option value="15x23" selected>15x23</option>
             <option value="23x07">23x07</option>
         </select>
+        
         <div id="camposCalc"></div>
-        <label>Conferentes:</label><select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
+        
+        <label>Conferentes</label>
+        <select id="nConf">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+        </select>
+        
         <button class="btn-main" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
     </div>
 
     <div class="history-section">
-        <h3>📅 Histórico</h3>
+        <h3>📅 Histórico Financeiro</h3>
+        
+        <div class="filters">
+            <input type="text" id="filtroNavio" placeholder="Buscar navio..." onkeyup="filtrarHistorico()">
+            <input type="month" id="filtroMes" onchange="filtrarHistorico()">
+        </div>
+        
         <table id="tabelaHistorico">
-            <thead><tr><th>DATA</th><th>NAVIO</th><th>VALOR</th><th></th></tr></thead>
+            <thead>
+                <tr>
+                    <th>DATA</th>
+                    <th>NAVIO</th>
+                    <th>VALOR</th>
+                    <th style="width:80px">AÇÕES</th>
+                </tr>
+            </thead>
             <tbody></tbody>
         </table>
+        
+        <div id="emptyState" class="empty-state" style="display:none;">
+            Nenhum registro encontrado
+        </div>
+        
         <div class="resumo-financeiro">
-            TOTAL LÍQUIDO: <span id="totalAcumulado" style="color:var(--accent); font-weight:bold;">R$ 0,00</span>
+            <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:2px;">Total Acumulado</div>
+            <div class="total-display" id="totalAcumulado">R$ 0,00</div>
+        </div>
+        
+        <div class="btn-group" style="margin-top:15px;">
+            <button class="btn-secondary" onclick="exportarCSV()">📄 CSV</button>
+            <button class="btn-secondary" onclick="exportarTXT()">📝 TXT</button>
         </div>
     </div>
 </div>
 
 <script>
-    const USERS = {"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
-    let logado = "", userKey = "";
+    const USERS = {
+        "002451": "FELIPE PRADO",
+        "1980": "ANDERSON PRADO",
+        "2026": "FABRICIO DIAS",
+        "302466": "RODRIGO COSTA",
+        "3373": "RICARDO PRADO"
+    };
+    
+    let logado = "", userKey = "", historicoCache = [], itemParaExcluir = null;
+
+    function $(id) { return document.getElementById(id); }
+    
+    function toast(msg, tipo = 'success') {
+        const t = $('toast');
+        t.textContent = msg;
+        t.style.borderColor = tipo === 'error' ? 'var(--danger)' : 'var(--primary)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    
+    function modal(title, body, onConfirm) {
+        $('modalTitle').textContent = title;
+        $('modalBody').textContent = body;
+        $('modal').style.display = 'flex';
+        $('modalConfirm').onclick = () => {
+            onConfirm();
+            fecharModal();
+        };
+    }
+    
+    function fecharModal() {
+        $('modal').style.display = 'none';
+        itemParaExcluir = null;
+    }
 
     function login() {
-        userKey = document.getElementById('senhaInput').value.trim();
-        if (USERS[userKey]) { entrar(); } else { alert("Chave inválida."); }
+        const key = $('senhaInput').value.trim();
+        if (USERS[key]) {
+            // Verificação de dispositivo (opcional - remova se não quiser)
+            const deviceId = localStorage.getItem('device_' + key);
+            const currentDevice = navigator.userAgent + screen.width;
+            
+            if (key === "002451" || !deviceId || deviceId === currentDevice) {
+                if (!deviceId) localStorage.setItem('device_' + key, currentDevice);
+                userKey = key;
+                entrar();
+            } else {
+                toast('Este usuário já está vinculado a outro dispositivo', 'error');
+            }
+        } else {
+            toast('Chave de acesso inválida', 'error');
+        }
     }
 
     function entrar() {
         logado = USERS[userKey];
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-panel').style.display = 'block';
-        document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+        $('login-screen').classList.add('hidden');
+        $('main-panel').classList.remove('hidden');
+        $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
         
         const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('dataTurno').value = hoje;
+        $('dataTurno').value = hoje;
         
-        document.getElementById('turnoRel').value = localStorage.getItem('last_rel_' + logado) || "";
-        document.getElementById('turnoCalc').value = localStorage.getItem('last_calc_' + logado) || "15x23";
+        $('turnoRel').value = localStorage.getItem('last_rel_' + logado) || "";
+        $('turnoCalc').value = localStorage.getItem('last_calc_' + logado) || "15x23";
         
-        ajustarRel(); ajustarCalc(); carregarHistorico();
+        carregarNaviosSugeridos();
+        ajustarRel();
+        ajustarCalc();
+        carregarHistorico();
     }
 
     function salvarTurno(tipo, valor) {
         localStorage.setItem('last_' + tipo + '_' + logado, valor);
-        if(tipo === 'rel') ajustarRel(); else ajustarCalc();
+        if(tipo === 'rel') ajustarRel(); 
+        else ajustarCalc();
     }
 
     function ajustarRel() {
-        const t = document.getElementById('turnoRel').value;
-        const div = document.getElementById('camposRel');
-        div.innerHTML = (t === "15x23") ? '<label>Prod 15x19:</label><input type="number" id="p1"><label>Prod 20x23:</label><input type="number" id="p2">' : (t===""?"":'<label>Produção:</label><input type="number" id="pGeral">');
+        const t = $('turnoRel').value;
+        const div = $('camposRel');
+        if (t === "15x23") {
+            div.innerHTML = `
+                <label>Produção 15h-19h</label>
+                <input type="number" id="p1" placeholder="0">
+                <label>Produção 20h-23h</label>
+                <input type="number" id="p2" placeholder="0">
+            `;
+        } else if (t) {
+            div.innerHTML = `<label>Produção Total</label><input type="number" id="pGeral" placeholder="0">`;
+        } else {
+            div.innerHTML = '';
+        }
     }
 
     function gerarRel() {
-        const tur = document.getElementById('turnoRel').value; if(!tur) return;
-        const navio = (document.getElementById('navioRel').value || "S/N").toUpperCase();
-        const numT = document.getElementById('ternoRelInput').value;
+        const tur = $('turnoRel').value;
+        if(!tur) return toast('Selecione o turno', 'error');
+        
+        const navio = ($('navioRel').value || "S/N").toUpperCase();
+        const terno = $('ternoRelInput').value || "S/T";
+        const data = $('dataTurno').value.split('-').reverse().join('/');
+        
+        let producao = "", total = 0;
+        
+        if(tur === "15x23") {
+            const v1 = parseInt($('p1').value) || 0;
+            const v2 = parseInt($('p2').value) || 0;
+            producao = `15x19: ${v1}\n20x23: ${v2}`;
+            total = v1 + v2;
+        } else {
+            total = parseInt($('pGeral').value) || 0;
+            producao = `PRODUÇÃO: ${total}`;
+        }
+        
+        const texto = `*RELATÓRIO DE TURNO*\n\n` +
+                     `🚢 *Navio:* ${navio}\n` +
+                     `📅 *Data:* ${data}\n` +
+                     `🕐 *Terno:* ${terno}\n` +
+                     `⚡ *Turno:* ${tur}\n\n` +
+                     `${producao}\n` +
+                     `📊 *Total:* ${total}\n\n` +
+                     `👤 *Conf:* ${logado}`;
+        
+        $('relatorioArea').textContent = texto;
+        $('relatorioArea').style.display = 'block';
+        $('btnCopiarGroup').style.display = 'grid';
+        
+        // Adicionar navio à lista de sugestões
+        adicionarNavioSugestao(navio);
+    }
+
+    function limparRel() {
+        $('relatorioArea').style.display = 'none';
+        $('btnCopiarGroup').style.display = 'none';
+        $('p1').value = '';
+        $('p2').value = '';
+        $('pGeral').value = '';
+    }
+
+    function copiar() {
+        const texto = $('relatorioArea').textContent;
+        navigator.clipboard.writeText(texto).then(() => {
+            toast('Texto copiado para o WhatsApp!');
+        }).catch(() => {
+            // Fallback para dispositivos mais antigos
+            const temp = document.createElement('textarea');
+            temp.value = texto;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            toast('Texto copiado!');
+        });
+    }
+
+    function toggleCalc() {
+        const s = $('calcSection');
+        s.style.display = (s.style.display === 'block') ? 'none' : 'block';
+        if(s.style.display === 'block') s.scrollIntoView({behavior: 'smooth'});
+    }
+
+    function ajustarCalc() {
+        const t = $('turnoCalc').value;
+        const div = $('camposCalc');
+        if (t === "15x23") {
+            div.innerHTML = `
+                <label>Produção 15h-19h</label>
+                <input type="number" id="t1" placeholder="0">
+                <label>Produção 20h-23h</label>
+                <input type="number" id="t2" placeholder="0">
+            `;
+        } else {
+            div.innerHTML = `<label>Produção Total</label><input type="number" id="tGeral" placeholder="0">`;
+        }
+    }
+
+    function calcularESalvar() {
+        const navio = ($('navioCalc').value || "S/N").toUpperCase();
+        const tur = $('turnoCalc').value;
+        const tipo = $('tipoDia').value;
+        const n = parseInt($('nConf').value);
+        
+        let bruto = 0;
+        
+        if(tur === "15x23") {
+            const v1 = parseInt($('t1').value) || 0;
+            const v2 = parseInt($('t2').value) || 0;
+            bruto = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
+        } else {
+            const prod = parseInt($('tGeral').value) || 0;
+            const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
+            bruto = prod * taxa;
+        }
+        
+        const liquido = (bruto / n) * 0.82;
+        const data = $('dataTurno').value;
+        
+        const registro = {
+            id: Date.now(),
+            data: data.split('-').reverse().join('/'),
+            dataRaw: data,
+            navio,
+            turno: tur,
+            tipo: tipo === 'f' ? 'Feriado' : 'Normal',
+            liquido: parseFloat(liquido.toFixed(2)),
+            pago: false
+        };
+        
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        hist.unshift(registro);
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist));
+        
+        adicionarNavioSugestao(navio);
+        carregarHistorico();
+        toast(`Lançamento salvo! R$ ${registro.liquido.toFixed(2)}`);
+        
+        // Limpar campos para próximo lançamento
+        if($('t1')) $('t1').value = '';
+        if($('t2')) $('t2').value = '';
+        if($('tGeral')) $('tGeral').value = '';
+    }
+
+    function adicionarNavioSugestao(navio) {
+        let navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
+        if (!navios.includes(navio)) {
+            navios.push(navio);
+            localStorage.setItem('navios_' + logado, JSON.stringify(navios));
+            carregarNaviosSugeridos();
+        }
+    }
+
+    function carregarNaviosSugeridos() {
+        const navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
+        const datalist = $('listaNavios');
+        datalist.innerHTML = navios.map(n => `<option value="${n}">`).join('');
+    }
+
+    function carregarHistorico() {
+        historicoCache = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        filtrarHistorico();
+        atualizarEstatisticas();
+    }
+
+    function filtrarHistorico() {
+        const filtroNavio = $('filtroNavio').value.toLowerCase();
+        const filtroMes = $('filtroMes').value;
+        
+        let filtrado = historicoCache.filter(item => {
+            const matchNavio = item.navio.toLowerCase().includes(filtroNavio);
+            const matchMes = !filtroMes || item.dataRaw?.startsWith(filtroMes) || item.data.includes(filtroMes.split('-')[1]);
+            return matchNavio && matchMes;
+        });
+        
+        renderizarTabela(filtrado);
+        
+        // Calcular total dos filtrados
+        const total = filtrado.reduce((a, b) => a + b.liquido, 0);
+        $('totalAcumulado').textContent = "R$ " + total.toFixed(2).replace('.', ',');
+    }
+
+    function renderizarTabela(lista) {
+        const tbody = document.querySelector('#tabelaHistorico tbody');
+        tbody.innerHTML = '';
+        
+        if (lista.length === 0) {
+            $('emptyState').style.display = 'block';
+            return;
+        }
+        $('emptyState').style.display = 'none';
+        
+        lista.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.data.substring(0,5)}<br><small style="color:#666">${item.turno}</small></td>
+                <td>${item.navio}<br><small style="color:#666">${item.tipo}</small></td>
+                <td class="val-liquido-hist">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
+                <td>
+                    <div class="actions-cell">
+                        <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
+                              onclick="alternarStatus(${item.id})" title="Clique para alterar status">
+                            ${item.pago ? 'PAGO' : 'PEND'}
+                        </span>
+                        <button class="icon-btn btn-danger" onclick="confirmarExcluir(${item.id})" title="Excluir">×</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function atualizarEstatisticas() {
+        const total = historicoCache.reduce((a, b) => a + b.liquido, 0);
+        const pendente = historicoCache.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
+        const dias = historicoCache.length;
+        const media = dias ? (total / dias) : 0;
+        
+        $('statTotal').textContent = "R$" + total.toFixed(0);
+        $('statPendente').textContent = "R$" + pendente.toFixed(0);
+        $('statDias').textContent = dias;
+        $('statMedia').textContent = "R$" + media.toFixed(0);
+    }
+
+    function alternarStatus(id) {
+        const idx = historicoCache.findIndex(i => i.id === id);
+        if (idx > -1) {
+            historicoCache[idx].pago = !historicoCache[idx].pago;
+            localStorage.setItem('hist_' + logado, JSON.stringify(historicoCache));
+            filtrarHistorico();
+            atualizarEstatisticas();
+            toast('Status atualizado!');
+        }
+    }
+
+    function confirmarExcluir(id) {
+        itemParaExcluir = id;
+        modal('Excluir Registro', 'Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.', () => {
+            historicoCache = historicoCache.filter(i => i.id !== itemParaExcluir);
+            localStorage.setItem('hist_' + logado, JSON.stringify(historicoCache));
+            filtrarHistorico();
+            atualizarEstatisticas();
+            toast('Registro excluído');
+        });
+    }
+
+    function exportarCSV() {
+        if (historicoCache.length === 0) return toast('Nada para exportar', 'error');
+        
+        let csv = 'Data,Navio,Turno,Tipo,Valor,Status\n';
+        historicoCache.forEach(i => {
+            csv += `${i.data},${i.navio},${i.turno},${i.tipo},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
+        });
+        
+        baixarArquivo(csv, 'historico.csv', 'text/csv');
+        toast('CSV baixado!');
+    }
+
+    function exportarTXT() {
+        if (historicoCache.length === 0) return toast('Nada para exportar', 'error');
+        
+        let txt = `HISTÓRICO - ${logado}\n${new Date().toLocaleString()}\n${'='.repeat(40)}\n\n`;
+        historicoCache.forEach(i => {
+            txt += `${i.data} | ${i.navio} | ${i.turno} | R$${i.liquido.toFixed(2)} | ${i.pago ? 'PAGO' : 'PENDENTE'}\n`;
+        });
+        txt += `\nTOTAL: R$ ${historicoCache.reduce((a,b) => a + b.liquido, 0).toFixed(2)}`;
+        
+        baixarArquivo(txt, 'historico.txt', 'text/plain');
+        toast('Backup TXT baixado!');
+    }
+
+    function baixarArquivo(conteudo, nome, tipo) {
+        const blob = new Blob([conteudo], {type: tipo});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nome;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Fechar modal ao clicar fora
+    $('modal').addEventListener('click', (e) => {
+        if (e.target === $('modal')) fecharModal();
+    });
+</script>
+</body>
+</html>
