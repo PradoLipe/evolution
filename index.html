@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V37</title>
+    <title>EVOLUTION - V38</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -11,378 +11,328 @@
             --danger: #ff3860;
             --success: #48c774;
             --info: #209cee;
-            --warning: #ffdd57;
-            --bg: #0a0a0f; 
-            --card: rgba(26, 26, 30, 0.98);
+            --bg: #0f0f13; 
+            --card: #1a1a20;
             --input: #25252a;
             --text: #ffffff;
-            --border: rgba(255,255,255,0.1);
+            --text-dim: #a0a0a5;
+            --border: rgba(255,255,255,0.05);
         }
 
-        /* Variáveis para Modo Claro */
         [data-theme="light"] {
-            --bg: #f5f5f7;
+            --bg: #f4f4f9;
             --card: #ffffff;
-            --input: #f0f0f0;
-            --text: #1a1a1a;
-            --border: rgba(0,0,0,0.1);
+            --input: #ececef;
+            --text: #1c1c1e;
+            --text-dim: #6e6e73;
+            --border: rgba(0,0,0,0.05);
         }
         
-        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; }
-        input, select { user-select: text; }
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
+        input, select, textarea { user-select: text; }
         
         body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
             background: var(--bg); 
             color: var(--text); 
-            padding: 10px; 
+            padding: 15px; 
             min-height: 100vh;
             display: flex; 
             justify-content: center; 
             transition: background 0.3s;
         }
         
-        .container { 
-            max-width: 480px; 
-            width: 100%; 
-            background: var(--card); 
-            padding: 25px; 
-            border-radius: 24px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            position: relative;
+        .container { max-width: 480px; width: 100%; position: relative; padding-bottom: 50px; }
+        
+        /* HEADER COM CATRACA */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 5px 0;
         }
-        
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; font-size: 1.4rem; margin-bottom: 20px; }
-        h3 { font-size: 1rem; margin: 25px 0 15px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); }
-        
-        label { display: block; margin-top: 15px; font-weight: 600; color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 2px solid #333; background: var(--input); color: var(--text); border-radius: 12px; font-size: 16px; outline: none; transition: all 0.3s; }
-        [data-theme="light"] input, [data-theme="light"] select { border-color: #ddd; }
 
-        input:focus, select:focus { border-color: var(--primary); }
+        .config-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        h2 { font-size: 1.1rem; letter-spacing: 2px; color: var(--primary); font-weight: 800; }
+
+        /* CARDS E SEÇÕES */
+        .section-card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 20px; 
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h3 { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* LISTA DE HISTÓRICO REFORMULADA */
+        .hist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .hist-item:last-child { border-bottom: none; }
+
+        .hist-info { flex: 1; }
+        .hist-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; display: block; }
+        .hist-meta { font-size: 0.75rem; color: var(--text-dim); }
+
+        .hist-values { text-align: right; margin-right: 15px; }
+        .val-liq { color: var(--accent); font-weight: 800; font-size: 1rem; display: block; }
+        .val-bruto { color: var(--text-dim); font-size: 0.7rem; text-decoration: line-through; opacity: 0.6; }
+
+        /* BOTÕES */
+        button { border-radius: 14px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; padding: 16px; font-size: 0.85rem; }
+        .btn-main { background: var(--primary); color: #000; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); width: 100%; }
         
-        button { width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: transform 0.2s; }
-        button:active { transform: scale(0.98); }
-        
-        .btn-main { background: var(--primary); color: #000; }
-        .btn-whatsapp { background: #25d366; color: #fff; }
-        .btn-calc { background: var(--accent); color: #000; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 12px; }
-        .btn-info { background: var(--info); color: #fff; }
-        .btn-pix { background: linear-gradient(135deg, #FF6B00, #FFB800); color: #000; font-weight: bold; border: 2px solid #FFD700; }
-        
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .section-card { background: rgba(120,120,130,0.05); padding: 20px; border-radius: 18px; border: 1px solid var(--border); margin-top: 20px; }
-        
-        /* DASHBOARD */
-        .dashboard-financeiro { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .dash-box { background: rgba(0,0,0,0.2); padding: 15px 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .dash-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .dash-value { font-size: 1.1rem; font-weight: bold; }
-        .dash-box.pendente .dash-value { color: var(--danger); }
-        .dash-box.recebido .dash-value { color: var(--success); }
-        .dash-box.total .dash-value { color: var(--info); }
-        .dash-box.liquido-total .dash-value { color: var(--accent); }
-        
-        /* CALENDÁRIO */
-        .calendario-card { background: rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--primary); }
-        .calendario-header { display: flex; justify-content: space-between; align-items: center; }
-        .calendario-mes { font-weight: bold; color: var(--primary); font-size: 14px; }
-        .calendario-nav { background: none; border: none; color: var(--primary); font-size: 18px; cursor: pointer; padding: 5px 10px; width: auto; }
-        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
-        .calendario-dia-semana { font-size: 10px; color: #666; padding: 5px; font-weight: bold; }
-        .calendario-dia { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; cursor: pointer; background: rgba(120,120,130,0.1); border: 1px solid transparent; }
-        .calendario-dia.selecionado { background: var(--primary) !important; color: #000 !important; }
-        .calendario-dia.hoje { border-color: var(--accent); color: var(--accent); }
-        .calendario-dia.com-servico::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: var(--success); border-radius: 50%; }
-        
-        /* TABELA */
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; color: var(--text); }
-        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid var(--border); font-size: 9px; text-transform: uppercase; }
-        td { padding: 10px 5px; border-bottom: 1px solid var(--border); }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; cursor: pointer; }
-        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
-        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
-        
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid var(--primary); font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 2000; }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        /* DASHBOARD CLEAN */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .dash-item { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); }
+        .dash-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
+        .dash-val { font-size: 1.1rem; font-weight: 800; }
+
+        /* INPUTS MODERNOS */
+        input, select { 
+            width: 100%; padding: 15px; background: var(--input); border: 1px solid transparent; 
+            border-radius: 14px; color: var(--text); font-size: 1rem; margin-top: 8px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; background: transparent; }
+
+        /* BADGES */
+        .badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
+        .badge-pend { background: rgba(255,56,96,0.1); color: var(--danger); }
+        .badge-ok { background: rgba(72,199,116,0.1); color: var(--success); }
+
         .hidden { display: none !important; }
-        .toggle-section { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .toggle-section::after { content: '▼'; font-size: 12px; transition: transform 0.3s; }
-        .toggle-section.active::after { transform: rotate(180deg); }
-        .section-content { display: none; }
-        .section-content.active { display: block; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 100%; max-width: 400px; }
 
-        /* MODAL */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
-        .mensagem-gelada { font-size: 13px; color: var(--text); line-height: 1.5; text-align: center; margin: 15px 0; font-style: italic; padding: 10px; background: rgba(120,120,130,0.1); border-radius: 8px; border-left: 3px solid #FF6B00; }
+        /* CALENDÁRIO MINI */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; border-radius: 10px; cursor: pointer; }
+        .cal-day.active { background: var(--primary); color: #000; font-weight: 800; }
+        .cal-day.has { border: 1px solid var(--primary); }
+
+        .toast { position: fixed; bottom: 20px; background: #fff; color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 700; z-index: 2000; transform: translateY(100px); transition: 0.4s; }
+        .toast.show { transform: translateY(0); }
     </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
 
-<div class="modal" id="modal">
+<div class="modal" id="modalConfig">
     <div class="modal-content">
-        <div class="modal-header" id="modalTitle" style="color: var(--primary); font-weight: bold; text-align: center; margin-bottom: 15px;">Confirmação</div>
-        <div class="modal-body" id="modalBody" style="margin-bottom: 20px; text-align: center; font-size: 14px;"></div>
-        <div class="btn-group">
-            <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-            <button class="btn-danger" id="modalConfirm">Confirmar</button>
-        </div>
-    </div>
-</div>
+        <h3 style="color:var(--text); font-size: 1.2rem; margin-bottom: 20px;">Configurações</h3>
+        
+        <label>Tema</label>
+        <select id="themeSelect" onchange="mudarTema(this.value)">
+            <option value="dark">🌙 Modo Escuro</option>
+            <option value="light">☀️ Modo Claro</option>
+        </select>
 
-<div class="modal" id="modalPix">
-    <div class="modal-content" style="border: 2px solid #FF6B00;">
-        <div style="font-size: 40px; text-align: center;">🚀</div>
-        <div style="text-align: center; color: #FF6B00; font-weight: bold; margin-bottom: 10px;">HORA DE APOIAR!</div>
-        <div class="mensagem-gelada" id="mensagemApoio"></div>
-        <div style="background: rgba(0,0,0,0.2); border: 2px dashed #FF6B00; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; cursor: pointer;" onclick="copiarChavePix()">
-            <div style="font-size: 9px; color: #888;">CHAVE PIX (TOQUE PARA COPIAR)</div>
-            <div style="font-size: 18px; color: #FFB800; font-weight: bold;">92994821868</div>
-            <div style="font-size: 11px; font-weight: bold;">FELIPE PRADO</div>
+        <div style="margin-top: 25px; display: grid; gap: 10px;">
+            <button class="btn-outline" onclick="exportarBackupJSON()">📤 Exportar Backup</button>
+            <button class="btn-outline" onclick="$('importFile').click()">📥 Importar Backup</button>
+            <button class="btn-outline" onclick="exportarCSV()">📄 Planilha Excel</button>
+            <button class="btn-main" onclick="mostrarPix()" style="background: var(--accent);">🚀 Apoiar o Dev</button>
+            <button class="btn-outline" style="color: var(--danger); border-color: var(--danger); margin-top: 10px;" onclick="limparTodos()">🗑️ Resetar Sistema</button>
         </div>
-        <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE</button>
-        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">AGORA NÃO</button>
+        
+        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importarBackupJSON(event)">
+        <button class="btn-main" style="margin-top: 20px;" onclick="fecharConfig()">Fechar</button>
     </div>
 </div>
 
 <div class="container" id="login-screen">
-    <h2>SISTEMA EVOLUTION</h2>
-    <label>CHAVE DE ACESSO</label>
-    <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
-    <button class="btn-main" onclick="login()">ACESSAR</button>
-    <div style="text-align: center; margin-top: 30px; font-size: 10px; opacity: 0.5;">© 2026 FELIPE PRADO - V37</div>
+    <div style="text-align:center; margin-top: 40vh;">
+        <h2 style="font-size: 2rem; margin-bottom: 30px;">EVOLUTION</h2>
+        <input type="tel" id="senhaInput" placeholder="Chave de Acesso" style="text-align:center; -webkit-text-security: disc;" maxlength="6">
+        <button class="btn-main" style="margin-top: 20px;" onclick="login()">ENTRAR</button>
+    </div>
 </div>
 
 <div class="container hidden" id="main-panel">
-    <h2 id="saudacao">PAINEL</h2>
-    
-    <div class="dashboard-financeiro">
-        <div class="dash-box total"><div class="dash-label">Total Bruto</div><div class="dash-value" id="dashTotalBruto">R$ 0</div></div>
-        <div class="dash-box liquido-total"><div class="dash-label">Total Líquido</div><div class="dash-value" id="dashTotalLiquido">R$ 0</div></div>
-        <div class="dash-box pendente"><div class="dash-label">A Receber (Líq)</div><div class="dash-value" id="dashPendenteLiquido">R$ 0</div></div>
-        <div class="dash-box recebido"><div class="dash-label">Recebido (Líq)</div><div class="dash-value" id="dashRecebidoLiquido">R$ 0</div></div>
-    </div>
-
-    <div class="section-card">
-        <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">DATA DO SERVIÇO</h3>
-        <div id="calendario-content" class="section-content active">
-            <div class="calendario-card">
-                <div class="calendario-header">
-                    <button class="calendario-nav" onclick="mudarMes(-1)">◀</button>
-                    <div class="calendario-mes" id="calendarioMes"></div>
-                    <button class="calendario-nav" onclick="mudarMes(1)">▶</button>
-                </div>
-                <div class="calendario-grid" id="calendarioGrid"></div>
-            </div>
-            <div class="data-input-group">
-                <input type="date" id="dataTurno" onchange="atualizarCalendario()">
-            </div>
+    <div class="app-header">
+        <div>
+            <span id="saudacao" style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">BEM-VINDO</span>
+            <h2 id="userName">CONFERENTE</h2>
         </div>
+        <div class="config-btn" onclick="abrirConfig()">⚙️</div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="dash-item"><div class="dash-label">Total Líquido</div><div class="dash-val" id="dashTotalLiquido" style="color: var(--accent);">R$ 0</div></div>
+        <div class="dash-item"><div class="dash-label">A Receber</div><div class="dash-val" id="dashPendenteLiquido" style="color: var(--danger);">R$ 0</div></div>
     </div>
 
     <div class="section-card">
-        <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
-        <div id="relatorio-content" class="section-content">
-            <label>Navio</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Relatório de Produção</h3>
+        <div id="rel-box" class="hidden">
+            <input type="text" id="navioRel" placeholder="Nome do Navio" list="listaNavios">
             <datalist id="listaNavios"></datalist>
-            <label>Terno</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
-            <label>Turno</label>
-            <select id="turnoRel" onchange="ajustarRel()">
-                <option value="">Selecione</option>
-                <option value="07x15">07x15</option>
-                <option value="15x23">15x23</option>
-                <option value="23x07">23x07</option>
-            </select>
-            <div id="camposRel"></div>
-            <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
-            <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; white-space:pre-line; font-size:12px; font-family: monospace; border: 1px solid var(--primary);"></div>
-            <div class="btn-group" id="btnCopiarGroup" style="display:none;">
-                <button class="btn-main" onclick="copiar()">COPIAR</button>
-                <button class="btn-secondary" onclick="limparRel()">LIMPAR</button>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="ternoRelInput" placeholder="Terno">
+                <select id="turnoRel" onchange="ajustarRel()">
+                    <option value="">Turno</option>
+                    <option value="07x15">07x15</option>
+                    <option value="15x23">15x23</option>
+                    <option value="23x07">23x07</option>
+                </select>
             </div>
+            <div id="camposRel"></div>
+            <button class="btn-main" style="margin-top: 15px; background: #25d366; color: #fff;" onclick="gerarRel()">GERAR PARA WHATSAPP</button>
+            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:12px; margin-top:15px; font-family:monospace; font-size:12px; white-space:pre-wrap;"></div>
+            <button id="btnCopiar" class="btn-main hidden" style="margin-top: 10px;" onclick="copiar()">COPIAR TEXTO</button>
         </div>
     </div>
 
     <div class="section-card">
-        <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
-        <div id="controle-content" class="section-content">
-            <label>Navio</label><input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
-            <label>Tipo de Dia</label>
-            <select id="tipoDia"><option value="n">DIA NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-            <label>Turno</label>
+        <h3>💰 Lançar Novo Serviço</h3>
+        <input type="text" id="navioCalc" placeholder="Nome do Navio" list="listaNavios">
+        <div style="display:flex; gap:10px;">
+            <select id="tipoDia"><option value="n">Normal</option><option value="f">Feriado/Dom</option></select>
             <select id="turnoCalc" onchange="ajustarCalc()">
                 <option value="07x15">07x15</option>
                 <option value="15x23" selected>15x23</option>
                 <option value="23x07">23x07</option>
             </select>
-            <div id="camposCalc"></div>
-            <label>Conferentes (divisão)</label>
-            <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
-            <button class="btn-calc" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
         </div>
+        <div id="camposCalc"></div>
+        <label style="margin-top:10px">Divisão entre quantos conferentes?</label>
+        <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select>
+        <button class="btn-main" style="margin-top: 20px;" onclick="calcularESalvar()">SALVAR SERVIÇO</button>
     </div>
 
     <div class="section-card">
-        <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO</h3>
-        <div id="historico-content" class="section-content">
-            <div class="filters">
-                <input type="text" id="filtroNavio" placeholder="Filtrar navio..." oninput="filtrarHistorico()">
-                <select id="filtroStatus" onchange="filtrarHistorico()"><option value="todos">Todos</option><option value="pendente">Pendentes</option><option value="pago">Pagos</option></select>
+        <h3>📅 Histórico Recente</h3>
+        <div id="listaHist">
             </div>
-            <table id="tabelaHistorico">
-                <thead><tr><th>DATA</th><th>NAVIO</th><th>LÍQ</th><th>STATUS</th></tr></thead>
-                <tbody></tbody>
-            </table>
-            <div class="resumo-financeiro">
-                <div style="font-size: 10px; color: var(--accent);">TOTAL LÍQUIDO FILTRADO</div>
-                <div style="font-size: 1.4rem; color: var(--accent); font-weight: bold;" id="totalLiquidoFiltrado">R$ 0,00</div>
-            </div>
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--border); text-align: center;">
+            <span style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">Total do Histórico</span>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent);" id="totalLiquidoFiltrado">R$ 0,00</div>
         </div>
     </div>
 
-    <div class="section-card">
-        <h3 class="toggle-section" onclick="toggleSection('config-content')">⚙️ CONFIGURAÇÕES</h3>
-        <div id="config-content" class="section-content">
-            <label>Tema do Sistema</label>
-            <select id="themeSelect" onchange="mudarTema(this.value)">
-                <option value="dark">🌙 MODO ESCURO</option>
-                <option value="light">☀️ MODO CLARO</option>
-            </select>
+</div>
 
-            <label>Backup e Dados</label>
-            <div class="btn-group">
-                <button class="btn-info" onclick="exportarBackupJSON()">📤 EXPORTAR BACKUP</button>
-                <button class="btn-info" onclick="$('importFile').click()">📥 IMPORTAR BACKUP</button>
-            </div>
-            <input type="file" id="importFile" class="hidden" accept=".json" onchange="importarBackupJSON(event)">
-            
-            <button class="btn-secondary" onclick="exportarCSV()" style="margin-top:10px;">📄 EXPORTAR PARA EXCEL (CSV)</button>
-            <button class="btn-danger" onclick="limparTodos()" style="margin-top:10px;">🗑️ APAGAR TUDO</button>
-            
-            <button class="btn-pix" onclick="mostrarPix()" style="margin-top:20px;">🚀 APOIAR O DESENVOLVEDOR</button>
+<div class="modal" id="modalPix">
+    <div class="modal-content" style="text-align:center;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+        <h4 style="font-weight: 800; margin-bottom: 10px;">Apoie o Projeto</h4>
+        <p id="mensagemApoio" style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;"></p>
+        <div style="background: var(--input); padding: 15px; border-radius: 15px; margin-bottom: 20px;" onclick="copiarChavePix()">
+            <span style="font-size: 0.6rem; color: var(--text-dim); display:block;">TOQUE PARA COPIAR A CHAVE</span>
+            <span style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">92994821868</span>
         </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 40px; padding: 20px; opacity: 0.5; font-size: 11px;">
-        SISTEMA EVOLUTION V37<br>© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO
+        <button class="btn-main" onclick="fecharModalPix()">Depois eu ajudo</button>
     </div>
 </div>
 
 <script>
     const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
-    const mensagensApoio = ["O código é grátis, mas a luz que o dev gasta é carinha! Ajuda aí? 💡", "Esse botão de PIX não morde! Que tal um café pro programador? ☕", "Se esse app te ajudou, ajuda o dev a pagar um boleto! 📄", "Dizem que cada PIX enviado é um bug a menos. Não custa testar! 🐞", "O app é automático, mas o lanche do criador é manual. Dá uma força? 🍔", "Ajude o programador a manter o estoque de café! 🧠"];
+    const frasesApoio = ["O café é o combustível do código. Ajuda aí? ☕", "Esse sistema te ajudou? Retribua com um Pix! 🚀", "Mantenha o sistema vivo e evoluindo! 💡"];
     
-    let logado = "", userKey = "", todosDados = [];
-    let dataAtual = new Date();
-    let dataSelecionada = new Date();
+    let logado = "", todosDados = [];
+    const $ = id => document.getElementById(id);
 
-    function $(id) { return document.getElementById(id); }
-    function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
-    function modal(title, body, onConfirm) { $('modalTitle').textContent = title; $('modalBody').textContent = body; $('modal').style.display = 'flex'; $('modalConfirm').onclick = () => { onConfirm(); fecharModal(); }; }
-    function fecharModal() { $('modal').style.display = 'none'; }
-    function mostrarPix() { $('mensagemApoio').textContent = mensagensApoio[Math.floor(Math.random() * mensagensApoio.length)]; $('modalPix').style.display = 'flex'; }
-    function fecharModalPix() { $('modalPix').style.display = 'none'; }
-    function copiarChavePix() { navigator.clipboard.writeText('92994821868').then(() => toast('Chave copiada! Valeu pelo apoio! 🚀')); }
-
-    function mudarTema(tema) {
-        document.documentElement.setAttribute('data-theme', tema);
-        localStorage.setItem('theme_' + logado, tema);
+    function toast(msg) {
+        const t = $('toast'); t.textContent = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 
     function login() {
-        const key = $('senhaInput').value.trim();
-        if (USERS[key]) { userKey = key; entrar(); } else { toast('Chave inválida!'); }
+        const key = $('senhaInput').value;
+        if(USERS[key]) {
+            logado = USERS[key];
+            $('userName').textContent = logado;
+            $('login-screen').classList.add('hidden');
+            $('main-panel').classList.remove('hidden');
+            carregarSistema();
+        } else toast("Chave incorreta");
     }
 
-    function entrar() {
-        logado = USERS[userKey];
-        $('login-screen').classList.add('hidden');
-        $('main-panel').classList.remove('hidden');
-        $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
-        
-        const temaSalvo = localStorage.getItem('theme_' + logado) || 'dark';
-        $('themeSelect').value = temaSalvo;
-        mudarTema(temaSalvo);
-
-        const hoje = new Date();
-        $('dataTurno').value = hoje.toISOString().split('T')[0];
-        dataSelecionada = hoje;
-        
-        carregarNavios();
+    function carregarSistema() {
+        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         ajustarRel();
         ajustarCalc();
-        renderizarCalendario();
-        carregarHistorico();
+        renderizarHist();
+        atualizarDash();
+        carregarNavios();
+        const tema = localStorage.getItem('theme_' + logado) || 'dark';
+        document.documentElement.setAttribute('data-theme', tema);
     }
 
-    function toggleSection(id) {
-        const content = $(id);
-        content.classList.toggle('active');
-        content.previousElementSibling.classList.toggle('active');
+    function abrirConfig() { $('modalConfig').style.display = 'flex'; }
+    function fecharConfig() { $('modalConfig').style.display = 'none'; }
+    function mostrarPix() { 
+        $('mensagemApoio').textContent = frasesApoio[Math.floor(Math.random()*frasesApoio.length)];
+        $('modalPix').style.display = 'flex'; 
+    }
+    function fecharModalPix() { $('modalPix').style.display = 'none'; }
+    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); toast("Chave Pix Copiada!"); }
+
+    function mudarTema(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme_' + logado, t);
     }
 
-    function renderizarCalendario() {
-        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        $('calendarioMes').textContent = meses[dataAtual.getMonth()] + ' ' + dataAtual.getFullYear();
-        const grid = $('calendarioGrid');
-        grid.innerHTML = '';
-        ['D','S','T','Q','Q','S','S'].forEach(d => { const div = document.createElement('div'); div.className='calendario-dia-semana'; div.textContent=d; grid.appendChild(div); });
-        
-        const primeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).getDay();
-        const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0).getDate();
-        
-        for(let i=0; i<primeiroDia; i++) grid.appendChild(document.createElement('div'));
-        
-        for(let dia=1; dia<=ultimoDia; dia++) {
-            const div = document.createElement('div');
-            div.className = 'calendario-dia';
-            div.textContent = dia;
-            const dStr = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia).toISOString().split('T')[0];
-            if(todosDados.some(d => d.dataCompleta === dStr)) div.classList.add('com-servico');
-            if(dataSelecionada.toISOString().split('T')[0] === dStr) div.classList.add('selecionado');
-            div.onclick = () => { dataSelecionada = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia); $('dataTurno').value = dStr; renderizarCalendario(); };
-            grid.appendChild(div);
-        }
-    }
-
-    function mudarMes(dir) { dataAtual.setMonth(dataAtual.getMonth() + dir); renderizarCalendario(); }
-    function atualizarCalendario() { dataSelecionada = new Date($('dataTurno').value); dataAtual = new Date($('dataTurno').value); renderizarCalendario(); }
+    function toggleSection(id) { $(id).classList.toggle('hidden'); }
 
     function ajustarRel() {
         const t = $('turnoRel').value;
-        const div = $('camposRel');
-        div.innerHTML = t === "15x23" ? '<label>15h-19h</label><input type="number" id="p1"><label>20h-23h</label><input type="number" id="p2">' : (t ? '<label>Produção Total</label><input type="number" id="pGeral">' : '');
+        $('camposRel').innerHTML = t === "15x23" ? '<input type="number" id="p1" placeholder="Prod 15-19h"><input type="number" id="p2" placeholder="Prod 20-23h">' : (t ? '<input type="number" id="pGeral" placeholder="Produção Total">' : '');
     }
-
-    function gerarRel() {
-        const tur = $('turnoRel').value; if(!tur) return toast('Selecione o turno');
-        const navio = ($('navioRel').value || "S/N").toUpperCase();
-        const terno = $('ternoRelInput').value ? $('ternoRelInput').value + "°" : "S/T";
-        const data = $('dataTurno').value.split('-').reverse().join('/');
-        let prod = "", total = 0;
-        if(tur === "15x23") { const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0; prod = `15x19: ${v1}\n20x23: ${v2}`; total = v1+v2; }
-        else { total = parseInt($('pGeral').value)||0; prod = `PRODUCAO: ${total}`; }
-        
-        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${data}\nTerno: ${terno}\nTurno: ${tur}\n\n${prod}\nTotal: ${total}\n\nConferente: ${logado}`;
-        $('relatorioArea').textContent = texto; $('relatorioArea').style.display = 'block'; $('btnCopiarGroup').style.display = 'grid';
-        salvarNavio(navio);
-    }
-
-    function copiar() { navigator.clipboard.writeText($('relatorioArea').textContent).then(() => toast('Copiado!')); }
-    function limparRel() { $('relatorioArea').style.display = 'none'; $('btnCopiarGroup').style.display = 'none'; }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
-        const div = $('camposCalc');
-        div.innerHTML = t === "15x23" ? '<label>15h-19h</label><input type="number" id="t1"><label>20h-23h</label><input type="number" id="t2">' : '<label>Produção Total</label><input type="number" id="tGeral">';
+        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="Prod 15-19h"><input type="number" id="t2" placeholder="Prod 20-23h">' : '<input type="number" id="tGeral" placeholder="Produção Total">';
     }
+
+    function gerarRel() {
+        const tur = $('turnoRel').value;
+        if(!tur) return toast("Selecione o turno");
+        const navio = ($('navioRel').value || "NAVIO").toUpperCase();
+        const terno = $('ternoRelInput').value ? $('ternoRelInput').value + "°" : "S/T";
+        const data = new Date().toLocaleDateString('pt-BR');
+        let prodStr = "", total = 0;
+
+        if(tur === "15x23") {
+            const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0;
+            prodStr = `15x19: ${v1}\n20x23: ${v2}`; total = v1+v2;
+        } else {
+            total = parseInt($('pGeral').value)||0;
+            prodStr = `PRODUÇÃO: ${total}`;
+        }
+
+        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${data}\nTerno: ${terno}\nTurno: ${tur}\n\n${prodStr}\nTotal: ${total}\n\nConferente: ${logado}`;
+        $('relatorioArea').textContent = texto;
+        $('relatorioArea').classList.remove('hidden');
+        $('btnCopiar').classList.remove('hidden');
+        salvarNavio(navio);
+    }
+
+    function copiar() { navigator.clipboard.writeText($('relatorioArea').textContent); toast("Copiado!"); }
 
     function calcularESalvar() {
         const navio = ($('navioCalc').value || "S/N").toUpperCase();
@@ -390,6 +340,7 @@
         const tipo = $('tipoDia').value;
         const n = parseInt($('nConf').value);
         let bruto = 0;
+
         if(tur === "15x23") {
             const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
             bruto = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
@@ -398,128 +349,100 @@
             const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
             bruto = prod * taxa;
         }
-        const liq = (bruto / n) * 0.82;
-        const registro = { id: Date.now(), data: $('dataTurno').value.split('-').slice(1).reverse().join('/'), dataCompleta: $('dataTurno').value, navio, bruto: (bruto/n), liquido: liq, pago: false };
+
+        const individual = bruto / n;
+        const liq = individual * 0.82;
+        
+        const registro = {
+            id: Date.now(),
+            data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}),
+            navio,
+            bruto: individual,
+            liquido: liq,
+            pago: false
+        };
+
         todosDados.unshift(registro);
         localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-        salvarNavio(navio); carregarHistorico(); renderizarCalendario(); toast('Salvo com sucesso!');
+        renderizarHist();
+        atualizarDash();
+        salvarNavio(navio);
+        toast("Salvo com sucesso!");
     }
 
-    function carregarHistorico() {
-        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        filtrarHistorico();
-        atualizarDashboard();
-    }
-
-    function atualizarDashboard() {
-        const totalB = todosDados.reduce((a,b) => a+b.bruto, 0);
-        const totalL = todosDados.reduce((a,b) => a+b.liquido, 0);
-        const pendL = todosDados.filter(i => !i.pago).reduce((a,b) => a+b.liquido, 0);
-        const receL = todosDados.filter(i => i.pago).reduce((a,b) => a+b.liquido, 0);
-        $('dashTotalBruto').textContent = "R$ " + totalB.toFixed(0);
-        $('dashTotalLiquido').textContent = "R$ " + totalL.toFixed(0);
-        $('dashPendenteLiquido').textContent = "R$ " + pendL.toFixed(0);
-        $('dashRecebidoLiquido').textContent = "R$ " + receL.toFixed(0);
-    }
-
-    function filtrarHistorico() {
-        const fNavio = $('filtroNavio').value.toLowerCase();
-        const fStatus = $('filtroStatus').value;
-        const lista = todosDados.filter(i => {
-            const mN = i.navio.toLowerCase().includes(fNavio);
-            const mS = fStatus === 'todos' ? true : (fStatus === 'pago' ? i.pago : !i.pago);
-            return mN && mS;
+    function renderizarHist() {
+        const container = $('listaHist');
+        container.innerHTML = todosDados.length ? '' : '<p style="text-align:center; color:var(--text-dim); padding:20px;">Nenhum serviço salvo</p>';
+        
+        todosDados.slice(0, 10).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'hist-item';
+            div.innerHTML = `
+                <div class="hist-info">
+                    <span class="hist-name">${item.navio}</span>
+                    <span class="hist-meta">${item.data} • <span class="badge ${item.pago?'badge-ok':'badge-pend'}" onclick="alternarStatus(${item.id})">${item.pago?'Pago':'Pendente'}</span></span>
+                </div>
+                <div class="hist-values">
+                    <span class="val-liq">R$ ${item.liquido.toFixed(2)}</span>
+                    <span class="val-bruto">R$ ${item.bruto.toFixed(2)}</span>
+                </div>
+                <button style="background:none; color:var(--danger); font-size:1.2rem; padding:5px;" onclick="excluirItem(${item.id})">×</button>
+            `;
+            container.appendChild(div);
         });
-        const tbody = document.querySelector('#tabelaHistorico tbody');
-        tbody.innerHTML = lista.map(i => `
-            <tr>
-                <td>${i.data}</td>
-                <td>${i.navio}</td>
-                <td style="color:var(--accent); font-weight:bold;">R$ ${i.liquido.toFixed(2)}</td>
-                <td>
-                    <span class="badge ${i.pago?'badge-pago':'badge-pendente'}" onclick="alternarStatus(${i.id})">${i.pago?'OK':'PEND'}</span>
-                    <button style="width:24px; padding:2px; margin:0; background:none; color:var(--danger);" onclick="excluirItem(${i.id})">×</button>
-                </td>
-            </tr>
-        `).join('');
-        $('totalLiquidoFiltrado').textContent = "R$ " + lista.reduce((a,b) => a+b.liquido, 0).toFixed(2);
+        $('totalLiquidoFiltrado').textContent = "R$ " + todosDados.reduce((a,b)=>a+b.liquido,0).toFixed(2);
     }
 
     function alternarStatus(id) {
         const idx = todosDados.findIndex(i => i.id === id);
         todosDados[idx].pago = !todosDados[idx].pago;
         localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-        carregarHistorico();
+        renderizarHist();
+        atualizarDash();
     }
 
     function excluirItem(id) {
-        modal('Excluir?', 'Deseja apagar este registro?', () => {
+        if(confirm("Excluir este item?")) {
             todosDados = todosDados.filter(i => i.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            carregarHistorico(); renderizarCalendario();
-        });
+            renderizarHist();
+            atualizarDash();
+        }
     }
 
-    function limparTodos() {
-        modal('CUIDADO!', 'Apagar todo o histórico?', () => {
-            localStorage.removeItem('hist_' + logado);
-            carregarHistorico(); renderizarCalendario();
-        });
+    function atualizarDash() {
+        const totalL = todosDados.reduce((a,b) => a+b.liquido, 0);
+        const pendL = todosDados.filter(i => !i.pago).reduce((a,b) => a+b.liquido, 0);
+        $('dashTotalLiquido').textContent = "R$ " + totalL.toFixed(0);
+        $('dashPendenteLiquido').textContent = "R$ " + pendL.toFixed(0);
     }
 
-    // BACKUP JSON (Para trocar de celular)
+    function salvarNavio(n) {
+        let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[];
+        if(!ns.includes(n)){ ns.push(n); localStorage.setItem('navios_'+logado, JSON.stringify(ns)); carregarNavios(); }
+    }
+    function carregarNavios() {
+        const ns = JSON.parse(localStorage.getItem('navios_'+logado))||[];
+        $('listaNavios').innerHTML = ns.map(n => `<option value="${n}">`).join('');
+    }
+
     function exportarBackupJSON() {
-        const backup = {
-            historico: todosDados,
-            navios: JSON.parse(localStorage.getItem('navios_' + logado)) || [],
-            versao: "V37",
-            dataExport: new Date().toISOString()
-        };
-        const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
+        const data = { hist: todosDados, navios: JSON.parse(localStorage.getItem('navios_'+logado)) };
+        const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `backup_evolution_${logado}.json`;
         a.click();
-        toast('Backup gerado! Guarde este arquivo. 📤');
-    }
-
-    function importarBackupJSON(event) {
-        const file = event.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if(data.historico) {
-                    modal('Importar?', 'Isso vai substituir seus dados atuais pelos do arquivo!', () => {
-                        localStorage.setItem('hist_' + logado, JSON.stringify(data.historico));
-                        localStorage.setItem('navios_' + logado, JSON.stringify(data.navios || []));
-                        carregarHistorico();
-                        carregarNavios();
-                        renderizarCalendario();
-                        toast('Dados importados com sucesso! 📥');
-                    });
-                }
-            } catch(err) { toast('Erro ao ler arquivo!'); }
-        };
-        reader.readAsText(file);
     }
 
     function exportarCSV() {
-        let csv = 'Data,Navio,Liquido,Status\n';
-        todosDados.forEach(i => csv += `${i.data},${i.navio},${i.liquido.toFixed(2)},${i.pago?'Pago':'Pendente'}\n`);
-        const blob = new Blob([csv], {type: 'text/csv'});
+        let csv = 'Data,Navio,Bruto,Liquido,Status\n';
+        todosDados.forEach(i => csv += `${i.data},${i.navio},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago?'Pago':'Pendente'}\n`);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `relatorio_${logado}.csv`;
+        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+        a.download = `financeiro_${logado}.csv`;
         a.click();
     }
-
-    function salvarNavio(n) { let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; if(!ns.includes(n)){ns.push(n); localStorage.setItem('navios_'+logado, JSON.stringify(ns)); carregarNavios();} }
-    function carregarNavios() { const ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; $('listaNavios').innerHTML = ns.map(n => `<option value="${n}">`).join(''); }
-
-    $('modal').onclick = (e) => { if(e.target === $('modal')) fecharModal(); };
-    $('modalPix').onclick = (e) => { if(e.target === $('modalPix')) fecharModalPix(); };
 </script>
 </body>
 </html>
