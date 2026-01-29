@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V26</title>
+    <title>SISTEMA EVOLUTION - V27</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0a0a0a; --card: #1a1a1a; --input: #262626; }
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
@@ -56,7 +56,7 @@
         <label>Navio:</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO">
         <label>Número do Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
         <label>Turno:</label>
-        <select id="turnoRel" onchange="ajustarRel()">
+        <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
             <option value="">Selecione</option>
             <option value="07x15">07x15</option>
             <option value="15x23">15x23</option>
@@ -74,7 +74,11 @@
         <h3>💰 Novo Lançamento</h3>
         <label>Navio:</label><input type="text" id="navioCalc">
         <label>Tipo:</label><select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-        <label>Turno:</label><select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
+        <label>Turno:</label><select id="turnoCalc" onchange="salvarTurno('calc', this.value)">
+            <option value="07x15">07x15</option>
+            <option value="15x23">15x23</option>
+            <option value="23x07">23x07</option>
+        </select>
         <div id="camposCalc"></div>
         <label>Conferentes:</label><select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
         <button class="btn-main" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
@@ -118,9 +122,32 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-panel').style.display = 'block';
         document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+        
+        // Data Atual
         const hoje = new Date();
         document.getElementById('dataTurno').value = hoje.toISOString().split('T')[0];
-        ajustarCalc(); carregarHistorico(); if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
+        
+        // RECUPERA TURNOS SALVOS
+        const tRel = localStorage.getItem('last_turno_rel_' + logado) || "";
+        const tCalc = localStorage.getItem('last_turno_calc_' + logado) || "15x23";
+        
+        document.getElementById('turnoRel').value = tRel;
+        document.getElementById('turnoCalc').value = tCalc;
+        
+        ajustarRel();
+        ajustarCalc(); 
+        carregarHistorico(); 
+        if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
+    }
+
+    function salvarTurno(tipo, valor) {
+        if(tipo === 'rel') {
+            localStorage.setItem('last_turno_rel_' + logado, valor);
+            ajustarRel();
+        } else {
+            localStorage.setItem('last_turno_calc_' + logado, valor);
+            ajustarCalc();
+        }
     }
 
     function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
