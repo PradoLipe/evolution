@@ -75,12 +75,12 @@
 <div class="container" id="main-panel" style="display: none;">
     <h2 id="saudacao">PAINEL</h2>
     
-    <label>DADOS DO NAVIO:</label>
+    <label>DADOS DO DIA:</label>
     <input type="date" id="dataTurno">
-    <input type="text" id="navio" placeholder="NOME DO NAVIO" style="margin-top:10px;">
+    <input type="text" id="navioPrincipal" placeholder="NOME DO NAVIO" oninput="sincronizarNavio(this.value)" style="margin-top:10px;">
     <input type="text" id="ternoInput" placeholder="Ex: 1º TERNO" style="margin-top:10px;">
     
-    <label>GERAR RELATÓRIO:</label>
+    <label>GERAR RELATÓRIO WHATSAPP:</label>
     <select id="turnoRel" onchange="ajustarRel()">
         <option value="">Selecione o Turno</option>
         <option value="07x15">07x15</option>
@@ -95,16 +95,23 @@
     <button class="btn-calc-toggle" onclick="toggleCalc()">📊 CALCULADORA / HISTÓRICO</button>
     
     <div class="calc-section" id="calcSection">
+        <label>REGISTRAR NAVIO NA CALC:</label>
+        <input type="text" id="navioCalc" placeholder="CONFIRME O NOME DO NAVIO" oninput="sincronizarNavio(this.value)">
+        
         <label>DIA:</label>
         <select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
+        
         <label>TURNO:</label>
         <select id="turnoCalc" onchange="ajustarCalc()">
             <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
         </select>
         <div id="camposCalc"></div>
+        
         <label>CONFERENTES:</label>
         <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
-        <button class="btn-gerar" style="background:var(--accent); color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR</button>
+        
+        <button class="btn-gerar" style="background:var(--accent); color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR NO HISTÓRICO</button>
+        
         <div id="resCalc">
             <div id="resBruto" style="color:#aaa; font-size:12px;"></div>
             <div id="resLiquido" style="color: var(--accent); font-size: 20px; font-weight: bold;"></div>
@@ -160,6 +167,11 @@
         }
     }
 
+    function sincronizarNavio(valor) {
+        document.getElementById('navioPrincipal').value = valor.toUpperCase();
+        document.getElementById('navioCalc').value = valor.toUpperCase();
+    }
+
     function toggleCalc() {
         const cs = document.getElementById('calcSection');
         cs.style.display = (cs.style.display === 'block') ? 'none' : 'block';
@@ -174,7 +186,7 @@
     function gerarRel() {
         const tur = document.getElementById('turnoRel').value;
         if(!tur) return alert("Selecione o turno!");
-        const n = (document.getElementById('navio').value || "S/N").toUpperCase();
+        const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
         const terno = (document.getElementById('ternoInput').value || "S/T").toUpperCase();
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         let p = "", tot = 0;
@@ -198,8 +210,8 @@
     }
 
     function calcularESalvar() {
+        const navio = (document.getElementById('navioCalc').value || "S/N").toUpperCase();
         const data = document.getElementById('dataTurno').value.split('-').reverse().join('/');
-        const navio = (document.getElementById('navio').value || "S/N").toUpperCase();
         const tur = document.getElementById('turnoCalc').value;
         const tipo = document.getElementById('tipoDia').value;
         const n = parseInt(document.getElementById('nConf').value);
