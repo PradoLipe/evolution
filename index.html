@@ -3,104 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V17</title>
+    <title>SISTEMA EVOLUTION - V19.1</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
-        .container { max-width: 450px; width: 100%; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px solid #444; box-sizing: border-box; }
-        h2 { text-align: center; color: #00d1b2; text-transform: uppercase; margin-bottom: 20px; font-size: 18px; }
-        label { display: block; margin-top: 12px; font-weight: bold; color: #00d1b2; font-size: 11px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: #262626; color: white; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-acessar { background: #00d1b2; color: #000; }
-        .btn-gerar { background: #48c774; color: #000; }
-        .calc-section { display: none; margin-top: 20px; padding: 15px; background: #222; border: 1px solid #ffdd57; border-radius: 12px; }
-        #resCalc { display:none; margin-top:15px; text-align: center; border-top: 1px solid #444; padding-top: 10px; }
+        :root {
+            --primary: #00d1b2;
+            --accent: #ffdd57;
+            --danger: #ff3860;
+            --bg: #0a0a0a;
+            --card: #1a1a1a;
+            --input: #262626;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
+        .container { max-width: 480px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; }
         
-        /* TABELA HISTÓRICO */
-        .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        th { background: #333; color: #00d1b2; padding: 8px 4px; text-align: left; }
-        td { padding: 12px 4px; border-bottom: 1px solid #333; overflow: hidden; }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; font-size: 20px; text-shadow: 0 0 10px rgba(0,209,178,0.3); }
+        h3 { font-size: 14px; color: var(--primary); margin-top: 0; text-transform: uppercase; }
+
+        /* Banner Pix */
+        .pix-banner { background: linear-gradient(45deg, #222, #111); border: 1px solid var(--accent); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; border-left: 5px solid var(--accent); }
+        .pix-text { font-size: 11px; color: #fff; margin-bottom: 8px; line-height: 1.4; }
+        .pix-chave { font-weight: bold; color: var(--accent); font-size: 14px; display: block; margin: 5px 0; letter-spacing: 1px; }
+
+        label { display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: var(--input); color: white; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
         
-        .action-cell { display: flex; gap: 4px; flex-direction: column; }
-        .btn-pay { background: #48c774; color: #000; padding: 6px; border-radius: 4px; border: 1px solid #fff; font-weight: bold; font-size: 9px; text-align: center; }
-        .btn-del { background: #ff3860; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #fff; font-weight: bold; font-size: 10px; text-align: center; }
-        .status-pago { color: #48c774; font-weight: bold; font-size: 9px; text-align: center; border: 1px dashed #48c774; padding: 5px; border-radius: 4px; cursor: pointer; }
+        button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: #000; }
+        .btn-whatsapp { background: #48c774; color: #000; }
+        .btn-calc { background: var(--accent); color: #000; }
+        .btn-backup { background: #3273dc; color: #fff; margin-top: 20px; }
         
-        .val-bruto { color: #aaa; font-size: 9px; display: block; }
-        .val-liquido { color: #ffdd57; font-weight: bold; font-size: 11px; display: block; }
-        .resumo-box { background: #000; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ffdd57; }
+        .copyright { text-align: center; font-size: 9px; color: #555; margin-top: 25px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        
+        .section-card { background: #222; padding: 18px; border-radius: 15px; border: 1px solid #333; margin-top: 20px; display: none; }
+        
+        /* HISTÓRICO */
+        .table-container { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; font-size: 10px; }
+        td { padding: 15px 5px; border-bottom: 1px solid #222; }
+
+        .resumo-financeiro { background: #000; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--accent); }
+        .resumo-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .total-valor { font-size: 18px; font-weight: bold; color: var(--accent); }
+
+        .badge-pago { color: #48c774; border: 1px solid #48c774; padding: 4px 8px; border-radius: 5px; font-size: 9px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
-    <input type="tel" id="senhaInput" placeholder="Chave de Acesso" style="-webkit-text-security: disc;">
-    <button class="btn-acessar" onclick="login()">ENTRAR</button>
+    <label>CHAVE DE ACESSO</label>
+    <input type="tel" id="senhaInput" placeholder="••••••" style="-webkit-text-security: disc;">
+    <button class="btn-main" onclick="login()">ACESSAR PAINEL</button>
+    <div class="copyright">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
 </div>
 
 <div class="container" id="main-panel" style="display: none;">
     <h2 id="saudacao">PAINEL</h2>
     
-    <label>DATA:</label>
-    <input type="date" id="dataTurno">
-    <label>NAVIO:</label>
-    <input type="text" id="navio" placeholder="NOME DO NAVIO">
-    <label>TERNO:</label>
-    <input type="text" id="ternoInput" placeholder="Ex: 1º TERNO">
-    
-    <label>TURNO PARA RELATÓRIO:</label>
-    <select id="turnoRel" onchange="ajustarRel()">
-        <option value="">Selecione o Turno</option>
-        <option value="07x15">07x15</option>
-        <option value="15x23">15x23</option>
-        <option value="23x07">23x07</option>
-    </select>
-    <div id="camposRel"></div>
-    <button class="btn-gerar" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
-    <div id="relatorioArea" style="display:none; margin-top:15px; padding:10px; background:#000; color:#00ffca; border:1px solid #00d1b2; font-family:monospace; font-size:11px; white-space:pre-line;"></div>
-    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR MENSAGEM</button>
+    <div class="pix-banner" id="pixBanner">
+        <div class="pix-text">Gosta do Sistema Evolution?<br>Ajude a manter as atualizações com uma ajuda de custo.</div>
+        <div class="pix-text" style="color:var(--accent); font-weight:bold;">CHAVE PIX:</div>
+        <div class="pix-chave">92994821868</div>
+        <button style="padding: 5px; font-size: 9px; background: #333; color: #fff; width: auto; margin-top: 8px; border: 1px solid #444;" onclick="fecharPix()">OCULTAR POR ENQUANTO</button>
+    </div>
 
-    <hr style="border:0; border-top:1px solid #444; margin:25px 0;">
+    <div id="relatorio-box">
+        <label>Data:</label>
+        <input type="date" id="dataTurno">
+        <label>Turno Relatório:</label>
+        <select id="turnoRel" onchange="ajustarRel()">
+            <option value="">Selecione o Turno</option>
+            <option value="07x15">07x15</option>
+            <option value="15x23">15x23</option>
+            <option value="23x07">23x07</option>
+        </select>
+        <div id="camposRel"></div>
+        <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+        <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); font-family:monospace; font-size:12px; white-space:pre-line;"></div>
+        <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR MENSAGEM</button>
+    </div>
 
-    <button class="btn-acessar" style="background:#ffdd57; color:#000;" onclick="document.getElementById('calcSection').style.display='block'">📊 CALCULADORA E SALVAR</button>
+    <button class="btn-calc" onclick="abrirCalc()">📊 CALCULADORA E LANÇAMENTO</button>
     
-    <div class="calc-section" id="calcSection">
-        <label>DIA:</label>
+    <div class="section-card" id="calcSection">
+        <h3>💰 Novo Lançamento</h3>
+        <label>Nome do Navio:</label>
+        <input type="text" id="navioCalc" placeholder="EX: CAP SAN MARCO">
+        <label>Tipo de Dia:</label>
         <select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-        <label>TURNO CÁLCULO:</label>
+        <label>Turno:</label>
         <select id="turnoCalc" onchange="ajustarCalc()">
             <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
         </select>
         <div id="camposCalc"></div>
-        <label>CONFERENTES:</label>
+        <label>Conferentes:</label>
         <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
-        <button class="btn-gerar" style="background:#ffdd57; color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR</button>
-        <div id="resCalc">
-            <div id="resBruto" style="color:#aaa; font-size:13px;"></div>
-            <div id="resLiquido" style="color: #ffdd57; font-size: 19px; font-weight: bold;"></div>
-        </div>
+        <button class="btn-main" onclick="calcularESalvar()">SALVAR NO MEU HISTÓRICO</button>
     </div>
 
     <div class="history-section">
-        <h3 style="font-size: 14px; color: #00d1b2;">MEU HISTÓRICO</h3>
-        <table id="tabelaHistorico">
-            <thead>
-                <tr>
-                    <th style="width: 20%;">DATA</th>
-                    <th style="width: 30%;">NAVIO</th>
-                    <th style="width: 25%;">VALOR</th>
-                    <th style="width: 25%;">AÇÃO</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="resumo-box">
-            <div style="font-size: 12px;">TOTAL LÍQUIDO: <span id="totalAcumulado" style="float:right;">R$ 0,00</span></div>
-            <div style="font-size: 14px; margin-top:8px; font-weight:bold; color:#ffdd57;">A RECEBER: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
+        <h3>📅 Histórico Pessoal</h3>
+        <div class="table-container">
+            <table id="tabelaHistorico">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">DATA</th>
+                        <th style="width: 35%;">NAVIO</th>
+                        <th style="width: 25%;">VALOR</th>
+                        <th style="width: 20%;">AÇÃO</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
-        <button style="background:#ff3860; color:white; font-size:10px; width:auto; margin-top: 15px;" onclick="limparHistorico()">APAGAR TUDO</button>
+
+        <div class="resumo-financeiro">
+            <div class="resumo-item">
+                <span style="font-size: 10px;">TOTAL ACUMULADO:</span>
+                <span id="totalAcumulado" class="total-valor">R$ 0,00</span>
+            </div>
+            <div class="resumo-item">
+                <span style="font-size: 10px; color: var(--accent);">A RECEBER:</span>
+                <span id="totalPendente" class="total-valor" style="color: var(--accent);">R$ 0,00</span>
+            </div>
+        </div>
+
+        <button class="btn-backup" onclick="exportarBackup()">📥 BAIXAR MEU BACKUP (TXT)</button>
+        <div class="copyright" style="margin-top: 40px;">© 2026 SISTEMA EVOLUTION - TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
     </div>
 </div>
 
@@ -117,20 +150,32 @@
             document.getElementById('main-panel').style.display = 'block';
             document.getElementById('saudacao').innerText = "OLÁ, " + logado;
             ajustarCalc(); carregarHistorico();
-        } else { alert("Senha incorreta."); }
+            verificarPix();
+        } else { alert("Chave inválida."); }
+    }
+
+    function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
+
+    function verificarPix() {
+        // Mostra o banner PIX em 60% das vezes que entrar
+        if(Math.random() > 0.4) { document.getElementById('pixBanner').style.display = 'block'; }
+    }
+
+    function abrirCalc() {
+        const s = document.getElementById('calcSection');
+        s.style.display = (s.style.display === 'block') ? 'none' : 'block';
     }
 
     function ajustarRel() {
         const t = document.getElementById('turnoRel').value;
         const div = document.getElementById('camposRel');
-        div.innerHTML = (t === "15x23") ? '<label>PROD 15x19:</label><input type="number" id="p1"><label>PROD 20x23:</label><input type="number" id="p2">' : (t===""?"":'<label>PRODUÇÃO TOTAL:</label><input type="number" id="pGeral">');
+        div.innerHTML = (t === "15x23") ? '<label>Prod 15x19:</label><input type="number" id="p1"><label>Prod 20x23:</label><input type="number" id="p2">' : (t===""?"":'<label>Produção Total:</label><input type="number" id="pGeral">');
     }
 
     function gerarRel() {
         const tur = document.getElementById('turnoRel').value;
         if(!tur) return alert("Selecione o turno!");
-        const n = (document.getElementById('navio').value || "S/N").toUpperCase();
-        const terno = (document.getElementById('ternoInput').value || "S/T").toUpperCase();
+        const n = (prompt("Nome do Navio:") || "S/N").toUpperCase();
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         let p = "", tot = 0;
         if(tur === "15x23") {
@@ -141,7 +186,7 @@
             tot = parseInt(document.getElementById('pGeral').value) || 0;
             p = `PRODUÇÃO: ${tot}`;
         }
-        document.getElementById('relatorioArea').innerText = `NAVIO: ${n}\nDATA: ${d}\nTERNO: ${terno}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${n}\nDATA: ${d}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
         document.getElementById('relatorioArea').style.display = 'block';
         document.getElementById('btnCopiar').style.display = 'block';
     }
@@ -149,13 +194,14 @@
     function ajustarCalc() {
         const t = document.getElementById('turnoCalc').value;
         document.getElementById('camposCalc').innerHTML = (t === "15x23") ? 
-            `<label>PROD 15x19:</label><input type="number" id="t1"><label>PROD 20x23:</label><input type="number" id="t2">` : 
-            `<label>PROD TOTAL:</label><input type="number" id="tGeral">`;
+            `<label>Produção 15x19:</label><input type="number" id="t1"><label>Produção 20x23:</label><input type="number" id="t2">` : 
+            `<label>Produção Total:</label><input type="number" id="tGeral">`;
     }
 
     function calcularESalvar() {
+        const navio = document.getElementById('navioCalc').value.toUpperCase();
+        if(!navio) return alert("Digite o nome do Navio!");
         const data = document.getElementById('dataTurno').value.split('-').reverse().join('/');
-        const navio = (document.getElementById('navio').value || "S/N").toUpperCase();
         const tur = document.getElementById('turnoCalc').value;
         const tipo = document.getElementById('tipoDia').value;
         const n = parseInt(document.getElementById('nConf').value);
@@ -174,14 +220,10 @@
         const brutoIndiv = brutoTotal / n;
         const liquido = brutoIndiv * 0.82;
         
-        document.getElementById('resBruto').innerText = "BRUTO: R$ " + brutoIndiv.toFixed(2);
-        document.getElementById('resLiquido').innerText = "LÍQUIDO: R$ " + liquido.toFixed(2);
-        document.getElementById('resCalc').style.display = 'block';
-
         let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         hist.push({ id: Date.now(), data, navio, bruto: brutoIndiv, liquido, pago: false });
         localStorage.setItem('hist_' + logado, JSON.stringify(hist));
-        carregarHistorico();
+        alert("Lançamento salvo com sucesso!"); carregarHistorico();
     }
 
     function carregarHistorico() {
@@ -191,13 +233,13 @@
         
         lista.forEach(item => {
             totalMes += item.liquido; if(!item.pago) pendente += item.liquido;
-            const statusBtn = item.pago ? `<span class="status-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button class="btn-pay" onclick="alternarPago(${item.id})">PAGAR</button>`;
+            const btnPagar = item.pago ? `<span class="badge-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button onclick="alternarPago(${item.id})" style="padding:4px; font-size:9px; background:var(--primary); width:auto; border-radius:5px;">PAGAR</button>`;
             
             corpo.innerHTML += `<tr>
-                <td>${item.data.substring(0,5)}</td>
-                <td>${item.navio}</td>
-                <td><span class="val-bruto">B:${item.bruto.toFixed(2)}</span><span class="val-liquido">L:${item.liquido.toFixed(2)}</span></td>
-                <td><div class="action-cell">${statusBtn}<button class="btn-del" onclick="excluirItem(${item.id})">X</button></div></td>
+                <td style="color:#888;">${item.data.substring(0,5)}</td>
+                <td style="font-weight:bold;">${item.navio}</td>
+                <td><span style="color:var(--accent); font-weight:bold;">L:${item.liquido.toFixed(2)}</span></td>
+                <td><div style="display:flex; flex-direction:column; gap:3px;">${btnPagar}<button onclick="excluirItem(${item.id})" style="color:var(--danger); background:none; font-size:9px;">APAGAR</button></div></td>
             </tr>`;
         });
         document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toFixed(2);
@@ -211,15 +253,22 @@
     }
 
     function excluirItem(id) {
-        if(confirm("Apagar?")) {
+        if(confirm("Excluir registro permanentemente?")) {
             let hist = JSON.parse(localStorage.getItem('hist_' + logado));
             hist = hist.filter(item => item.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico();
         }
     }
 
-    function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
-    function limparHistorico() { if(confirm("Limpar tudo?")) { localStorage.removeItem('hist_' + logado); carregarHistorico(); } }
+    function exportarBackup() {
+        const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        let txt = `BACKUP SISTEMA EVOLUTION - CONF: ${logado}\nPROPRIETÁRIO: FELIPE PRADO\n\n`;
+        lista.forEach(i => txt += `${i.data} | NAVIO: ${i.navio} | LÍQUIDO: R$ ${i.liquido.toFixed(2)} | STATUS: ${i.pago?'PAGO':'PENDENTE'}\n`);
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_Evolution_${logado}.txt`; a.click();
+    }
+
+    function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Relatório copiado!"); }
 </script>
 </body>
 </html>
