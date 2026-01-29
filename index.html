@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V36</title>
+    <title>SISTEMA EVOLUTION - V37</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -108,10 +108,11 @@
         .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 12px; }
         .btn-info { background: var(--info); color: #fff; }
         .btn-pix { 
-            background: linear-gradient(135deg, #32BCAD, #00d1b2); 
+            background: linear-gradient(135deg, #FF6B00, #FFB800); 
             color: #000; 
             font-weight: bold;
-            border: 2px solid var(--accent);
+            border: 2px solid #FFD700;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
         }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -171,7 +172,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
         }
         
         .calendario-mes { font-weight: bold; color: var(--primary); font-size: 14px; }
@@ -192,6 +192,7 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
             text-align: center;
+            margin-top: 10px;
         }
         
         .calendario-dia-semana { font-size: 10px; color: #666; padding: 5px; font-weight: bold; }
@@ -257,28 +258,21 @@
             border: 1px solid #222;
         }
         
-        .footer-direitos .pix-chave {
-            color: var(--accent);
-            font-weight: bold;
-            cursor: pointer;
-            user-select: text;
-        }
-        
         /* MODAL PIX */
         .modal-pix {
-            background: linear-gradient(135deg, #1a1a2e, #0f0f13);
-            border: 2px solid var(--accent);
+            background: linear-gradient(180deg, #1a1a1a, #0f0f13);
+            border: 2px solid #FF6B00;
         }
         
-        .pix-icone {
+        .pix-icon {
             font-size: 40px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         .chave-pix-box {
             background: rgba(0,0,0,0.5);
-            border: 1px dashed var(--primary);
+            border: 2px dashed #FF6B00;
             padding: 15px;
             border-radius: 10px;
             text-align: center;
@@ -288,8 +282,8 @@
         }
         
         .chave-pix-box:hover {
-            background: rgba(0,209,178,0.1);
-            border-color: var(--accent);
+            background: rgba(255,107,0,0.1);
+            border-color: #FFB800;
         }
         
         .chave-pix-label {
@@ -300,8 +294,8 @@
         }
         
         .chave-pix-valor {
-            font-size: 18px;
-            color: var(--accent);
+            font-size: 20px;
+            color: #FFB800;
             font-weight: bold;
             letter-spacing: 2px;
             user-select: text;
@@ -309,17 +303,22 @@
         
         .nome-pix {
             font-size: 12px;
-            color: var(--primary);
+            color: #fff;
             margin-top: 5px;
+            font-weight: bold;
         }
         
-        .mensagem-apoio {
-            font-size: 13px;
+        .mensagem-gelada {
+            font-size: 14px;
             color: #ccc;
             line-height: 1.5;
             text-align: center;
             margin: 15px 0;
             font-style: italic;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border-left: 3px solid #FF6B00;
         }
         
         /* MODAL GERAL */
@@ -458,30 +457,30 @@
     </div>
 </div>
 
-<!-- MODAL CONTRIBUIÇÃO PIX -->
+<!-- MODAL CONTRIBUIÇÃO - GELADA -->
 <div class="modal" id="modalPix">
     <div class="modal-content modal-pix">
-        <div class="pix-icone">💚</div>
-        <div style="text-align: center; color: var(--accent); font-weight: bold; font-size: 16px; margin-bottom: 10px;">
-            AJUDE O DESENVOLVEDOR
+        <div class="pix-icon">🍺</div>
+        <div style="text-align: center; color: #FF6B00; font-weight: bold; font-size: 16px; margin-bottom: 10px; text-transform: uppercase;">
+            Hora do Rango!
         </div>
-        <div class="mensagem-apoio">
-            "Este sistema foi desenvolvido com muito esforço para facilitar seu trabalho. 
-            Se desejar contribuir para manter as atualizações e melhorias:"
+        
+        <div class="mensagem-gelada" id="mensagemGelada">
+            Carregando mensagem...
         </div>
         
         <div class="chave-pix-box" onclick="copiarChavePix()">
-            <div class="chave-pix-label">Chave PIX (Clique para copiar)</div>
-            <div class="chave-pix-valor" id="chavePixValor">92994821868</div>
+            <div class="chave-pix-label">Chave PIX (Clica aí)</div>
+            <div class="chave-pix-valor">92994821868</div>
             <div class="nome-pix">FELIPE PRADO</div>
         </div>
         
         <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 15px;">
-            Qualquer valor é bem-vindo! 🙏
+            Aceita uma graninha pra cerveja também! 🍻
         </div>
         
-        <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE PIX</button>
-        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Fechar</button>
+        <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE</button>
+        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Depois eu pago</button>
     </div>
 </div>
 
@@ -496,7 +495,7 @@
         <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS</div>
         <div class="dev" onclick="mostrarPix()" style="cursor: pointer;">
             Desenvolvido por <span style="color: var(--primary);">FELIPE PRADO</span><br>
-            <small style="color: #444;">Toque aqui para contribuir via PIX</small>
+            <small style="color: #ff6b00;">Toque aqui pra pagar uma gelada pro dev</small>
         </div>
     </div>
 </div>
@@ -583,7 +582,7 @@
         </div>
     </div>
 
-    <!-- CONTROLE DE PRODUÇÃO (SEM TERNO) -->
+    <!-- CONTROLE DE PRODUÇÃO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
         <div id="controle-content" class="section-content">
@@ -664,7 +663,7 @@
             
             <div class="btn-group" style="margin-top:15px;">
                 <button class="btn-info" onclick="exportarCSV()">📄 EXPORTAR CSV</button>
-                <button class="btn-secondary" onclick="mostrarPix()">💚 APOIAR DEV</button>
+                <button class="btn-pix" onclick="mostrarPix()">🍺 PAGAR UMA GELADA</button>
             </div>
             <button class="btn-danger" onclick="limparTodos()" style="margin-top: 10px;">🗑️ LIMPAR HISTÓRICO</button>
         </div>
@@ -672,14 +671,14 @@
     
     <!-- FOOTER COM DIREITOS -->
     <div class="footer-direitos">
-        <div class="marca">SISTEMA EVOLUTION V36</div>
+        <div class="marca">SISTEMA EVOLUTION V37</div>
         <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
         <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid #222;">
-            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Desenvolvido com 💚 por</div>
-            <div style="font-size: 14px; color: var(--primary); font-weight: bold; letter-spacing: 1px;">FELIPE PRADO</div>
-            <div style="font-size: 9px; color: #444; margin-top: 3px;">SUA CONTRIBUIÇÃO FAZ A DIFERENÇA</div>
+            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Criado e mantido por</div>
+            <div style="font-size: 14px; color: #fff; font-weight: bold; letter-spacing: 1px;">FELIPE PRADO</div>
+            <div style="font-size: 9px; color: #555; margin-top: 3px;">Sistema protegido por direitos autorais</div>
             <button class="btn-pix" onclick="mostrarPix()" style="margin-top: 10px; padding: 10px; font-size: 11px;">
-                💚 CONTRIBUIR VIA PIX
+                🍺 CONTRIBUIR COM UMA GELADA
             </button>
         </div>
     </div>
@@ -687,6 +686,26 @@
 
 <script>
     const USERS = {"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
+    
+    // MENSAGENS ENGRAÇADAS SOBRE GELADA
+    const mensagensGelada = [
+        "Se esse código te economizou tempo, economiza uma cerveja pro dev! A gente aceita!",
+        "Programador sem café funciona, mas com cerveja ó... fica top! Ajuda aí!",
+        "Manter esse sistema é igual a cerveja: tem que ser constante! Paga uma gelada?",
+        "Se o app te ajudou a calcular os trocados, investe um trocado na gelada do criador!",
+        "Código limpo merece cerveja gelada! E a chave tá aí em cima!",
+        "Ajuda o dev a comprar aquela cerveja artesanal de 15 reau! Kkkk",
+        "Final de semana tá chegando e a gelada não compra sozinha! 🍻",
+        "Se você ficou rico usando esse app, paga uma breja pro pobre do programador!",
+        "Garantia de que o código continua funcionando: CERVEJA PRO DEV!",
+        "Paga uma gelada que eu garanto que o sistema nunca trava no sábado!",
+        "Se esse app fosse pago você pagava, então manda um pix da cerveja!",
+        "Dev trabalha melhor com cerveja gelada. Ciência provou (eu acho)!",
+        "Ajuda a manter o servidor... e o fígado do programador! 🍺",
+        "Cerveja não é gasto, é investimento no código! Bora?",
+        "Se você tá ganhando grana, paga uma gelada quem te ajudou!"
+    ];
+    
     let logado = "", userKey = "", todosDados = [], dadosFiltrados = [];
     let dataAtual = new Date();
     let dataSelecionada = new Date();
@@ -715,6 +734,9 @@
     }
     
     function mostrarPix() {
+        // Selecionar mensagem aleatória
+        const msgAleatoria = mensagensGelada[Math.floor(Math.random() * mensagensGelada.length)];
+        $('mensagemGelada').textContent = msgAleatoria;
         $('modalPix').style.display = 'flex';
     }
     
@@ -725,7 +747,7 @@
     function copiarChavePix() {
         const chave = '92994821868';
         navigator.clipboard.writeText(chave).then(() => {
-            toast('Chave PIX copiada! Muito obrigado 💚');
+            toast('Chave copiada! Só colar no app do banco! 🍺');
         }).catch(() => {
             const temp = document.createElement('input');
             temp.value = chave;
@@ -733,7 +755,7 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            toast('Chave PIX copiada! Obrigado 💚');
+            toast('Chave copiada! Valeu pela gelada!');
         });
     }
 
@@ -767,12 +789,11 @@
         renderizarCalendario();
         carregarHistorico();
         
-        // VERIFICAR SE DEVE MOSTRAR MODAL DE CONTRIBUIÇÃO (40% de chance)
-        const deveMostrarPix = Math.random() < 0.4;
-        if (deveMostrarPix) {
+        // 35% de chance de mostrar modal de gelada
+        if (Math.random() < 0.35) {
             setTimeout(() => {
                 mostrarPix();
-            }, 1500); // Espera 1.5s após login para mostrar
+            }, 2000);
         }
     }
 
