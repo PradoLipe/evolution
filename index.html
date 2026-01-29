@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V39</title>
+    <title>EVOLUTION - V40</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -72,13 +72,10 @@
             padding: 15px; 
             border-radius: 16px; 
             border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
         }
-        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
         .dash-val { font-size: 1.1rem; font-weight: 800; }
         
-        /* CORES DO DASH */
         .val-bruto-top { color: var(--info); }
         .val-liq-top { color: var(--accent); }
         .val-pend-top { color: var(--danger); }
@@ -93,7 +90,7 @@
             border: 1px solid var(--border);
         }
 
-        h3 { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; }
+        h3 { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
         /* LISTA DE HISTÓRICO */
         .hist-item {
@@ -115,6 +112,7 @@
         button { border-radius: 12px; font-weight: 700; border: none; cursor: pointer; padding: 14px; font-size: 0.8rem; transition: 0.2s; }
         button:active { transform: scale(0.97); }
         .btn-main { background: var(--primary); color: #000; width: 100%; }
+        .btn-whatsapp { background: #25d366; color: #fff; width: 100%; margin-top: 15px; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); width: 100%; }
         
         input, select { 
@@ -123,11 +121,13 @@
         }
         input:focus { border-color: var(--primary); outline: none; }
 
-        .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; }
+        .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; cursor: pointer; }
         .badge-pend { background: rgba(255,56,96,0.15); color: var(--danger); border: 1px solid var(--danger); }
         .badge-ok { background: rgba(72,199,116,0.15); color: var(--success); border: 1px solid var(--success); }
 
         .hidden { display: none !important; }
+        
+        /* MODAL */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 380px; }
 
@@ -162,46 +162,53 @@
 <div class="container" id="login-screen">
     <div style="text-align:center; margin-top: 35vh;">
         <h2 style="font-size: 2.2rem; color: var(--primary); letter-spacing: 4px;">EVOLUTION</h2>
-        <p style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 30px;">SISTEMA DE GESTÃO PORTUÁRIA</p>
         <input type="tel" id="senhaInput" placeholder="Sua Senha" style="text-align:center; -webkit-text-security: disc;" maxlength="6">
-        <button class="btn-main" style="margin-top: 15px;" onclick="login()">ENTRAR NO PAINEL</button>
+        <button class="btn-main" style="margin-top: 15px;" onclick="login()">ENTRAR</button>
     </div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <div class="app-header">
         <div>
-            <span id="saudacao" style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px;">SISTEMA ATIVO</span>
+            <span id="saudacao" style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px;">PAINEL LOGADO</span>
             <h2 id="userName" style="font-size: 1.2rem;">CARREGANDO...</h2>
         </div>
         <div class="config-btn" onclick="abrirConfig()">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item">
-            <span class="dash-label">Total Bruto</span>
-            <span class="dash-val val-bruto-top" id="dashTotalBruto">R$ 0</span>
-        </div>
-        <div class="dash-item">
-            <span class="dash-label">Total Líquido</span>
-            <span class="dash-val val-liq-top" id="dashTotalLiquido">R$ 0</span>
-        </div>
-        <div class="dash-item">
-            <span class="dash-label">A Receber</span>
-            <span class="dash-val val-pend-top" id="dashPendente">R$ 0</span>
-        </div>
-        <div class="dash-item">
-            <span class="dash-label">Já Recebido</span>
-            <span class="dash-val val-rec-top" id="dashRecebido">R$ 0</span>
+        <div class="dash-item"><span class="dash-label">Bruto</span><span class="dash-val val-bruto-top" id="dashTotalBruto">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Líquido</span><span class="dash-val val-liq-top" id="dashTotalLiquido">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">A Receber</span><span class="dash-val val-pend-top" id="dashPendente">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Recebido</span><span class="dash-val val-rec-top" id="dashRecebido">R$ 0</span></div>
+    </div>
+
+    <div class="section-card">
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerador de Relatório <span style="font-size:10px">▼</span></h3>
+        <div id="rel-box" class="hidden">
+            <input type="text" id="navioRel" placeholder="Nome do Navio" list="listaNavios">
+            <datalist id="listaNavios"></datalist>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="ternoRelInput" placeholder="Terno">
+                <select id="turnoRel" onchange="ajustarRel()">
+                    <option value="">Turno</option>
+                    <option value="07x15">07x15</option>
+                    <option value="15x23">15x23</option>
+                    <option value="23x07">23x07</option>
+                </select>
+            </div>
+            <div id="camposRel"></div>
+            <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:12px; margin-top:15px; font-family:monospace; font-size:11px; white-space:pre-wrap; border: 1px solid #333;"></div>
+            <button id="btnCopiar" class="btn-main hidden" style="margin-top: 10px; background: var(--info); color:#fff;" onclick="copiar()">COPIAR RELATÓRIO</button>
         </div>
     </div>
 
     <div class="section-card">
         <h3>💰 Novo Lançamento</h3>
         <input type="text" id="navioCalc" placeholder="Nome do Navio" list="listaNavios">
-        <datalist id="listaNavios"></datalist>
         <div style="display:flex; gap:8px;">
-            <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Dom/Feriado</option></select>
+            <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Feriado/Dom</option></select>
             <select id="turnoCalc" onchange="ajustarCalc()">
                 <option value="07x15">07x15</option>
                 <option value="15x23" selected>15x23</option>
@@ -210,15 +217,28 @@
         </div>
         <div id="camposCalc"></div>
         <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-            <span style="font-size: 0.7rem; color: var(--text-dim);">Dividir por:</span>
+            <span style="font-size: 0.7rem; color: var(--text-dim);">Conf:</span>
             <select id="nConf" style="margin-top:0; padding:8px;"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select>
         </div>
-        <button class="btn-main" style="margin-top: 15px;" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
+        <button class="btn-main" style="margin-top: 15px;" onclick="calcularESalvar()">SALVAR SERVIÇO</button>
     </div>
 
-    <div class="section-card" style="padding-bottom: 10px;">
-        <h3>📅 Histórico de Serviços</h3>
+    <div class="section-card">
+        <h3>📅 Histórico</h3>
         <div id="listaHist"></div>
+    </div>
+</div>
+
+<div class="modal" id="modalPix">
+    <div class="modal-content" style="text-align:center;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+        <h4 style="margin-bottom: 10px;">Apoie o Projeto</h4>
+        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Ajude o desenvolvedor a manter o sistema sempre atualizado!</p>
+        <div style="background: var(--input); padding: 15px; border-radius: 12px; margin-bottom: 20px;" onclick="copiarChavePix()">
+            <span style="font-size: 0.6rem; color: var(--text-dim); display:block;">CLIQUE PARA COPIAR</span>
+            <span style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">92994821868</span>
+        </div>
+        <button class="btn-main" onclick="fecharModalPix()">Fechar</button>
     </div>
 </div>
 
@@ -253,9 +273,43 @@
         document.documentElement.setAttribute('data-theme', tema);
     }
 
+    function toggleSection(id) { $(id).classList.toggle('hidden'); }
     function abrirConfig() { $('modalConfig').style.display = 'flex'; }
     function fecharConfig() { $('modalConfig').style.display = 'none'; }
     function mudarTema(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme_' + logado, t); }
+    function mostrarPix() { $('modalPix').style.display = 'flex'; }
+    function fecharModalPix() { $('modalPix').style.display = 'none'; }
+    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); toast("Chave Pix Copiada!"); }
+
+    function ajustarRel() {
+        const t = $('turnoRel').value;
+        $('camposRel').innerHTML = t === "15x23" ? '<input type="number" id="p1" placeholder="Prod 15h-19h"><input type="number" id="p2" placeholder="Prod 20h-23h">' : (t ? '<input type="number" id="pGeral" placeholder="Produção Total">' : '');
+    }
+
+    function gerarRel() {
+        const tur = $('turnoRel').value;
+        if(!tur) return toast("Selecione o turno");
+        const navio = ($('navioRel').value || "NAVIO").toUpperCase();
+        const terno = $('ternoRelInput').value ? $('ternoRelInput').value + "°" : "S/T";
+        const data = new Date().toLocaleDateString('pt-BR');
+        let prodStr = "", total = 0;
+
+        if(tur === "15x23") {
+            const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0;
+            prodStr = `15x19: ${v1}\n20x23: ${v2}`; total = v1+v2;
+        } else {
+            total = parseInt($('pGeral').value)||0;
+            prodStr = `PRODUÇÃO: ${total}`;
+        }
+
+        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${data}\nTerno: ${terno}\nTurno: ${tur}\n\n${prodStr}\nTotal: ${total}\n\nConferente: ${logado}`;
+        $('relatorioArea').textContent = texto;
+        $('relatorioArea').classList.remove('hidden');
+        $('btnCopiar').classList.remove('hidden');
+        salvarNavio(navio);
+    }
+
+    function copiar() { navigator.clipboard.writeText($('relatorioArea').textContent); toast("Texto Copiado!"); }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
