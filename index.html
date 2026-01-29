@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V19.2</title>
+    <title>SISTEMA EVOLUTION - V19.3</title>
     <style>
         :root {
             --primary: #00d1b2;
@@ -73,8 +73,13 @@
     </div>
 
     <div id="relatorio-box">
+        <h3>📝 Gerar Relatório</h3>
         <label>Data:</label>
         <input type="date" id="dataTurno">
+        <label>Navio:</label>
+        <input type="text" id="navioRel" placeholder="NOME DO NAVIO">
+        <label>Terno (Digite apenas o número):</label>
+        <input type="number" id="ternoRelInput" placeholder="Ex: 1">
         <label>Turno Relatório:</label>
         <select id="turnoRel" onchange="ajustarRel()">
             <option value="">Selecione o Turno</option>
@@ -168,9 +173,14 @@
     function gerarRel() {
         const tur = document.getElementById('turnoRel').value;
         if(!tur) return alert("Selecione o turno!");
-        const n = (prompt("Nome do Navio:") || "S/N").toUpperCase();
+        
+        const navio = (document.getElementById('navioRel').value || "S/N").toUpperCase();
+        const ternoNum = document.getElementById('ternoRelInput').value;
+        const ternoFormatado = ternoNum ? `${ternoNum}º TERNO` : "S/T";
+        
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         let p = "", tot = 0;
+        
         if(tur === "15x23") {
             const v1 = parseInt(document.getElementById('p1').value) || 0;
             const v2 = parseInt(document.getElementById('p2').value) || 0;
@@ -179,7 +189,8 @@
             tot = parseInt(document.getElementById('pGeral').value) || 0;
             p = `PRODUÇÃO: ${tot}`;
         }
-        document.getElementById('relatorioArea').innerText = `NAVIO: ${n}\nDATA: ${d}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${ternoFormatado}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
         document.getElementById('relatorioArea').style.display = 'block';
         document.getElementById('btnCopiar').style.display = 'block';
     }
@@ -216,8 +227,7 @@
         let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         hist.push({ id: Date.now(), data, navio, bruto: brutoIndiv, liquido, pago: false });
         localStorage.setItem('hist_' + logado, JSON.stringify(hist));
-        alert("Salvo! Bruto: R$" + brutoIndiv.toFixed(2) + " | Líquido: R$" + liquido.toFixed(2)); 
-        carregarHistorico();
+        alert("Salvo!"); carregarHistorico();
     }
 
     function carregarHistorico() {
