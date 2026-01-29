@@ -1,220 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SISTEMA EVOLUTION - V29 FINAL</title>
-
-<style>
-:root{
- --primary:#00d1b2;--accent:#ffdd57;--danger:#ff3860;
- --bg:#0a0a0a;--card:#1a1a1a;--input:#262626
-}
-*{box-sizing:border-box;-webkit-user-select:none;user-select:none}
-input,select{user-select:text}
-body{
- margin:0;padding:10px;font-family:Segoe UI,sans-serif;
- background:var(--bg);color:#fff;display:flex;justify-content:center
-}
-.container{
- width:100%;max-width:480px;background:var(--card);
- padding:22px;border-radius:20px;border:1px solid #333
-}
-h2{text-align:center;color:var(--primary)}
-label{font-size:10px;color:#aaa;font-weight:bold;margin-top:12px;display:block}
-input,select{
- width:100%;padding:14px;margin-top:5px;
- background:var(--input);border:1px solid #333;
- border-radius:10px;color:#fff;font-size:15px
-}
-button{
- width:100%;padding:15px;margin-top:12px;
- border:none;border-radius:10px;
- font-weight:bold;font-size:12px;text-transform:uppercase
-}
-.btn-main{background:var(--primary);color:#000}
-.btn-calc{background:var(--accent);color:#000}
-.btn-whats{background:#48c774;color:#000}
-.section{display:none;background:#222;padding:18px;border-radius:15px;margin-top:20px}
-table{width:100%;font-size:11px;border-collapse:collapse}
-th{color:var(--primary);border-bottom:1px solid #333;padding:6px}
-td{padding:8px;border-bottom:1px solid #222}
-.badge{font-size:9px;padding:4px;border-radius:5px}
-.pago{color:#48c774;border:1px solid #48c774}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SISTEMA EVOLUTION - V28</title>
+    <style>
+        :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0a0a0a; --card: #1a1a1a; --input: #262626; }
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
+        input, select { user-select: text; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
+        .container { max-width: 480px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 10px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: var(--input); color: white; border-radius: 10px; font-size: 16px; outline: none; }
+        button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: #000; }
+        .btn-whatsapp { background: #48c774; color: #000; }
+        .btn-calc { background: var(--accent); color: #000; }
+        .btn-backup { background: #3273dc; color: #fff; margin-top: 20px; }
+        .section-card { background: #222; padding: 18px; border-radius: 15px; border: 1px solid #333; margin-top: 20px; display: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; font-size: 10px; }
+        td { padding: 12px 5px; border-bottom: 1px solid #222; }
+        .val-bruto-hist { font-size: 9px; color: #888; display: block; }
+        .val-liquido-hist { font-size: 12px; color: var(--accent); font-weight: bold; display: block; }
+        .resumo-financeiro { background: #000; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--accent); }
+        .pix-banner { background: linear-gradient(45deg, #222, #111); border: 1px solid var(--accent); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; border-left: 5px solid var(--accent); }
+        .copyright { text-align: center; font-size: 9px; color: #555; margin-top: 25px; font-weight: bold; }
+        .badge-pago { color: #48c774; border: 1px solid #48c774; padding: 4px 8px; border-radius: 5px; font-size: 9px; }
+    </style>
 </head>
+<body oncontextmenu="return false;">
 
-<body oncontextmenu="return false">
-<div class="container" id="login">
- <h2>SISTEMA EVOLUTION</h2>
- <label>CHAVE DE ACESSO</label>
- <input id="senha" type="tel" style="-webkit-text-security:disc">
- <button class="btn-main" onclick="login()">ACESSAR</button>
- <p id="erro" style="color:var(--danger);font-size:11px;text-align:center"></p>
+<div class="container" id="login-screen">
+    <h2>SISTEMA EVOLUTION</h2>
+    <label>CHAVE DE ACESSO</label>
+    <input type="tel" id="senhaInput" placeholder="••••••" style="-webkit-text-security: disc;">
+    <button class="btn-main" onclick="login()">ACESSAR PAINEL</button>
+    <p id="msgErro" style="color:var(--danger); font-size:11px; text-align:center; margin-top:15px; display:none; font-weight:bold;"></p>
+    <div class="copyright">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
 </div>
 
-<div class="container" id="painel" style="display:none">
- <h2 id="saudacao"></h2>
+<div class="container" id="main-panel" style="display: none;">
+    <h2 id="saudacao">PAINEL</h2>
+    
+    <div class="pix-banner" id="pixBanner">
+        <div style="font-size:11px; margin-bottom:8px;">Ajude a manter as atualizações via PIX:</div>
+        <div style="font-weight:bold; color:var(--accent); font-size:14px;">92994821868</div>
+        <button style="padding:5px; font-size:9px; background:#333; color:#fff; width:auto; margin-top:8px;" onclick="fecharPix()">OCULTAR</button>
+    </div>
 
- <!-- RELATÓRIO WHATSAPP -->
- <h3>📝 Relatório WhatsApp</h3>
- <label>Data</label><input type="date" id="dataRel">
- <label>Navio</label><input id="navioRel">
- <label>Nº do Terno</label><input id="ternoRel" type="number">
- <label>Turno</label>
- <select id="turnoRel" onchange="ajustarRel()">
-  <option value="">Selecione</option>
-  <option value="07x15">07x15</option>
-  <option value="15x23">15x23</option>
-  <option value="23x07">23x07</option>
- </select>
- <div id="camposRel"></div>
- <button class="btn-whats" onclick="gerarRel()">GERAR TEXTO</button>
- <pre id="saidaRel" style="display:none;background:#000;padding:10px;margin-top:10px"></pre>
+    <div id="relatorio-box">
+        <h3>📝 Relatório Diário</h3>
+        <label>Data:</label><input type="date" id="dataTurno">
+        <label>Navio:</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO">
+        <label>Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
+        <label>Turno:</label>
+        <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
+            <option value="">Selecione</option>
+            <option value="07x15">07x15</option>
+            <option value="15x23">15x23</option>
+            <option value="23x07">23x07</option>
+        </select>
+        <div id="camposRel"></div>
+        <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+        <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); font-family:monospace; font-size:12px; white-space:pre-line;"></div>
+        <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR MENSAGEM</button>
+    </div>
 
- <!-- CALCULADORA -->
- <button class="btn-calc" onclick="toggleCalc()">📊 CALCULADORA / HISTÓRICO</button>
+    <button class="btn-calc" onclick="abrirCalc()">📊 CALCULADORA E LANÇAMENTO</button>
+    
+    <div class="section-card" id="calcSection">
+        <h3>💰 Novo Lançamento</h3>
+        <label>Navio:</label><input type="text" id="navioCalc">
+        <label>Tipo:</label><select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
+        <label>Turno:</label><select id="turnoCalc" onchange="salvarTurno('calc', this.value)">
+            <option value="07x15">07x15</option>
+            <option value="15x23">15x23</option>
+            <option value="23x07">23x07</option>
+        </select>
+        <div id="camposCalc"></div>
+        <label>Conferentes:</label><select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
+        <button class="btn-main" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
+    </div>
 
- <div class="section" id="calc">
-  <label>Navio</label><input id="navioCalc">
-  <label>Tipo do Dia</label>
-  <select id="tipoDia">
-   <option value="n">NORMAL</option>
-   <option value="f">FERIADO/DOM</option>
-  </select>
-
-  <label>Turno</label>
-  <select id="turnoCalc" onchange="ajustarCalc()">
-   <option value="07x15">07x15</option>
-   <option value="15x23">15x23</option>
-   <option value="23x07">23x07</option>
-  </select>
-
-  <div id="camposCalc"></div>
-
-  <label>Conferentes</label>
-  <select id="conf">
-   <option>1</option><option>2</option><option selected>3</option>
-  </select>
-
-  <button class="btn-main" onclick="salvar()">SALVAR</button>
- </div>
-
- <!-- HISTÓRICO -->
- <h3>📅 Histórico Financeiro</h3>
- <table>
-  <thead><tr><th>Data</th><th>Navio</th><th>Valores</th><th>Ação</th></tr></thead>
-  <tbody id="hist"></tbody>
- </table>
- <p style="text-align:right;margin-top:10px">
-  TOTAL: <b id="total">R$ 0,00</b>
- </p>
+    <div class="history-section">
+        <h3>📅 Histórico</h3>
+        <div style="overflow-x:auto;">
+            <table id="tabelaHistorico">
+                <thead><tr><th>DATA</th><th>NAVIO</th><th>VALORES</th><th>AÇÃO</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="resumo-financeiro">
+            <div style="display:flex; justify-content:space-between;"><span>TOTAL LÍQUIDO:</span><span id="totalAcumulado" style="color:var(--accent); font-weight:bold;">R$ 0,00</span></div>
+        </div>
+        <button class="btn-backup" onclick="exportarBackup()">📥 BAIXAR BACKUP</button>
+        <div class="copyright" style="margin-top:40px;">SISTEMA EVOLUTION - PROPRIEDADE DE FELIPE PRADO</div>
+    </div>
 </div>
 
 <script>
-const USERS={"002451":"FELIPE PRADO","3373":"RICARDO PRADO"};
-let user="";
+    const USERS = {"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
+    let logado = "", userKey = "";
 
-function $(id){return document.getElementById(id)}
+    function login() {
+        userKey = document.getElementById('senhaInput').value.trim();
+        const msg = document.getElementById('msgErro');
+        if (USERS[userKey]) {
+            const currentDevice = navigator.userAgent + screen.width;
+            const deviceSalvo = localStorage.getItem('dev_id_' + userKey);
+            if (userKey === "002451") { entrar(); }
+            else if (!deviceSalvo) { localStorage.setItem('dev_id_' + userKey, currentDevice); entrar(); }
+            else if (deviceSalvo === currentDevice) { entrar(); }
+            else { msg.innerText = "ACESSO NEGADO: VINCULADO A OUTRO CELULAR."; msg.style.display = "block"; }
+        } else { msg.innerText = "Chave inválida."; msg.style.display = "block"; }
+    }
 
-function login(){
- const k=$('senha').value.trim();
- if(!USERS[k]){ $('erro').innerText="Chave inválida";return }
- const dev=navigator.userAgent+screen.width;
- const d=localStorage.getItem("dev_"+k);
- if(k!=="002451" && d && d!==dev){
-  $('erro').innerText="Acesso bloqueado em outro aparelho";return
- }
- localStorage.setItem("dev_"+k,dev);
- user=USERS[k];
- $('login').style.display="none";
- $('painel').style.display="block";
- $('saudacao').innerText="OLÁ, "+user;
- $('dataRel').value=new Date().toISOString().slice(0,10);
- ajustarCalc();carregar();
-}
+    function entrar() {
+        logado = USERS[userKey];
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-panel').style.display = 'block';
+        document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+        
+        const hoje = new Date();
+        const fAno = hoje.getFullYear();
+        const fMes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const fDia = String(hoje.getDate()).padStart(2, '0');
+        document.getElementById('dataTurno').value = `${fAno}-${fMes}-${fDia}`;
+        
+        const tRel = localStorage.getItem('last_turno_rel_' + logado) || "";
+        const tCalc = localStorage.getItem('last_turno_calc_' + logado) || "15x23";
+        document.getElementById('turnoRel').value = tRel;
+        document.getElementById('turnoCalc').value = tCalc;
+        
+        ajustarRel(); ajustarCalc(); carregarHistorico(); 
+        if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
+    }
 
-function ajustarRel(){
- const t=$('turnoRel').value;
- $('camposRel').innerHTML=
- t==="15x23"
- ?'<label>15x19</label><input id="r1"><label>20x23</label><input id="r2">'
- :'<label>Produção Total</label><input id="rG">'
-}
+    function salvarTurno(tipo, valor) {
+        if(tipo === 'rel') { localStorage.setItem('last_turno_rel_' + logado, valor); ajustarRel(); } 
+        else { localStorage.setItem('last_turno_calc_' + logado, valor); ajustarCalc(); }
+    }
 
-function gerarRel(){
- const t=$('turnoRel').value;if(!t)return;
- let prod=0,txt="";
- if(t==="15x23"){
-  const a=+$('r1').value||0,b=+$('r2').value||0;
-  prod=a+b;txt=`15x19: ${a}\n20x23: ${b}`;
- }else{prod=+$('rG').value||0;txt=`PRODUÇÃO: ${prod}`}
+    function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
+    function abrirCalc() { const s = document.getElementById('calcSection'); s.style.display = (s.style.display === 'block') ? 'none' : 'block'; }
 
- $('saidaRel').style.display="block";
- $('saidaRel').innerText=
-`NAVIO: ${$('navioRel').value.toUpperCase()}
-DATA: ${$('dataRel').value.split('-').reverse().join('/')}
-TERNO: ${$('ternoRel').value}° TERNO
-TURNO: ${t}
-${txt}
-TOTAL: ${prod}
-CONF: ${user}`;
-}
+    function ajustarRel() {
+        const t = document.getElementById('turnoRel').value;
+        const div = document.getElementById('camposRel');
+        div.innerHTML = (t === "15x23") ? '<label>Prod 15x19:</label><input type="number" id="p1"><label>Prod 20x23:</label><input type="number" id="p2">' : (t===""?"":'<label>Produção Total:</label><input type="number" id="pGeral">');
+    }
 
-function ajustarCalc(){
- const t=$('turnoCalc').value;
- $('camposCalc').innerHTML=
- t==="15x23"
- ?'<label>15x19</label><input id="c1"><label>20x23</label><input id="c2">'
- :'<label>Produção Total</label><input id="cG">'
-}
+    function gerarRel() {
+        const tur = document.getElementById('turnoRel').value; if(!tur) return;
+        const navio = (document.getElementById('navioRel').value || "S/N").toUpperCase();
+        
+        // CORREÇÃO DO TERNO: Removida a duplicidade
+        const numTerno = document.getElementById('ternoRelInput').value;
+        const ternoFinal = numTerno ? `${numTerno}° TERNO` : "S/T";
+        
+        const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
+        let p = "", tot = 0;
+        if(tur === "15x23") {
+            const v1 = parseInt(document.getElementById('p1').value) || 0; const v2 = parseInt(document.getElementById('p2').value) || 0;
+            p = `15x19: ${v1}\n20x23: ${v2}`; tot = v1 + v2;
+        } else { tot = parseInt(document.getElementById('pGeral').value) || 0; p = `PRODUÇÃO: ${tot}`; }
+        
+        // Relatório agora monta a linha sem repetir a palavra TERNO
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${ternoFinal}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        document.getElementById('relatorioArea').style.display = 'block'; document.getElementById('btnCopiar').style.display = 'block';
+    }
 
-function salvar(){
- const nav=$('navioCalc').value.toUpperCase();if(!nav)return;
- const t=$('turnoCalc').value,tp=$('tipoDia').value,n=+$('conf').value;
- let bruto=0;
- if(t==="15x23"){
-  const a=+$('c1').value||0,b=+$('c2').value||0;
-  bruto=tp==="f"?(a*8.61+b*10.32):(a*5.73+b*6.88);
- }else{
-  const p=+$('cG').value||0;
-  const tx=t==="07x15"?(tp==="f"?8.61:5.73):6.88;
-  bruto=p*tx;
- }
- const indiv=bruto/n,liq=indiv*0.82;
- const h=getHist();
- h.push({id:Date.now(),data:new Date().toLocaleDateString(),navio:nav,bruto:indiv,liq,pago:false});
- setHist(h);carregar();alert("Salvo");
-}
+    function ajustarCalc() {
+        const t = document.getElementById('turnoCalc').value;
+        document.getElementById('camposCalc').innerHTML = (t === "15x23") ? `<label>Prod 15x19:</label><input type="number" id="t1"><label>Prod 20x23:</label><input type="number" id="t2">` : `<label>Produção Total:</label><input type="number" id="tGeral">`;
+    }
 
-function getHist(){return JSON.parse(localStorage.getItem("hist_"+user))||[]}
-function setHist(h){localStorage.setItem("hist_"+user,JSON.stringify(h))}
+    function calcularESalvar() {
+        const navio = document.getElementById('navioCalc').value.toUpperCase(); if(!navio) return alert("Navio?");
+        const tur = document.getElementById('turnoCalc').value; const tipo = document.getElementById('tipoDia').value;
+        const n = parseInt(document.getElementById('nConf').value);
+        let brutoTotal = 0;
+        if(tur === "15x23") {
+            const v1 = parseInt(document.getElementById('t1').value) || 0; const v2 = parseInt(document.getElementById('t2').value) || 0;
+            brutoTotal = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
+        } else {
+            const prod = parseInt(document.getElementById('tGeral').value) || 0;
+            const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88; brutoTotal = prod * taxa;
+        }
+        const brutoIndiv = brutoTotal / n; const liquido = brutoIndiv * 0.82;
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        hist.push({ id: Date.now(), data: document.getElementById('dataTurno').value.split('-').reverse().join('/'), navio, bruto: brutoIndiv, liquido, pago: false });
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico(); alert("Salvo!");
+    }
 
-function carregar(){
- const h=getHist();let html="",tot=0;
- h.forEach(i=>{
-  tot+=i.liq;
-  html+=`<tr>
-   <td>${i.data}</td>
-   <td>${i.navio}</td>
-   <td>B: ${i.bruto.toFixed(2)}<br>L: ${i.liq.toFixed(2)}</td>
-   <td><span class="badge ${i.pago?'pago':''}" onclick="pagar(${i.id})">${i.pago?'PAGO':'PAGAR'}</span></td>
-  </tr>`
- });
- $('hist').innerHTML=html;
- $('total').innerText="R$ "+tot.toFixed(2);
-}
+    function carregarHistorico() {
+        const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        const corpo = document.querySelector('#tabelaHistorico tbody'); corpo.innerHTML = ""; let totalMes = 0;
+        lista.forEach(item => {
+            totalMes += item.liquido;
+            const btnPagar = item.pago ? `<span class="badge-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button onclick="alternarPago(${item.id})" style="padding:4px; font-size:9px; background:var(--primary); border:none; border-radius:5px;">PAGAR</button>`;
+            corpo.innerHTML += `<tr><td>${item.data.substring(0,5)}</td><td>${item.navio}</td><td><span class="val-bruto-hist">B: ${item.bruto.toFixed(2)}</span><span class="val-liquido-hist">L: ${item.liquido.toFixed(2)}</span></td><td><div style="display:flex; flex-direction:column; gap:3px;">${btnPagar}<button onclick="excluirItem(${item.id})" style="color:var(--danger); background:none; border:none; font-size:9px;">X</button></div></td></tr>`;
+        });
+        document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toFixed(2);
+    }
 
-function pagar(id){
- let h=getHist();
- h=h.map(i=>i.id===id?{...i,pago:!i.pago}:i);
- setHist(h);carregar();
-}
+    function alternarPago(id) {
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado));
+        hist = hist.map(item => item.id === id ? {...item, pago: !item.pago} : item);
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico();
+    }
 
-function toggleCalc(){
- const s=$('calc');
- s.style.display=s.style.display==="block"?"none":"block"
-}
+    function excluirItem(id) { if(confirm("Excluir?")) { let hist = JSON.parse(localStorage.getItem('hist_' + logado)); hist = hist.filter(item => item.id !== id); localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico(); } }
+    function exportarBackup() {
+        const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        let txt = `BACKUP - ${logado}\n\n`;
+        lista.forEach(i => txt += `${i.data} | ${i.navio} | L: ${i.liquido.toFixed(2)} | ${i.pago?'PAGO':'PEND'}\n`);
+        const blob = new Blob([txt], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_${logado}.txt`; a.click();
+    }
+    function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
 </script>
 </body>
 </html>
