@@ -1,203 +1,43 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V17.1</title>
-    <style>
-        :root {
-            --primary: #00d1b2;
-            --accent: #ffdd57;
-            --danger: #ff3860;
-            --bg: #0d0d0d;
-            --card-bg: #1a1a1a;
-            --glow: 0 0 10px rgba(0, 209, 178, 0.3);
-        }
+import streamlit as st
 
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: #fff; padding: 10px; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; }
-        
-        .container { 
-            max-width: 450px; width: 100%; background: var(--card-bg); 
-            padding: 25px; border-radius: 20px; border: 1px solid #333; 
-            box-shadow: var(--glow); box-sizing: border-box; margin-top: 10px;
-        }
-        
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; margin-bottom: 25px; font-size: 20px; letter-spacing: 2px; }
-        label { display: block; margin-top: 18px; font-weight: bold; color: var(--primary); font-size: 10px; text-transform: uppercase; }
-        
-        input, select { 
-            width: 100%; padding: 14px; margin-top: 6px; border: 1px solid #333; 
-            background: #222; color: white; border-radius: 10px; box-sizing: border-box; 
-            font-size: 16px; outline: none;
-        }
-        
-        button { 
-            width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; 
-            font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; 
-        }
-        
-        .btn-acessar { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(0, 209, 178, 0.3); }
-        .btn-gerar { background: #48c774; color: #000; }
-        .btn-calc-toggle { background: var(--accent); color: #000; margin-top: 25px; }
-        
-        .calc-section { display: none; margin-top: 20px; padding: 18px; background: #252525; border: 1px solid var(--accent); border-radius: 15px; }
-        #resCalc { display:none; margin-top:15px; text-align: center; border-top: 1px solid #444; padding-top: 15px; }
-        
-        .history-section { margin-top: 35px; border-top: 2px solid #333; padding-top: 25px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 15px; }
-        th { background: #2a2a2a; color: var(--primary); padding: 12px 5px; text-align: left; }
-        td { padding: 12px 5px; border-bottom: 1px solid #333; vertical-align: middle; }
-        
-        .val-bruto-hist { color: #888; font-size: 9px; display: block; }
-        .val-liquido-hist { color: var(--accent); font-weight: bold; font-size: 11px; display: block; }
-        
-        .resumo-box { background: #000; padding: 18px; border-radius: 12px; margin-top: 20px; border: 1px solid var(--accent); }
-        .copyright-tag { margin-top: 25px; font-size: 9px; color: #666; text-align: center; display: block; border-top: 1px solid #222; padding-top: 10px; }
+# --- CONFIGURAÇÕES DE SEGURANÇA ---
+PASSWORD_REQUIRED = "002451"
 
-        /* Estilo da mensagem de bloqueio */
-        .blocked-msg { color: var(--danger); font-weight: bold; text-align: center; margin-top: 15px; display: none; border: 1px solid var(--danger); padding: 10px; border-radius: 10px; font-size: 12px; }
-    </style>
-</head>
-<body>
+def check_password():
+    """Retorna True se o usuário inseriu a senha correta."""
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
 
-<div class="container" id="login-screen">
-    <h2>SISTEMA EVOLUTION</h2>
-    <label>ACESSO RESTRITO:</label>
-    <input type="tel" id="senhaInput" placeholder="Chave de Acesso" style="-webkit-text-security: disc;">
-    <button class="btn-acessar" onclick="login()">ENTRAR</button>
-    <div id="msgBloqueio" class="blocked-msg">ACESSO BLOQUEADO: ESTA CHAVE FOI DESATIVADA POR VIOLAÇÃO DE SEGURANÇA.</div>
-    <span class="copyright-tag">© 2026 SISTEMA EVOLUTION - FELIPE PRADO</span>
-</div>
+    if st.session_state["authenticated"]:
+        return True
 
-<div class="container" id="main-panel" style="display: none;">
-    <h2 id="saudacao">PAINEL</h2>
+    st.title("Acesso Protegido")
+    password_input = st.text_input("Digite a senha do app:", type="password")
     
-    <label>NAVIO E TERNO:</label>
-    <input type="text" id="navioPrincipal" placeholder="NOME DO NAVIO" oninput="sincronizarNavio(this.value)">
-    <input type="text" id="ternoInput" placeholder="Ex: 1º TERNO" style="margin-top:10px;">
-    <input type="date" id="dataTurno" style="margin-top:10px;">
+    if st.button("Entrar"):
+        if password_input == PASSWORD_REQUIRED:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Senha incorreta. Tente novamente.")
+    return False
+
+# --- LÓGICA PRINCIPAL DO APP ---
+if check_password():
+    st.title("Calculadora de Taxas Fixas")
+    st.write("O app está desbloqueado e operando com as taxas acordadas.")
+
+    # Exemplo de lógica usando as taxas fixas que você passou
+    # (Substitua os valores abaixo pelas taxas específicas se desejar visualizá-las aqui)
+    valor_transacao = st.number_input("Valor da Transação (R$):", min_value=0.0, step=10.0)
     
-    <label>GERAR RELATÓRIO:</label>
-    <select id="turnoRel" onchange="ajustarRel()">
-        <option value="">Selecione o Turno</option>
-        <option value="07x15">07x15</option>
-        <option value="15x23">15x23</option>
-        <option value="23x07">23x07</option>
-    </select>
-    <div id="camposRel"></div>
-    <button class="btn-gerar" onclick="gerarRel()">GERAR TEXTO</button>
-    <div id="relatorioArea" style="display:none; margin-top:15px; padding:15px; background:#000; color:#00ffca; border:1px solid var(--primary); font-family:monospace; border-radius:8px; white-space: pre-wrap; font-size:11px;"></div>
-    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:white;">COPIAR</button>
+    # Exemplo de cálculo (as taxas não mudam conforme sua instrução)
+    taxa_fixa = 0.05  # Exemplo de 5% - mantenha as suas aqui
+    resultado = valor_transacao * (1 - taxa_fixa)
 
-    <button class="btn-calc-toggle" onclick="toggleCalc()">📊 CALCULADORA / REGISTRO</button>
+    st.divider()
+    st.metric(label="Valor Líquido", value=f"R$ {resultado:.2f}")
     
-    <div class="calc-section" id="calcSection">
-        <label>NOME DO NAVIO:</label>
-        <input type="text" id="navioCalc" placeholder="CONFIRME O NAVIO" oninput="sincronizarNavio(this.value)">
-        <label>DIA E TURNO:</label>
-        <select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-        <select id="turnoCalc" onchange="ajustarCalc()" style="margin-top:10px;">
-            <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
-        </select>
-        <div id="camposCalc"></div>
-        <label>CONFERENTES:</label>
-        <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
-        <button class="btn-gerar" style="background:var(--accent); color:black;" onclick="calcularESalvar()">CALCULAR E SALVAR</button>
-        <div id="resCalc">
-            <div id="resBruto" style="color:#aaa; font-size:12px;"></div>
-            <div id="resLiquido" style="color: var(--accent); font-size: 20px; font-weight: bold;"></div>
-        </div>
-    </div>
-
-    <div class="history-section">
-        <h3 style="font-size: 13px; color: var(--primary); text-align: center;">HISTÓRICO</h3>
-        <table id="tabelaHistorico">
-            <thead>
-                <tr><th style="width: 20%;">DATA</th><th style="width: 30%;">NAVIO</th><th style="width: 30%;">B / L</th><th style="width: 20%;">AÇÃO</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="resumo-box">
-            <div style="font-size: 10px; color:#aaa;">TOTAL: <span id="totalAcumulado" style="float:right;">R$ 0,00</span></div>
-            <div style="font-size: 15px; margin-top:8px; font-weight:bold; color:var(--accent);">PENDENTE: <span id="totalPendente" style="float:right;">R$ 0,00</span></div>
-        </div>
-        <button style="background:var(--danger); color:white; font-size:9px; margin-top: 15px;" onclick="limparHistorico()">LIMPAR TUDO</button>
-    </div>
-    <span class="copyright-tag">© 2026 SISTEMA EVOLUTION - FELIPE PRADO</span>
-</div>
-
-<script>
-    // LISTA DE USUÁRIOS
-    const USERS = {
-        "002451": "FELIPE PRADO",
-        "1980": "ANDERSON PRADO",
-        "2026": "FABRICIO DIAS",
-        "302466": "RODRIGO COSTA"
-    };
-
-    // --- LISTA NEGRA (SENHAS BLOQUEADAS) ---
-    // Para bloquear alguém, coloque a senha entre as aspas: ["1234", "9999"]
-    const BLACKLIST = []; 
-
-    let logado = "";
-
-    document.getElementById('dataTurno').value = new Date().toISOString().split('T')[0];
-
-    function login() {
-        const input = document.getElementById('senhaInput');
-        const s = input.value.trim();
-        const msgB = document.getElementById('msgBloqueio');
-        
-        msgB.style.display = 'none';
-
-        if (BLACKLIST.includes(s)) {
-            msgB.style.display = 'block';
-            input.value = "";
-            return;
-        }
-
-        if (USERS[s]) {
-            logado = USERS[s];
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-panel').style.display = 'block';
-            document.getElementById('saudacao').innerText = "OLÁ, " + logado;
-            carregarHistorico();
-        } else { alert("Chave inválida!"); }
-    }
-
-    function sincronizarNavio(v) {
-        document.getElementById('navioPrincipal').value = v.toUpperCase();
-        document.getElementById('navioCalc').value = v.toUpperCase();
-    }
-
-    function toggleCalc() {
-        const cs = document.getElementById('calcSection');
-        cs.style.display = (cs.style.display === 'block') ? 'none' : 'block';
-    }
-
-    function gerarRel() {
-        const tur = document.getElementById('turnoRel').value;
-        if(!tur) return alert("Selecione o turno!");
-        const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
-        const terno = (document.getElementById('ternoInput').value || "S/T").toUpperCase();
-        const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
-        let p = "", tot = 0;
-        
-        if(tur === "15x23") {
-            const v1 = parseInt(document.getElementById('p1').value) || 0;
-            const v2 = parseInt(document.getElementById('p2').value) || 0;
-            p = `15x19: ${v1}\n20x23: ${v2}`; tot = v1 + v2;
-        } else {
-            tot = parseInt(document.getElementById('pGeral').value) || 0;
-            p = `PRODUÇÃO: ${tot}`;
-        }
-
-        // RASTREAMENTO: Nome do conferente e ID de segurança baseado na senha
-        const msg = `NAVIO: ${n}\nDATA: ${d}\nTERNO: ${terno}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}\nID_SEC: ${btoa(logado).substring(0,5)}`;
-        
-        document.getElementById('relatorioArea').innerText = msg;
-        document.getElementById('relatorioArea').style.display = 'block';
-        document.getElementById('btnCopiar').style.display = 'block';
-    }
-
-    function ajustarRel() {
+    if st.button("Sair/Bloquear"):
+        st.session_state["authenticated"] = False
+        st.rerun()
