@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V40</title>
+    <title>EVOLUTION - V41</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -41,7 +41,7 @@
             justify-content: center;
         }
         
-        .container { max-width: 480px; width: 100%; position: relative; }
+        .container { max-width: 480px; width: 100%; position: relative; display: flex; flex-direction: column; }
         
         /* HEADER */
         .app-header {
@@ -60,20 +60,10 @@
             cursor: pointer; font-size: 18px;
         }
 
-        /* DASHBOARD SUPERIOR */
-        .dash-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-bottom: 25px; 
-        }
-        .dash-item { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 16px; 
-            border: 1px solid var(--border);
-        }
-        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
+        /* DASHBOARD */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .dash-item { background: var(--card); padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
+        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; display: block; }
         .dash-val { font-size: 1.1rem; font-weight: 800; }
         
         .val-bruto-top { color: var(--info); }
@@ -82,55 +72,35 @@
         .val-rec-top { color: var(--success); }
 
         /* SEÇÕES */
-        .section-card { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 20px; 
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-        }
-
+        .section-card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
         h3 { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* LISTA DE HISTÓRICO */
-        .hist-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
+        /* LISTA DE HISTÓRICO - SEM LINHA NO BRUTO */
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .hist-info { flex: 1; }
         .hist-name { font-weight: 700; font-size: 0.9rem; display: block; }
         .hist-meta { font-size: 0.7rem; color: var(--text-dim); }
 
         .hist-values { text-align: right; margin-right: 12px; }
         .val-liq { color: var(--accent); font-weight: 800; font-size: 0.95rem; display: block; }
-        .val-bruto { color: var(--text-dim); font-size: 0.7rem; text-decoration: line-through; }
+        .val-bruto { color: var(--info); font-size: 0.75rem; font-weight: 600; display: block; margin-top: 2px; } /* REMOVIDA A LINHA E ADICIONADA COR INFO */
 
-        /* BOTÕES E INPUTS */
+        /* BOTÕES */
         button { border-radius: 12px; font-weight: 700; border: none; cursor: pointer; padding: 14px; font-size: 0.8rem; transition: 0.2s; }
-        button:active { transform: scale(0.97); }
         .btn-main { background: var(--primary); color: #000; width: 100%; }
         .btn-whatsapp { background: #25d366; color: #fff; width: 100%; margin-top: 15px; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); width: 100%; }
         
-        input, select { 
-            width: 100%; padding: 14px; background: var(--input); border: 1px solid transparent; 
-            border-radius: 12px; color: var(--text); font-size: 0.95rem; margin-top: 8px;
-        }
-        input:focus { border-color: var(--primary); outline: none; }
+        input, select { width: 100%; padding: 14px; background: var(--input); border: 1px solid transparent; border-radius: 12px; color: var(--text); font-size: 0.95rem; margin-top: 8px; }
 
         .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; cursor: pointer; }
         .badge-pend { background: rgba(255,56,96,0.15); color: var(--danger); border: 1px solid var(--danger); }
         .badge-ok { background: rgba(72,199,116,0.15); color: var(--success); border: 1px solid var(--success); }
 
+        .footer-rights { text-align: center; color: var(--text-dim); font-size: 10px; padding: 20px 0; margin-top: auto; letter-spacing: 1px; }
+
         .hidden { display: none !important; }
-        
-        /* MODAL */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 380px; }
-
         .toast { position: fixed; bottom: 20px; background: var(--primary); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 700; z-index: 2000; transform: translateY(100px); transition: 0.3s; }
         .toast.show { transform: translateY(0); }
     </style>
@@ -139,39 +109,20 @@
 
 <div class="toast" id="toast"></div>
 
-<div class="modal" id="modalConfig">
-    <div class="modal-content">
-        <h3 style="color:var(--text); font-size: 1.1rem;">Ajustes e Backup</h3>
-        <label>Tema do Aplicativo</label>
-        <select id="themeSelect" onchange="mudarTema(this.value)">
-            <option value="dark">🌙 Modo Escuro</option>
-            <option value="light">☀️ Modo Claro</option>
-        </select>
-        <div style="margin-top: 20px; display: grid; gap: 10px;">
-            <button class="btn-outline" onclick="exportarBackupJSON()">📤 Gerar Arquivo de Backup</button>
-            <button class="btn-outline" onclick="$('importFile').click()">📥 Importar de outro celular</button>
-            <button class="btn-outline" onclick="exportarCSV()">📄 Baixar Excel (CSV)</button>
-            <button class="btn-main" onclick="mostrarPix()" style="background: var(--accent);">☕ Apoiar Desenvolvedor</button>
-            <button class="btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="limparTodos()">🗑️ Resetar Tudo</button>
-        </div>
-        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importarBackupJSON(event)">
-        <button class="btn-main" style="margin-top: 20px;" onclick="fecharConfig()">Voltar</button>
-    </div>
-</div>
-
 <div class="container" id="login-screen">
-    <div style="text-align:center; margin-top: 35vh;">
+    <div style="text-align:center; margin-top: 30vh;">
         <h2 style="font-size: 2.2rem; color: var(--primary); letter-spacing: 4px;">EVOLUTION</h2>
-        <input type="tel" id="senhaInput" placeholder="Sua Senha" style="text-align:center; -webkit-text-security: disc;" maxlength="6">
-        <button class="btn-main" style="margin-top: 15px;" onclick="login()">ENTRAR</button>
+        <input type="tel" id="senhaInput" placeholder="Sua Senha" style="text-align:center; -webkit-text-security: disc; margin-bottom: 15px;" maxlength="6">
+        <button class="btn-main" onclick="login()">ENTRAR</button>
+        <p class="footer-rights" style="margin-top: 30px;">ALL RIGHTS RESERVED TO FELIPE PRADO</p>
     </div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <div class="app-header">
         <div>
-            <span id="saudacao" style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px;">PAINEL LOGADO</span>
-            <h2 id="userName" style="font-size: 1.2rem;">CARREGANDO...</h2>
+            <span style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px;">SISTEMA ATIVO</span>
+            <h2 id="userName" style="font-size: 1.2rem;">...</h2>
         </div>
         <div class="config-btn" onclick="abrirConfig()">⚙️</div>
     </div>
@@ -184,23 +135,18 @@
     </div>
 
     <div class="section-card">
-        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerador de Relatório <span style="font-size:10px">▼</span></h3>
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerador de Relatório <span>▼</span></h3>
         <div id="rel-box" class="hidden">
             <input type="text" id="navioRel" placeholder="Nome do Navio" list="listaNavios">
             <datalist id="listaNavios"></datalist>
             <div style="display:flex; gap:8px;">
                 <input type="number" id="ternoRelInput" placeholder="Terno">
-                <select id="turnoRel" onchange="ajustarRel()">
-                    <option value="">Turno</option>
-                    <option value="07x15">07x15</option>
-                    <option value="15x23">15x23</option>
-                    <option value="23x07">23x07</option>
-                </select>
+                <select id="turnoRel" onchange="ajustarRel()"><option value="">Turno</option><option value="07x15">07x15</option><option value="15x23">15x23</option><option value="23x07">23x07</option></select>
             </div>
             <div id="camposRel"></div>
-            <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+            <button class="btn-whatsapp" onclick="gerarRel()">GERAR RELATÓRIO</button>
             <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:12px; margin-top:15px; font-family:monospace; font-size:11px; white-space:pre-wrap; border: 1px solid #333;"></div>
-            <button id="btnCopiar" class="btn-main hidden" style="margin-top: 10px; background: var(--info); color:#fff;" onclick="copiar()">COPIAR RELATÓRIO</button>
+            <button id="btnCopiar" class="btn-main hidden" style="margin-top: 10px; background: var(--info); color:#fff;" onclick="copiar()">COPIAR</button>
         </div>
     </div>
 
@@ -208,12 +154,8 @@
         <h3>💰 Novo Lançamento</h3>
         <input type="text" id="navioCalc" placeholder="Nome do Navio" list="listaNavios">
         <div style="display:flex; gap:8px;">
-            <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Feriado/Dom</option></select>
-            <select id="turnoCalc" onchange="ajustarCalc()">
-                <option value="07x15">07x15</option>
-                <option value="15x23" selected>15x23</option>
-                <option value="23x07">23x07</option>
-            </select>
+            <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Dom/Feriado</option></select>
+            <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
         </div>
         <div id="camposCalc"></div>
         <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
@@ -227,18 +169,22 @@
         <h3>📅 Histórico</h3>
         <div id="listaHist"></div>
     </div>
+
+    <p class="footer-rights">DESENVOLVIDO POR FELIPE PRADO • ALL RIGHTS RESERVED</p>
 </div>
 
-<div class="modal" id="modalPix">
-    <div class="modal-content" style="text-align:center;">
-        <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
-        <h4 style="margin-bottom: 10px;">Apoie o Projeto</h4>
-        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Ajude o desenvolvedor a manter o sistema sempre atualizado!</p>
-        <div style="background: var(--input); padding: 15px; border-radius: 12px; margin-bottom: 20px;" onclick="copiarChavePix()">
-            <span style="font-size: 0.6rem; color: var(--text-dim); display:block;">CLIQUE PARA COPIAR</span>
-            <span style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">92994821868</span>
+<div class="modal" id="modalConfig">
+    <div class="modal-content">
+        <h3>Configurações</h3>
+        <select id="themeSelect" onchange="mudarTema(this.value)"><option value="dark">🌙 Dark</option><option value="light">☀️ Light</option></select>
+        <div style="margin-top: 20px; display: grid; gap: 10px;">
+            <button class="btn-main" style="background:var(--success); color:#000;" onclick="exportarBackupJSON()">📤 Exportar Backup</button>
+            <button class="btn-main" style="background:var(--info); color:#000;" onclick="$('importFile').click()">📥 Importar Backup</button>
+            <button class="btn-main" onclick="mostrarPix()" style="background: var(--accent); color:#000;">☕ Apoiar Dev</button>
+            <button class="btn-main" style="background: var(--danger); color:#fff;" onclick="limparTodos()">🗑️ Resetar Sistema</button>
         </div>
-        <button class="btn-main" onclick="fecharModalPix()">Fechar</button>
+        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importarBackupJSON(event)">
+        <button class="btn-main" style="margin-top: 20px; background:var(--card); color:var(--text);" onclick="fecharConfig()">Fechar</button>
     </div>
 </div>
 
@@ -260,15 +206,14 @@
             $('login-screen').classList.add('hidden');
             $('main-panel').classList.remove('hidden');
             carregarSistema();
+            // Lógica de 35% de chance para o Pix ao logar
+            if(Math.random() <= 0.35) setTimeout(mostrarPix, 1500);
         } else toast("Chave Inválida");
     }
 
     function carregarSistema() {
         todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        ajustarCalc();
-        renderizarHist();
-        atualizarDash();
-        carregarNavios();
+        ajustarCalc(); renderizarHist(); atualizarDash(); carregarNavios();
         const tema = localStorage.getItem('theme_' + logado) || 'dark';
         document.documentElement.setAttribute('data-theme', tema);
     }
@@ -277,9 +222,7 @@
     function abrirConfig() { $('modalConfig').style.display = 'flex'; }
     function fecharConfig() { $('modalConfig').style.display = 'none'; }
     function mudarTema(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme_' + logado, t); }
-    function mostrarPix() { $('modalPix').style.display = 'flex'; }
-    function fecharModalPix() { $('modalPix').style.display = 'none'; }
-    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); toast("Chave Pix Copiada!"); }
+    function mostrarPix() { fecharConfig(); alert("O café é o combustível do código! Chave Pix: 92994821868"); navigator.clipboard.writeText('92994821868'); toast("Chave Pix Copiada!"); }
 
     function ajustarRel() {
         const t = $('turnoRel').value;
@@ -287,26 +230,18 @@
     }
 
     function gerarRel() {
-        const tur = $('turnoRel').value;
-        if(!tur) return toast("Selecione o turno");
+        const tur = $('turnoRel').value; if(!tur) return toast("Selecione o turno");
         const navio = ($('navioRel').value || "NAVIO").toUpperCase();
         const terno = $('ternoRelInput').value ? $('ternoRelInput').value + "°" : "S/T";
-        const data = new Date().toLocaleDateString('pt-BR');
         let prodStr = "", total = 0;
-
         if(tur === "15x23") {
             const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0;
             prodStr = `15x19: ${v1}\n20x23: ${v2}`; total = v1+v2;
         } else {
-            total = parseInt($('pGeral').value)||0;
-            prodStr = `PRODUÇÃO: ${total}`;
+            total = parseInt($('pGeral').value)||0; prodStr = `PRODUÇÃO: ${total}`;
         }
-
-        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${data}\nTerno: ${terno}\nTurno: ${tur}\n\n${prodStr}\nTotal: ${total}\n\nConferente: ${logado}`;
-        $('relatorioArea').textContent = texto;
-        $('relatorioArea').classList.remove('hidden');
-        $('btnCopiar').classList.remove('hidden');
-        salvarNavio(navio);
+        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nTerno: ${terno}\nTurno: ${tur}\n\n${prodStr}\nTotal: ${total}\n\nConferente: ${logado}`;
+        $('relatorioArea').textContent = texto; $('relatorioArea').classList.remove('hidden'); $('btnCopiar').classList.remove('hidden');
     }
 
     function copiar() { navigator.clipboard.writeText($('relatorioArea').textContent); toast("Texto Copiado!"); }
@@ -318,11 +253,8 @@
 
     function calcularESalvar() {
         const navio = ($('navioCalc').value || "S/N").toUpperCase();
-        const tur = $('turnoCalc').value;
-        const tipo = $('tipoDia').value;
-        const n = parseInt($('nConf').value);
+        const tur = $('turnoCalc').value; const tipo = $('tipoDia').value; const n = parseInt($('nConf').value);
         let brutoTotal = 0;
-
         if(tur === "15x23") {
             const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
             brutoTotal = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
@@ -331,31 +263,15 @@
             const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
             brutoTotal = prod * taxa;
         }
-
-        const brutoInd = brutoTotal / n;
-        const liqInd = brutoInd * 0.82;
-        
-        const registro = {
-            id: Date.now(),
-            data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}),
-            navio,
-            bruto: brutoInd,
-            liquido: liqInd,
-            pago: false
-        };
-
-        todosDados.unshift(registro);
+        const brutoInd = brutoTotal / n; const liqInd = brutoInd * 0.82;
+        todosDados.unshift({ id: Date.now(), data: new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}), navio, bruto: brutoInd, liquido: liqInd, pago: false });
         localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-        renderizarHist();
-        atualizarDash();
-        salvarNavio(navio);
-        toast("Serviço Salvo!");
+        renderizarHist(); atualizarDash(); salvarNavio(navio); toast("Serviço Salvo!");
     }
 
     function renderizarHist() {
         const container = $('listaHist');
-        container.innerHTML = todosDados.length ? '' : '<p style="text-align:center; color:var(--text-dim); padding:20px; font-size:0.8rem;">Nenhum registro</p>';
-        
+        container.innerHTML = todosDados.length ? '' : '<p style="text-align:center; color:var(--text-dim); padding:20px; font-size:0.8rem;">Vazio</p>';
         todosDados.forEach(item => {
             const div = document.createElement('div');
             div.className = 'hist-item';
@@ -366,7 +282,7 @@
                 </div>
                 <div class="hist-values">
                     <span class="val-liq">R$ ${item.liquido.toFixed(2)}</span>
-                    <span class="val-bruto">R$ ${item.bruto.toFixed(2)}</span>
+                    <span class="val-bruto">BRUTO R$ ${item.bruto.toFixed(2)}</span>
                 </div>
                 <button style="background:none; color:var(--danger); font-size:1.1rem; padding:5px;" onclick="excluirItem(${item.id})">×</button>
             `;
@@ -378,50 +294,23 @@
         const idx = todosDados.findIndex(i => i.id === id);
         todosDados[idx].pago = !todosDados[idx].pago;
         localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-        renderizarHist();
-        atualizarDash();
+        renderizarHist(); atualizarDash();
     }
 
     function atualizarDash() {
-        const brutoT = todosDados.reduce((a,b) => a + b.bruto, 0);
-        const liqT = todosDados.reduce((a,b) => a + b.liquido, 0);
-        const pendT = todosDados.filter(i => !i.pago).reduce((a,b) => a + b.liquido, 0);
-        const recT = todosDados.filter(i => i.pago).reduce((a,b) => a + b.liquido, 0);
-
-        $('dashTotalBruto').textContent = "R$ " + brutoT.toFixed(0);
-        $('dashTotalLiquido').textContent = "R$ " + liqT.toFixed(0);
-        $('dashPendente').textContent = "R$ " + pendT.toFixed(0);
-        $('dashRecebido').textContent = "R$ " + recT.toFixed(0);
+        const bT = todosDados.reduce((a,b) => a + b.bruto, 0);
+        const lT = todosDados.reduce((a,b) => a + b.liquido, 0);
+        const pT = todosDados.filter(i => !i.pago).reduce((a,b) => a + b.liquido, 0);
+        const rT = todosDados.filter(i => i.pago).reduce((a,b) => a + b.liquido, 0);
+        $('dashTotalBruto').textContent = "R$ " + bT.toFixed(0);
+        $('dashTotalLiquido').textContent = "R$ " + lT.toFixed(0);
+        $('dashPendente').textContent = "R$ " + pT.toFixed(0);
+        $('dashRecebido').textContent = "R$ " + rT.toFixed(0);
     }
 
-    function excluirItem(id) {
-        if(confirm("Excluir este serviço?")) {
-            todosDados = todosDados.filter(i => i.id !== id);
-            localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            renderizarHist();
-            atualizarDash();
-        }
-    }
-
-    function salvarNavio(n) {
-        let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[];
-        if(!ns.includes(n)){ ns.push(n); localStorage.setItem('navios_'+logado, JSON.stringify(ns)); carregarNavios(); }
-    }
-    function carregarNavios() {
-        const ns = JSON.parse(localStorage.getItem('navios_'+logado))||[];
-        $('listaNavios').innerHTML = ns.map(n => `<option value="${n}">`).join('');
-    }
-
-    function exportarBackupJSON() {
-        const b = new Blob([JSON.stringify({hist: todosDados, navios: JSON.parse(localStorage.getItem('navios_'+logado))})], {type:'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_evolution.json`; a.click();
-    }
-    
-    function exportarCSV() {
-        let csv = 'Data,Navio,Liquido,Status\n';
-        todosDados.forEach(i => csv += `${i.data},${i.navio},${i.liquido.toFixed(2)},${i.pago?'Pago':'Pendente'}\n`);
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = `evolution.csv`; a.click();
-    }
+    function excluirItem(id) { if(confirm("Excluir?")) { todosDados = todosDados.filter(i => i.id !== id); localStorage.setItem('hist_'+logado, JSON.stringify(todosDados)); renderizarHist(); atualizarDash(); } }
+    function salvarNavio(n) { let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; if(!ns.includes(n)){ ns.push(n); localStorage.setItem('navios_'+logado, JSON.stringify(ns)); carregarNavios(); } }
+    function carregarNavios() { let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; $('listaNavios').innerHTML = ns.map(n => `<option value="${n}">`).join(''); }
 </script>
 </body>
 </html>
