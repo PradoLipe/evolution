@@ -347,4 +347,517 @@
     <h2 id="saudacao">PAINEL</h2>
     
     <!-- Dashboard com Bruto e Líquido -->
-   
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-value bruto" id="statBruto">R$ 0</div>
+            <div class="stat-label">Total Bruto</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value liquido" id="statLiquido">R$ 0</div>
+            <div class="stat-label">Total Líquido</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="statPendente">R$ 0</div>
+            <div class="stat-label">Pendente</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="statDias">0</div>
+            <div class="stat-label">Registros</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 1: GERADOR DE RELATÓRIO -->
+    <div class="section-card">
+        <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
+        <div id="relatorio-content" class="section-content active">
+            <label>Data</label>
+            <input type="date" id="dataTurno">
+            
+            <label>Navio</label>
+            <input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
+            <datalist id="listaNavios"></datalist>
+            
+            <label>Terno</label>
+            <input type="number" id="ternoRelInput" placeholder="Ex: 1" min="1" max="9">
+            
+            <label>Turno</label>
+            <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
+                <option value="">Selecione</option>
+                <option value="07x15">07x15</option>
+                <option value="15x23">15x23</option>
+                <option value="23x07">23x07</option>
+            </select>
+            
+            <div id="camposRel"></div>
+            
+            <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+            
+            <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); white-space:pre-line; font-size:12px; font-family: monospace;"></div>
+            
+            <div class="btn-group" id="btnCopiarGroup" style="display:none;">
+                <button class="btn-main" onclick="copiar()" style="margin-top:10px;">COPIAR</button>
+                <button class="btn-secondary" onclick="limparRel()" style="margin-top:10px;">LIMPAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 2: CONTROLE DE PRODUÇÃO -->
+    <div class="section-card">
+        <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
+        <div id="controle-content" class="section-content">
+            <label>Navio</label>
+            <input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
+            
+            <label>Terno</label>
+            <input type="number" id="ternoCalc" placeholder="Ex: 1" min="1" max="9">
+            
+            <label>Tipo de Dia</label>
+            <select id="tipoDia">
+                <option value="n">DIA NORMAL</option>
+                <option value="f">DOMINGO/FERIADO</option>
+            </select>
+            
+            <label>Turno</label>
+            <select id="turnoCalc" onchange="salvarTurno('calc', this.value)">
+                <option value="07x15">07x15</option>
+                <option value="15x23" selected>15x23</option>
+                <option value="23x07">23x07</option>
+            </select>
+            
+            <div id="camposCalc"></div>
+            
+            <label>Conferentes</label>
+            <select id="nConf">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+            </select>
+            
+            <button class="btn-calc" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 3: HISTÓRICO -->
+    <div class="section-card">
+        <h3 class="toggle-section active" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
+        <div id="historico-content" class="section-content active">
+            <div class="backup-info">
+                💾 Os dados são salvos automaticamente no seu dispositivo
+            </div>
+            
+            <div class="filters">
+                <input type="text" id="filtroNavio" placeholder="Filtrar navio..." oninput="filtrarHistorico()">
+                <select id="filtroStatus" onchange="filtrarHistorico()">
+                    <option value="todos">Todos</option>
+                    <option value="pendente">Pendentes</option>
+                    <option value="pago">Pagos</option>
+                </select>
+            </div>
+            
+            <table id="tabelaHistorico">
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>NAVIO</th>
+                        <th>BRUTO</th>
+                        <th>LÍQUIDO</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            
+            <div class="resumo-financeiro">
+                <div style="font-size:11px; color:#888;">TOTAL EXIBIDO</div>
+                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+                    <div>
+                        <div style="font-size: 10px; color: var(--info);">BRUTO</div>
+                        <div style="font-size: 1.2rem; color: var(--info); font-weight: bold;" id="totalBrutoExibido">R$ 0,00</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO</div>
+                        <div class="total-display" id="totalAcumulado" style="margin-top: 0; font-size: 1.2rem;">R$ 0,00</div>
+                    </div>
+                </div>
+                <div style="font-size:10px; color:#555; margin-top:10px;" id="infoFiltro">Todos os registros</div>
+            </div>
+            
+            <div class="btn-group" style="margin-top:15px;">
+                <button class="btn-info" onclick="exportarCSV()">📄 EXPORTAR CSV</button>
+                <button class="btn-secondary" onclick="fazerBackup()">💾 BACKUP</button>
+            </div>
+            <button class="btn-danger" onclick="limparTodos()" style="margin-top: 10px;">🗑️ LIMPAR HISTÓRICO</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const USERS = {"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
+    let logado = "", userKey = "", todosDados = [], dadosFiltrados = [];
+
+    function $(id) { return document.getElementById(id); }
+    
+    function toast(msg) {
+        const t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    
+    function modal(title, body, onConfirm) {
+        $('modalTitle').textContent = title;
+        $('modalBody').textContent = body;
+        $('modal').style.display = 'flex';
+        $('modalConfirm').onclick = () => {
+            onConfirm();
+            fecharModal();
+        };
+    }
+    
+    function fecharModal() {
+        $('modal').style.display = 'none';
+    }
+
+    function login() {
+        const key = $('senhaInput').value.trim();
+        if (USERS[key]) {
+            userKey = key;
+            localStorage.setItem('ultimoAcesso_' + key, new Date().toISOString());
+            entrar();
+        } else {
+            toast('Chave inválida!');
+        }
+    }
+
+    function entrar() {
+        logado = USERS[userKey];
+        $('login-screen').classList.add('hidden');
+        $('main-panel').classList.remove('hidden');
+        $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
+        
+        $('dataTurno').value = new Date().toISOString().split('T')[0];
+        $('turnoRel').value = localStorage.getItem('last_rel_' + logado) || "";
+        $('turnoCalc').value = localStorage.getItem('last_calc_' + logado) || "15x23";
+        
+        carregarNavios();
+        ajustarRel();
+        ajustarCalc();
+        carregarHistorico();
+        
+        // Verificar backup automático
+        verificarBackup();
+    }
+
+    function salvarTurno(tipo, valor) {
+        localStorage.setItem('last_' + tipo + '_' + logado, valor);
+        if(tipo === 'rel') ajustarRel(); 
+        else ajustarCalc();
+    }
+
+    function toggleSection(id) {
+        const content = $(id);
+        const header = content.previousElementSibling;
+        content.classList.toggle('active');
+        header.classList.toggle('active');
+    }
+
+    function ajustarRel() {
+        const t = $('turnoRel').value;
+        const div = $('camposRel');
+        if (t === "15x23") {
+            div.innerHTML = `
+                <label>Produção 15h-19h</label>
+                <input type="number" id="p1" placeholder="0">
+                <label>Produção 20h-23h</label>
+                <input type="number" id="p2" placeholder="0">
+            `;
+        } else if (t) {
+            div.innerHTML = `<label>Produção Total</label><input type="number" id="pGeral" placeholder="0">`;
+        } else {
+            div.innerHTML = '';
+        }
+    }
+
+    function gerarRel() {
+        const tur = $('turnoRel').value;
+        if(!tur) return toast('Selecione o turno');
+        
+        const navio = ($('navioRel').value || "S/N").toUpperCase();
+        const ternoNum = $('ternoRelInput').value;
+        const ternoFormatado = ternoNum ? ternoNum + "°" : "S/T";
+        const data = $('dataTurno').value.split('-').reverse().join('/');
+        
+        let prod = "", total = 0;
+        
+        if(tur === "15x23") {
+            const v1 = parseInt($('p1').value) || 0;
+            const v2 = parseInt($('p2').value) || 0;
+            prod = `15x19: ${v1}\n20x23: ${v2}`;
+            total = v1 + v2;
+        } else {
+            total = parseInt($('pGeral').value) || 0;
+            prod = `PRODUCAO: ${total}`;
+        }
+        
+        // RELATÓRIO SEM EMOJIS, COM TERNO FORMATADO
+        const texto = `RELATORIO DE TURNO\n\n` +
+                     `Navio: ${navio}\n` +
+                     `Data: ${data}\n` +
+                     `Terno: ${ternoFormatado}\n` +
+                     `Turno: ${tur}\n\n` +
+                     `${prod}\n` +
+                     `Total: ${total}\n\n` +
+                     `Conferente: ${logado}`;
+        
+        $('relatorioArea').textContent = texto;
+        $('relatorioArea').style.display = 'block';
+        $('btnCopiarGroup').style.display = 'grid';
+        
+        salvarNavio(navio);
+    }
+
+    function limparRel() {
+        $('relatorioArea').style.display = 'none';
+        $('btnCopiarGroup').style.display = 'none';
+        if($('p1')) { $('p1').value = ''; $('p2').value = ''; }
+        if($('pGeral')) $('pGeral').value = '';
+    }
+
+    function copiar() {
+        navigator.clipboard.writeText($('relatorioArea').textContent).then(() => {
+            toast('Copiado para WhatsApp!');
+        });
+    }
+
+    function ajustarCalc() {
+        const t = $('turnoCalc').value;
+        const div = $('camposCalc');
+        if (t === "15x23") {
+            div.innerHTML = `
+                <label>Produção 15h-19h</label>
+                <input type="number" id="t1" placeholder="0">
+                <label>Produção 20h-23h</label>
+                <input type="number" id="t2" placeholder="0">
+            `;
+        } else {
+            div.innerHTML = `<label>Produção Total</label><input type="number" id="tGeral" placeholder="0">`;
+        }
+    }
+
+    function calcularESalvar() {
+        const navio = ($('navioCalc').value || "S/N").toUpperCase();
+        if(!navio || navio === "S/N") return toast('Digite o navio');
+        
+        const tur = $('turnoCalc').value;
+        const tipo = $('tipoDia').value;
+        const n = parseInt($('nConf').value);
+        const ternoNum = $('ternoCalc').value;
+        
+        let bruto = 0;
+        
+        if(tur === "15x23") {
+            const v1 = parseInt($('t1').value) || 0;
+            const v2 = parseInt($('t2').value) || 0;
+            bruto = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
+        } else {
+            const prod = parseInt($('tGeral').value) || 0;
+            const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
+            bruto = prod * taxa;
+        }
+        
+        const brutoIndiv = bruto / n;
+        const liquido = brutoIndiv * 0.82;
+        const data = $('dataTurno').value;
+        const [ano, mes, dia] = data.split('-');
+        
+        const registro = {
+            id: Date.now(),
+            data: `${dia}/${mes}`,
+            dataCompleta: data,
+            navio,
+            terno: ternoNum || "S/T",
+            turno: tur,
+            tipo: tipo === 'f' ? 'Feriado' : 'Normal',
+            bruto: Math.round(brutoIndiv * 100) / 100,
+            liquido: Math.round(liquido * 100) / 100,
+            pago: false
+        };
+        
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        hist.unshift(registro);
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist));
+        
+        // Limpar campos
+        if($('t1')) { $('t1').value = ''; $('t2').value = ''; }
+        if($('tGeral')) $('tGeral').value = '';
+        $('navioCalc').value = '';
+        $('ternoCalc').value = '';
+        
+        salvarNavio(navio);
+        carregarHistorico();
+        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)} | Líquido: R$ ${registro.liquido.toFixed(2)}`);
+    }
+
+    function salvarNavio(navio) {
+        let navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
+        if (!navios.includes(navio)) {
+            navios.push(navio);
+            localStorage.setItem('navios_' + logado, JSON.stringify(navios));
+            carregarNavios();
+        }
+    }
+
+    function carregarNavios() {
+        const navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
+        $('listaNavios').innerHTML = navios.map(n => `<option value="${n}">`).join('');
+    }
+
+    function carregarHistorico() {
+        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        filtrarHistorico();
+        atualizarStatsGerais();
+    }
+
+    function filtrarHistorico() {
+        const filtroNavio = $('filtroNavio').value.toLowerCase();
+        const filtroStatus = $('filtroStatus').value;
+        
+        dadosFiltrados = todosDados.filter(item => {
+            const matchNavio = item.navio.toLowerCase().includes(filtroNavio);
+            const matchStatus = filtroStatus === 'todos' ? true : 
+                               filtroStatus === 'pago' ? item.pago : !item.pago;
+            return matchNavio && matchStatus;
+        });
+        
+        renderizarTabela(dadosFiltrados);
+        calcularTotais(dadosFiltrados);
+        
+        const info = $('infoFiltro');
+        if(filtroStatus !== 'todos' || filtroNavio) {
+            info.textContent = `Filtro: ${dadosFiltrados.length} registros`;
+        } else {
+            info.textContent = `Total: ${todosDados.length} registros salvos`;
+        }
+    }
+
+    function renderizarTabela(lista) {
+        const tbody = document.querySelector('#tabelaHistorico tbody');
+        tbody.innerHTML = '';
+        
+        if (lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#555;">Nenhum registro encontrado</td></tr>';
+            return;
+        }
+        
+        lista.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.data}<br><small style="color:#666">${item.turno}</small></td>
+                <td>${item.navio}<br><small style="color:#666">T${item.terno || 'S/T'}</small></td>
+                <td style="color: var(--info); font-weight: bold;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
+                <td style="color: var(--accent); font-weight: bold;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
+                <td>
+                    <div class="actions-cell">
+                        <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
+                              onclick="alternarStatus(${item.id})" style="margin-right: 5px;">
+                            ${item.pago ? 'PAGO' : 'PEND'}
+                        </span>
+                        <button class="icon-btn btn-danger" onclick="excluirItem(${item.id})">×</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function calcularTotais(lista) {
+        const totalBruto = lista.reduce((soma, item) => soma + (parseFloat(item.bruto) || 0), 0);
+        const totalLiquido = lista.reduce((soma, item) => soma + (parseFloat(item.liquido) || 0), 0);
+        
+        $('totalBrutoExibido').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        $('totalAcumulado').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+
+    function atualizarStatsGerais() {
+        const totalBruto = todosDados.reduce((a, b) => a + b.bruto, 0);
+        const totalLiquido = todosDados.reduce((a, b) => a + b.liquido, 0);
+        const pendente = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
+        const dias = todosDados.length;
+        
+        $('statBruto').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('statLiquido').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('statPendente').textContent = "R$ " + pendente.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('statDias').textContent = dias;
+    }
+
+    function alternarStatus(id) {
+        const idx = todosDados.findIndex(i => i.id === id);
+        if (idx > -1) {
+            todosDados[idx].pago = !todosDados[idx].pago;
+            localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+            filtrarHistorico();
+            atualizarStatsGerais();
+            toast('Status atualizado!');
+        }
+    }
+
+    function excluirItem(id) {
+        modal('Excluir?', 'Esta ação não pode ser desfeita.', () => {
+            todosDados = todosDados.filter(i => i.id !== id);
+            localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+            filtrarHistorico();
+            atualizarStatsGerais();
+            toast('Excluído!');
+        });
+    }
+
+    function limparTodos() {
+        if(todosDados.length === 0) return toast('Nada para limpar');
+        modal('ATENÇÃO', 'Isso apagará TODO o histórico permanentemente!', () => {
+            localStorage.removeItem('hist_' + logado);
+            carregarHistorico();
+            toast('Histórico limpo!');
+        });
+    }
+
+    function exportarCSV() {
+        if (todosDados.length === 0) return toast('Nada para exportar');
+        
+        let csv = 'Data,Navio,Terno,Turno,Tipo,Bruto,Liquido,Status\n';
+        todosDados.forEach(i => {
+            csv += `${i.data},${i.navio},${i.terno || 'S/T'},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
+        });
+        
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_${logado}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        // Salvar registro de backup
+        localStorage.setItem('ultimoBackup_' + logado, new Date().toISOString());
+        toast('Backup CSV baixado!');
+    }
+
+    function fazerBackup() {
+        exportarCSV();
+    }
+
+    function verificarBackup() {
+        const ultimo = localStorage.getItem('ultimoBackup_' + userKey);
+        if (!ultimo) {
+            setTimeout(() => {
+                toast('💡 Dica: Faça backup regularmente usando o botão EXPORTAR CSV');
+            }, 2000);
+        }
+    }
+
+    // Fechar modal ao clicar fora
+    $('modal').addEventListener('click', (e) => {
+        if (e.target === $('modal')) fecharModal();
+    });
+</script>
+</body>
+</html>
