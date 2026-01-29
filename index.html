@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V35</title>
+    <title>SISTEMA EVOLUTION - V36</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -38,6 +38,7 @@
             border-radius: 24px; 
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            position: relative;
         }
         
         h2 { 
@@ -106,6 +107,12 @@
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 12px; }
         .btn-info { background: var(--info); color: #fff; }
+        .btn-pix { 
+            background: linear-gradient(135deg, #32BCAD, #00d1b2); 
+            color: #000; 
+            font-weight: bold;
+            border: 2px solid var(--accent);
+        }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
@@ -117,7 +124,7 @@
             margin-top: 20px; 
         }
         
-        /* DASHBOARD FINANCEIRO REORGANIZADO */
+        /* DASHBOARD */
         .dashboard-financeiro {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -131,45 +138,27 @@
             border-radius: 12px;
             text-align: center;
             border: 1px solid #333;
-            position: relative;
-            overflow: hidden;
         }
         
         .dash-box.pendente {
-            border-color: var(--danger);
-            background: rgba(255,56,96,0.1);
+            border-color: rgba(255,56,96,0.5);
+            background: rgba(255,56,96,0.05);
         }
         
         .dash-box.recebido {
-            border-color: var(--success);
-            background: rgba(72,199,116,0.1);
+            border-color: rgba(72,199,116,0.5);
+            background: rgba(72,199,116,0.05);
         }
         
-        .dash-label {
-            font-size: 9px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .dash-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        
+        .dash-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .dash-value { font-size: 1.1rem; font-weight: bold; }
         .dash-box.pendente .dash-value { color: var(--danger); }
         .dash-box.recebido .dash-value { color: var(--success); }
         .dash-box.total .dash-value { color: var(--info); }
         .dash-box.liquido-total .dash-value { color: var(--accent); }
+        .dash-sublabel { font-size: 8px; color: #666; margin-top: 3px; }
         
-        .dash-sublabel {
-            font-size: 8px;
-            color: #666;
-            margin-top: 3px;
-        }
-        
-        /* CALENDÁRIO CUSTOMIZADO */
+        /* CALENDÁRIO */
         .calendario-card {
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
@@ -183,14 +172,9 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            padding: 0 5px;
         }
         
-        .calendario-mes {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 14px;
-        }
+        .calendario-mes { font-weight: bold; color: var(--primary); font-size: 14px; }
         
         .calendario-nav {
             background: none;
@@ -210,12 +194,7 @@
             text-align: center;
         }
         
-        .calendario-dia-semana {
-            font-size: 10px;
-            color: #666;
-            padding: 5px;
-            font-weight: bold;
-        }
+        .calendario-dia-semana { font-size: 10px; color: #666; padding: 5px; font-weight: bold; }
         
         .calendario-dia {
             aspect-ratio: 1;
@@ -230,30 +209,11 @@
             transition: all 0.2s;
         }
         
-        .calendario-dia:hover {
-            background: rgba(0,209,178,0.2);
-            border-color: var(--primary);
-        }
-        
-        .calendario-dia.selecionado {
-            background: var(--primary);
-            color: #000;
-            font-weight: bold;
-        }
-        
-        .calendario-dia.hoje {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        
-        .calendario-dia.outro-mes {
-            color: #444;
-        }
-        
-        .calendario-dia.com-servico {
-            position: relative;
-        }
-        
+        .calendario-dia:hover { background: rgba(0,209,178,0.2); border-color: var(--primary); }
+        .calendario-dia.selecionado { background: var(--primary); color: #000; font-weight: bold; }
+        .calendario-dia.hoje { border-color: var(--accent); color: var(--accent); }
+        .calendario-dia.outro-mes { color: #444; }
+        .calendario-dia.com-servico { position: relative; }
         .calendario-dia.com-servico::after {
             content: '';
             position: absolute;
@@ -264,96 +224,136 @@
             border-radius: 50%;
         }
         
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 11px; 
-            margin-top: 10px; 
+        /* FOOTER DIREITOS */
+        .footer-direitos {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
         }
         
-        th { 
-            color: var(--primary); 
-            padding: 10px 5px; 
-            text-align: left; 
-            border-bottom: 2px solid #333;
+        .footer-direitos .marca {
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .footer-direitos .direitos {
             font-size: 9px;
+            color: #555;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        td { 
-            padding: 10px 5px; 
-            border-bottom: 1px solid #222;
-            vertical-align: middle;
+        .footer-direitos .dev {
+            font-size: 10px;
+            color: #666;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid #222;
         }
         
-        .val-bruto { 
-            font-size: 10px; 
-            color: var(--info); 
-            display: block;
-        }
-        
-        .val-liquido { 
-            font-size: 12px; 
-            color: var(--accent); 
-            font-weight: bold; 
-            display: block;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 9px;
+        .footer-direitos .pix-chave {
+            color: var(--accent);
             font-weight: bold;
             cursor: pointer;
+            user-select: text;
         }
         
-        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
-        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
+        /* MODAL PIX */
+        .modal-pix {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f13);
+            border: 2px solid var(--accent);
+        }
         
-        .resumo-financeiro { 
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), #1a1a1a);
-            padding: 20px; 
-            border-radius: 16px; 
-            margin-top: 20px; 
-            border: 1px solid rgba(255,215,0,0.3);
+        .pix-icone {
+            font-size: 40px;
             text-align: center;
-        }
-        
-        .total-display {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--accent);
-            margin-top: 8px;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 8px;
             margin-bottom: 15px;
         }
         
-        .filters input, .filters select {
-            flex: 1;
-            margin-top: 0;
-            padding: 10px;
+        .chave-pix-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px dashed var(--primary);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chave-pix-box:hover {
+            background: rgba(0,209,178,0.1);
+            border-color: var(--accent);
+        }
+        
+        .chave-pix-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .chave-pix-valor {
+            font-size: 18px;
+            color: var(--accent);
+            font-weight: bold;
+            letter-spacing: 2px;
+            user-select: text;
+        }
+        
+        .nome-pix {
             font-size: 12px;
+            color: var(--primary);
+            margin-top: 5px;
         }
         
-        .actions-cell { display: flex; gap: 5px; align-items: center; }
+        .mensagem-apoio {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+            text-align: center;
+            margin: 15px 0;
+            font-style: italic;
+        }
         
-        .icon-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
-            margin: 0;
-            border-radius: 6px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
+        /* MODAL GERAL */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
             justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
         
+        .modal-content {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 350px;
+            border: 1px solid #333;
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-header { color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .modal-body { color: #aaa; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+        
+        /* TOAST */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -367,36 +367,68 @@
             font-size: 13px;
             opacity: 0;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 2000;
         }
         
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        /* UTILS */
+        .hidden { display: none !important; }
+        .toggle-section { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .toggle-section::after { content: '▼'; font-size: 12px; transition: transform 0.3s; }
+        .toggle-section.active::after { transform: rotate(180deg); }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        
+        .data-input-group { display: flex; gap: 10px; align-items: center; }
+        .data-input-group input { flex: 1; }
+        .data-input-group button { width: auto; padding: 14px 20px; margin: 0; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; font-size: 9px; text-transform: uppercase; }
+        td { padding: 10px 5px; border-bottom: 1px solid #222; vertical-align: middle; }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
+        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
+        
+        .actions-cell { display: flex; gap: 5px; align-items: center; }
+        
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            margin: 0;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
             align-items: center;
-            z-index: 1000;
+            justify-content: center;
+            background: var(--danger);
+            color: white;
+            border: none;
+            cursor: pointer;
         }
         
-        .modal-content {
-            background: var(--card);
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 350px;
-            border: 1px solid #333;
+        .resumo-financeiro { 
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), #1a1a1a);
+            padding: 20px; 
+            border-radius: 16px; 
+            margin-top: 20px; 
+            border: 1px solid rgba(255,215,0,0.3);
+            text-align: center;
         }
         
-        .modal-header { color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-        .modal-body { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+        .filters { display: flex; gap: 8px; margin-bottom: 15px; }
+        .filters input, .filters select { flex: 1; margin-top: 0; padding: 10px; font-size: 12px; }
         
         .backup-info {
             background: rgba(0,209,178,0.1);
@@ -405,51 +437,8 @@
             border-radius: 8px;
             font-size: 11px;
             color: var(--primary);
-            margin-top: 10px;
+            margin-bottom: 15px;
             text-align: center;
-        }
-        
-        .hidden { display: none !important; }
-        
-        .toggle-section {
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .toggle-section::after {
-            content: '▼';
-            font-size: 12px;
-            transition: transform 0.3s;
-        }
-        
-        .toggle-section.active::after {
-            transform: rotate(180deg);
-        }
-        
-        .section-content {
-            display: none;
-        }
-        
-        .section-content.active {
-            display: block;
-        }
-        
-        .data-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .data-input-group input {
-            flex: 1;
-        }
-        
-        .data-input-group button {
-            width: auto;
-            padding: 14px 20px;
-            margin: 0;
         }
     </style>
 </head>
@@ -457,6 +446,7 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL GENERICO -->
 <div class="modal" id="modal">
     <div class="modal-content">
         <div class="modal-header" id="modalTitle">Confirmação</div>
@@ -468,52 +458,81 @@
     </div>
 </div>
 
+<!-- MODAL CONTRIBUIÇÃO PIX -->
+<div class="modal" id="modalPix">
+    <div class="modal-content modal-pix">
+        <div class="pix-icone">💚</div>
+        <div style="text-align: center; color: var(--accent); font-weight: bold; font-size: 16px; margin-bottom: 10px;">
+            AJUDE O DESENVOLVEDOR
+        </div>
+        <div class="mensagem-apoio">
+            "Este sistema foi desenvolvido com muito esforço para facilitar seu trabalho. 
+            Se desejar contribuir para manter as atualizações e melhorias:"
+        </div>
+        
+        <div class="chave-pix-box" onclick="copiarChavePix()">
+            <div class="chave-pix-label">Chave PIX (Clique para copiar)</div>
+            <div class="chave-pix-valor" id="chavePixValor">92994821868</div>
+            <div class="nome-pix">FELIPE PRADO</div>
+        </div>
+        
+        <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 15px;">
+            Qualquer valor é bem-vindo! 🙏
+        </div>
+        
+        <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE PIX</button>
+        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Fechar</button>
+    </div>
+</div>
+
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
     <label>CHAVE DE ACESSO</label>
     <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
     <button class="btn-main" onclick="login()">ACESSAR</button>
-    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 20px;">© 2026 FELIPE PRADO - V35</div>
+    
+    <div class="footer-direitos" style="margin-top: 40px;">
+        <div class="marca">EVOLUTION SYSTEM</div>
+        <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS</div>
+        <div class="dev" onclick="mostrarPix()" style="cursor: pointer;">
+            Desenvolvido por <span style="color: var(--primary);">FELIPE PRADO</span><br>
+            <small style="color: #444;">Toque aqui para contribuir via PIX</small>
+        </div>
+    </div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <h2 id="saudacao">PAINEL</h2>
     
-    <!-- DASHBOARD FINANCEIRO REORGANIZADO -->
+    <!-- DASHBOARD -->
     <div class="dashboard-financeiro">
         <div class="dash-box total">
             <div class="dash-label">Total Bruto</div>
             <div class="dash-value" id="dashTotalBruto">R$ 0</div>
-            <div class="dash-sublabel">Todos os serviços</div>
         </div>
         <div class="dash-box liquido-total">
             <div class="dash-label">Total Líquido</div>
             <div class="dash-value" id="dashTotalLiquido">R$ 0</div>
-            <div class="dash-sublabel">Todos os serviços</div>
         </div>
         <div class="dash-box pendente">
             <div class="dash-label">A Receber (Bruto)</div>
             <div class="dash-value" id="dashPendenteBruto">R$ 0</div>
-            <div class="dash-sublabel">Serviços pendentes</div>
         </div>
         <div class="dash-box pendente">
             <div class="dash-label">A Receber (Líq)</div>
             <div class="dash-value" id="dashPendenteLiquido">R$ 0</div>
-            <div class="dash-sublabel">Serviços pendentes</div>
         </div>
         <div class="dash-box recebido">
             <div class="dash-label">Recebido (Bruto)</div>
             <div class="dash-value" id="dashRecebidoBruto">R$ 0</div>
-            <div class="dash-sublabel">Pagos confirmados</div>
         </div>
         <div class="dash-box recebido">
             <div class="dash-label">Recebido (Líq)</div>
             <div class="dash-value" id="dashRecebidoLiquido">R$ 0</div>
-            <div class="dash-sublabel">Pagos confirmados</div>
         </div>
     </div>
 
-    <!-- CALENDÁRIO INTERATIVO -->
+    <!-- CALENDÁRIO -->
     <div class="section-card">
         <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">SELECIONAR DATA</h3>
         <div id="calendario-content" class="section-content active">
@@ -523,9 +542,7 @@
                     <div class="calendario-mes" id="calendarioMes">Janeiro 2026</div>
                     <button class="calendario-nav" onclick="mudarMes(1)">▶</button>
                 </div>
-                <div class="calendario-grid" id="calendarioGrid">
-                    <!-- Dias gerados via JS -->
-                </div>
+                <div class="calendario-grid" id="calendarioGrid"></div>
             </div>
             <div class="data-input-group">
                 <input type="date" id="dataTurno" onchange="atualizarCalendario()">
@@ -534,7 +551,7 @@
         </div>
     </div>
 
-    <!-- SEÇÃO 1: GERADOR DE RELATÓRIO -->
+    <!-- GERADOR DE RELATÓRIO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
         <div id="relatorio-content" class="section-content">
@@ -566,7 +583,7 @@
         </div>
     </div>
 
-    <!-- SEÇÃO 2: CONTROLE DE PRODUÇÃO (SEM TERNO) -->
+    <!-- CONTROLE DE PRODUÇÃO (SEM TERNO) -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
         <div id="controle-content" class="section-content">
@@ -601,12 +618,12 @@
         </div>
     </div>
 
-    <!-- SEÇÃO 3: HISTÓRICO -->
+    <!-- HISTÓRICO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
         <div id="historico-content" class="section-content">
             <div class="backup-info">
-                💾 Dados salvos automaticamente | Total: <span id="totalRegistros">0</span> serviços
+                💾 Total de serviços cadastrados: <span id="totalRegistros">0</span>
             </div>
             
             <div class="filters">
@@ -624,22 +641,22 @@
                         <th>DATA</th>
                         <th>NAVIO</th>
                         <th>BRUTO</th>
-                        <th>LÍQUIDO</th>
-                        <th>STATUS</th>
+                        <th>LÍQ</th>
+                        <th style="width:60px">STATUS</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
             
             <div class="resumo-financeiro">
-                <div style="font-size:11px; color:#888; margin-bottom: 10px;">RESUMO DOS FILTRADOS</div>
+                <div style="font-size:11px; color:#888; margin-bottom: 10px;">TOTAL FILTRADO</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <div style="font-size: 10px; color: var(--info);">BRUTO FILTRADO</div>
+                        <div style="font-size: 10px; color: var(--info);">BRUTO</div>
                         <div style="font-size: 1.1rem; color: var(--info); font-weight: bold;" id="totalBrutoFiltrado">R$ 0,00</div>
                     </div>
                     <div>
-                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO FILTRADO</div>
+                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO</div>
                         <div style="font-size: 1.1rem; color: var(--accent); font-weight: bold;" id="totalLiquidoFiltrado">R$ 0,00</div>
                     </div>
                 </div>
@@ -647,9 +664,23 @@
             
             <div class="btn-group" style="margin-top:15px;">
                 <button class="btn-info" onclick="exportarCSV()">📄 EXPORTAR CSV</button>
-                <button class="btn-secondary" onclick="fazerBackup()">💾 BACKUP</button>
+                <button class="btn-secondary" onclick="mostrarPix()">💚 APOIAR DEV</button>
             </div>
             <button class="btn-danger" onclick="limparTodos()" style="margin-top: 10px;">🗑️ LIMPAR HISTÓRICO</button>
+        </div>
+    </div>
+    
+    <!-- FOOTER COM DIREITOS -->
+    <div class="footer-direitos">
+        <div class="marca">SISTEMA EVOLUTION V36</div>
+        <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
+        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid #222;">
+            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Desenvolvido com 💚 por</div>
+            <div style="font-size: 14px; color: var(--primary); font-weight: bold; letter-spacing: 1px;">FELIPE PRADO</div>
+            <div style="font-size: 9px; color: #444; margin-top: 3px;">SUA CONTRIBUIÇÃO FAZ A DIFERENÇA</div>
+            <button class="btn-pix" onclick="mostrarPix()" style="margin-top: 10px; padding: 10px; font-size: 11px;">
+                💚 CONTRIBUIR VIA PIX
+            </button>
         </div>
     </div>
 </div>
@@ -682,6 +713,29 @@
     function fecharModal() {
         $('modal').style.display = 'none';
     }
+    
+    function mostrarPix() {
+        $('modalPix').style.display = 'flex';
+    }
+    
+    function fecharModalPix() {
+        $('modalPix').style.display = 'none';
+    }
+    
+    function copiarChavePix() {
+        const chave = '92994821868';
+        navigator.clipboard.writeText(chave).then(() => {
+            toast('Chave PIX copiada! Muito obrigado 💚');
+        }).catch(() => {
+            const temp = document.createElement('input');
+            temp.value = chave;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            toast('Chave PIX copiada! Obrigado 💚');
+        });
+    }
 
     function login() {
         const key = $('senhaInput').value.trim();
@@ -700,7 +754,6 @@
         $('main-panel').classList.remove('hidden');
         $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
         
-        // Inicializar data
         const hoje = new Date();
         $('dataTurno').value = hoje.toISOString().split('T')[0];
         dataSelecionada = hoje;
@@ -713,6 +766,14 @@
         ajustarCalc();
         renderizarCalendario();
         carregarHistorico();
+        
+        // VERIFICAR SE DEVE MOSTRAR MODAL DE CONTRIBUIÇÃO (40% de chance)
+        const deveMostrarPix = Math.random() < 0.4;
+        if (deveMostrarPix) {
+            setTimeout(() => {
+                mostrarPix();
+            }, 1500); // Espera 1.5s após login para mostrar
+        }
     }
 
     function salvarTurno(tipo, valor) {
@@ -739,7 +800,6 @@
         dataSelecionada = new Date();
         $('dataTurno').value = dataSelecionada.toISOString().split('T')[0];
         renderizarCalendario();
-        toast('Data atual selecionada');
     }
 
     function atualizarCalendario() {
@@ -766,7 +826,6 @@
         const grid = $('calendarioGrid');
         grid.innerHTML = '';
         
-        // Cabeçalho dias da semana
         diasSemana.forEach(dia => {
             const div = document.createElement('div');
             div.className = 'calendario-dia-semana';
@@ -778,7 +837,6 @@
         const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
         const hoje = new Date();
         
-        // Dias do mês anterior
         const diaSemanaPrimeiro = primeiroDia.getDay();
         const ultimoDiaMesAnterior = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 0).getDate();
         
@@ -789,7 +847,6 @@
             grid.appendChild(div);
         }
         
-        // Dias do mês atual
         for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
             const div = document.createElement('div');
             div.className = 'calendario-dia';
@@ -798,18 +855,13 @@
             const dataCompleta = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia);
             const dataStr = dataCompleta.toISOString().split('T')[0];
             
-            // Verificar se é hoje
             if (dia === hoje.getDate() && dataAtual.getMonth() === hoje.getMonth() && dataAtual.getFullYear() === hoje.getFullYear()) {
                 div.classList.add('hoje');
             }
             
-            // Verificar se tem serviço neste dia
             const temServico = todosDados.some(d => d.dataCompleta === dataStr);
-            if (temServico) {
-                div.classList.add('com-servico');
-            }
+            if (temServico) div.classList.add('com-servico');
             
-            // Verificar se está selecionado
             if (dataSelecionada.getDate() === dia && 
                 dataSelecionada.getMonth() === dataAtual.getMonth() && 
                 dataSelecionada.getFullYear() === dataAtual.getFullYear()) {
@@ -820,7 +872,6 @@
             grid.appendChild(div);
         }
         
-        // Dias do próximo mês
         const diasRestantes = 42 - (diaSemanaPrimeiro + ultimoDia.getDate());
         for (let i = 1; i <= diasRestantes; i++) {
             const div = document.createElement('div');
@@ -893,7 +944,7 @@
 
     function copiar() {
         navigator.clipboard.writeText($('relatorioArea').textContent).then(() => {
-            toast('Copiado para WhatsApp!');
+            toast('Copiado!');
         });
     }
 
@@ -935,7 +986,6 @@
         const brutoIndiv = bruto / n;
         const liquido = brutoIndiv * 0.82;
         
-        // Pegar data do calendário/input
         const dataInput = $('dataTurno').value;
         const [ano, mes, dia] = dataInput.split('-');
         
@@ -955,16 +1005,14 @@
         hist.unshift(registro);
         localStorage.setItem('hist_' + logado, JSON.stringify(hist));
         
-        // Limpar campos produção
         if($('t1')) { $('t1').value = ''; $('t2').value = ''; }
         if($('tGeral')) $('tGeral').value = '';
         $('navioCalc').value = '';
         
         salvarNavio(navio);
         carregarHistorico();
-        renderizarCalendario(); // Atualizar indicadores
-        
-        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)} | Líq: R$ ${registro.liquido.toFixed(2)}`);
+        renderizarCalendario();
+        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)}`);
     }
 
     function salvarNavio(navio) {
@@ -989,19 +1037,15 @@
     }
 
     function atualizarDashboard() {
-        // Totais Gerais
         const totalBruto = todosDados.reduce((a, b) => a + b.bruto, 0);
         const totalLiquido = todosDados.reduce((a, b) => a + b.liquido, 0);
         
-        // Pendentes (A Receber)
         const pendenteBruto = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.bruto, 0);
         const pendenteLiquido = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
         
-        // Recebidos
         const recebidoBruto = todosDados.filter(i => i.pago).reduce((a, b) => a + b.bruto, 0);
         const recebidoLiquido = todosDados.filter(i => i.pago).reduce((a, b) => a + b.liquido, 0);
         
-        // Atualizar dashboard
         $('dashTotalBruto').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         $('dashTotalLiquido').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         $('dashPendenteBruto').textContent = "R$ " + pendenteBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
@@ -1009,7 +1053,6 @@
         $('dashRecebidoBruto').textContent = "R$ " + recebidoBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         $('dashRecebidoLiquido').textContent = "R$ " + recebidoLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         
-        // Alerta visual se houver pendentes
         const boxPendente = document.querySelectorAll('.dash-box.pendente');
         if (pendenteLiquido > 0) {
             boxPendente.forEach(box => box.style.borderColor = 'var(--danger)');
@@ -1038,7 +1081,7 @@
         tbody.innerHTML = '';
         
         if (lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#555;">Nenhum registro encontrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#555;">Nenhum registro</td></tr>';
             return;
         }
         
@@ -1046,16 +1089,16 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${item.data}<br><small style="color:#666">${item.turno}</small></td>
-                <td>${item.navio}<br><small style="color:#666">${item.tipo}</small></td>
-                <td style="color: var(--info); font-weight: bold; font-size: 11px;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
-                <td style="color: var(--accent); font-weight: bold; font-size: 12px;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
+                <td>${item.navio}</td>
+                <td style="color: var(--info); font-weight: bold; font-size: 10px;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
+                <td style="color: var(--accent); font-weight: bold; font-size: 11px;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
                 <td>
                     <div class="actions-cell">
                         <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
-                              onclick="alternarStatus(${item.id})" style="margin-right: 5px;">
-                            ${item.pago ? 'PAGO' : 'PEND'}
+                              onclick="alternarStatus(${item.id})" style="margin-right: 3px;">
+                            ${item.pago ? 'OK' : 'PEND'}
                         </span>
-                        <button class="icon-btn btn-danger" onclick="excluirItem(${item.id})">×</button>
+                        <button class="icon-btn" onclick="excluirItem(${item.id})">×</button>
                     </div>
                 </td>
             `;
@@ -1077,7 +1120,6 @@
             todosDados[idx].pago = !todosDados[idx].pago;
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
             
-            // Se marcou como pago, mostrar toast com valor
             if (todosDados[idx].pago) {
                 toast(`Recebido: R$ ${todosDados[idx].liquido.toFixed(2)} ✓`);
             } else {
@@ -1085,7 +1127,7 @@
             }
             
             filtrarHistorico();
-            atualizarDashboard(); // Atualiza os totis superiores
+            atualizarDashboard();
         }
     }
 
@@ -1103,12 +1145,12 @@
 
     function limparTodos() {
         if(todosDados.length === 0) return toast('Nada para limpar');
-        modal('ATENÇÃO', 'Isso apagará TODO o histórico permanentemente!', () => {
+        modal('ATENÇÃO', 'Isso apagará TODO o histórico!', () => {
             localStorage.removeItem('hist_' + logado);
             carregarHistorico();
             atualizarDashboard();
             renderizarCalendario();
-            toast('Histórico limpo!');
+            toast('Limpo!');
         });
     }
 
@@ -1120,7 +1162,7 @@
             csv += `${i.data},${i.navio},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
         });
         
-        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const blob = new Blob([csv], {type: 'text/csv'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1132,14 +1174,9 @@
         toast('Backup CSV baixado!');
     }
 
-    function fazerBackup() {
-        exportarCSV();
-    }
-
-    // Fechar modal ao clicar fora
-    $('modal').addEventListener('click', (e) => {
-        if (e.target === $('modal')) fecharModal();
-    });
+    // Fechar modais ao clicar fora
+    $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) fecharModal(); });
+    $('modalPix').addEventListener('click', (e) => { if (e.target === $('modalPix')) fecharModalPix(); });
 </script>
 </body>
 </html>
