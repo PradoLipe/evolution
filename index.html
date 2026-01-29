@@ -62,6 +62,7 @@ td{padding:10px 5px;border-bottom:1px solid #222}
 <label>Tipo</label><select id="tipo"><option value="n">Normal</option><option value="f">Feriado</option></select>
 <label>Turno</label><select id="turnoCalc" onchange="ajustarCalc()"><option>07x15</option><option selected>15x23</option><option>23x07</option></select>
 <div id="camposCalc"></div>
+<label>Quantidade de Containers</label><input id="qtdContainer" type="number" placeholder="Ex: 120">
 <label>Conferentes</label><select id="conf"><option>1</option><option>2</option><option selected>3</option></select>
 <button class="btn-main" onclick="salvar()">Salvar</button>
 </div><h3 class="section-title">📅 Histórico</h3>
@@ -79,12 +80,50 @@ function erro(t){$('erro').innerText=t;$('erro').style.display='block'}
 function fecharPix(){$('pix').style.display='none'}
 function toggleCalc(){$('calc').style.display=$('calc').style.display==='block'?'none':'block'}
 function ajustarRel(){const t=$('turnoRel').value;$('camposRel').innerHTML=t==='15x23'?'<label>15x19</label><input id="r1"><label>20x23</label><input id="r2">':t?'<label>Produção</label><input id="rG">':''}
-function gerarRel(){const t=$('turnoRel').value;if(!t)return;const nav=$('navioRel').value.toUpperCase()||'S/N';const ter=$('terno').value?$('terno').value+'° TERNO':'S/T';const d=$('data').value.split('-').reverse().join('/');let tot=0,txt='';if(t==='15x23'){const a=+$('r1').value||0,b=+$('r2').value||0;tot=a+b;txt=`15x19: ${a}\n20x23: ${b}`;}else{tot=+$('rG').value||0;txt=`PRODUÇÃO: ${tot}`;}$('saidaRel').innerText=`NAVIO: ${nav}\nDATA: ${d}\nTERNO: ${ter}\nTURNO: ${t}\n${txt}\nTOTAL: ${tot}\nCONF: ${user}`;$('saidaRel').style.display='block';$('copiarBtn').style.display='block'}
+function gerarRel(){
+const t=$('turnoRel').value;if(!t)return;
+const nav=$('navioRel').value.toUpperCase()||'S/N';
+const numTerno=$('terno').value;
+const ter=numTerno?numTerno+'° TERNO':'S/T';
+const d=$('data').value.split('-').reverse().join('/');
+let tot=0,txt='';
+if(t==='15x23'){
+ const a=+$('r1').value||0,b=+$('r2').value||0;
+ tot=a+b;txt=`15x19: ${a}
+20x23: ${b}`;
+}else{
+ tot=+$('rG').value||0;txt=`PRODUÇÃO: ${tot}`;
+}
+$('saidaRel').innerText=`NAVIO: ${nav}
+DATA: ${d}
+TERNO: ${ter}
+TURNO: ${t}
+${txt}
+TOTAL: ${tot}
+CONF: ${user}`;
+$('saidaRel').style.display='block';$('copiarBtn').style.display='block';}
+
 function copiar(){navigator.clipboard.writeText($('saidaRel').innerText)}
 function ajustarCalc(){const t=$('turnoCalc').value;$('camposCalc').innerHTML=t==='15x23'?'<label>15x19</label><input id="c1"><label>20x23</label><input id="c2">':'<label>Produção</label><input id="cG">'}
 function getHist(){return JSON.parse(localStorage.getItem('hist_'+user))||[]}
 function setHist(h){localStorage.setItem('hist_'+user,JSON.stringify(h))}
-function salvar(){const nav=$('navioCalc').value.toUpperCase();if(!nav)return alert('Navio?');const t=$('turnoCalc').value,tp=$('tipo').value,n=+$('conf').value;let bruto=0;if(t==='15x23'){const a=+$('c1').value||0,b=+$('c2').value||0;bruto=tp==='f'?(a*8.61+b*10.32):(a*5.73+b*6.88)}else{const p=+$('cG').value||0;const tx=t==='07x15'?(tp==='f'?8.61:5.73):6.88;bruto=p*tx}const liq=(bruto/n)*0.82;const h=getHist();h.push({id:Date.now(),data:$('data').value.split('-').reverse().join('/'),navio:nav,bruto:(bruto/n),liq,pago:false});setHist(h);carregar();alert('Salvo')}
+function salvar(){
+const nav=$('navioCalc').value.toUpperCase();
+if(!nav)return alert('Navio?');
+const t=$('turnoCalc').value,tp=$('tipo').value,n=+$('conf').value;
+const qtd=+$('qtdContainer').value||0;
+let bruto=0;
+if(t==='15x23'){
+ const a=+$('c1').value||0,b=+$('c2').value||0;
+ bruto=tp==='f'?(a*8.61+b*10.32):(a*5.73+b*6.88);
+}else{
+ const tx=t==='07x15'?(tp==='f'?8.61:5.73):6.88;
+ bruto=qtd*tx;
+}
+const liq=(bruto/n)*0.82;
+const h=getHist();
+h.push({id:Date.now(),data:$('data').value.split('-').reverse().join('/'),navio:nav,bruto:(bruto/n),liq,pago:false});
+setHist(h);carregar();alert('Salvo');}
 function carregar(){const h=getHist();let html='',total=0;h.forEach(i=>{total+=i.liq;html+=`<tr><td>${i.data.slice(0,5)}</td><td>${i.navio}</td><td><span class='val-bruto-hist'>B: ${i.bruto.toFixed(2)}</span><span class='val-liquido-hist'>L: ${i.liq.toFixed(2)}</span></td><td>${i.pago?'<span class="badge-pago" onclick="pagar('+i.id+')">PAGO</span>':'<button onclick="pagar('+i.id+')" style="font-size:9px">PAGAR</button>'}</td></tr>`});$('hist').innerHTML=html;$('total').innerText='R$ '+total.toFixed(2)}
 function pagar(id){let h=getHist();h=h.map(i=>i.id===id?{...i,pago:!i.pago}:i);setHist(h);carregar()}
 function backup(){const h=getHist();let t='BACKUP - '+user+'\n\n';h.forEach(i=>t+=`${i.data} | ${i.navio} | ${i.liq.toFixed(2)} | ${i.pago?'PAGO':'PEND'}\n`);const b=new Blob([t]);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Backup_'+user+'.txt';a.click()}
