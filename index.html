@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V21.0</title>
+    <title>SISTEMA EVOLUTION - V22.0</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --bg: #0d0d0d; --card-bg: #1a1a1a; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; margin: 0; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 450px; width: 100%; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #333; box-sizing: border-box; margin-top: 10px; }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; font-size: 18px; }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; font-size: 18px; margin-bottom: 20px; }
         label { display: block; margin-top: 15px; font-weight: bold; color: var(--primary); font-size: 10px; text-transform: uppercase; }
         input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1px solid #333; background: #222; color: white; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
         button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-gerar { background: #48c774; color: #000; }
+        .btn-calc { background: var(--accent); color: #000; }
         .res-area { display:none; margin-top:15px; padding:12px; background:#000; color:#00ffca; border:1px solid var(--primary); font-family:monospace; font-size:11px; white-space: pre-wrap; border-radius:8px; }
+        #resCalc { display:none; text-align:center; margin-top:15px; background:#000; padding:15px; border:1px solid var(--accent); border-radius:10px; }
         .footer { margin-top: 25px; font-size: 9px; color: #666; text-align: center; display: block; }
     </style>
 </head>
@@ -21,9 +23,9 @@
 
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
-    <p style="text-align:center; font-size:10px; color:var(--primary);">ACESSO RESTRITO</p>
+    <p style="text-align:center; font-size:10px; color:var(--primary);">ACESSO RESTRITO V22</p>
     <label>CHAVE DE ACESSO:</label>
-    <input type="tel" id="senhaInput" placeholder="Sua Chave" style="-webkit-text-security: disc;">
+    <input type="tel" id="senhaInput" placeholder="Digite sua senha" style="-webkit-text-security: disc;">
     <button style="background:var(--primary); color:#000;" onclick="login()">ENTRAR</button>
 </div>
 
@@ -40,27 +42,32 @@
         <option value="23x07">23x07</option>
     </select>
 
+    <label>PRODUÇÃO (MOVIMENTAÇÃO):</label>
+    <input type="number" id="prodInput" placeholder="Quantidade total">
+
     <label>DIVISÃO (TERNO):</label>
     <select id="ternoSel">
         <option value="1">SOLO (1)</option>
         <option value="2">DUPLA (2)</option>
         <option value="3" selected>TRIO (3)</option>
     </select>
+
+    <label>TIPO DE DIA:</label>
+    <select id="tipoDia">
+        <option value="n">NORMAL</option>
+        <option value="f">DOMINGO/FERIADO</option>
+    </select>
     
     <button class="btn-gerar" onclick="gerarRel()">GERAR RELATÓRIO WHATSAPP</button>
+    
     <div id="relArea" class="res-area"></div>
-    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPIAR MENSAGEM</button>
+    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPIAR RELATÓRIO</button>
 
-    <div style="border-top: 1px solid #333; margin-top: 25px; padding-top: 10px;">
-        <h2 style="font-size: 14px; color: var(--accent);">📊 CALCULADORA DE TAXAS</h2>
-        <label>PRODUÇÃO TOTAL:</label>
-        <input type="number" id="prodCalc" placeholder="Quantidade">
-        <label>DIA:</label>
-        <select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
-        <button style="background:var(--accent); color:#000;" onclick="calcular()">CALCULAR LÍQUIDO</button>
-        <div id="resCalc" style="display:none; text-align:center; margin-top:15px; background:#000; padding:10px; border:1px solid var(--accent); border-radius:10px;">
-            <div id="resLiquido" style="font-size:18px; color:var(--accent); font-weight:bold;"></div>
-        </div>
+    <button class="btn-calc" style="margin-top: 20px;" onclick="calcular()">CALCULAR MEU LÍQUIDO</button>
+    
+    <div id="resCalc">
+        <div id="resLiquido" style="font-size:20px; color:var(--accent); font-weight:bold;"></div>
+        <div style="font-size: 9px; color: #888; margin-top: 5px;">Cálculo: (Produção × Taxa) ÷ Terno - 18%</div>
     </div>
 
     <span class="footer">© 2026 SISTEMA EVOLUTION - FELIPE PRADO</span>
@@ -77,38 +84,41 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-panel').style.display = 'block';
             document.getElementById('saudacao').innerText = "OLÁ, " + logado;
-        } else { alert("Chave inválida!"); }
+        } else { alert("Senha incorreta!"); }
     }
 
     function gerarRel() {
         const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
         const t = document.getElementById('turnoSel').value;
+        const p = document.getElementById('prodInput').value || "0";
         const d = new Date().toLocaleDateString('pt-BR');
         
-        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nTURNO: ${t}\nCONF: ${logado}\n----------------`;
+        // Relatório limpo para o cliente
+        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nTURNO: ${t}\nPRODUÇÃO: ${p}\nCONFERENTE: ${logado}\n----------------`;
+        
         document.getElementById('relArea').innerText = msg;
         document.getElementById('relArea').style.display = 'block';
         document.getElementById('btnCopiar').style.display = 'block';
     }
 
     function calcular() {
-        const prod = parseFloat(document.getElementById('prodCalc').value) || 0;
+        const prod = parseFloat(document.getElementById('prodInput').value) || 0;
         const tipo = document.getElementById('tipoDia').value;
         const turno = document.getElementById('turnoSel').value;
         const terno = parseInt(document.getElementById('ternoSel').value);
         
-        // Taxas acordadas (Mantidas conforme sua instrução)
+        // Taxas fixas
         let taxa = (turno === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
         let brutoIndiv = (prod * taxa) / terno;
-        let liquido = brutoIndiv * 0.82; // 18% desconto
+        let liquido = brutoIndiv * 0.82; // Desconto de 18%
 
-        document.getElementById('resLiquido').innerText = `LÍQUIDO: R$ ${liquido.toFixed(2)}`;
+        document.getElementById('resLiquido').innerText = `R$ ${liquido.toFixed(2)}`;
         document.getElementById('resCalc').style.display = 'block';
     }
 
     function copiar() {
         navigator.clipboard.writeText(document.getElementById('relArea').innerText);
-        alert("Copiado!");
+        alert("Copiado com sucesso!");
     }
 </script>
 </body>
