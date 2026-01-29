@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V25</title>
+    <title>SISTEMA EVOLUTION - V26</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0a0a0a; --card: #1a1a1a; --input: #262626; }
-        * { -webkit-user-select: none; user-select: none; }
+        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
         input, select { user-select: text; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; display: flex; justify-content: center; margin: 0; }
-        .container { max-width: 480px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+        .container { max-width: 480px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
         label { display: block; margin-top: 15px; font-weight: bold; color: #aaa; font-size: 10px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: var(--input); color: white; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        input, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #333; background: var(--input); color: white; border-radius: 10px; font-size: 16px; outline: none; }
         button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .btn-main { background: var(--primary); color: #000; }
         .btn-whatsapp { background: #48c774; color: #000; }
@@ -51,9 +51,10 @@
     </div>
 
     <div id="relatorio-box">
+        <h3>📝 Relatório Diário</h3>
         <label>Data:</label><input type="date" id="dataTurno">
         <label>Navio:</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO">
-        <label>Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
+        <label>Número do Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
         <label>Turno:</label>
         <select id="turnoRel" onchange="ajustarRel()">
             <option value="">Selecione</option>
@@ -102,29 +103,14 @@
     function login() {
         userKey = document.getElementById('senhaInput').value.trim();
         const msg = document.getElementById('msgErro');
-        
         if (USERS[userKey]) {
             const currentDevice = navigator.userAgent + screen.width;
             const deviceSalvo = localStorage.getItem('dev_id_' + userKey);
-            
-            // Sua senha (Felipe) ignora a trava de dispositivo
-            if (userKey === "002451") {
-                entrar();
-            } else if (!deviceSalvo) {
-                // Primeiro acesso do cliente: vincula
-                localStorage.setItem('dev_id_' + userKey, currentDevice);
-                entrar();
-            } else if (deviceSalvo === currentDevice) {
-                // Já vinculado a este aparelho
-                entrar();
-            } else {
-                msg.innerText = "ERRO: SENHA VINCULADA A OUTRO CELULAR. FALE COM FELIPE.";
-                msg.style.display = "block";
-            }
-        } else {
-            msg.innerText = "Chave inválida.";
-            msg.style.display = "block";
-        }
+            if (userKey === "002451") { entrar(); }
+            else if (!deviceSalvo) { localStorage.setItem('dev_id_' + userKey, currentDevice); entrar(); }
+            else if (deviceSalvo === currentDevice) { entrar(); }
+            else { msg.innerText = "ACESSO NEGADO: VINCULADO A OUTRO CELULAR."; msg.style.display = "block"; }
+        } else { msg.innerText = "Chave inválida."; msg.style.display = "block"; }
     }
 
     function entrar() {
@@ -132,17 +118,9 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-panel').style.display = 'block';
         document.getElementById('saudacao').innerText = "OLÁ, " + logado;
-        
-        // Pega data do celular
         const hoje = new Date();
-        const fAno = hoje.getFullYear();
-        const fMes = String(hoje.getMonth() + 1).padStart(2, '0');
-        const fDia = String(hoje.getDate()).padStart(2, '0');
-        document.getElementById('dataTurno').value = `${fAno}-${fMes}-${fDia}`;
-        
-        ajustarCalc(); 
-        carregarHistorico(); 
-        if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
+        document.getElementById('dataTurno').value = hoje.toISOString().split('T')[0];
+        ajustarCalc(); carregarHistorico(); if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
     }
 
     function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
@@ -157,14 +135,15 @@
     function gerarRel() {
         const tur = document.getElementById('turnoRel').value; if(!tur) return;
         const navio = (document.getElementById('navioRel').value || "S/N").toUpperCase();
-        const terno = document.getElementById('ternoRelInput').value ? document.getElementById('ternoRelInput').value + "º TERNO" : "S/T";
+        const numTerno = document.getElementById('ternoRelInput').value;
+        const ternoFormatado = numTerno ? numTerno + "º TERNO" : "S/T";
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         let p = "", tot = 0;
         if(tur === "15x23") {
             const v1 = parseInt(document.getElementById('p1').value) || 0; const v2 = parseInt(document.getElementById('p2').value) || 0;
             p = `15x19: ${v1}\n20x23: ${v2}`; tot = v1 + v2;
         } else { tot = parseInt(document.getElementById('pGeral').value) || 0; p = `PRODUÇÃO: ${tot}`; }
-        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${terno}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${ternoFormatado}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
         document.getElementById('relatorioArea').style.display = 'block'; document.getElementById('btnCopiar').style.display = 'block';
     }
 
@@ -209,14 +188,12 @@
     }
 
     function excluirItem(id) { if(confirm("Excluir?")) { let hist = JSON.parse(localStorage.getItem('hist_' + logado)); hist = hist.filter(item => item.id !== id); localStorage.setItem('hist_' + logado, JSON.stringify(hist)); carregarHistorico(); } }
-    
     function exportarBackup() {
         const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        let txt = `BACKUP - ${logado}\nProp: Felipe Prado\n\n`;
-        lista.forEach(i => txt += `${i.data} | ${i.navio} | B: ${i.bruto.toFixed(2)} | L: ${i.liquido.toFixed(2)} | ${i.pago?'PAGO':'PEND'}\n`);
+        let txt = `BACKUP - ${logado}\n\n`;
+        lista.forEach(i => txt += `${i.data} | ${i.navio} | L: ${i.liquido.toFixed(2)} | ${i.pago?'PAGO':'PEND'}\n`);
         const blob = new Blob([txt], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_${logado}.txt`; a.click();
     }
-
     function copiar() { navigator.clipboard.writeText(document.getElementById('relatorioArea').innerText); alert("Copiado!"); }
 </script>
 </body>
