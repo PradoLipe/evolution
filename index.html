@@ -125,7 +125,6 @@
             margin-top: 20px; 
         }
         
-        /* DASHBOARD */
         .dashboard-financeiro {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -159,7 +158,6 @@
         .dash-box.liquido-total .dash-value { color: var(--accent); }
         .dash-sublabel { font-size: 8px; color: #666; margin-top: 3px; }
         
-        /* CALENDÁRIO */
         .calendario-card {
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
@@ -225,7 +223,6 @@
             border-radius: 50%;
         }
         
-        /* FOOTER DIREITOS */
         .footer-direitos {
             text-align: center;
             margin-top: 40px;
@@ -258,7 +255,6 @@
             border: 1px solid #222;
         }
         
-        /* MODAL PIX */
         .modal-pix {
             background: linear-gradient(180deg, #1a1a1a, #0f0f13);
             border: 2px solid #FF6B00;
@@ -321,7 +317,6 @@
             border-left: 3px solid #FF6B00;
         }
         
-        /* MODAL GERAL */
         .modal {
             position: fixed;
             top: 0; left: 0;
@@ -352,7 +347,6 @@
         .modal-header { color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 10px; text-align: center; }
         .modal-body { color: #aaa; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
         
-        /* TOAST */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -371,7 +365,6 @@
         
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        /* UTILS */
         .hidden { display: none !important; }
         .toggle-section { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .toggle-section::after { content: '▼'; font-size: 12px; transition: transform 0.3s; }
@@ -445,7 +438,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- MODAL GENERICO -->
 <div class="modal" id="modal">
     <div class="modal-content">
         <div class="modal-header" id="modalTitle">Confirmação</div>
@@ -457,15 +449,14 @@
     </div>
 </div>
 
-<!-- MODAL CONTRIBUIÇÃO - GELADA -->
 <div class="modal" id="modalPix">
     <div class="modal-content modal-pix">
-        <div class="pix-icon">🍺</div>
+        <div class="pix-icon">🚀</div>
         <div style="text-align: center; color: #FF6B00; font-weight: bold; font-size: 16px; margin-bottom: 10px; text-transform: uppercase;">
-            Hora do Rango!
+            Hora de Apoiar!
         </div>
         
-        <div class="mensagem-gelada" id="mensagemGelada">
+        <div class="mensagem-gelada" id="mensagemApoio">
             Carregando mensagem...
         </div>
         
@@ -476,11 +467,11 @@
         </div>
         
         <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 15px;">
-            Aceita uma graninha pra cerveja também! 🍻
+            Sua ajuda mantém o sistema evoluindo! 🤝
         </div>
         
         <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE</button>
-        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Depois eu pago</button>
+        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Agora não</button>
     </div>
 </div>
 
@@ -495,7 +486,7 @@
         <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS</div>
         <div class="dev" onclick="mostrarPix()" style="cursor: pointer;">
             Desenvolvido por <span style="color: var(--primary);">FELIPE PRADO</span><br>
-            <small style="color: #ff6b00;">Toque aqui pra pagar uma gelada pro dev</small>
+            <small style="color: #ff6b00;">Toque aqui para apoiar o desenvolvedor 🚀</small>
         </div>
     </div>
 </div>
@@ -503,7 +494,6 @@
 <div class="container hidden" id="main-panel">
     <h2 id="saudacao">PAINEL</h2>
     
-    <!-- DASHBOARD -->
     <div class="dashboard-financeiro">
         <div class="dash-box total">
             <div class="dash-label">Total Bruto</div>
@@ -531,7 +521,6 @@
         </div>
     </div>
 
-    <!-- CALENDÁRIO -->
     <div class="section-card">
         <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">SELECIONAR DATA</h3>
         <div id="calendario-content" class="section-content active">
@@ -550,7 +539,6 @@
         </div>
     </div>
 
-    <!-- GERADOR DE RELATÓRIO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
         <div id="relatorio-content" class="section-content">
@@ -582,7 +570,6 @@
         </div>
     </div>
 
-    <!-- CONTROLE DE PRODUÇÃO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
         <div id="controle-content" class="section-content">
@@ -617,7 +604,6 @@
         </div>
     </div>
 
-    <!-- HISTÓRICO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
         <div id="historico-content" class="section-content">
@@ -663,13 +649,12 @@
             
             <div class="btn-group" style="margin-top:15px;">
                 <button class="btn-info" onclick="exportarCSV()">📄 EXPORTAR CSV</button>
-                <button class="btn-pix" onclick="mostrarPix()">🍺 PAGAR UMA GELADA</button>
+                <button class="btn-pix" onclick="mostrarPix()">🚀 APOIAR O DEV</button>
             </div>
             <button class="btn-danger" onclick="limparTodos()" style="margin-top: 10px;">🗑️ LIMPAR HISTÓRICO</button>
         </div>
     </div>
     
-    <!-- FOOTER COM DIREITOS -->
     <div class="footer-direitos">
         <div class="marca">SISTEMA EVOLUTION V37</div>
         <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
@@ -678,38 +663,34 @@
             <div style="font-size: 14px; color: #fff; font-weight: bold; letter-spacing: 1px;">FELIPE PRADO</div>
             <div style="font-size: 9px; color: #555; margin-top: 3px;">Sistema protegido por direitos autorais</div>
             <button class="btn-pix" onclick="mostrarPix()" style="margin-top: 10px; padding: 10px; font-size: 11px;">
-                🍺 CONTRIBUIR COM UMA GELADA
+                🚀 APOIAR O DESENVOLVEDOR
             </button>
         </div>
     </div>
 </div>
 
 <script>
-    const USERS = {"002451": "FELIPE PRADO",
-    "7806": "EdilsonRj",
-    "1980": "ANDERSON PRADO",
-    "2026": "FABRICIO DIAS",
-    "302466": "RODRIGO COSTA",
-    "3373": "RICARDO PRADO",
-    "2912": "JOHNY"};
+    const USERS = {
+        "002451": "FELIPE PRADO",
+        "7806": "EdilsonRj",
+        "1980": "ANDERSON PRADO",
+        "2026": "FABRICIO DIAS",
+        "302466": "RODRIGO COSTA",
+        "3373": "RICARDO PRADO",
+        "2912": "JOHNY"
+    };
     
-    // MENSAGENS ENGRAÇADAS SOBRE GELADA
-    const mensagensGelada = [
-        "Se esse código te economizou tempo, economiza uma cerveja pro dev! A gente aceita!",
-        "Programador sem café funciona, mas com cerveja ó... fica top! Ajuda aí!",
-        "Manter esse sistema é igual a cerveja: tem que ser constante! Paga uma gelada?",
-        "Se o app te ajudou a calcular os trocados, investe um trocado na gelada do criador!",
-        "Código limpo merece cerveja gelada! E a chave tá aí em cima!",
-        "Ajuda o dev a comprar aquela cerveja artesanal de 15 reau! Kkkk",
-        "Final de semana tá chegando e a gelada não compra sozinha! 🍻",
-        "Se você ficou rico usando esse app, paga uma breja pro pobre do programador!",
-        "Garantia de que o código continua funcionando: CERVEJA PRO DEV!",
-        "Paga uma gelada que eu garanto que o sistema nunca trava no sábado!",
-        "Se esse app fosse pago você pagava, então manda um pix da cerveja!",
-        "Dev trabalha melhor com cerveja gelada. Ciência provou (eu acho)!",
-        "Ajuda a manter o servidor... e o fígado do programador! 🍺",
-        "Cerveja não é gasto, é investimento no código! Bora?",
-        "Se você tá ganhando grana, paga uma gelada quem te ajudou!"
+    const mensagensApoio = [
+        "O código é grátis, mas a luz que o dev gasta é carinha! Ajuda aí? 💡",
+        "Esse botão de PIX não morde! Que tal um café pro programador? ☕",
+        "Se esse app te ajudou a organizar a vida, ajuda o dev a pagar um boleto! 📄",
+        "Dizem que cada PIX enviado é um bug a menos no sistema. Não custa testar! 🐞",
+        "Contribua com qualquer valor para a 'Fundação Dev Feliz sem Boletos'! 💸",
+        "O app é automático, mas o lanche do criador ainda é manual. Dá uma força? 🍔",
+        "Investir no dev é investir no seu próprio conforto. Manda aquele Pix! 🚀",
+        "Ajude o programador a manter o estoque de café e a sanidade mental! 🧠",
+        "Status do programador: Processando... (Requer contribuição para continuar) ⏳",
+        "Se o sistema te poupou tempo, que tal poupar o dev de passar vontade? 🍕"
     ];
     
     let logado = "", userKey = "", todosDados = [], dadosFiltrados = [];
@@ -740,9 +721,8 @@
     }
     
     function mostrarPix() {
-        // Selecionar mensagem aleatória
-        const msgAleatoria = mensagensGelada[Math.floor(Math.random() * mensagensGelada.length)];
-        $('mensagemGelada').textContent = msgAleatoria;
+        const msgAleatoria = mensagensApoio[Math.floor(Math.random() * mensagensApoio.length)];
+        $('mensagemApoio').textContent = msgAleatoria;
         $('modalPix').style.display = 'flex';
     }
     
@@ -753,7 +733,7 @@
     function copiarChavePix() {
         const chave = '92994821868';
         navigator.clipboard.writeText(chave).then(() => {
-            toast('Chave copiada! Só colar no app do banco! 🍺');
+            toast('Chave copiada! Valeu pelo apoio! 🚀');
         }).catch(() => {
             const temp = document.createElement('input');
             temp.value = chave;
@@ -761,7 +741,7 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            toast('Chave copiada! Valeu pela gelada!');
+            toast('Chave copiada! Obrigado!');
         });
     }
 
@@ -795,7 +775,6 @@
         renderizarCalendario();
         carregarHistorico();
         
-        // 35% de chance de mostrar modal de gelada
         if (Math.random() < 0.35) {
             setTimeout(() => {
                 mostrarPix();
@@ -816,7 +795,6 @@
         header.classList.toggle('active');
     }
 
-    // CALENDÁRIO
     function mudarMes(direcao) {
         dataAtual.setMonth(dataAtual.getMonth() + direcao);
         renderizarCalendario();
@@ -946,7 +924,7 @@
             prod = `PRODUCAO: ${total}`;
         }
         
-        const texto = `RELATORIO DE TURNO\n\n` +
+        const texto = `* Relatório de Produção *\n\n` +
                      `Navio: ${navio}\n` +
                      `Data: ${data}\n` +
                      `Terno: ${ternoFormatado}\n` +
@@ -1079,13 +1057,6 @@
         $('dashPendenteLiquido').textContent = "R$ " + pendenteLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         $('dashRecebidoBruto').textContent = "R$ " + recebidoBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
         $('dashRecebidoLiquido').textContent = "R$ " + recebidoLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        
-        const boxPendente = document.querySelectorAll('.dash-box.pendente');
-        if (pendenteLiquido > 0) {
-            boxPendente.forEach(box => box.style.borderColor = 'var(--danger)');
-        } else {
-            boxPendente.forEach(box => box.style.borderColor = 'rgba(255,56,96,0.3)');
-        }
     }
 
     function filtrarHistorico() {
@@ -1146,13 +1117,7 @@
         if (idx > -1) {
             todosDados[idx].pago = !todosDados[idx].pago;
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            
-            if (todosDados[idx].pago) {
-                toast(`Recebido: R$ ${todosDados[idx].liquido.toFixed(2)} ✓`);
-            } else {
-                toast('Marcado como pendente');
-            }
-            
+            toast(todosDados[idx].pago ? 'Marcado como pago ✓' : 'Marcado como pendente');
             filtrarHistorico();
             atualizarDashboard();
         }
@@ -1162,9 +1127,7 @@
         modal('Excluir?', 'Esta ação não pode ser desfeita.', () => {
             todosDados = todosDados.filter(i => i.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            $('totalRegistros').textContent = todosDados.length;
-            filtrarHistorico();
-            atualizarDashboard();
+            carregarHistorico();
             renderizarCalendario();
             toast('Excluído!');
         });
@@ -1175,7 +1138,6 @@
         modal('ATENÇÃO', 'Isso apagará TODO o histórico!', () => {
             localStorage.removeItem('hist_' + logado);
             carregarHistorico();
-            atualizarDashboard();
             renderizarCalendario();
             toast('Limpo!');
         });
@@ -1183,29 +1145,22 @@
 
     function exportarCSV() {
         if (todosDados.length === 0) return toast('Nada para exportar');
-        
         let csv = 'Data,Navio,Turno,Tipo,Bruto,Liquido,Status\n';
         todosDados.forEach(i => {
             csv += `${i.data},${i.navio},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
         });
-        
         const blob = new Blob([csv], {type: 'text/csv'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `backup_${logado}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `backup_${logado}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-        
-        localStorage.setItem('ultimoBackup_' + logado, new Date().toISOString());
         toast('Backup CSV baixado!');
     }
 
-    // Fechar modais ao clicar fora
     $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) fecharModal(); });
     $('modalPix').addEventListener('click', (e) => { if (e.target === $('modalPix')) fecharModalPix(); });
 </script>
 </body>
 </html>
-
-
