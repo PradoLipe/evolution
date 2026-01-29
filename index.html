@@ -15,6 +15,17 @@
             --bg: #0a0a0f; 
             --card: rgba(26, 26, 30, 0.98);
             --input: #25252a;
+            --text: #ffffff;
+            --border: rgba(255,255,255,0.1);
+        }
+
+        /* Variáveis para Modo Claro */
+        [data-theme="light"] {
+            --bg: #f5f5f7;
+            --card: #ffffff;
+            --input: #f0f0f0;
+            --text: #1a1a1a;
+            --border: rgba(0,0,0,0.1);
         }
         
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; }
@@ -22,12 +33,13 @@
         
         body { 
             font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%); 
-            color: #fff; 
+            background: var(--bg); 
+            color: var(--text); 
             padding: 10px; 
             min-height: 100vh;
             display: flex; 
             justify-content: center; 
+            transition: background 0.3s;
         }
         
         .container { 
@@ -36,69 +48,22 @@
             background: var(--card); 
             padding: 25px; 
             border-radius: 24px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             position: relative;
         }
         
-        h2 { 
-            text-align: center; 
-            color: var(--primary); 
-            text-transform: uppercase; 
-            letter-spacing: 3px;
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-        }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; font-size: 1.4rem; margin-bottom: 20px; }
+        h3 { font-size: 1rem; margin: 25px 0 15px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); }
         
-        h3 { 
-            font-size: 1rem; 
-            margin: 25px 0 15px; 
-            color: #fff; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary);
-        }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
         
-        label { 
-            display: block; 
-            margin-top: 15px; 
-            font-weight: 600;
-            color: #888; 
-            font-size: 10px; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 6px; 
-            border: 2px solid #333; 
-            background: var(--input); 
-            color: white; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            outline: none;
-            transition: all 0.3s;
-        }
-        
+        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 2px solid #333; background: var(--input); color: var(--text); border-radius: 12px; font-size: 16px; outline: none; transition: all 0.3s; }
+        [data-theme="light"] input, [data-theme="light"] select { border-color: #ddd; }
+
         input:focus, select:focus { border-color: var(--primary); }
         
-        button { 
-            width: 100%; 
-            padding: 16px; 
-            margin-top: 15px; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 13px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            transition: transform 0.2s;
-        }
-        
+        button { width: 100%; padding: 16px; margin-top: 15px; border: none; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: transform 0.2s; }
         button:active { transform: scale(0.98); }
         
         .btn-main { background: var(--primary); color: #000; }
@@ -107,331 +72,54 @@
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 12px; }
         .btn-info { background: var(--info); color: #fff; }
-        .btn-pix { 
-            background: linear-gradient(135deg, #FF6B00, #FFB800); 
-            color: #000; 
-            font-weight: bold;
-            border: 2px solid #FFD700;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-        }
+        .btn-pix { background: linear-gradient(135deg, #FF6B00, #FFB800); color: #000; font-weight: bold; border: 2px solid #FFD700; }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .section-card { background: rgba(120,120,130,0.05); padding: 20px; border-radius: 18px; border: 1px solid var(--border); margin-top: 20px; }
         
-        .section-card { 
-            background: rgba(40,40,45,0.6); 
-            padding: 20px; 
-            border-radius: 18px; 
-            border: 1px solid #333;
-            margin-top: 20px; 
-        }
-        
-        .dashboard-financeiro {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .dash-box {
-            background: rgba(0,0,0,0.4);
-            padding: 15px 10px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #333;
-        }
-        
-        .dash-box.pendente {
-            border-color: rgba(255,56,96,0.5);
-            background: rgba(255,56,96,0.05);
-        }
-        
-        .dash-box.recebido {
-            border-color: rgba(72,199,116,0.5);
-            background: rgba(72,199,116,0.05);
-        }
-        
+        /* DASHBOARD */
+        .dashboard-financeiro { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .dash-box { background: rgba(0,0,0,0.2); padding: 15px 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
         .dash-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
         .dash-value { font-size: 1.1rem; font-weight: bold; }
         .dash-box.pendente .dash-value { color: var(--danger); }
         .dash-box.recebido .dash-value { color: var(--success); }
         .dash-box.total .dash-value { color: var(--info); }
         .dash-box.liquido-total .dash-value { color: var(--accent); }
-        .dash-sublabel { font-size: 8px; color: #666; margin-top: 3px; }
         
-        .calendario-card {
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--primary);
-        }
-        
-        .calendario-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
+        /* CALENDÁRIO */
+        .calendario-card { background: rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--primary); }
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; }
         .calendario-mes { font-weight: bold; color: var(--primary); font-size: 14px; }
-        
-        .calendario-nav {
-            background: none;
-            border: none;
-            color: var(--primary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 5px 10px;
-            margin: 0;
-            width: auto;
-        }
-        
-        .calendario-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            text-align: center;
-            margin-top: 10px;
-        }
-        
+        .calendario-nav { background: none; border: none; color: var(--primary); font-size: 18px; cursor: pointer; padding: 5px 10px; width: auto; }
+        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
         .calendario-dia-semana { font-size: 10px; color: #666; padding: 5px; font-weight: bold; }
-        
-        .calendario-dia {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .calendario-dia:hover { background: rgba(0,209,178,0.2); border-color: var(--primary); }
-        .calendario-dia.selecionado { background: var(--primary); color: #000; font-weight: bold; }
+        .calendario-dia { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; cursor: pointer; background: rgba(120,120,130,0.1); border: 1px solid transparent; }
+        .calendario-dia.selecionado { background: var(--primary) !important; color: #000 !important; }
         .calendario-dia.hoje { border-color: var(--accent); color: var(--accent); }
-        .calendario-dia.outro-mes { color: #444; }
-        .calendario-dia.com-servico { position: relative; }
-        .calendario-dia.com-servico::after {
-            content: '';
-            position: absolute;
-            bottom: 3px;
-            width: 4px;
-            height: 4px;
-            background: var(--success);
-            border-radius: 50%;
-        }
+        .calendario-dia.com-servico::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: var(--success); border-radius: 50%; }
         
-        .footer-direitos {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-        }
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; color: var(--text); }
+        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid var(--border); font-size: 9px; text-transform: uppercase; }
+        td { padding: 10px 5px; border-bottom: 1px solid var(--border); }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; cursor: pointer; }
+        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
         
-        .footer-direitos .marca {
-            font-size: 11px;
-            color: var(--primary);
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        
-        .footer-direitos .direitos {
-            font-size: 9px;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .footer-direitos .dev {
-            font-size: 10px;
-            color: #666;
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            border: 1px solid #222;
-        }
-        
-        .modal-pix {
-            background: linear-gradient(180deg, #1a1a1a, #0f0f13);
-            border: 2px solid #FF6B00;
-        }
-        
-        .pix-icon {
-            font-size: 40px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .chave-pix-box {
-            background: rgba(0,0,0,0.5);
-            border: 2px dashed #FF6B00;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 15px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .chave-pix-box:hover {
-            background: rgba(255,107,0,0.1);
-            border-color: #FFB800;
-        }
-        
-        .chave-pix-label {
-            font-size: 10px;
-            color: #888;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        
-        .chave-pix-valor {
-            font-size: 20px;
-            color: #FFB800;
-            font-weight: bold;
-            letter-spacing: 2px;
-            user-select: text;
-        }
-        
-        .nome-pix {
-            font-size: 12px;
-            color: #fff;
-            margin-top: 5px;
-            font-weight: bold;
-        }
-        
-        .mensagem-gelada {
-            font-size: 14px;
-            color: #ccc;
-            line-height: 1.5;
-            text-align: center;
-            margin: 15px 0;
-            font-style: italic;
-            padding: 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border-left: 3px solid #FF6B00;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal-content {
-            background: var(--card);
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 350px;
-            border: 1px solid #333;
-            animation: modalIn 0.3s ease;
-        }
-        
-        @keyframes modalIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .modal-header { color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 10px; text-align: center; }
-        .modal-body { color: #aaa; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1a1a1a;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            border: 1px solid var(--primary);
-            font-size: 13px;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 2000;
-        }
-        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid var(--primary); font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 2000; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        
         .hidden { display: none !important; }
         .toggle-section { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .toggle-section::after { content: '▼'; font-size: 12px; transition: transform 0.3s; }
         .toggle-section.active::after { transform: rotate(180deg); }
         .section-content { display: none; }
         .section-content.active { display: block; }
-        
-        .data-input-group { display: flex; gap: 10px; align-items: center; }
-        .data-input-group input { flex: 1; }
-        .data-input-group button { width: auto; padding: 14px 20px; margin: 0; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; font-size: 9px; text-transform: uppercase; }
-        td { padding: 10px 5px; border-bottom: 1px solid #222; vertical-align: middle; }
-        
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
-        .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
-        
-        .actions-cell { display: flex; gap: 5px; align-items: center; }
-        
-        .icon-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
-            margin: 0;
-            border-radius: 6px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--danger);
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .resumo-financeiro { 
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), #1a1a1a);
-            padding: 20px; 
-            border-radius: 16px; 
-            margin-top: 20px; 
-            border: 1px solid rgba(255,215,0,0.3);
-            text-align: center;
-        }
-        
-        .filters { display: flex; gap: 8px; margin-bottom: 15px; }
-        .filters input, .filters select { flex: 1; margin-top: 0; padding: 10px; font-size: 12px; }
-        
-        .backup-info {
-            background: rgba(0,209,178,0.1);
-            border: 1px solid var(--primary);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            color: var(--primary);
-            margin-bottom: 15px;
-            text-align: center;
-        }
+
+        /* MODAL */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
+        .mensagem-gelada { font-size: 13px; color: var(--text); line-height: 1.5; text-align: center; margin: 15px 0; font-style: italic; padding: 10px; background: rgba(120,120,130,0.1); border-radius: 8px; border-left: 3px solid #FF6B00; }
     </style>
 </head>
 <body>
@@ -440,8 +128,8 @@
 
 <div class="modal" id="modal">
     <div class="modal-content">
-        <div class="modal-header" id="modalTitle">Confirmação</div>
-        <div class="modal-body" id="modalBody">Deseja excluir?</div>
+        <div class="modal-header" id="modalTitle" style="color: var(--primary); font-weight: bold; text-align: center; margin-bottom: 15px;">Confirmação</div>
+        <div class="modal-body" id="modalBody" style="margin-bottom: 20px; text-align: center; font-size: 14px;"></div>
         <div class="btn-group">
             <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
             <button class="btn-danger" id="modalConfirm">Confirmar</button>
@@ -450,28 +138,17 @@
 </div>
 
 <div class="modal" id="modalPix">
-    <div class="modal-content modal-pix">
-        <div class="pix-icon">🚀</div>
-        <div style="text-align: center; color: #FF6B00; font-weight: bold; font-size: 16px; margin-bottom: 10px; text-transform: uppercase;">
-            Hora de Apoiar!
+    <div class="modal-content" style="border: 2px solid #FF6B00;">
+        <div style="font-size: 40px; text-align: center;">🚀</div>
+        <div style="text-align: center; color: #FF6B00; font-weight: bold; margin-bottom: 10px;">HORA DE APOIAR!</div>
+        <div class="mensagem-gelada" id="mensagemApoio"></div>
+        <div style="background: rgba(0,0,0,0.2); border: 2px dashed #FF6B00; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; cursor: pointer;" onclick="copiarChavePix()">
+            <div style="font-size: 9px; color: #888;">CHAVE PIX (TOQUE PARA COPIAR)</div>
+            <div style="font-size: 18px; color: #FFB800; font-weight: bold;">92994821868</div>
+            <div style="font-size: 11px; font-weight: bold;">FELIPE PRADO</div>
         </div>
-        
-        <div class="mensagem-gelada" id="mensagemApoio">
-            Carregando mensagem...
-        </div>
-        
-        <div class="chave-pix-box" onclick="copiarChavePix()">
-            <div class="chave-pix-label">Chave PIX (Clica aí)</div>
-            <div class="chave-pix-valor">92994821868</div>
-            <div class="nome-pix">FELIPE PRADO</div>
-        </div>
-        
-        <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 15px;">
-            Sua ajuda mantém o sistema evoluindo! 🤝
-        </div>
-        
         <button class="btn-pix" onclick="copiarChavePix()">📋 COPIAR CHAVE</button>
-        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">Agora não</button>
+        <button class="btn-secondary" onclick="fecharModalPix()" style="margin-top: 10px;">AGORA NÃO</button>
     </div>
 </div>
 
@@ -480,61 +157,32 @@
     <label>CHAVE DE ACESSO</label>
     <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
     <button class="btn-main" onclick="login()">ACESSAR</button>
-    
-    <div class="footer-direitos" style="margin-top: 40px;">
-        <div class="marca">EVOLUTION SYSTEM</div>
-        <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS</div>
-        <div class="dev" onclick="mostrarPix()" style="cursor: pointer;">
-            Desenvolvido por <span style="color: var(--primary);">FELIPE PRADO</span><br>
-            <small style="color: #ff6b00;">Toque aqui para apoiar o desenvolvedor 🚀</small>
-        </div>
-    </div>
+    <div style="text-align: center; margin-top: 30px; font-size: 10px; opacity: 0.5;">© 2026 FELIPE PRADO - V37</div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <h2 id="saudacao">PAINEL</h2>
     
     <div class="dashboard-financeiro">
-        <div class="dash-box total">
-            <div class="dash-label">Total Bruto</div>
-            <div class="dash-value" id="dashTotalBruto">R$ 0</div>
-        </div>
-        <div class="dash-box liquido-total">
-            <div class="dash-label">Total Líquido</div>
-            <div class="dash-value" id="dashTotalLiquido">R$ 0</div>
-        </div>
-        <div class="dash-box pendente">
-            <div class="dash-label">A Receber (Bruto)</div>
-            <div class="dash-value" id="dashPendenteBruto">R$ 0</div>
-        </div>
-        <div class="dash-box pendente">
-            <div class="dash-label">A Receber (Líq)</div>
-            <div class="dash-value" id="dashPendenteLiquido">R$ 0</div>
-        </div>
-        <div class="dash-box recebido">
-            <div class="dash-label">Recebido (Bruto)</div>
-            <div class="dash-value" id="dashRecebidoBruto">R$ 0</div>
-        </div>
-        <div class="dash-box recebido">
-            <div class="dash-label">Recebido (Líq)</div>
-            <div class="dash-value" id="dashRecebidoLiquido">R$ 0</div>
-        </div>
+        <div class="dash-box total"><div class="dash-label">Total Bruto</div><div class="dash-value" id="dashTotalBruto">R$ 0</div></div>
+        <div class="dash-box liquido-total"><div class="dash-label">Total Líquido</div><div class="dash-value" id="dashTotalLiquido">R$ 0</div></div>
+        <div class="dash-box pendente"><div class="dash-label">A Receber (Líq)</div><div class="dash-value" id="dashPendenteLiquido">R$ 0</div></div>
+        <div class="dash-box recebido"><div class="dash-label">Recebido (Líq)</div><div class="dash-value" id="dashRecebidoLiquido">R$ 0</div></div>
     </div>
 
     <div class="section-card">
-        <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">SELECIONAR DATA</h3>
+        <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">DATA DO SERVIÇO</h3>
         <div id="calendario-content" class="section-content active">
             <div class="calendario-card">
                 <div class="calendario-header">
                     <button class="calendario-nav" onclick="mudarMes(-1)">◀</button>
-                    <div class="calendario-mes" id="calendarioMes">Janeiro 2026</div>
+                    <div class="calendario-mes" id="calendarioMes"></div>
                     <button class="calendario-nav" onclick="mudarMes(1)">▶</button>
                 </div>
                 <div class="calendario-grid" id="calendarioGrid"></div>
             </div>
             <div class="data-input-group">
                 <input type="date" id="dataTurno" onchange="atualizarCalendario()">
-                <button class="btn-main" onclick="irParaHoje()">HOJE</button>
             </div>
         </div>
     </div>
@@ -542,30 +190,22 @@
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
         <div id="relatorio-content" class="section-content">
-            <label>Navio</label>
-            <input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
+            <label>Navio</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
             <datalist id="listaNavios"></datalist>
-            
-            <label>Terno</label>
-            <input type="number" id="ternoRelInput" placeholder="Ex: 1" min="1" max="9">
-            
+            <label>Terno</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
             <label>Turno</label>
-            <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
+            <select id="turnoRel" onchange="ajustarRel()">
                 <option value="">Selecione</option>
                 <option value="07x15">07x15</option>
                 <option value="15x23">15x23</option>
                 <option value="23x07">23x07</option>
             </select>
-            
             <div id="camposRel"></div>
-            
             <button class="btn-whatsapp" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
-            
-            <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; border:1px solid var(--primary); white-space:pre-line; font-size:12px; font-family: monospace;"></div>
-            
+            <div id="relatorioArea" style="display:none; margin-top:15px; padding:12px; background:#000; color:var(--primary); border-radius:8px; white-space:pre-line; font-size:12px; font-family: monospace; border: 1px solid var(--primary);"></div>
             <div class="btn-group" id="btnCopiarGroup" style="display:none;">
-                <button class="btn-main" onclick="copiar()" style="margin-top:10px;">COPIAR</button>
-                <button class="btn-secondary" onclick="limparRel()" style="margin-top:10px;">LIMPAR</button>
+                <button class="btn-main" onclick="copiar()">COPIAR</button>
+                <button class="btn-secondary" onclick="limparRel()">LIMPAR</button>
             </div>
         </div>
     </div>
@@ -573,187 +213,92 @@
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
         <div id="controle-content" class="section-content">
-            <label>Navio</label>
-            <input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
-            
+            <label>Navio</label><input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
             <label>Tipo de Dia</label>
-            <select id="tipoDia">
-                <option value="n">DIA NORMAL</option>
-                <option value="f">DOMINGO/FERIADO</option>
-            </select>
-            
+            <select id="tipoDia"><option value="n">DIA NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
             <label>Turno</label>
-            <select id="turnoCalc" onchange="salvarTurno('calc', this.value)">
+            <select id="turnoCalc" onchange="ajustarCalc()">
                 <option value="07x15">07x15</option>
                 <option value="15x23" selected>15x23</option>
                 <option value="23x07">23x07</option>
             </select>
-            
             <div id="camposCalc"></div>
-            
             <label>Conferentes (divisão)</label>
-            <select id="nConf">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3" selected>3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </select>
-            
+            <select id="nConf"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
             <button class="btn-calc" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
         </div>
     </div>
 
     <div class="section-card">
-        <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
+        <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO</h3>
         <div id="historico-content" class="section-content">
-            <div class="backup-info">
-                💾 Total de serviços cadastrados: <span id="totalRegistros">0</span>
-            </div>
-            
             <div class="filters">
                 <input type="text" id="filtroNavio" placeholder="Filtrar navio..." oninput="filtrarHistorico()">
-                <select id="filtroStatus" onchange="filtrarHistorico()">
-                    <option value="todos">Todos</option>
-                    <option value="pendente">Pendentes</option>
-                    <option value="pago">Pagos</option>
-                </select>
+                <select id="filtroStatus" onchange="filtrarHistorico()"><option value="todos">Todos</option><option value="pendente">Pendentes</option><option value="pago">Pagos</option></select>
             </div>
-            
             <table id="tabelaHistorico">
-                <thead>
-                    <tr>
-                        <th>DATA</th>
-                        <th>NAVIO</th>
-                        <th>BRUTO</th>
-                        <th>LÍQ</th>
-                        <th style="width:60px">STATUS</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>DATA</th><th>NAVIO</th><th>LÍQ</th><th>STATUS</th></tr></thead>
                 <tbody></tbody>
             </table>
-            
             <div class="resumo-financeiro">
-                <div style="font-size:11px; color:#888; margin-bottom: 10px;">TOTAL FILTRADO</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <div style="font-size: 10px; color: var(--info);">BRUTO</div>
-                        <div style="font-size: 1.1rem; color: var(--info); font-weight: bold;" id="totalBrutoFiltrado">R$ 0,00</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO</div>
-                        <div style="font-size: 1.1rem; color: var(--accent); font-weight: bold;" id="totalLiquidoFiltrado">R$ 0,00</div>
-                    </div>
-                </div>
+                <div style="font-size: 10px; color: var(--accent);">TOTAL LÍQUIDO FILTRADO</div>
+                <div style="font-size: 1.4rem; color: var(--accent); font-weight: bold;" id="totalLiquidoFiltrado">R$ 0,00</div>
             </div>
-            
-            <div class="btn-group" style="margin-top:15px;">
-                <button class="btn-info" onclick="exportarCSV()">📄 EXPORTAR CSV</button>
-                <button class="btn-pix" onclick="mostrarPix()">🚀 APOIAR O DEV</button>
-            </div>
-            <button class="btn-danger" onclick="limparTodos()" style="margin-top: 10px;">🗑️ LIMPAR HISTÓRICO</button>
         </div>
     </div>
-    
-    <div class="footer-direitos">
-        <div class="marca">SISTEMA EVOLUTION V37</div>
-        <div class="direitos">© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO</div>
-        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid #222;">
-            <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Criado e mantido por</div>
-            <div style="font-size: 14px; color: #fff; font-weight: bold; letter-spacing: 1px;">FELIPE PRADO</div>
-            <div style="font-size: 9px; color: #555; margin-top: 3px;">Sistema protegido por direitos autorais</div>
-            <button class="btn-pix" onclick="mostrarPix()" style="margin-top: 10px; padding: 10px; font-size: 11px;">
-                🚀 APOIAR O DESENVOLVEDOR
-            </button>
+
+    <div class="section-card">
+        <h3 class="toggle-section" onclick="toggleSection('config-content')">⚙️ CONFIGURAÇÕES</h3>
+        <div id="config-content" class="section-content">
+            <label>Tema do Sistema</label>
+            <select id="themeSelect" onchange="mudarTema(this.value)">
+                <option value="dark">🌙 MODO ESCURO</option>
+                <option value="light">☀️ MODO CLARO</option>
+            </select>
+
+            <label>Backup e Dados</label>
+            <div class="btn-group">
+                <button class="btn-info" onclick="exportarBackupJSON()">📤 EXPORTAR BACKUP</button>
+                <button class="btn-info" onclick="$('importFile').click()">📥 IMPORTAR BACKUP</button>
+            </div>
+            <input type="file" id="importFile" class="hidden" accept=".json" onchange="importarBackupJSON(event)">
+            
+            <button class="btn-secondary" onclick="exportarCSV()" style="margin-top:10px;">📄 EXPORTAR PARA EXCEL (CSV)</button>
+            <button class="btn-danger" onclick="limparTodos()" style="margin-top:10px;">🗑️ APAGAR TUDO</button>
+            
+            <button class="btn-pix" onclick="mostrarPix()" style="margin-top:20px;">🚀 APOIAR O DESENVOLVEDOR</button>
         </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; padding: 20px; opacity: 0.5; font-size: 11px;">
+        SISTEMA EVOLUTION V37<br>© 2026 TODOS OS DIREITOS RESERVADOS A FELIPE PRADO
     </div>
 </div>
 
 <script>
-    const USERS = {
-        "002451": "FELIPE PRADO",
-        "7806": "EdilsonRj",
-        "1980": "ANDERSON PRADO",
-        "2026": "FABRICIO DIAS",
-        "302466": "RODRIGO COSTA",
-        "3373": "RICARDO PRADO",
-        "2912": "JOHNY"
-    };
+    const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
+    const mensagensApoio = ["O código é grátis, mas a luz que o dev gasta é carinha! Ajuda aí? 💡", "Esse botão de PIX não morde! Que tal um café pro programador? ☕", "Se esse app te ajudou, ajuda o dev a pagar um boleto! 📄", "Dizem que cada PIX enviado é um bug a menos. Não custa testar! 🐞", "O app é automático, mas o lanche do criador é manual. Dá uma força? 🍔", "Ajude o programador a manter o estoque de café! 🧠"];
     
-    const mensagensApoio = [
-        "O código é grátis, mas a luz que o dev gasta é carinha! Ajuda aí? 💡",
-        "Esse botão de PIX não morde! Que tal um café pro programador? ☕",
-        "Se esse app te ajudou a organizar a vida, ajuda o dev a pagar um boleto! 📄",
-        "Dizem que cada PIX enviado é um bug a menos no sistema. Não custa testar! 🐞",
-        "Contribua com qualquer valor para a 'Fundação Dev Feliz sem Boletos'! 💸",
-        "O app é automático, mas o lanche do criador ainda é manual. Dá uma força? 🍔",
-        "Investir no dev é investir no seu próprio conforto. Manda aquele Pix! 🚀",
-        "Ajude o programador a manter o estoque de café e a sanidade mental! 🧠",
-        "Status do programador: Processando... (Requer contribuição para continuar) ⏳",
-        "Se o sistema te poupou tempo, que tal poupar o dev de passar vontade? 🍕"
-    ];
-    
-    let logado = "", userKey = "", todosDados = [], dadosFiltrados = [];
+    let logado = "", userKey = "", todosDados = [];
     let dataAtual = new Date();
     let dataSelecionada = new Date();
 
     function $(id) { return document.getElementById(id); }
-    
-    function toast(msg) {
-        const t = $('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    }
-    
-    function modal(title, body, onConfirm) {
-        $('modalTitle').textContent = title;
-        $('modalBody').textContent = body;
-        $('modal').style.display = 'flex';
-        $('modalConfirm').onclick = () => {
-            onConfirm();
-            fecharModal();
-        };
-    }
-    
-    function fecharModal() {
-        $('modal').style.display = 'none';
-    }
-    
-    function mostrarPix() {
-        const msgAleatoria = mensagensApoio[Math.floor(Math.random() * mensagensApoio.length)];
-        $('mensagemApoio').textContent = msgAleatoria;
-        $('modalPix').style.display = 'flex';
-    }
-    
-    function fecharModalPix() {
-        $('modalPix').style.display = 'none';
-    }
-    
-    function copiarChavePix() {
-        const chave = '92994821868';
-        navigator.clipboard.writeText(chave).then(() => {
-            toast('Chave copiada! Valeu pelo apoio! 🚀');
-        }).catch(() => {
-            const temp = document.createElement('input');
-            temp.value = chave;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            toast('Chave copiada! Obrigado!');
-        });
+    function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+    function modal(title, body, onConfirm) { $('modalTitle').textContent = title; $('modalBody').textContent = body; $('modal').style.display = 'flex'; $('modalConfirm').onclick = () => { onConfirm(); fecharModal(); }; }
+    function fecharModal() { $('modal').style.display = 'none'; }
+    function mostrarPix() { $('mensagemApoio').textContent = mensagensApoio[Math.floor(Math.random() * mensagensApoio.length)]; $('modalPix').style.display = 'flex'; }
+    function fecharModalPix() { $('modalPix').style.display = 'none'; }
+    function copiarChavePix() { navigator.clipboard.writeText('92994821868').then(() => toast('Chave copiada! Valeu pelo apoio! 🚀')); }
+
+    function mudarTema(tema) {
+        document.documentElement.setAttribute('data-theme', tema);
+        localStorage.setItem('theme_' + logado, tema);
     }
 
     function login() {
         const key = $('senhaInput').value.trim();
-        if (USERS[key]) {
-            userKey = key;
-            localStorage.setItem('ultimoAcesso_' + key, new Date().toISOString());
-            entrar();
-        } else {
-            toast('Chave inválida!');
-        }
+        if (USERS[key]) { userKey = key; entrar(); } else { toast('Chave inválida!'); }
     }
 
     function entrar() {
@@ -762,406 +307,219 @@
         $('main-panel').classList.remove('hidden');
         $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
         
+        const temaSalvo = localStorage.getItem('theme_' + logado) || 'dark';
+        $('themeSelect').value = temaSalvo;
+        mudarTema(temaSalvo);
+
         const hoje = new Date();
         $('dataTurno').value = hoje.toISOString().split('T')[0];
         dataSelecionada = hoje;
-        
-        $('turnoRel').value = localStorage.getItem('last_rel_' + logado) || "";
-        $('turnoCalc').value = localStorage.getItem('last_calc_' + logado) || "15x23";
         
         carregarNavios();
         ajustarRel();
         ajustarCalc();
         renderizarCalendario();
         carregarHistorico();
-        
-        if (Math.random() < 0.35) {
-            setTimeout(() => {
-                mostrarPix();
-            }, 2000);
-        }
-    }
-
-    function salvarTurno(tipo, valor) {
-        localStorage.setItem('last_' + tipo + '_' + logado, valor);
-        if(tipo === 'rel') ajustarRel(); 
-        else ajustarCalc();
     }
 
     function toggleSection(id) {
         const content = $(id);
-        const header = content.previousElementSibling;
         content.classList.toggle('active');
-        header.classList.toggle('active');
-    }
-
-    function mudarMes(direcao) {
-        dataAtual.setMonth(dataAtual.getMonth() + direcao);
-        renderizarCalendario();
-    }
-
-    function irParaHoje() {
-        dataAtual = new Date();
-        dataSelecionada = new Date();
-        $('dataTurno').value = dataSelecionada.toISOString().split('T')[0];
-        renderizarCalendario();
-    }
-
-    function atualizarCalendario() {
-        const dataInput = $('dataTurno').value;
-        if (dataInput) {
-            dataSelecionada = new Date(dataInput);
-            dataAtual = new Date(dataInput);
-            renderizarCalendario();
-        }
-    }
-
-    function selecionarData(dia, mes, ano) {
-        dataSelecionada = new Date(ano, mes, dia);
-        $('dataTurno').value = dataSelecionada.toISOString().split('T')[0];
-        renderizarCalendario();
+        content.previousElementSibling.classList.toggle('active');
     }
 
     function renderizarCalendario() {
         const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        
         $('calendarioMes').textContent = meses[dataAtual.getMonth()] + ' ' + dataAtual.getFullYear();
-        
         const grid = $('calendarioGrid');
         grid.innerHTML = '';
+        ['D','S','T','Q','Q','S','S'].forEach(d => { const div = document.createElement('div'); div.className='calendario-dia-semana'; div.textContent=d; grid.appendChild(div); });
         
-        diasSemana.forEach(dia => {
-            const div = document.createElement('div');
-            div.className = 'calendario-dia-semana';
-            div.textContent = dia;
-            grid.appendChild(div);
-        });
+        const primeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).getDay();
+        const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0).getDate();
         
-        const primeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
-        const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
-        const hoje = new Date();
+        for(let i=0; i<primeiroDia; i++) grid.appendChild(document.createElement('div'));
         
-        const diaSemanaPrimeiro = primeiroDia.getDay();
-        const ultimoDiaMesAnterior = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 0).getDate();
-        
-        for (let i = diaSemanaPrimeiro - 1; i >= 0; i--) {
-            const div = document.createElement('div');
-            div.className = 'calendario-dia outro-mes';
-            div.textContent = ultimoDiaMesAnterior - i;
-            grid.appendChild(div);
-        }
-        
-        for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+        for(let dia=1; dia<=ultimoDia; dia++) {
             const div = document.createElement('div');
             div.className = 'calendario-dia';
             div.textContent = dia;
-            
-            const dataCompleta = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia);
-            const dataStr = dataCompleta.toISOString().split('T')[0];
-            
-            if (dia === hoje.getDate() && dataAtual.getMonth() === hoje.getMonth() && dataAtual.getFullYear() === hoje.getFullYear()) {
-                div.classList.add('hoje');
-            }
-            
-            const temServico = todosDados.some(d => d.dataCompleta === dataStr);
-            if (temServico) div.classList.add('com-servico');
-            
-            if (dataSelecionada.getDate() === dia && 
-                dataSelecionada.getMonth() === dataAtual.getMonth() && 
-                dataSelecionada.getFullYear() === dataAtual.getFullYear()) {
-                div.classList.add('selecionado');
-            }
-            
-            div.onclick = () => selecionarData(dia, dataAtual.getMonth(), dataAtual.getFullYear());
-            grid.appendChild(div);
-        }
-        
-        const diasRestantes = 42 - (diaSemanaPrimeiro + ultimoDia.getDate());
-        for (let i = 1; i <= diasRestantes; i++) {
-            const div = document.createElement('div');
-            div.className = 'calendario-dia outro-mes';
-            div.textContent = i;
+            const dStr = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia).toISOString().split('T')[0];
+            if(todosDados.some(d => d.dataCompleta === dStr)) div.classList.add('com-servico');
+            if(dataSelecionada.toISOString().split('T')[0] === dStr) div.classList.add('selecionado');
+            div.onclick = () => { dataSelecionada = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia); $('dataTurno').value = dStr; renderizarCalendario(); };
             grid.appendChild(div);
         }
     }
+
+    function mudarMes(dir) { dataAtual.setMonth(dataAtual.getMonth() + dir); renderizarCalendario(); }
+    function atualizarCalendario() { dataSelecionada = new Date($('dataTurno').value); dataAtual = new Date($('dataTurno').value); renderizarCalendario(); }
 
     function ajustarRel() {
         const t = $('turnoRel').value;
         const div = $('camposRel');
-        if (t === "15x23") {
-            div.innerHTML = `
-                <label>Produção 15h-19h</label>
-                <input type="number" id="p1" placeholder="0">
-                <label>Produção 20h-23h</label>
-                <input type="number" id="p2" placeholder="0">
-            `;
-        } else if (t) {
-            div.innerHTML = `<label>Produção Total</label><input type="number" id="pGeral" placeholder="0">`;
-        } else {
-            div.innerHTML = '';
-        }
+        div.innerHTML = t === "15x23" ? '<label>15h-19h</label><input type="number" id="p1"><label>20h-23h</label><input type="number" id="p2">' : (t ? '<label>Produção Total</label><input type="number" id="pGeral">' : '');
     }
 
     function gerarRel() {
-        const tur = $('turnoRel').value;
-        if(!tur) return toast('Selecione o turno');
-        
+        const tur = $('turnoRel').value; if(!tur) return toast('Selecione o turno');
         const navio = ($('navioRel').value || "S/N").toUpperCase();
-        const ternoNum = $('ternoRelInput').value;
-        const ternoFormatado = ternoNum ? ternoNum + "°" : "S/T";
+        const terno = $('ternoRelInput').value ? $('ternoRelInput').value + "°" : "S/T";
         const data = $('dataTurno').value.split('-').reverse().join('/');
-        
         let prod = "", total = 0;
+        if(tur === "15x23") { const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0; prod = `15x19: ${v1}\n20x23: ${v2}`; total = v1+v2; }
+        else { total = parseInt($('pGeral').value)||0; prod = `PRODUCAO: ${total}`; }
         
-        if(tur === "15x23") {
-            const v1 = parseInt($('p1').value) || 0;
-            const v2 = parseInt($('p2').value) || 0;
-            prod = `15x19: ${v1}\n20x23: ${v2}`;
-            total = v1 + v2;
-        } else {
-            total = parseInt($('pGeral').value) || 0;
-            prod = `PRODUCAO: ${total}`;
-        }
-        
-        const texto = `Relatório de Produção\n\n` +
-                     `Navio: ${navio}\n` +
-                     `Data: ${data}\n` +
-                     `Terno: ${ternoFormatado}\n` +
-                     `Turno: ${tur}\n\n` +
-                     `${prod}\n` +
-                     `Total: ${total}\n\n` +
-                     `Conferente: ${logado}`;
-        
-        $('relatorioArea').textContent = texto;
-        $('relatorioArea').style.display = 'block';
-        $('btnCopiarGroup').style.display = 'grid';
-        
+        const texto = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${data}\nTerno: ${terno}\nTurno: ${tur}\n\n${prod}\nTotal: ${total}\n\nConferente: ${logado}`;
+        $('relatorioArea').textContent = texto; $('relatorioArea').style.display = 'block'; $('btnCopiarGroup').style.display = 'grid';
         salvarNavio(navio);
     }
 
-    function limparRel() {
-        $('relatorioArea').style.display = 'none';
-        $('btnCopiarGroup').style.display = 'none';
-        if($('p1')) { $('p1').value = ''; $('p2').value = ''; }
-        if($('pGeral')) $('pGeral').value = '';
-    }
-
-    function copiar() {
-        navigator.clipboard.writeText($('relatorioArea').textContent).then(() => {
-            toast('Copiado!');
-        });
-    }
+    function copiar() { navigator.clipboard.writeText($('relatorioArea').textContent).then(() => toast('Copiado!')); }
+    function limparRel() { $('relatorioArea').style.display = 'none'; $('btnCopiarGroup').style.display = 'none'; }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
         const div = $('camposCalc');
-        if (t === "15x23") {
-            div.innerHTML = `
-                <label>Produção 15h-19h</label>
-                <input type="number" id="t1" placeholder="0">
-                <label>Produção 20h-23h</label>
-                <input type="number" id="t2" placeholder="0">
-            `;
-        } else {
-            div.innerHTML = `<label>Produção Total</label><input type="number" id="tGeral" placeholder="0">`;
-        }
+        div.innerHTML = t === "15x23" ? '<label>15h-19h</label><input type="number" id="t1"><label>20h-23h</label><input type="number" id="t2">' : '<label>Produção Total</label><input type="number" id="tGeral">';
     }
 
     function calcularESalvar() {
         const navio = ($('navioCalc').value || "S/N").toUpperCase();
-        if(!navio || navio === "S/N") return toast('Digite o navio');
-        
         const tur = $('turnoCalc').value;
         const tipo = $('tipoDia').value;
         const n = parseInt($('nConf').value);
-        
         let bruto = 0;
-        
         if(tur === "15x23") {
-            const v1 = parseInt($('t1').value) || 0;
-            const v2 = parseInt($('t2').value) || 0;
+            const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
             bruto = (tipo === 'f') ? (v1 * 8.61) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
         } else {
-            const prod = parseInt($('tGeral').value) || 0;
+            const prod = parseInt($('tGeral').value)||0;
             const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
             bruto = prod * taxa;
         }
-        
-        const brutoIndiv = bruto / n;
-        const liquido = brutoIndiv * 0.82;
-        
-        const dataInput = $('dataTurno').value;
-        const [ano, mes, dia] = dataInput.split('-');
-        
-        const registro = {
-            id: Date.now(),
-            data: `${dia}/${mes}`,
-            dataCompleta: dataInput,
-            navio,
-            turno: tur,
-            tipo: tipo === 'f' ? 'Feriado' : 'Normal',
-            bruto: Math.round(brutoIndiv * 100) / 100,
-            liquido: Math.round(liquido * 100) / 100,
-            pago: false
-        };
-        
-        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        hist.unshift(registro);
-        localStorage.setItem('hist_' + logado, JSON.stringify(hist));
-        
-        if($('t1')) { $('t1').value = ''; $('t2').value = ''; }
-        if($('tGeral')) $('tGeral').value = '';
-        $('navioCalc').value = '';
-        
-        salvarNavio(navio);
-        carregarHistorico();
-        renderizarCalendario();
-        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)}`);
-    }
-
-    function salvarNavio(navio) {
-        let navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
-        if (!navios.includes(navio)) {
-            navios.push(navio);
-            localStorage.setItem('navios_' + logado, JSON.stringify(navios));
-            carregarNavios();
-        }
-    }
-
-    function carregarNavios() {
-        const navios = JSON.parse(localStorage.getItem('navios_' + logado)) || [];
-        $('listaNavios').innerHTML = navios.map(n => `<option value="${n}">`).join('');
+        const liq = (bruto / n) * 0.82;
+        const registro = { id: Date.now(), data: $('dataTurno').value.split('-').slice(1).reverse().join('/'), dataCompleta: $('dataTurno').value, navio, bruto: (bruto/n), liquido: liq, pago: false };
+        todosDados.unshift(registro);
+        localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+        salvarNavio(navio); carregarHistorico(); renderizarCalendario(); toast('Salvo com sucesso!');
     }
 
     function carregarHistorico() {
         todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        $('totalRegistros').textContent = todosDados.length;
         filtrarHistorico();
         atualizarDashboard();
     }
 
     function atualizarDashboard() {
-        const totalBruto = todosDados.reduce((a, b) => a + b.bruto, 0);
-        const totalLiquido = todosDados.reduce((a, b) => a + b.liquido, 0);
-        
-        const pendenteBruto = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.bruto, 0);
-        const pendenteLiquido = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
-        
-        const recebidoBruto = todosDados.filter(i => i.pago).reduce((a, b) => a + b.bruto, 0);
-        const recebidoLiquido = todosDados.filter(i => i.pago).reduce((a, b) => a + b.liquido, 0);
-        
-        $('dashTotalBruto').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('dashTotalLiquido').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('dashPendenteBruto').textContent = "R$ " + pendenteBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('dashPendenteLiquido').textContent = "R$ " + pendenteLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('dashRecebidoBruto').textContent = "R$ " + recebidoBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('dashRecebidoLiquido').textContent = "R$ " + recebidoLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        const totalB = todosDados.reduce((a,b) => a+b.bruto, 0);
+        const totalL = todosDados.reduce((a,b) => a+b.liquido, 0);
+        const pendL = todosDados.filter(i => !i.pago).reduce((a,b) => a+b.liquido, 0);
+        const receL = todosDados.filter(i => i.pago).reduce((a,b) => a+b.liquido, 0);
+        $('dashTotalBruto').textContent = "R$ " + totalB.toFixed(0);
+        $('dashTotalLiquido').textContent = "R$ " + totalL.toFixed(0);
+        $('dashPendenteLiquido').textContent = "R$ " + pendL.toFixed(0);
+        $('dashRecebidoLiquido').textContent = "R$ " + receL.toFixed(0);
     }
 
     function filtrarHistorico() {
-        const filtroNavio = $('filtroNavio').value.toLowerCase();
-        const filtroStatus = $('filtroStatus').value;
-        
-        dadosFiltrados = todosDados.filter(item => {
-            const matchNavio = item.navio.toLowerCase().includes(filtroNavio);
-            const matchStatus = filtroStatus === 'todos' ? true : 
-                               filtroStatus === 'pago' ? item.pago : !item.pago;
-            return matchNavio && matchStatus;
+        const fNavio = $('filtroNavio').value.toLowerCase();
+        const fStatus = $('filtroStatus').value;
+        const lista = todosDados.filter(i => {
+            const mN = i.navio.toLowerCase().includes(fNavio);
+            const mS = fStatus === 'todos' ? true : (fStatus === 'pago' ? i.pago : !i.pago);
+            return mN && mS;
         });
-        
-        renderizarTabela(dadosFiltrados);
-        calcularTotaisFiltrados(dadosFiltrados);
-    }
-
-    function renderizarTabela(lista) {
         const tbody = document.querySelector('#tabelaHistorico tbody');
-        tbody.innerHTML = '';
-        
-        if (lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#555;">Nenhum registro</td></tr>';
-            return;
-        }
-        
-        lista.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.data}<br><small style="color:#666">${item.turno}</small></td>
-                <td>${item.navio}</td>
-                <td style="color: var(--info); font-weight: bold; font-size: 10px;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
-                <td style="color: var(--accent); font-weight: bold; font-size: 11px;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
+        tbody.innerHTML = lista.map(i => `
+            <tr>
+                <td>${i.data}</td>
+                <td>${i.navio}</td>
+                <td style="color:var(--accent); font-weight:bold;">R$ ${i.liquido.toFixed(2)}</td>
                 <td>
-                    <div class="actions-cell">
-                        <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
-                              onclick="alternarStatus(${item.id})" style="margin-right: 3px;">
-                            ${item.pago ? 'OK' : 'PEND'}
-                        </span>
-                        <button class="icon-btn" onclick="excluirItem(${item.id})">×</button>
-                    </div>
+                    <span class="badge ${i.pago?'badge-pago':'badge-pendente'}" onclick="alternarStatus(${i.id})">${i.pago?'OK':'PEND'}</span>
+                    <button style="width:24px; padding:2px; margin:0; background:none; color:var(--danger);" onclick="excluirItem(${i.id})">×</button>
                 </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function calcularTotaisFiltrados(lista) {
-        const totalBruto = lista.reduce((soma, item) => soma + (parseFloat(item.bruto) || 0), 0);
-        const totalLiquido = lista.reduce((soma, item) => soma + (parseFloat(item.liquido) || 0), 0);
-        
-        $('totalBrutoFiltrado').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        $('totalLiquidoFiltrado').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            </tr>
+        `).join('');
+        $('totalLiquidoFiltrado').textContent = "R$ " + lista.reduce((a,b) => a+b.liquido, 0).toFixed(2);
     }
 
     function alternarStatus(id) {
         const idx = todosDados.findIndex(i => i.id === id);
-        if (idx > -1) {
-            todosDados[idx].pago = !todosDados[idx].pago;
-            localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            toast(todosDados[idx].pago ? 'Marcado como pago ✓' : 'Marcado como pendente');
-            filtrarHistorico();
-            atualizarDashboard();
-        }
+        todosDados[idx].pago = !todosDados[idx].pago;
+        localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+        carregarHistorico();
     }
 
     function excluirItem(id) {
-        modal('Excluir?', 'Esta ação não pode ser desfeita.', () => {
+        modal('Excluir?', 'Deseja apagar este registro?', () => {
             todosDados = todosDados.filter(i => i.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
-            carregarHistorico();
-            renderizarCalendario();
-            toast('Excluído!');
+            carregarHistorico(); renderizarCalendario();
         });
     }
 
     function limparTodos() {
-        if(todosDados.length === 0) return toast('Nada para limpar');
-        modal('ATENÇÃO', 'Isso apagará TODO o histórico!', () => {
+        modal('CUIDADO!', 'Apagar todo o histórico?', () => {
             localStorage.removeItem('hist_' + logado);
-            carregarHistorico();
-            renderizarCalendario();
-            toast('Limpo!');
+            carregarHistorico(); renderizarCalendario();
         });
+    }
+
+    // BACKUP JSON (Para trocar de celular)
+    function exportarBackupJSON() {
+        const backup = {
+            historico: todosDados,
+            navios: JSON.parse(localStorage.getItem('navios_' + logado)) || [],
+            versao: "V37",
+            dataExport: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_evolution_${logado}.json`;
+        a.click();
+        toast('Backup gerado! Guarde este arquivo. 📤');
+    }
+
+    function importarBackupJSON(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if(data.historico) {
+                    modal('Importar?', 'Isso vai substituir seus dados atuais pelos do arquivo!', () => {
+                        localStorage.setItem('hist_' + logado, JSON.stringify(data.historico));
+                        localStorage.setItem('navios_' + logado, JSON.stringify(data.navios || []));
+                        carregarHistorico();
+                        carregarNavios();
+                        renderizarCalendario();
+                        toast('Dados importados com sucesso! 📥');
+                    });
+                }
+            } catch(err) { toast('Erro ao ler arquivo!'); }
+        };
+        reader.readAsText(file);
     }
 
     function exportarCSV() {
-        if (todosDados.length === 0) return toast('Nada para exportar');
-        let csv = 'Data,Navio,Turno,Tipo,Bruto,Liquido,Status\n';
-        todosDados.forEach(i => {
-            csv += `${i.data},${i.navio},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
-        });
+        let csv = 'Data,Navio,Liquido,Status\n';
+        todosDados.forEach(i => csv += `${i.data},${i.navio},${i.liquido.toFixed(2)},${i.pago?'Pago':'Pendente'}\n`);
         const blob = new Blob([csv], {type: 'text/csv'});
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `backup_${logado}.csv`;
+        a.href = URL.createObjectURL(blob);
+        a.download = `relatorio_${logado}.csv`;
         a.click();
-        URL.revokeObjectURL(url);
-        toast('Backup CSV baixado!');
     }
 
-    $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) fecharModal(); });
-    $('modalPix').addEventListener('click', (e) => { if (e.target === $('modalPix')) fecharModalPix(); });
+    function salvarNavio(n) { let ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; if(!ns.includes(n)){ns.push(n); localStorage.setItem('navios_'+logado, JSON.stringify(ns)); carregarNavios();} }
+    function carregarNavios() { const ns = JSON.parse(localStorage.getItem('navios_'+logado))||[]; $('listaNavios').innerHTML = ns.map(n => `<option value="${n}">`).join(''); }
+
+    $('modal').onclick = (e) => { if(e.target === $('modal')) fecharModal(); };
+    $('modalPix').onclick = (e) => { if(e.target === $('modalPix')) fecharModalPix(); };
 </script>
 </body>
 </html>
-
