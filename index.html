@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V18.4</title>
+    <title>SISTEMA EVOLUTION - V19.0 FINAL</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0d0d0d; --card-bg: #1a1a1a; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 450px; width: 100%; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #333; box-sizing: border-box; margin-top: 10px; }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; font-size: 18px; }
+        .container { max-width: 450px; width: 100%; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #333; box-sizing: border-box; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
         label { display: block; margin-top: 15px; font-weight: bold; color: var(--primary); font-size: 10px; text-transform: uppercase; }
         input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1px solid #333; background: #222; color: white; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        button { width: 100%; padding: 16px; margin-top: 12px; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-gerar { background: #48c774; color: #000; }
-        .btn-dev { background: #3273dc; color: #fff; font-size: 10px; margin-top: 10px; }
-        .btn-calc-toggle { background: var(--accent); color: #000; margin-top: 20px; }
-        .calc-section { display: none; margin-top: 20px; padding: 15px; background: #252525; border: 1px solid var(--accent); border-radius: 15px; }
+        .btn-dev { background: #3273dc; color: #fff; font-size: 10px; border: 1px dashed #fff; }
+        .btn-calc { background: var(--accent); color: #000; margin-top: 20px; }
+        .calc-box { display: none; margin-top: 20px; padding: 15px; background: #252525; border: 1px solid var(--accent); border-radius: 15px; }
         .res-area { display:none; margin-top:15px; padding:12px; background:#000; color:#00ffca; border:1px solid var(--primary); font-family:monospace; font-size:11px; white-space: pre-wrap; border-radius:8px; }
-        .history-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        th { color: var(--primary); text-align: left; padding: 8px; border-bottom: 1px solid #444; }
-        td { padding: 8px; border-bottom: 1px solid #333; }
-        .copyright { margin-top: 25px; font-size: 9px; color: #666; text-align: center; display: block; }
+        .history { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        td { padding: 10px 5px; border-bottom: 1px solid #333; }
+        .footer { margin-top: 25px; font-size: 9px; color: #666; text-align: center; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
-    <p style="text-align:center; font-size:10px; color:var(--primary);">ACESSO RESTRITO V18.4</p>
+    <p style="text-align:center; font-size:10px; color:var(--primary);">SISTEMA PROFISSIONAL V19</p>
     <label>CHAVE DE ACESSO:</label>
     <input type="tel" id="senhaInput" placeholder="Sua Chave" style="-webkit-text-security: disc;">
     <button style="background:var(--primary); color:#000;" onclick="login()">ENTRAR</button>
@@ -37,20 +36,121 @@
 <div class="container" id="main-panel" style="display: none;">
     <h2 id="saudacao">PAINEL</h2>
     
-    <div id="areaDev" style="display:none;">
-        <button class="btn-dev" onclick="document.getElementById('devPanel').style.display='block'">🛠️ PAINEL ADMINISTRATIVO</button>
-        <div id="devPanel" style="display:none; background:#222; padding:10px; border-radius:10px; margin-top:5px; border:1px solid var(--primary);">
-            <input type="text" id="newUserName" placeholder="Nome">
-            <input type="text" id="newUserPass" placeholder="Senha">
-            <button class="btn-gerar" onclick="addUser()">ADICIONAR ACESSO</button>
-            <button style="background:#444; color:#fff;" onclick="document.getElementById('devPanel').style.display='none'">FECHAR</button>
+    <div id="areaDev" style="display:none; text-align:center;">
+        <button class="btn-dev" onclick="document.getElementById('devPanel').style.display='block'">🛠️ GESTÃO DE USUÁRIOS</button>
+        <div id="devPanel" style="display:none; background:#222; padding:10px; border-radius:10px; margin-top:10px; border:1px solid var(--primary);">
+            <input type="text" id="newUserName" placeholder="Nome do Novo">
+            <input type="text" id="newUserPass" placeholder="Senha do Novo">
+            <button class="btn-gerar" onclick="addUser()">ATIVAR ACESSO</button>
+            <button style="background:var(--danger); color:#fff; padding:5px; font-size:9px;" onclick="document.getElementById('devPanel').style.display='none'">FECHAR</button>
         </div>
     </div>
 
-    <label>NAVIO E DADOS:</label>
-    <input type="text" id="navioPrincipal" placeholder="NOME DO NAVIO" oninput="sincronizar(this.value)">
+    <label>DADOS DO DIA:</label>
+    <input type="text" id="navioPrincipal" placeholder="NOME DO NAVIO">
     <input type="date" id="dataTurno" style="margin-top:10px;">
     
-    <button class="btn-gerar" onclick="gerarRel()">GERAR TEXTO WHATSAPP</button>
+    <button class="btn-gerar" onclick="gerarRel()">GERAR RELATÓRIO WHATSAPP</button>
     <div id="relArea" class="res-area"></div>
-    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPI
+    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPIAR MENSAGEM</button>
+
+    <button class="btn-calc" onclick="toggleCalc()">📊 CALCULADORA DE TAXAS</button>
+    
+    <div class="calc-box" id="calcSection">
+        <label>PRODUÇÃO TOTAL:</label>
+        <input type="number" id="prodCalc" placeholder="Quantidade">
+        <label>TIPO DE DIA:</label>
+        <select id="tipoDia"><option value="n">NORMAL</option><option value="f">DOMINGO/FERIADO</option></select>
+        <label>TURNO:</label>
+        <select id="turnoCalc">
+            <option value="07x15">07x15</option>
+            <option value="15x23" selected>15x23</option>
+            <option value="23x07">23x07</option>
+        </select>
+        <button class="btn-gerar" onclick="calcular()">CALCULAR E SALVAR</button>
+        <div id="resCalc" style="display:none; text-align:center; margin-top:15px; border-top:1px solid #444; padding-top:10px;">
+            <div id="resLiquido" style="font-size:18px; color:var(--accent); font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <div class="history">
+        <h3 style="font-size:12px; color:var(--primary); text-align:center;">HISTÓRICO RECENTE</h3>
+        <table id="tabelaHist"><tbody></tbody></table>
+    </div>
+
+    <span class="footer">© 2026 SISTEMA EVOLUTION - FELIPE PRADO</span>
+</div>
+
+<script>
+    // Configurações Fixas
+    let USERS = { "002451": "FELIPE PRADO", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA" };
+    let logado = "";
+    document.getElementById('dataTurno').value = new Date().toISOString().split('T')[0];
+
+    function login() {
+        const s = document.getElementById('senhaInput').value.trim();
+        if (USERS[s]) {
+            logado = USERS[s];
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-panel').style.display = 'block';
+            document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+            if(s === "002451") document.getElementById('areaDev').style.display = 'block';
+            carregarHist();
+        } else { alert("Acesso negado."); }
+    }
+
+    function toggleCalc() { const s = document.getElementById('calcSection'); s.style.display = s.style.display==='block'?'none':'block'; }
+
+    function gerarRel() {
+        const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
+        const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
+        
+        // Rastreamento Camuflado (Invisível para o cliente)
+        const dev = navigator.userAgent.includes("Android") ? "A" : "I";
+        const userCode = btoa(logado).substring(0,3);
+        const protocol = `PROT: ${dev}${new Date().getHours()}${userCode}${Math.floor(Math.random()*89)+10}`;
+
+        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nCONF: ${logado}\n----------------\n${protocol}`;
+        document.getElementById('relArea').innerText = msg;
+        document.getElementById('relArea').style.display = 'block';
+        document.getElementById('btnCopiar').style.display = 'block';
+    }
+
+    function calcular() {
+        const prod = parseFloat(document.getElementById('prodCalc').value) || 0;
+        const tipo = document.getElementById('tipoDia').value;
+        const turno = document.getElementById('turnoCalc').value;
+        
+        // Taxas fixas informadas pelo usuário
+        let taxa = (turno === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
+        let brutoIndiv = (prod * taxa) / 3;
+        let liquido = brutoIndiv * 0.82; // 18% desconto
+
+        document.getElementById('resLiquido').innerText = `LÍQUIDO: R$ ${liquido.toFixed(2)}`;
+        document.getElementById('resCalc').style.display = 'block';
+
+        let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        hist.push({ data: new Date().toLocaleDateString('pt-BR'), valor: liquido.toFixed(2) });
+        localStorage.setItem('hist_' + logado, JSON.stringify(hist));
+        carregarHist();
+    }
+
+    function carregarHist() {
+        const hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        const corpo = document.querySelector('#tabelaHist tbody');
+        corpo.innerHTML = "";
+        hist.reverse().slice(0, 3).forEach(item => {
+            corpo.innerHTML += `<tr><td>${item.data}</td><td style="color:var(--accent); text-align:right;">R$ ${item.valor}</td></tr>`;
+        });
+    }
+
+    function addUser() {
+        const n = document.getElementById('newUserName').value.toUpperCase();
+        const s = document.getElementById('newUserPass').value;
+        if(n && s) { USERS[s] = n; alert("Acesso temporário criado!"); }
+    }
+
+    function copiar() { navigator.clipboard.writeText(document.getElementById('relArea').innerText); alert("Copiado!"); }
+</script>
+</body>
+</html>
