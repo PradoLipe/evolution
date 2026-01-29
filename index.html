@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V19.1</title>
+    <title>SISTEMA EVOLUTION - V19.2</title>
     <style>
         :root {
             --primary: #00d1b2;
@@ -20,7 +20,6 @@
         h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; font-size: 20px; text-shadow: 0 0 10px rgba(0,209,178,0.3); }
         h3 { font-size: 14px; color: var(--primary); margin-top: 0; text-transform: uppercase; }
 
-        /* Banner Pix */
         .pix-banner { background: linear-gradient(45deg, #222, #111); border: 1px solid var(--accent); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; border-left: 5px solid var(--accent); }
         .pix-text { font-size: 11px; color: #fff; margin-bottom: 8px; line-height: 1.4; }
         .pix-chave { font-weight: bold; color: var(--accent); font-size: 14px; display: block; margin: 5px 0; letter-spacing: 1px; }
@@ -38,17 +37,19 @@
         
         .section-card { background: #222; padding: 18px; border-radius: 15px; border: 1px solid #333; margin-top: 20px; display: none; }
         
-        /* HISTÓRICO */
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { color: var(--primary); padding: 10px 5px; text-align: left; border-bottom: 2px solid #333; font-size: 10px; }
-        td { padding: 15px 5px; border-bottom: 1px solid #222; }
+        td { padding: 12px 5px; border-bottom: 1px solid #222; vertical-align: middle; }
+
+        .val-bruto-hist { font-size: 9px; color: #888; display: block; }
+        .val-liquido-hist { font-size: 12px; color: var(--accent); font-weight: bold; display: block; }
 
         .resumo-financeiro { background: #000; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--accent); }
         .resumo-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .total-valor { font-size: 18px; font-weight: bold; color: var(--accent); }
 
-        .badge-pago { color: #48c774; border: 1px solid #48c774; padding: 4px 8px; border-radius: 5px; font-size: 9px; font-weight: bold; cursor: pointer; }
+        .badge-pago { color: #48c774; border: 1px solid #48c774; padding: 4px 8px; border-radius: 5px; font-size: 9px; font-weight: bold; cursor: pointer; text-align: center; display: inline-block; }
     </style>
 </head>
 <body>
@@ -111,9 +112,9 @@
             <table id="tabelaHistorico">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">DATA</th>
-                        <th style="width: 35%;">NAVIO</th>
-                        <th style="width: 25%;">VALOR</th>
+                        <th style="width: 18%;">DATA</th>
+                        <th style="width: 32%;">NAVIO</th>
+                        <th style="width: 30%;">VALORES</th>
                         <th style="width: 20%;">AÇÃO</th>
                     </tr>
                 </thead>
@@ -123,11 +124,11 @@
 
         <div class="resumo-financeiro">
             <div class="resumo-item">
-                <span style="font-size: 10px;">TOTAL ACUMULADO:</span>
+                <span style="font-size: 10px;">TOTAL LÍQUIDO ACUMULADO:</span>
                 <span id="totalAcumulado" class="total-valor">R$ 0,00</span>
             </div>
             <div class="resumo-item">
-                <span style="font-size: 10px; color: var(--accent);">A RECEBER:</span>
+                <span style="font-size: 10px; color: var(--accent);">LÍQUIDO A RECEBER:</span>
                 <span id="totalPendente" class="total-valor" style="color: var(--accent);">R$ 0,00</span>
             </div>
         </div>
@@ -155,16 +156,8 @@
     }
 
     function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
-
-    function verificarPix() {
-        // Mostra o banner PIX em 60% das vezes que entrar
-        if(Math.random() > 0.4) { document.getElementById('pixBanner').style.display = 'block'; }
-    }
-
-    function abrirCalc() {
-        const s = document.getElementById('calcSection');
-        s.style.display = (s.style.display === 'block') ? 'none' : 'block';
-    }
+    function verificarPix() { if(Math.random() > 0.4) { document.getElementById('pixBanner').style.display = 'block'; } }
+    function abrirCalc() { const s = document.getElementById('calcSection'); s.style.display = (s.style.display === 'block') ? 'none' : 'block'; }
 
     function ajustarRel() {
         const t = document.getElementById('turnoRel').value;
@@ -223,7 +216,8 @@
         let hist = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         hist.push({ id: Date.now(), data, navio, bruto: brutoIndiv, liquido, pago: false });
         localStorage.setItem('hist_' + logado, JSON.stringify(hist));
-        alert("Lançamento salvo com sucesso!"); carregarHistorico();
+        alert("Salvo! Bruto: R$" + brutoIndiv.toFixed(2) + " | Líquido: R$" + liquido.toFixed(2)); 
+        carregarHistorico();
     }
 
     function carregarHistorico() {
@@ -233,13 +227,16 @@
         
         lista.forEach(item => {
             totalMes += item.liquido; if(!item.pago) pendente += item.liquido;
-            const btnPagar = item.pago ? `<span class="badge-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button onclick="alternarPago(${item.id})" style="padding:4px; font-size:9px; background:var(--primary); width:auto; border-radius:5px;">PAGAR</button>`;
+            const btnPagar = item.pago ? `<span class="badge-pago" onclick="alternarPago(${item.id})">PAGO</span>` : `<button onclick="alternarPago(${item.id})" style="padding:4px; font-size:9px; background:var(--primary); width:auto; border-radius:5px; border:none; font-weight:bold;">PAGAR</button>`;
             
             corpo.innerHTML += `<tr>
                 <td style="color:#888;">${item.data.substring(0,5)}</td>
                 <td style="font-weight:bold;">${item.navio}</td>
-                <td><span style="color:var(--accent); font-weight:bold;">L:${item.liquido.toFixed(2)}</span></td>
-                <td><div style="display:flex; flex-direction:column; gap:3px;">${btnPagar}<button onclick="excluirItem(${item.id})" style="color:var(--danger); background:none; font-size:9px;">APAGAR</button></div></td>
+                <td>
+                    <span class="val-bruto-hist">BRUTO: ${item.bruto.toFixed(2)}</span>
+                    <span class="val-liquido-hist">LIQ: ${item.liquido.toFixed(2)}</span>
+                </td>
+                <td><div style="display:flex; flex-direction:column; gap:3px;">${btnPagar}<button onclick="excluirItem(${item.id})" style="color:var(--danger); background:none; font-size:9px; border:none; cursor:pointer;">APAGAR</button></div></td>
             </tr>`;
         });
         document.getElementById('totalAcumulado').innerText = "R$ " + totalMes.toFixed(2);
@@ -263,7 +260,7 @@
     function exportarBackup() {
         const lista = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         let txt = `BACKUP SISTEMA EVOLUTION - CONF: ${logado}\nPROPRIETÁRIO: FELIPE PRADO\n\n`;
-        lista.forEach(i => txt += `${i.data} | NAVIO: ${i.navio} | LÍQUIDO: R$ ${i.liquido.toFixed(2)} | STATUS: ${i.pago?'PAGO':'PENDENTE'}\n`);
+        lista.forEach(i => txt += `${i.data} | NAVIO: ${i.navio} | BRUTO: R$ ${i.bruto.toFixed(2)} | LÍQUIDO: R$ ${i.liquido.toFixed(2)} | STATUS: ${i.pago?'PAGO':'PENDENTE'}\n`);
         const blob = new Blob([txt], {type: 'text/plain'});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_Evolution_${logado}.txt`; a.click();
     }
