@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V34</title>
+    <title>SISTEMA EVOLUTION - V35</title>
     <style>
         :root { 
             --primary: #00d1b2; 
             --accent: #ffd700; 
             --danger: #ff3860;
             --success: #48c774;
-            --info: #3273dc;
+            --info: #209cee;
+            --warning: #ffdd57;
             --bg: #0a0a0f; 
             --card: rgba(26, 26, 30, 0.98);
             --input: #25252a;
@@ -45,7 +46,7 @@
             text-transform: uppercase; 
             letter-spacing: 3px;
             font-size: 1.4rem;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         h3 { 
@@ -116,35 +117,151 @@
             margin-top: 20px; 
         }
         
-        .stats-grid {
+        /* DASHBOARD FINANCEIRO REORGANIZADO */
+        .dashboard-financeiro {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-bottom: 20px;
         }
         
-        .stat-box {
-            background: rgba(0,0,0,0.3);
+        .dash-box {
+            background: rgba(0,0,0,0.4);
             padding: 15px 10px;
             border-radius: 12px;
             text-align: center;
             border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
         }
         
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary);
+        .dash-box.pendente {
+            border-color: var(--danger);
+            background: rgba(255,56,96,0.1);
         }
         
-        .stat-value.bruto { color: var(--info); }
-        .stat-value.liquido { color: var(--accent); }
+        .dash-box.recebido {
+            border-color: var(--success);
+            background: rgba(72,199,116,0.1);
+        }
         
-        .stat-label {
+        .dash-label {
             font-size: 9px;
             color: #888;
             text-transform: uppercase;
-            margin-top: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .dash-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .dash-box.pendente .dash-value { color: var(--danger); }
+        .dash-box.recebido .dash-value { color: var(--success); }
+        .dash-box.total .dash-value { color: var(--info); }
+        .dash-box.liquido-total .dash-value { color: var(--accent); }
+        
+        .dash-sublabel {
+            font-size: 8px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* CALENDÁRIO CUSTOMIZADO */
+        .calendario-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--primary);
+        }
+        
+        .calendario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+        
+        .calendario-mes {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        
+        .calendario-nav {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 0;
+            width: auto;
+        }
+        
+        .calendario-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        
+        .calendario-dia-semana {
+            font-size: 10px;
+            color: #666;
+            padding: 5px;
+            font-weight: bold;
+        }
+        
+        .calendario-dia {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .calendario-dia:hover {
+            background: rgba(0,209,178,0.2);
+            border-color: var(--primary);
+        }
+        
+        .calendario-dia.selecionado {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .calendario-dia.hoje {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .calendario-dia.outro-mes {
+            color: #444;
+        }
+        
+        .calendario-dia.com-servico {
+            position: relative;
+        }
+        
+        .calendario-dia.com-servico::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            width: 4px;
+            height: 4px;
+            background: var(--success);
+            border-radius: 50%;
         }
         
         table { 
@@ -191,7 +308,7 @@
             cursor: pointer;
         }
         
-        .badge-pendente { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .badge-pendente { background: rgba(255,56,96,0.2); color: var(--danger); border: 1px solid var(--danger); }
         .badge-pago { background: rgba(72,199,116,0.2); color: var(--success); border: 1px solid var(--success); }
         
         .resumo-financeiro { 
@@ -318,6 +435,22 @@
         .section-content.active {
             display: block;
         }
+        
+        .data-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .data-input-group input {
+            flex: 1;
+        }
+        
+        .data-input-group button {
+            width: auto;
+            padding: 14px 20px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -340,39 +473,71 @@
     <label>CHAVE DE ACESSO</label>
     <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
     <button class="btn-main" onclick="login()">ACESSAR</button>
-    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 20px;">© 2026 FELIPE PRADO - V34</div>
+    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 20px;">© 2026 FELIPE PRADO - V35</div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <h2 id="saudacao">PAINEL</h2>
     
-    <!-- Dashboard com Bruto e Líquido -->
-    <div class="stats-grid">
-        <div class="stat-box">
-            <div class="stat-value bruto" id="statBruto">R$ 0</div>
-            <div class="stat-label">Total Bruto</div>
+    <!-- DASHBOARD FINANCEIRO REORGANIZADO -->
+    <div class="dashboard-financeiro">
+        <div class="dash-box total">
+            <div class="dash-label">Total Bruto</div>
+            <div class="dash-value" id="dashTotalBruto">R$ 0</div>
+            <div class="dash-sublabel">Todos os serviços</div>
         </div>
-        <div class="stat-box">
-            <div class="stat-value liquido" id="statLiquido">R$ 0</div>
-            <div class="stat-label">Total Líquido</div>
+        <div class="dash-box liquido-total">
+            <div class="dash-label">Total Líquido</div>
+            <div class="dash-value" id="dashTotalLiquido">R$ 0</div>
+            <div class="dash-sublabel">Todos os serviços</div>
         </div>
-        <div class="stat-box">
-            <div class="stat-value" id="statPendente">R$ 0</div>
-            <div class="stat-label">Pendente</div>
+        <div class="dash-box pendente">
+            <div class="dash-label">A Receber (Bruto)</div>
+            <div class="dash-value" id="dashPendenteBruto">R$ 0</div>
+            <div class="dash-sublabel">Serviços pendentes</div>
         </div>
-        <div class="stat-box">
-            <div class="stat-value" id="statDias">0</div>
-            <div class="stat-label">Registros</div>
+        <div class="dash-box pendente">
+            <div class="dash-label">A Receber (Líq)</div>
+            <div class="dash-value" id="dashPendenteLiquido">R$ 0</div>
+            <div class="dash-sublabel">Serviços pendentes</div>
+        </div>
+        <div class="dash-box recebido">
+            <div class="dash-label">Recebido (Bruto)</div>
+            <div class="dash-value" id="dashRecebidoBruto">R$ 0</div>
+            <div class="dash-sublabel">Pagos confirmados</div>
+        </div>
+        <div class="dash-box recebido">
+            <div class="dash-label">Recebido (Líq)</div>
+            <div class="dash-value" id="dashRecebidoLiquido">R$ 0</div>
+            <div class="dash-sublabel">Pagos confirmados</div>
+        </div>
+    </div>
+
+    <!-- CALENDÁRIO INTERATIVO -->
+    <div class="section-card">
+        <h3 class="toggle-section active" onclick="toggleSection('calendario-content')">SELECIONAR DATA</h3>
+        <div id="calendario-content" class="section-content active">
+            <div class="calendario-card">
+                <div class="calendario-header">
+                    <button class="calendario-nav" onclick="mudarMes(-1)">◀</button>
+                    <div class="calendario-mes" id="calendarioMes">Janeiro 2026</div>
+                    <button class="calendario-nav" onclick="mudarMes(1)">▶</button>
+                </div>
+                <div class="calendario-grid" id="calendarioGrid">
+                    <!-- Dias gerados via JS -->
+                </div>
+            </div>
+            <div class="data-input-group">
+                <input type="date" id="dataTurno" onchange="atualizarCalendario()">
+                <button class="btn-main" onclick="irParaHoje()">HOJE</button>
+            </div>
         </div>
     </div>
 
     <!-- SEÇÃO 1: GERADOR DE RELATÓRIO -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('relatorio-content')">GERADOR DE RELATÓRIO</h3>
-        <div id="relatorio-content" class="section-content active">
-            <label>Data</label>
-            <input type="date" id="dataTurno">
-            
+        <div id="relatorio-content" class="section-content">
             <label>Navio</label>
             <input type="text" id="navioRel" placeholder="NOME DO NAVIO" list="listaNavios">
             <datalist id="listaNavios"></datalist>
@@ -401,15 +566,12 @@
         </div>
     </div>
 
-    <!-- SEÇÃO 2: CONTROLE DE PRODUÇÃO -->
+    <!-- SEÇÃO 2: CONTROLE DE PRODUÇÃO (SEM TERNO) -->
     <div class="section-card">
         <h3 class="toggle-section" onclick="toggleSection('controle-content')">CONTROLE DE PRODUÇÃO</h3>
         <div id="controle-content" class="section-content">
             <label>Navio</label>
             <input type="text" id="navioCalc" placeholder="NOME DO NAVIO" list="listaNavios">
-            
-            <label>Terno</label>
-            <input type="number" id="ternoCalc" placeholder="Ex: 1" min="1" max="9">
             
             <label>Tipo de Dia</label>
             <select id="tipoDia">
@@ -426,11 +588,13 @@
             
             <div id="camposCalc"></div>
             
-            <label>Conferentes</label>
+            <label>Conferentes (divisão)</label>
             <select id="nConf">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
             </select>
             
             <button class="btn-calc" onclick="calcularESalvar()">SALVAR NO HISTÓRICO</button>
@@ -439,10 +603,10 @@
 
     <!-- SEÇÃO 3: HISTÓRICO -->
     <div class="section-card">
-        <h3 class="toggle-section active" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
-        <div id="historico-content" class="section-content active">
+        <h3 class="toggle-section" onclick="toggleSection('historico-content')">HISTÓRICO DE SERVIÇOS</h3>
+        <div id="historico-content" class="section-content">
             <div class="backup-info">
-                💾 Os dados são salvos automaticamente no seu dispositivo
+                💾 Dados salvos automaticamente | Total: <span id="totalRegistros">0</span> serviços
             </div>
             
             <div class="filters">
@@ -468,18 +632,17 @@
             </table>
             
             <div class="resumo-financeiro">
-                <div style="font-size:11px; color:#888;">TOTAL EXIBIDO</div>
-                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+                <div style="font-size:11px; color:#888; margin-bottom: 10px;">RESUMO DOS FILTRADOS</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <div style="font-size: 10px; color: var(--info);">BRUTO</div>
-                        <div style="font-size: 1.2rem; color: var(--info); font-weight: bold;" id="totalBrutoExibido">R$ 0,00</div>
+                        <div style="font-size: 10px; color: var(--info);">BRUTO FILTRADO</div>
+                        <div style="font-size: 1.1rem; color: var(--info); font-weight: bold;" id="totalBrutoFiltrado">R$ 0,00</div>
                     </div>
                     <div>
-                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO</div>
-                        <div class="total-display" id="totalAcumulado" style="margin-top: 0; font-size: 1.2rem;">R$ 0,00</div>
+                        <div style="font-size: 10px; color: var(--accent);">LÍQUIDO FILTRADO</div>
+                        <div style="font-size: 1.1rem; color: var(--accent); font-weight: bold;" id="totalLiquidoFiltrado">R$ 0,00</div>
                     </div>
                 </div>
-                <div style="font-size:10px; color:#555; margin-top:10px;" id="infoFiltro">Todos os registros</div>
             </div>
             
             <div class="btn-group" style="margin-top:15px;">
@@ -494,6 +657,8 @@
 <script>
     const USERS = {"002451":"FELIPE PRADO","1980":"ANDERSON PRADO","2026":"FABRICIO DIAS","302466":"RODRIGO COSTA","3373":"RICARDO PRADO"};
     let logado = "", userKey = "", todosDados = [], dadosFiltrados = [];
+    let dataAtual = new Date();
+    let dataSelecionada = new Date();
 
     function $(id) { return document.getElementById(id); }
     
@@ -535,17 +700,19 @@
         $('main-panel').classList.remove('hidden');
         $('saudacao').textContent = "OLÁ, " + logado.split(' ')[0];
         
-        $('dataTurno').value = new Date().toISOString().split('T')[0];
+        // Inicializar data
+        const hoje = new Date();
+        $('dataTurno').value = hoje.toISOString().split('T')[0];
+        dataSelecionada = hoje;
+        
         $('turnoRel').value = localStorage.getItem('last_rel_' + logado) || "";
         $('turnoCalc').value = localStorage.getItem('last_calc_' + logado) || "15x23";
         
         carregarNavios();
         ajustarRel();
         ajustarCalc();
+        renderizarCalendario();
         carregarHistorico();
-        
-        // Verificar backup automático
-        verificarBackup();
     }
 
     function salvarTurno(tipo, valor) {
@@ -559,6 +726,108 @@
         const header = content.previousElementSibling;
         content.classList.toggle('active');
         header.classList.toggle('active');
+    }
+
+    // CALENDÁRIO
+    function mudarMes(direcao) {
+        dataAtual.setMonth(dataAtual.getMonth() + direcao);
+        renderizarCalendario();
+    }
+
+    function irParaHoje() {
+        dataAtual = new Date();
+        dataSelecionada = new Date();
+        $('dataTurno').value = dataSelecionada.toISOString().split('T')[0];
+        renderizarCalendario();
+        toast('Data atual selecionada');
+    }
+
+    function atualizarCalendario() {
+        const dataInput = $('dataTurno').value;
+        if (dataInput) {
+            dataSelecionada = new Date(dataInput);
+            dataAtual = new Date(dataInput);
+            renderizarCalendario();
+        }
+    }
+
+    function selecionarData(dia, mes, ano) {
+        dataSelecionada = new Date(ano, mes, dia);
+        $('dataTurno').value = dataSelecionada.toISOString().split('T')[0];
+        renderizarCalendario();
+    }
+
+    function renderizarCalendario() {
+        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        
+        $('calendarioMes').textContent = meses[dataAtual.getMonth()] + ' ' + dataAtual.getFullYear();
+        
+        const grid = $('calendarioGrid');
+        grid.innerHTML = '';
+        
+        // Cabeçalho dias da semana
+        diasSemana.forEach(dia => {
+            const div = document.createElement('div');
+            div.className = 'calendario-dia-semana';
+            div.textContent = dia;
+            grid.appendChild(div);
+        });
+        
+        const primeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
+        const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
+        const hoje = new Date();
+        
+        // Dias do mês anterior
+        const diaSemanaPrimeiro = primeiroDia.getDay();
+        const ultimoDiaMesAnterior = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 0).getDate();
+        
+        for (let i = diaSemanaPrimeiro - 1; i >= 0; i--) {
+            const div = document.createElement('div');
+            div.className = 'calendario-dia outro-mes';
+            div.textContent = ultimoDiaMesAnterior - i;
+            grid.appendChild(div);
+        }
+        
+        // Dias do mês atual
+        for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+            const div = document.createElement('div');
+            div.className = 'calendario-dia';
+            div.textContent = dia;
+            
+            const dataCompleta = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dia);
+            const dataStr = dataCompleta.toISOString().split('T')[0];
+            
+            // Verificar se é hoje
+            if (dia === hoje.getDate() && dataAtual.getMonth() === hoje.getMonth() && dataAtual.getFullYear() === hoje.getFullYear()) {
+                div.classList.add('hoje');
+            }
+            
+            // Verificar se tem serviço neste dia
+            const temServico = todosDados.some(d => d.dataCompleta === dataStr);
+            if (temServico) {
+                div.classList.add('com-servico');
+            }
+            
+            // Verificar se está selecionado
+            if (dataSelecionada.getDate() === dia && 
+                dataSelecionada.getMonth() === dataAtual.getMonth() && 
+                dataSelecionada.getFullYear() === dataAtual.getFullYear()) {
+                div.classList.add('selecionado');
+            }
+            
+            div.onclick = () => selecionarData(dia, dataAtual.getMonth(), dataAtual.getFullYear());
+            grid.appendChild(div);
+        }
+        
+        // Dias do próximo mês
+        const diasRestantes = 42 - (diaSemanaPrimeiro + ultimoDia.getDate());
+        for (let i = 1; i <= diasRestantes; i++) {
+            const div = document.createElement('div');
+            div.className = 'calendario-dia outro-mes';
+            div.textContent = i;
+            grid.appendChild(div);
+        }
     }
 
     function ajustarRel() {
@@ -599,7 +868,6 @@
             prod = `PRODUCAO: ${total}`;
         }
         
-        // RELATÓRIO SEM EMOJIS, COM TERNO FORMATADO
         const texto = `RELATORIO DE TURNO\n\n` +
                      `Navio: ${navio}\n` +
                      `Data: ${data}\n` +
@@ -651,7 +919,6 @@
         const tur = $('turnoCalc').value;
         const tipo = $('tipoDia').value;
         const n = parseInt($('nConf').value);
-        const ternoNum = $('ternoCalc').value;
         
         let bruto = 0;
         
@@ -667,15 +934,16 @@
         
         const brutoIndiv = bruto / n;
         const liquido = brutoIndiv * 0.82;
-        const data = $('dataTurno').value;
-        const [ano, mes, dia] = data.split('-');
+        
+        // Pegar data do calendário/input
+        const dataInput = $('dataTurno').value;
+        const [ano, mes, dia] = dataInput.split('-');
         
         const registro = {
             id: Date.now(),
             data: `${dia}/${mes}`,
-            dataCompleta: data,
+            dataCompleta: dataInput,
             navio,
-            terno: ternoNum || "S/T",
             turno: tur,
             tipo: tipo === 'f' ? 'Feriado' : 'Normal',
             bruto: Math.round(brutoIndiv * 100) / 100,
@@ -687,15 +955,16 @@
         hist.unshift(registro);
         localStorage.setItem('hist_' + logado, JSON.stringify(hist));
         
-        // Limpar campos
+        // Limpar campos produção
         if($('t1')) { $('t1').value = ''; $('t2').value = ''; }
         if($('tGeral')) $('tGeral').value = '';
         $('navioCalc').value = '';
-        $('ternoCalc').value = '';
         
         salvarNavio(navio);
         carregarHistorico();
-        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)} | Líquido: R$ ${registro.liquido.toFixed(2)}`);
+        renderizarCalendario(); // Atualizar indicadores
+        
+        toast(`Salvo! Bruto: R$ ${registro.bruto.toFixed(2)} | Líq: R$ ${registro.liquido.toFixed(2)}`);
     }
 
     function salvarNavio(navio) {
@@ -714,8 +983,39 @@
 
     function carregarHistorico() {
         todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        $('totalRegistros').textContent = todosDados.length;
         filtrarHistorico();
-        atualizarStatsGerais();
+        atualizarDashboard();
+    }
+
+    function atualizarDashboard() {
+        // Totais Gerais
+        const totalBruto = todosDados.reduce((a, b) => a + b.bruto, 0);
+        const totalLiquido = todosDados.reduce((a, b) => a + b.liquido, 0);
+        
+        // Pendentes (A Receber)
+        const pendenteBruto = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.bruto, 0);
+        const pendenteLiquido = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
+        
+        // Recebidos
+        const recebidoBruto = todosDados.filter(i => i.pago).reduce((a, b) => a + b.bruto, 0);
+        const recebidoLiquido = todosDados.filter(i => i.pago).reduce((a, b) => a + b.liquido, 0);
+        
+        // Atualizar dashboard
+        $('dashTotalBruto').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('dashTotalLiquido').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('dashPendenteBruto').textContent = "R$ " + pendenteBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('dashPendenteLiquido').textContent = "R$ " + pendenteLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('dashRecebidoBruto').textContent = "R$ " + recebidoBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        $('dashRecebidoLiquido').textContent = "R$ " + recebidoLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
+        
+        // Alerta visual se houver pendentes
+        const boxPendente = document.querySelectorAll('.dash-box.pendente');
+        if (pendenteLiquido > 0) {
+            boxPendente.forEach(box => box.style.borderColor = 'var(--danger)');
+        } else {
+            boxPendente.forEach(box => box.style.borderColor = 'rgba(255,56,96,0.3)');
+        }
     }
 
     function filtrarHistorico() {
@@ -730,14 +1030,7 @@
         });
         
         renderizarTabela(dadosFiltrados);
-        calcularTotais(dadosFiltrados);
-        
-        const info = $('infoFiltro');
-        if(filtroStatus !== 'todos' || filtroNavio) {
-            info.textContent = `Filtro: ${dadosFiltrados.length} registros`;
-        } else {
-            info.textContent = `Total: ${todosDados.length} registros salvos`;
-        }
+        calcularTotaisFiltrados(dadosFiltrados);
     }
 
     function renderizarTabela(lista) {
@@ -753,9 +1046,9 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${item.data}<br><small style="color:#666">${item.turno}</small></td>
-                <td>${item.navio}<br><small style="color:#666">T${item.terno || 'S/T'}</small></td>
-                <td style="color: var(--info); font-weight: bold;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
-                <td style="color: var(--accent); font-weight: bold;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
+                <td>${item.navio}<br><small style="color:#666">${item.tipo}</small></td>
+                <td style="color: var(--info); font-weight: bold; font-size: 11px;">R$ ${item.bruto.toFixed(2).replace('.', ',')}</td>
+                <td style="color: var(--accent); font-weight: bold; font-size: 12px;">R$ ${item.liquido.toFixed(2).replace('.', ',')}</td>
                 <td>
                     <div class="actions-cell">
                         <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
@@ -770,24 +1063,12 @@
         });
     }
 
-    function calcularTotais(lista) {
+    function calcularTotaisFiltrados(lista) {
         const totalBruto = lista.reduce((soma, item) => soma + (parseFloat(item.bruto) || 0), 0);
         const totalLiquido = lista.reduce((soma, item) => soma + (parseFloat(item.liquido) || 0), 0);
         
-        $('totalBrutoExibido').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        $('totalAcumulado').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-    }
-
-    function atualizarStatsGerais() {
-        const totalBruto = todosDados.reduce((a, b) => a + b.bruto, 0);
-        const totalLiquido = todosDados.reduce((a, b) => a + b.liquido, 0);
-        const pendente = todosDados.filter(i => !i.pago).reduce((a, b) => a + b.liquido, 0);
-        const dias = todosDados.length;
-        
-        $('statBruto').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('statLiquido').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('statPendente').textContent = "R$ " + pendente.toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        $('statDias').textContent = dias;
+        $('totalBrutoFiltrado').textContent = "R$ " + totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        $('totalLiquidoFiltrado').textContent = "R$ " + totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
     }
 
     function alternarStatus(id) {
@@ -795,9 +1076,16 @@
         if (idx > -1) {
             todosDados[idx].pago = !todosDados[idx].pago;
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+            
+            // Se marcou como pago, mostrar toast com valor
+            if (todosDados[idx].pago) {
+                toast(`Recebido: R$ ${todosDados[idx].liquido.toFixed(2)} ✓`);
+            } else {
+                toast('Marcado como pendente');
+            }
+            
             filtrarHistorico();
-            atualizarStatsGerais();
-            toast('Status atualizado!');
+            atualizarDashboard(); // Atualiza os totis superiores
         }
     }
 
@@ -805,8 +1093,10 @@
         modal('Excluir?', 'Esta ação não pode ser desfeita.', () => {
             todosDados = todosDados.filter(i => i.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+            $('totalRegistros').textContent = todosDados.length;
             filtrarHistorico();
-            atualizarStatsGerais();
+            atualizarDashboard();
+            renderizarCalendario();
             toast('Excluído!');
         });
     }
@@ -816,6 +1106,8 @@
         modal('ATENÇÃO', 'Isso apagará TODO o histórico permanentemente!', () => {
             localStorage.removeItem('hist_' + logado);
             carregarHistorico();
+            atualizarDashboard();
+            renderizarCalendario();
             toast('Histórico limpo!');
         });
     }
@@ -823,9 +1115,9 @@
     function exportarCSV() {
         if (todosDados.length === 0) return toast('Nada para exportar');
         
-        let csv = 'Data,Navio,Terno,Turno,Tipo,Bruto,Liquido,Status\n';
+        let csv = 'Data,Navio,Turno,Tipo,Bruto,Liquido,Status\n';
         todosDados.forEach(i => {
-            csv += `${i.data},${i.navio},${i.terno || 'S/T'},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
+            csv += `${i.data},${i.navio},${i.turno},${i.tipo},${i.bruto.toFixed(2)},${i.liquido.toFixed(2)},${i.pago ? 'Pago' : 'Pendente'}\n`;
         });
         
         const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
@@ -836,22 +1128,12 @@
         a.click();
         URL.revokeObjectURL(url);
         
-        // Salvar registro de backup
         localStorage.setItem('ultimoBackup_' + logado, new Date().toISOString());
         toast('Backup CSV baixado!');
     }
 
     function fazerBackup() {
         exportarCSV();
-    }
-
-    function verificarBackup() {
-        const ultimo = localStorage.getItem('ultimoBackup_' + userKey);
-        if (!ultimo) {
-            setTimeout(() => {
-                toast('💡 Dica: Faça backup regularmente usando o botão EXPORTAR CSV');
-            }, 2000);
-        }
     }
 
     // Fechar modal ao clicar fora
