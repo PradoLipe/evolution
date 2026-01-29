@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V22.0</title>
+    <title>SISTEMA EVOLUTION - FINAL</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --bg: #0d0d0d; --card-bg: #1a1a1a; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 10px; margin: 0; display: flex; flex-direction: column; align-items: center; }
@@ -16,24 +16,22 @@
         .btn-calc { background: var(--accent); color: #000; }
         .res-area { display:none; margin-top:15px; padding:12px; background:#000; color:#00ffca; border:1px solid var(--primary); font-family:monospace; font-size:11px; white-space: pre-wrap; border-radius:8px; }
         #resCalc { display:none; text-align:center; margin-top:15px; background:#000; padding:15px; border:1px solid var(--accent); border-radius:10px; }
-        .footer { margin-top: 25px; font-size: 9px; color: #666; text-align: center; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container" id="login-screen">
     <h2>SISTEMA EVOLUTION</h2>
-    <p style="text-align:center; font-size:10px; color:var(--primary);">ACESSO RESTRITO V22</p>
     <label>CHAVE DE ACESSO:</label>
-    <input type="tel" id="senhaInput" placeholder="Digite sua senha" style="-webkit-text-security: disc;">
+    <input type="tel" id="senhaInput" placeholder="Sua Senha" style="-webkit-text-security: disc;">
     <button style="background:var(--primary); color:#000;" onclick="login()">ENTRAR</button>
 </div>
 
 <div class="container" id="main-panel" style="display: none;">
     <h2 id="saudacao">PAINEL</h2>
     
-    <label>NOME DO NAVIO:</label>
-    <input type="text" id="navioPrincipal" placeholder="Ex: CAP SAN ARTEMISIO">
+    <label>NAVIO:</label>
+    <input type="text" id="navioPrincipal" placeholder="NOME DO NAVIO">
     
     <label>TURNO:</label>
     <select id="turnoSel">
@@ -42,8 +40,8 @@
         <option value="23x07">23x07</option>
     </select>
 
-    <label>PRODUÇÃO (MOVIMENTAÇÃO):</label>
-    <input type="number" id="prodInput" placeholder="Quantidade total">
+    <label>PRODUÇÃO TOTAL:</label>
+    <input type="number" id="prodInput" placeholder="Quantidade">
 
     <label>DIVISÃO (TERNO):</label>
     <select id="ternoSel">
@@ -52,50 +50,41 @@
         <option value="3" selected>TRIO (3)</option>
     </select>
 
-    <label>TIPO DE DIA:</label>
+    <label>DIA:</label>
     <select id="tipoDia">
         <option value="n">NORMAL</option>
         <option value="f">DOMINGO/FERIADO</option>
     </select>
     
-    <button class="btn-gerar" onclick="gerarRel()">GERAR RELATÓRIO WHATSAPP</button>
-    
+    <button class="btn-gerar" onclick="gerarRel()">GERAR RELATÓRIO</button>
     <div id="relArea" class="res-area"></div>
-    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPIAR RELATÓRIO</button>
+    <button id="btnCopiar" onclick="copiar()" style="display:none; background:#3273dc; color:#fff;">COPIAR MENSAGEM</button>
 
-    <button class="btn-calc" style="margin-top: 20px;" onclick="calcular()">CALCULAR MEU LÍQUIDO</button>
-    
+    <button class="btn-calc" style="margin-top: 25px;" onclick="calcular()">CALCULAR GANHO LÍQUIDO</button>
     <div id="resCalc">
         <div id="resLiquido" style="font-size:20px; color:var(--accent); font-weight:bold;"></div>
-        <div style="font-size: 9px; color: #888; margin-top: 5px;">Cálculo: (Produção × Taxa) ÷ Terno - 18%</div>
     </div>
-
-    <span class="footer">© 2026 SISTEMA EVOLUTION - FELIPE PRADO</span>
 </div>
 
 <script>
-    const USERS = { "002451": "FELIPE PRADO", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA" };
-    let logado = "";
-
+    const USERS = { "002451": "FELIPE PRADO", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS" };
+    
     function login() {
-        const s = document.getElementById('senhaInput').value.trim();
+        const s = document.getElementById('senhaInput').value;
         if (USERS[s]) {
-            logado = USERS[s];
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-panel').style.display = 'block';
-            document.getElementById('saudacao').innerText = "OLÁ, " + logado;
+            document.getElementById('saudacao').innerText = "OLÁ, " + USERS[s];
         } else { alert("Senha incorreta!"); }
     }
 
     function gerarRel() {
-        const n = (document.getElementById('navioPrincipal').value || "S/N").toUpperCase();
+        const n = document.getElementById('navioPrincipal').value.toUpperCase();
+        const p = document.getElementById('prodInput').value;
         const t = document.getElementById('turnoSel').value;
-        const p = document.getElementById('prodInput').value || "0";
         const d = new Date().toLocaleDateString('pt-BR');
         
-        // Relatório limpo para o cliente
-        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nTURNO: ${t}\nPRODUÇÃO: ${p}\nCONFERENTE: ${logado}\n----------------`;
-        
+        const msg = `SISTEMA EVOLUTION\nNAVIO: ${n}\nDATA: ${d}\nTURNO: ${t}\nPRODUÇÃO: ${p}\n----------------`;
         document.getElementById('relArea').innerText = msg;
         document.getElementById('relArea').style.display = 'block';
         document.getElementById('btnCopiar').style.display = 'block';
@@ -107,18 +96,16 @@
         const turno = document.getElementById('turnoSel').value;
         const terno = parseInt(document.getElementById('ternoSel').value);
         
-        // Taxas fixas
         let taxa = (turno === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
-        let brutoIndiv = (prod * taxa) / terno;
-        let liquido = brutoIndiv * 0.82; // Desconto de 18%
+        let liquido = ((prod * taxa) / terno) * 0.82;
 
-        document.getElementById('resLiquido').innerText = `R$ ${liquido.toFixed(2)}`;
+        document.getElementById('resLiquido').innerText = `LÍQUIDO: R$ ${liquido.toFixed(2)}`;
         document.getElementById('resCalc').style.display = 'block';
     }
 
     function copiar() {
         navigator.clipboard.writeText(document.getElementById('relArea').innerText);
-        alert("Copiado com sucesso!");
+        alert("Copiado!");
     }
 </script>
 </body>
