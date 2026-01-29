@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V27</title>
+    <title>SISTEMA EVOLUTION - V28</title>
     <style>
         :root { --primary: #00d1b2; --accent: #ffdd57; --danger: #ff3860; --bg: #0a0a0a; --card: #1a1a1a; --input: #262626; }
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
@@ -54,7 +54,7 @@
         <h3>📝 Relatório Diário</h3>
         <label>Data:</label><input type="date" id="dataTurno">
         <label>Navio:</label><input type="text" id="navioRel" placeholder="NOME DO NAVIO">
-        <label>Número do Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
+        <label>Terno:</label><input type="number" id="ternoRelInput" placeholder="Ex: 1">
         <label>Turno:</label>
         <select id="turnoRel" onchange="salvarTurno('rel', this.value)">
             <option value="">Selecione</option>
@@ -123,31 +123,24 @@
         document.getElementById('main-panel').style.display = 'block';
         document.getElementById('saudacao').innerText = "OLÁ, " + logado;
         
-        // Data Atual
         const hoje = new Date();
-        document.getElementById('dataTurno').value = hoje.toISOString().split('T')[0];
+        const fAno = hoje.getFullYear();
+        const fMes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const fDia = String(hoje.getDate()).padStart(2, '0');
+        document.getElementById('dataTurno').value = `${fAno}-${fMes}-${fDia}`;
         
-        // RECUPERA TURNOS SALVOS
         const tRel = localStorage.getItem('last_turno_rel_' + logado) || "";
         const tCalc = localStorage.getItem('last_turno_calc_' + logado) || "15x23";
-        
         document.getElementById('turnoRel').value = tRel;
         document.getElementById('turnoCalc').value = tCalc;
         
-        ajustarRel();
-        ajustarCalc(); 
-        carregarHistorico(); 
+        ajustarRel(); ajustarCalc(); carregarHistorico(); 
         if(Math.random() > 0.4) document.getElementById('pixBanner').style.display = 'block';
     }
 
     function salvarTurno(tipo, valor) {
-        if(tipo === 'rel') {
-            localStorage.setItem('last_turno_rel_' + logado, valor);
-            ajustarRel();
-        } else {
-            localStorage.setItem('last_turno_calc_' + logado, valor);
-            ajustarCalc();
-        }
+        if(tipo === 'rel') { localStorage.setItem('last_turno_rel_' + logado, valor); ajustarRel(); } 
+        else { localStorage.setItem('last_turno_calc_' + logado, valor); ajustarCalc(); }
     }
 
     function fecharPix() { document.getElementById('pixBanner').style.display = 'none'; }
@@ -162,15 +155,20 @@
     function gerarRel() {
         const tur = document.getElementById('turnoRel').value; if(!tur) return;
         const navio = (document.getElementById('navioRel').value || "S/N").toUpperCase();
+        
+        // CORREÇÃO DO TERNO: Removida a duplicidade
         const numTerno = document.getElementById('ternoRelInput').value;
-        const ternoFormatado = numTerno ? numTerno + "º TERNO" : "S/T";
+        const ternoFinal = numTerno ? `${numTerno}° TERNO` : "S/T";
+        
         const d = document.getElementById('dataTurno').value.split('-').reverse().join('/');
         let p = "", tot = 0;
         if(tur === "15x23") {
             const v1 = parseInt(document.getElementById('p1').value) || 0; const v2 = parseInt(document.getElementById('p2').value) || 0;
             p = `15x19: ${v1}\n20x23: ${v2}`; tot = v1 + v2;
         } else { tot = parseInt(document.getElementById('pGeral').value) || 0; p = `PRODUÇÃO: ${tot}`; }
-        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${ternoFormatado}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
+        
+        // Relatório agora monta a linha sem repetir a palavra TERNO
+        document.getElementById('relatorioArea').innerText = `NAVIO: ${navio}\nDATA: ${d}\nTERNO: ${ternoFinal}\nTURNO: ${tur}\n${p}\nTOTAL: ${tot}\nCONF: ${logado}`;
         document.getElementById('relatorioArea').style.display = 'block'; document.getElementById('btnCopiar').style.display = 'block';
     }
 
