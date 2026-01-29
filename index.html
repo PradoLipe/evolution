@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA EVOLUTION - V33</title>
+    <title>SISTEMA EVOLUTION - V34</title>
     <style>
         :root { 
             --primary: #00d1b2; 
@@ -94,6 +94,7 @@
         .btn-whatsapp { background: #25d366; color: #fff; }
         .btn-calc { background: var(--accent); color: #000; }
         .btn-danger { background: var(--danger); color: #fff; }
+        .btn-info { background: #3273dc; color: #fff; font-size: 11px; padding: 12px; }
         .btn-secondary { background: #333; color: #fff; font-size: 11px; padding: 10px; }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -268,6 +269,16 @@
             font-size: 13px;
         }
         
+        .backup-info {
+            background: rgba(0,209,178,0.1);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 11px;
+            color: #aaa;
+        }
+        
         .hidden { display: none !important; }
     </style>
 </head>
@@ -291,7 +302,7 @@
     <label>CHAVE DE ACESSO</label>
     <input type="tel" id="senhaInput" placeholder="000000" style="-webkit-text-security: disc;" maxlength="6">
     <button class="btn-main" onclick="login()">ACESSAR</button>
-    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 20px;">© 2026 FELIPE PRADO - V33</div>
+    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 20px;">© 2026 FELIPE PRADO - V34</div>
 </div>
 
 <div class="container hidden" id="main-panel">
@@ -384,6 +395,10 @@
     <div class="history-section">
         <h3>📅 Histórico</h3>
         
+        <div class="backup-info">
+            <strong style="color: var(--primary);">💡 DICA:</strong> Clique em "SALVAR BACKUP" periodicamente para não perder seus dados. O arquivo será baixado no seu celular.
+        </div>
+        
         <div class="filters">
             <input type="text" id="filtroNavio" placeholder="Filtrar navio..." oninput="filtrarHistorico()">
             <select id="filtroStatus" onchange="filtrarHistorico()">
@@ -416,9 +431,11 @@
         </div>
         
         <div class="btn-group" style="margin-top:15px;">
-            <button class="btn-secondary" onclick="exportarCSV()">📄 CSV</button>
-            <button class="btn-danger" onclick="limparTodos()">🗑️ LIMPAR TUDO</button>
+            <button class="btn-info" onclick="exportarCSV()">💾 SALVAR BACKUP CSV</button>
+            <button class="btn-secondary" onclick="exportarTXT()">📝 TXT</button>
         </div>
+        
+        <button class="btn-danger" onclick="limparTodos()" style="margin-top:10px; font-size:11px; padding:12px;">🗑️ LIMPAR TODO HISTÓRICO</button>
     </div>
 </div>
 
@@ -498,22 +515,32 @@
         if(!tur) return toast('Selecione o turno');
         
         const navio = ($('navioRel').value || "S/N").toUpperCase();
-        const terno = $('ternoRelInput').value || "S/T";
+        const numTerno = $('ternoRelInput').value;
+        // Formato solicitado: Terno: 1°
+        const ternoTexto = numTerno ? `Terno: ${numTerno}°` : "Terno: S/T";
         const data = $('dataTurno').value.split('-').reverse().join('/');
         
-        let prod = "", total = 0;
+        let producaoTexto = "", total = 0;
         
         if(tur === "15x23") {
             const v1 = parseInt($('p1').value) || 0;
             const v2 = parseInt($('p2').value) || 0;
-            prod = `15x19: ${v1}\n20x23: ${v2}`;
+            producaoTexto = `15x19: ${v1}\n20x23: ${v2}`;
             total = v1 + v2;
         } else {
             total = parseInt($('pGeral').value) || 0;
-            prod = `PRODUÇÃO: ${total}`;
+            producaoTexto = `PRODUÇÃO: ${total}`;
         }
         
-        const texto = `*RELATÓRIO*\n\n🚢 ${navio}\n📅 ${data}\n🕐 ${terno}\n⚡ ${tur}\n\n${prod}\n📊 Total: ${total}\n👤 ${logado}`;
+        // RELATÓRIO SEM FIGURINHAS (EMOJIS)
+        const texto = `*RELATÓRIO DE TURNO*\n\n` +
+                     `NAVIO: ${navio}\n` +
+                     `DATA: ${data}\n` +
+                     `${ternoTexto}\n` +  // Agora formato: Terno: 1°
+                     `TURNO: ${tur}\n\n` +
+                     `${producaoTexto}\n` +
+                     `TOTAL: ${total}\n\n` +
+                     `CONF: ${logado}`;
         
         $('relatorioArea').textContent = texto;
         $('relatorioArea').style.display = 'block';
@@ -531,6 +558,14 @@
 
     function copiar() {
         navigator.clipboard.writeText($('relatorioArea').textContent).then(() => {
+            toast('Copiado para WhatsApp!');
+        }).catch(() => {
+            const temp = document.createElement('textarea');
+            temp.value = $('relatorioArea').textContent;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
             toast('Copiado!');
         });
     }
@@ -633,10 +668,9 @@
         renderizarTabela(dadosFiltrados);
         calcularTotal(dadosFiltrados);
         
-        // Atualizar texto informativo
         const info = $('infoFiltro');
         if(filtroStatus !== 'todos' || filtroNavio) {
-            info.textContent = `Filtro ativo: ${dadosFiltrados.length} registros`;
+            info.textContent = `${dadosFiltrados.length} registros filtrados`;
             info.style.color = '#888';
         } else {
             info.textContent = 'Todos os registros';
@@ -664,7 +698,7 @@
                     <div class="actions-cell">
                         <span class="badge ${item.pago ? 'badge-pago' : 'badge-pendente'}" 
                               onclick="alternarStatus(${item.id})">
-                            ${item.pago ? '✓ PAGO' : '○ PEND'}
+                            ${item.pago ? 'PAGO' : 'PEND'}
                         </span>
                         <button class="icon-btn btn-danger" onclick="excluirItem(${item.id})">×</button>
                     </div>
@@ -703,7 +737,7 @@
     }
 
     function excluirItem(id) {
-        modal('Excluir?', 'Esta ação não pode ser desfeita.', () => {
+        modal('Excluir?', 'Tem certeza que deseja excluir este lançamento?', () => {
             todosDados = todosDados.filter(i => i.id !== id);
             localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
             filtrarHistorico();
@@ -733,10 +767,32 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `historico_${logado}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `BACKUP_${logado}_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-        toast('CSV baixado!');
+        toast('Backup salvo no celular!');
+    }
+
+    function exportarTXT() {
+        if (todosDados.length === 0) return toast('Nada para exportar');
+        
+        let txt = `BACKUP HISTORICO - ${logado}\n` +
+                  `Data: ${new Date().toLocaleString()}\n` +
+                  `Total: R$ ${todosDados.reduce((a,b) => a+b.liquido, 0).toFixed(2)}\n`;
+        txt += `========================================\n\n`;
+        
+        todosDados.forEach(i => {
+            txt += `[${i.data}] ${i.navio} | ${i.turno} | R$${i.liquido.toFixed(2)} | ${i.pago ? 'PAGO' : 'PENDENTE'}\n`;
+        });
+        
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `BACKUP_${logado}_${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Backup TXT salvo!');
     }
 
     // Fechar modal ao clicar fora
