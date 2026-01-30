@@ -15,6 +15,7 @@
             --danger: #ff3860;
             --success: #48c774;
             --info: #209cee;
+            --warning: #ff9f43;
             --bg: #0a0a0e;
             --bg-gradient: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0e 50%, #000000 100%);
             --card: rgba(22, 22, 29, 0.75);
@@ -23,8 +24,10 @@
             --text: #ffffff;
             --text-dim: #8e8e93;
             --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.03);
             --blur: blur(25px);
             --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --glow: 0 0 25px rgba(0, 209, 178, 0.35);
         }
         
         body.light-mode {
@@ -36,6 +39,7 @@
             --text: #1a1a1a;
             --text-dim: #666666;
             --border: rgba(0, 0, 0, 0.08);
+            --glass: rgba(255, 255, 255, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
@@ -53,6 +57,7 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 25px; min-height: 100vh; display: flex; flex-direction: column; flex: 1; }
 
+        /* TELA LOGIN */
         .login-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .glass-panel-login { background: var(--card); backdrop-filter: var(--blur); border: 1px solid var(--border); border-radius: 32px; box-shadow: var(--shadow); padding: 50px 35px; text-align: center; width: 100%; animation: fadeIn 0.8s ease-out; }
         .evolution-logo-login { font-size: 2.2rem; font-weight: 900; letter-spacing: 6px; background: linear-gradient(135deg, var(--primary) 0%, #fff 50%, var(--primary) 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; text-shadow: 0 0 20px rgba(0, 209, 178, 0.3); margin-bottom: 5px; display: block; width: 100%; }
@@ -67,21 +72,18 @@
         
         #senhaInput { width: 100%; padding: 18px; background: var(--input); border: 1px solid var(--border); border-radius: 16px; color: var(--text); text-align: center; font-size: 16px; font-weight: 800; letter-spacing: 2px; margin-bottom: 25px; outline: none; }
 
-        /* DASHBOARD - CORES RESTAURADAS */
+        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
         .dash-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
-        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
-        
-        /* CORES ESPECÍFICAS POR TIPO */
-        .dash-bruto::before { background: var(--info); }
-        .dash-liq::before { background: var(--accent); }
-        .dash-pend::before { background: var(--danger); }
-        .dash-pago::before { background: var(--success); }
+        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .dash-card.dash-bruto::before { background: var(--info); }
+        .dash-card.dash-liq::before { background: var(--accent); }
+        .dash-card.dash-pend::before { background: var(--danger); }
+        .dash-card.dash-pago::before { background: var(--success); }
+        .dash-val { font-size: 1.3rem; font-weight: 800; font-family: 'Space Mono', monospace; }
+        .dash-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
 
-        .dash-val { font-size: 1.2rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 5px; }
-        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .dash-count { font-size: 10px; margin-top: 4px; font-weight: 700; }
-
+        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 24px; margin-bottom: 20px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
@@ -103,21 +105,26 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
+        /* MODAIS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 35px; width: 100%; max-width: 400px; padding: 40px 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
-        .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card-solid); border-radius: 35px; width: 100%; max-width: 400px; padding: 40px 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
+        /* TOAST */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
-        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 24px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 13px; box-shadow: var(--shadow); margin-bottom: 12px; }
+        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 24px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 13px; box-shadow: var(--shadow); margin-bottom: 12px; animation: toastIn 0.3s ease-out forwards; display: flex; align-items: center; gap: 12px; }
+        @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* FOOTER DINÂMICO */
-        .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; border-top: 1px solid var(--border); }
-        .footer-text { font-size: 11px; letter-spacing: 2px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
-        .footer-text span { color: var(--primary); }
+        /* RODAPÉ PREMIUM (CIRÚRGICO) */
+        .footer-copyright { padding: 40px 0; text-align: center; width: 100%; margin-top: auto; }
+        .footer-line { width: 50px; height: 2px; background: var(--primary); margin: 0 auto 15px; border-radius: 2px; opacity: 0.5; }
+        .footer-text { font-size: 10px; letter-spacing: 3px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+        .footer-author { font-size: 12px; font-weight: 900; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 10px rgba(0, 209, 178, 0.4); }
         
         .hidden { display: none !important; }
-        .user-avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; }
+        .user-avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -138,7 +145,11 @@
                 <button class="btn btn-primary" onclick="app.login()">ACESSAR SISTEMA</button>
             </div>
         </div>
-        <div class="footer-copyright"><p class="footer-text">© 2026 <span>FELIPE PRADO SYSTEMS</span></p></div>
+        <div class="footer-copyright">
+            <div class="footer-line"></div>
+            <p class="footer-text">Todos os direitos reservados</p>
+            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <div class="container hidden" id="mainPanel">
@@ -153,8 +164,8 @@
         <div class="dash-grid">
             <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
             <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div class="dash-count" id="countPend" style="color:var(--danger)">0 serv.</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div class="dash-count" id="countPago" style="color:var(--success)">0 serv.</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px;">0 serv.</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -187,13 +198,17 @@
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico</span></div><span>▼</span></div>
             <div class="section-content">
                 <div id="histList"></div>
             </div>
         </div>
 
-        <div class="footer-copyright"><p class="footer-text">EVOLUTION V46 | © 2026 <span>FELIPE PRADO</span></p></div>
+        <div class="footer-copyright">
+            <div class="footer-line"></div>
+            <p class="footer-text">Todos os direitos reservados</p>
+            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <div class="modal-overlay" id="configModal" onclick="if(event.target.id==='configModal')app.closeModal('configModal')">
@@ -201,7 +216,7 @@
             <button class="close-modal-btn" onclick="app.closeModal('configModal')">✕</button>
             <div style="text-align:center; margin-bottom:30px;"><div style="font-size:2.5rem; margin-bottom:10px;">⚙️</div><h3 style="color:var(--primary); letter-spacing:2px; text-transform:uppercase;">Configurações</h3></div>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()"><span id="themeIcon">🌓</span> Mudar Visual</button>
+                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()"><span id="themeIcon">🌓</span> Visual do App</button>
                 <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
                 <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">📥 Exportar Backup</button>
                 <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">📤 Importar Backup</button>
@@ -219,6 +234,7 @@
             <div style="font-size:3rem; margin-bottom:15px;">☕</div>
             <p id="pixMsg" style="margin-bottom:20px; font-weight:700; color:var(--text);"></p>
             <div onclick="app.copyPix()" style="background:#1a1a1a; color:var(--accent); padding:20px; border-radius:15px; font-family:monospace; border:2px dashed var(--accent); cursor:pointer;">92994821868</div>
+            <p style="font-size:10px; color:var(--text-dim); margin-top:15px;">Clique para copiar o PIX</p>
         </div>
     </div>
 
@@ -268,7 +284,7 @@
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             generateReport() {
@@ -309,7 +325,7 @@
                 reader.onload = (ev) => {
                     try {
                         const data = JSON.parse(ev.target.result);
-                        if (Array.isArray(data)) { this.entries = data; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Dados Restaurados! 🚀'); this.closeModal('configModal'); }
+                        if (Array.isArray(data)) { this.entries = data; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado! 🚀'); this.closeModal('configModal'); }
                     } catch (err) { this.showToast('Arquivo Inválido!'); }
                 };
                 reader.readAsText(file);
