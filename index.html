@@ -3,158 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION V46 ULTRA PREMIUM</title>
+    <title>EVOLUTION V46 - FIX</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
-        :root {
-            --primary: #00d1b2; --danger: #ff3860; --success: #48c774;
-            --bg: #0a0a0e; --card: rgba(22, 22, 29, 0.75); --text: #ffffff;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --primary: #00d1b2; --bg: #0a0a0e; --card: #16161d; --text: #fff; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
         .container { max-width: 480px; margin: 0 auto; padding: 20px; }
-        
-        /* GRID DE PRODUÇÃO IMUTÁVEL */
-        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; margin-bottom: 12px; }
-        
-        input, select { width: 100%; padding: 12px; background: rgba(32, 32, 38, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #fff; outline: none; }
-        .input-label { display: block; font-size: 10px; color: #8e8e93; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, #00b89c 100%); color: #000; }
-        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
-        
+        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 14px; background: #202026; border: 1px solid #333; border-radius: 12px; color: #fff; outline: none; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid #333; overflow: hidden; }
+        .section-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 800; font-size: 0.8rem; }
+        .section-content { display: none; padding: 0 20px 20px; }
+        .section-card.expanded .section-content { display: block; }
         .hidden { display: none !important; }
-        .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
-        .section-header { padding: 18px 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 700; font-size: 0.75rem; }
-        .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; padding: 0 20px; }
-        .section-card.expanded .section-content { max-height: 1500px; padding: 0 20px 20px; }
     </style>
 </head>
 <body>
     <div class="container" id="loginScreen">
-        <div style="height: 80vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-            <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 30px;">EVOLUTION</h1>
-            <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" maxlength="6" style="text-align:center;">
+        <div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h1 style="color:var(--primary); letter-spacing:4px; margin-bottom:30px;">EVOLUTION</h1>
+            <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center;">
             <button class="btn btn-primary" style="margin-top:20px;" onclick="app.login()">ACESSAR</button>
         </div>
     </div>
 
     <div class="container hidden" id="mainPanel">
-        <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')">RELATÓRIO DE PRODUÇÃO<span>▼</span></div>
+        <div class="section-card expanded" id="secLan">
+            <div class="section-header" onclick="app.toggle('secLan')">NOVA PRODUÇÃO<span>▼</span></div>
             <div class="section-content">
-                <div class="input-group" style="margin-bottom:12px;"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;"></div>
                 <div class="input-row">
-                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option></select></div>
+                    <select id="tipo"><option>Normal</option><option>Domingo / Feriado</option></select>
+                    <select id="turno" onchange="app.render()"><option value="15x23">15x23</option><option value="07x15">07x15</option></select>
                 </div>
-                <div id="relCamposProducao"></div>
-                <button class="btn btn-success" onclick="app.generateReport()">COPIAR RELATÓRIO</button>
-            </div>
-        </div>
-
-        <div class="section-card" id="secLan">
-            <div class="section-header" onclick="app.toggleSection('secLan')">NOVA PRODUÇÃO<span>▼</span></div>
-            <div class="section-content">
-                <div class="input-group" style="margin-bottom:12px;"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;"></div>
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Domingo / Feriado</option></select></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="15x23" selected>15x23</option><option value="07x15">07x15</option></select></div>
-                </div>
-                <div id="calcCampos"></div>
-                <button class="btn btn-primary">SALVAR REGISTRO</button>
+                <div id="campos"></div>
+                <button class="btn btn-primary" style="margin-top:10px;">SALVAR</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO EXTRAÍDA
         const firebaseConfig = {
             apiKey: "AIzaSyBajqlsm59E8r_GqDOTLzTEuAW9GkqNAw",
             authDomain: "evolution-v46-system.firebaseapp.com",
             databaseURL: "https://evolution-v46-system-default-rtdb.firebaseio.com",
             projectId: "evolution-v46-system",
             storageBucket: "evolution-v46-system.firebasestorage.app",
-            messagingSenderId: "447216318794",
             appId: "1:447216318794:web:05199126e89275f3f069b3"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const SECURE_USERS = { "002451": "FELIPE PRADO", "1234": "USUÁRIO TESTE", "7806": "EdilsonJr" };
+        
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.log("Erro inicialização"); }
 
         class EvolutionApp {
             constructor() {
-                this.deviceId = this.initDevice();
-                this.init();
-            }
-
-            initDevice() {
-                let id = localStorage.getItem('evo_dna');
-                if (!id) { id = 'ID-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('evo_dna', id); }
-                return id;
+                this.dna = localStorage.getItem('dna') || 'ID-'+Math.random().toString(36).substr(2,9).toUpperCase();
+                localStorage.setItem('dna', this.dna);
             }
 
             async login() {
-                const code = document.getElementById('senhaInput').value;
-                const user = SECURE_USERS[code];
-                if (!user) { alert('Senha Incorreta'); return; }
+                const s = document.getElementById('senhaInput').value;
+                if(s === "1234" || s === "002451" || s === "7806") {
+                    
+                    // TESTE DE TRAVA (NÃO TRAVA O APP SE FALHAR)
+                    if(s !== "002451") {
+                        try {
+                            const db = firebase.database();
+                            const snap = await db.ref('devices/'+s).get();
+                            const dono = snap.val();
+                            if(dono && dono !== this.dna) {
+                                document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>ACESSO NEGADO: OUTRO APARELHO</h1>";
+                                return;
+                            } else if(!dono) {
+                                await db.ref('devices/'+s).set(this.dna);
+                            }
+                        } catch(e) { console.log("Segurança Offline"); }
+                    }
 
-                // TRAVA GLOBAL FIREBASE EM SEGUNDO PLANO
-                if (code !== "002451") {
-                    try {
-                        const snap = await db.ref(`devices/${code}`).get();
-                        const registeredDna = snap.val();
-                        if (registeredDna && registeredDna !== this.deviceId) {
-                            this.breakSite(); return;
-                        } else if (!registeredDna) {
-                            await db.ref(`devices/${code}`).set(this.deviceId);
-                        }
-                    } catch (e) { console.log("Firebase Offline - Continuando Localmente"); }
-                }
-
-                this.currentUser = user;
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainPanel').classList.remove('hidden');
-                this.adjustCalcFields(); this.toggleRelatorioCampos();
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainPanel').classList.remove('hidden');
+                    this.render();
+                } else { alert("Senha errada"); }
             }
 
-            breakSite() {
-                document.body.innerHTML = `<div style="height:100vh; background:#000; color:#ff3860; display:flex; align-items:center; justify-content:center; text-align:center; flex-direction:column; padding:20px;">
-                    <h1>ACESSO NEGADO</h1><p style="margin-top:20px;">Senha vinculada a outro aparelho.</p>
-                    <p style="margin-top:40px; color:var(--primary);">CONTATO: FELIPE PRADO</p></div>`;
+            render() {
+                const t = document.getElementById('turno').value;
+                document.getElementById('campos').innerHTML = t === '15x23' ? 
+                    `<div class="input-row"><input type="number" placeholder="15h-19h"><input type="number" placeholder="19h-23h"></div>` : 
+                    `<input type="number" placeholder="Total">`;
             }
 
-            adjustCalcFields() {
-                const t = document.getElementById('calcTurno').value;
-                const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Total</label><input type="number" id="calcPT"></div>`;
-            }
-
-            toggleRelatorioCampos() {
-                const t = document.getElementById('relTurno').value;
-                const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="relP1"></div><div><label class="input-label">19h-23h</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Total</label><input type="number" id="relPT"></div>`;
-            }
-
-            generateReport() {
-                const n = document.getElementById('relNavio').value.toUpperCase();
-                const t = document.getElementById('relTurno').value;
-                const df = new Date().toLocaleDateString('pt-BR');
-                let m = `*${n}*\nData: ${df} - ${t}\n`;
-                if (t === '15x23') m += `15x19: ${document.getElementById('relP1').value}\n19x23: ${document.getElementById('relP2').value}\n`;
-                m += `${this.currentUser}`;
-                alert('Relatório Copiado');
-            }
-
-            toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
-
-            init() { 
-                const hoje = new Date().toISOString().split('T')[0]; 
-                document.getElementById('relData').value = hoje; 
-            }
+            toggle(id) { document.getElementById(id).classList.toggle('expanded'); }
         }
         const app = new EvolutionApp();
     </script>
