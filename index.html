@@ -10,105 +10,115 @@
             --info: #209cee; --bg: #0a0a0e; --card: #16161d; --input: #202026;
             --text: #ffffff; --text-dim: #8e8e93; --border: rgba(255,255,255,0.08);
         }
-
-        /* MODO CLARO COMPATÍVEL */
         body.light-mode {
-            --bg: #f0f2f5; --card: #ffffff; --input: #e4e6eb;
-            --text: #1c1e21; --text-dim: #606770; --border: rgba(0,0,0,0.1);
+            --bg: #f4f4f9; --card: #ffffff; --input: #eeeeee;
+            --text: #1a1a1a; --text-dim: #666666; --border: rgba(0,0,0,0.1);
         }
-
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
         input, select { user-select: text; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; transition: 0.3s; }
-        .container { max-width: 480px; width: 100%; padding: 20px; position: relative; display: flex; flex-direction: column; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; transition: 0.3s; }
+        .container { max-width: 480px; width: 100%; padding: 20px; display: flex; flex-direction: column; }
         
-        /* LOGIN & SECURITY */
-        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 28px; padding: 45px 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
-        
-        .layout-broken { filter: grayscale(1) contrast(0.5) blur(3px) !important; pointer-events: none !important; }
-        .block-notice { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--danger); padding: 30px; }
+        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 5px; }
+        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 28px; padding: 40px 20px; text-align: center; }
 
-        /* DASHBOARD */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .dash-item { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .dash-item::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border); }
-        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; display: block; }
-        .dash-val { font-size: 1.15rem; font-weight: 800; font-family: 'Monaco', monospace; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .dash-item { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); border-left: 4px solid var(--primary); }
+        .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .dash-val { font-size: 1rem; font-weight: 800; font-family: monospace; }
 
-        /* SEÇÕES */
-        .section-card { background: var(--card); padding: 22px; border-radius: 24px; margin-bottom: 15px; border: 1px solid var(--border); }
-        h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .section-card { background: var(--card); padding: 20px; border-radius: 22px; margin-bottom: 15px; border: 1px solid var(--border); }
+        h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 15px; color: var(--text); font-size: 1rem; margin-top: 10px; }
-        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 18px; border-radius: 15px; font-weight: 800; padding: 18px; border:none; cursor:pointer; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: var(--text); margin-top: 8px; }
+        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 15px; border-radius: 12px; font-weight: 800; padding: 16px; border:none; cursor:pointer; }
 
-        /* HISTÓRICO COM BADGES VISÍVEIS */
-        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
-        .val-liq { color: var(--accent); font-weight: 800; font-size: 1.1rem; font-family: 'Monaco', monospace; }
-        .val-bruto { color: var(--info); font-size: 0.75rem; font-weight: 600; font-family: 'Monaco', monospace; margin-top: 2px; display: block; }
-        
-        /* BOTÃO DE STATUS MELHORADO */
-        .status-badge { 
-            display: inline-block; padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; 
-            text-transform: uppercase; margin-top: 8px; cursor: pointer; transition: 0.2s;
-        }
-        .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); border: 1px solid var(--danger); }
-        .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; margin-top: 8px; cursor: pointer; }
+        .pago { background: rgba(72, 199, 116, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .pendente { background: rgba(255, 56, 96, 0.2); color: var(--danger); border: 1px solid var(--danger); }
 
-        .footer-premium { text-align: center; padding: 35px 0; opacity: 0.7; }
-        .footer-premium .name { color: var(--primary); font-weight: 700; font-size: 11px; margin-top: 4px; }
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .footer-premium { text-align: center; padding: 30px 0; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+        .footer-premium b { color: var(--primary); }
 
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-pix { background: var(--card); border: 1px solid var(--primary); padding: 30px; border-radius: 30px; text-align: center; width: 100%; max-width: 380px; }
-        .toast { position: fixed; bottom: 30px; background: var(--primary); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; z-index: 2000; display: none; left: 50%; transform: translateX(-50%); width: max-content; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 25px; width: 100%; max-width: 350px; text-align: center; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 800; z-index: 2000; display: none; }
         .hidden { display: none !important; }
+        .layout-broken { filter: blur(5px); pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div class="block-notice" id="blockNotice">
-    <h1>🚫</h1><h2>ACESSO RESTRITO</h2>
-    <p style="font-size: 0.7rem; margin-top: 20px; color: var(--text-dim);">Contate Felipe Prado para suporte.</p>
+<div id="blockNotice" style="position:fixed; inset:0; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; color:red; text-align:center;">
+    <h1>🚫 ACESSO RESTRITO</h1><p>Contate Felipe Prado.</p>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<div class="modal" id="modalConfig">
+    <div class="modal-content">
+        <h3 style="color:var(--primary)">Configurações</h3>
+        <button class="btn-main" onclick="exportarDados()" style="background:#444; color:#fff;">Exportar Backup (JSON)</button>
+        <button class="btn-main" onclick="importarDados()" style="background:#444; color:#fff;">Importar Backup (JSON)</button>
+        <button class="btn-main" onclick="mostrarPix()">Apoiar o Dev ☕</button>
+        <hr style="margin:15px 0; border:0; border-top:1px solid var(--border);">
+        <p style="font-size:9px; color:var(--text-dim)">EVOLUTION V46 PREMIUM<br>© 2026 Felipe Prado - All Rights Reserved</p>
+        <button onclick="$('modalConfig').style.display='none'" style="background:none; border:none; color:var(--danger); margin-top:15px;">FECHAR</button>
+    </div>
+</div>
+
 <div class="modal" id="modalPix">
-    <div class="modal-pix" onclick="copiarChavePix()">
-        <div style="font-size: 3rem; margin-bottom: 15px;">☕</div>
-        <h3 style="color: var(--primary); margin-bottom: 10px;">Apoio ao Desenvolvedor</h3>
-        <p id="msgComedia" style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px;"></p>
-        <div style="background: #000; padding: 20px; border-radius: 18px; border: 1px dashed var(--accent);">
-            <span style="font-size: 1.2rem; font-weight: 900; color: var(--accent);">92994821868</span>
-        </div>
-        <button onclick="event.stopPropagation(); fecharModalPix()" style="background:none; border:none; color:var(--text-dim); margin-top: 15px;">Ignorar</button>
+    <div class="modal-content">
+        <div style="font-size:2rem">☕</div>
+        <p id="msgComedia" style="margin:15px 0; font-size:0.8rem"></p>
+        <div onclick="copiarPix()" style="background:#000; color:var(--accent); padding:15px; border-radius:10px; font-weight:bold; cursor:pointer;">92994821868</div>
+        <p style="font-size:9px; margin-top:5px">Toque para copiar a chave</p>
+        <button onclick="$('modalPix').style.display='none'" style="background:none; border:none; color:var(--text-dim); margin-top:15px;">VOLTAR</button>
     </div>
 </div>
 
 <div class="container" id="login-screen">
-    <div class="glass-card" style="margin-top: 15vh;">
+    <div class="glass-card" style="margin-top:20vh">
         <div class="evolution-logo">EVOLUTION</div>
-        <p style="color: var(--text-dim); font-size: 0.75rem; margin-bottom: 35px;">SYSTEM ADMINISTRATION</p>
-        <input type="tel" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; -webkit-text-security: disc;" maxlength="6">
-        <button class="btn-main" onclick="login()">ACESSAR PAINEL</button>
+        <input type="tel" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center">
+        <button class="btn-main" onclick="login()">ACESSAR</button>
     </div>
 </div>
 
 <div class="container hidden" id="main-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <div>
-            <p style="font-size: 9px; color: var(--primary); font-weight: 800;">AUTENTICADO COMO</p>
-            <h2 id="userName" style="font-size: 1.3rem; font-weight: 900;">...</h2>
+            <p style="font-size:8px; color:var(--primary)">CONFERENTE</p>
+            <h2 id="userName" style="font-size:1.2rem">...</h2>
         </div>
-        <div style="background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid var(--border); cursor:pointer;" onclick="toggleTheme()">🌓</div>
+        <div style="display:flex; gap:10px;">
+            <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer" onclick="toggleTheme()">🌓</div>
+            <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer" onclick="$('modalConfig').style.display='flex'">⚙️</div>
+        </div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item" style="border-left: 4px solid var(--info);"><span class="dash-label">Bruto Total</span><span class="dash-val" style="color:var(--info)" id="dashTotalBruto">R$ 0,00</span></div>
-        <div class="dash-item" style="border-left: 4px solid var(--accent);"><span class="dash-label">Líquido Geral</span><span class="dash-val" style="color:var(--accent)" id="dashTotalLiquido">R$ 0,00</span></div>
-        <div class="dash-item" style="border-left: 4px solid var(--danger);"><span class="dash-label">A Receber</span><span class="dash-val" style="color:var(--danger)" id="dashPendente">R$ 0,00</span></div>
-        <div class="dash-item" style="border-left: 4px solid var(--success);"><span class="dash-label">Já Recebido</span><span class="dash-val" style="color:var(--success)" id="dashRecebido">R$ 0,00</span></div>
+        <div class="dash-item"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--accent)"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--danger)"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--success)"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago">R$ 0,00</div></div>
+    </div>
+
+    <div class="section-card">
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Relatório WhatsApp <span>▼</span></h3>
+        <div id="rel-box" class="hidden">
+            <input type="date" id="dataRel">
+            <input type="text" id="navioRel" placeholder="Nome do Navio">
+            <select id="turnoRel" onchange="ajustarRel()">
+                <option value="">Selecione o Turno</option>
+                <option value="07x15">07x15</option>
+                <option value="15x23">15x23</option>
+                <option value="23x07">23x07</option>
+            </select>
+            <div id="camposRel"></div>
+            <button class="btn-main" style="background:#25d366; color:#fff" onclick="gerarRel()">COPIAR RELATÓRIO</button>
+        </div>
     </div>
 
     <div class="section-card">
@@ -120,115 +130,106 @@
             <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
         </div>
         <div id="camposCalc"></div>
-        <button class="btn-main" onclick="calcularESalvar()">Salvar no Histórico</button>
+        <button class="btn-main" onclick="salvar()">SALVAR SERVIÇO</button>
     </div>
 
     <div class="section-card">
-        <h3>📅 Histórico de Serviços</h3>
+        <h3>📅 Histórico</h3>
         <div id="listaHist"></div>
     </div>
 
     <div class="footer-premium">
-        <p>EVOLUTION • PREMIUM MANAGEMENT SYSTEM</p>
-        <div class="name">Felipe Prado Signature</div>
+        © 2026 ALL RIGHTS RESERVED TO <b>FELIPE PRADO</b>
     </div>
 </div>
 
 <script>
     const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
-    const frasesPix = ["O dev precisa pagar a internet!", "Café = Novas funções!", "A Enel não perdoa!"];
-
-    let logado = "", todosDados = [];
+    const frases = ["A Enel não perdoa, ajuda o dev! ⚡", "O café acabou, socorro! ☕", "Internet vencendo, ajuda aí! 🌐"];
+    let logado = "", dados = [];
     const $ = id => document.getElementById(id);
 
-    // TEMA
-    if(localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode');
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-        toast("Tema Alterado!");
+    // SEGURANÇA HWID
+    function checkSecurity(u) {
+        let devId = localStorage.getItem('evo_hwid') || Math.random().toString(36).substring(7);
+        let reg = localStorage.getItem('reg_' + u);
+        if(!reg) { localStorage.setItem('reg_'+u, devId); localStorage.setItem('evo_hwid', devId); return true; }
+        if(reg !== localStorage.getItem('evo_hwid')) { $('main-panel').classList.add('layout-broken'); $('blockNotice').style.display='flex'; return false; }
+        return true;
     }
-
-    function fMoeda(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
     function login() {
-        const key = $('senhaInput').value;
-        if(USERS[key]) {
-            logado = USERS[key];
-            $('userName').textContent = logado;
-            $('login-screen').classList.add('hidden');
-            $('main-panel').classList.remove('hidden');
-            carregarSistema();
-        } else alert("Chave incorreta!");
+        let k = $('senhaInput').value;
+        if(USERS[k]) {
+            if(!checkSecurity(USERS[k])) return;
+            logado = USERS[k]; $('userName').textContent = logado;
+            $('login-screen').classList.add('hidden'); $('main-panel').classList.remove('hidden');
+            carregar();
+        } else alert("Chave inválida!");
     }
 
-    function carregarSistema() {
-        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        renderizarHist(); atualizarDash(); ajustarCalc();
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
+    function ajustarRel() {
+        let t = $('turnoRel').value;
+        $('camposRel').innerHTML = t === '15x23' ? '<input type="number" id="p1" placeholder="15h-19h"><input type="number" id="p2" placeholder="20h-23h">' : '<input type="number" id="pG" placeholder="Total">';
+    }
+
+    function gerarRel() {
+        let t = $('turnoRel').value; if(!t) return;
+        let nav = ($('navioRel').value || "S/N").toUpperCase();
+        let prod = 0;
+        if(t === '15x23') prod = (parseInt($('p1').value)||0) + (parseInt($('p2').value)||0);
+        else prod = parseInt($('pG').value)||0;
+        let msg = `* EVOLUTION REPORT *\nNavio: ${nav}\nTurno: ${t}\nProdução: ${prod}\nConferente: ${logado}`;
+        navigator.clipboard.writeText(msg); toast("Copiado para o WhatsApp!");
     }
 
     function ajustarCalc() {
-        const t = $('turnoCalc').value;
-        $('camposCalc').innerHTML = t === "15x23" ? 
-            '<input type="number" id="t1" placeholder="Prod. 15h-19h"><input type="number" id="t2" placeholder="Prod. 20h-23h">' : 
-            '<input type="number" id="tGeral" placeholder="Produção Total">';
+        let t = $('turnoCalc').value;
+        $('camposCalc').innerHTML = t === '15x23' ? '<input type="number" id="t1" placeholder="15h-19h"><input type="number" id="t2" placeholder="20h-23h">' : '<input type="number" id="tG" placeholder="Produção">';
     }
 
-    function calcularESalvar() {
-        const tur = $('turnoCalc').value; const tipo = $('tipoDia').value;
-        let brutoT = 0;
-        if(tur === "15x23") {
-            const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
-            brutoT = (tipo === 'f') ? (v1 * 10.32) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
+    function salvar() {
+        let t = $('turnoCalc').value; let tipo = $('tipoDia').value; let bruto = 0;
+        if(t === '15x23') {
+            let v1 = parseInt($('t1').value)||0; let v2 = parseInt($('t2').value)||0;
+            bruto = tipo === 'f' ? (v1+v2)*10.32 : (v1*5.73)+(v2*6.88);
         } else {
-            const prod = parseInt($('tGeral').value)||0;
-            const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
-            brutoT = prod * taxa;
+            let prod = parseInt($('tG').value)||0;
+            let taxa = t === '07x15' ? (tipo==='f'?8.61:5.73) : 6.88;
+            bruto = prod * taxa;
         }
-        todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: brutoT/3, liquido: (brutoT/3)*0.82, pago: false });
-        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        renderizarHist(); atualizarDash(); toast("Serviço Salvo!");
+        dados.unshift({ id: Date.now(), navio: ($('navioCalc').value||"S/N").toUpperCase(), data: $('dataCalc').value, bruto: bruto/3, liq: (bruto/3)*0.82, pago: false });
+        localStorage.setItem('hist_'+logado, JSON.stringify(dados)); carregar(); toast("Salvo!");
     }
 
-    function renderizarHist() {
-        const container = $('listaHist'); container.innerHTML = '';
-        todosDados.forEach(item => {
-            const div = document.createElement('div'); div.className = 'hist-item';
-            div.innerHTML = `
-                <div>
-                    <span style="font-weight:700; font-size:0.9rem; display:block;">${item.navio}</span>
-                    <span style="font-size:0.75rem; color:var(--text-dim);">${item.data}</span>
-                    <br>
-                    <div class="status-badge ${item.pago?'pago':'pendente'}" onclick="alternar(${item.id})">
-                        ${item.pago?'✓ RECEBIDO':'🕒 PENDENTE'}
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                    <span class="val-liq">${fMoeda(item.liquido)}</span>
-                    <span class="val-bruto">BRUTO ${fMoeda(item.bruto)}</span>
-                </div>`;
-            container.appendChild(div);
+    function carregar() {
+        dados = JSON.parse(localStorage.getItem('hist_'+logado)) || [];
+        const lista = $('listaHist'); lista.innerHTML = '';
+        let bT=0, lT=0, pT=0, rT=0;
+        dados.forEach(i => {
+            bT+=i.bruto; lT+=i.liq; i.pago?rT+=i.liq:pT+=i.liq;
+            lista.innerHTML += `<div class="hist-item"><div><b>${i.navio}</b><br><small>${i.data}</small><br><span class="status-badge ${i.pago?'pago':'pendente'}" onclick="alternar(${i.id})">${i.pago?'RECEBIDO':'PENDENTE'}</span></div><div style="text-align:right"><b>R$ ${i.liq.toFixed(2)}</b><br><small>BRUTO R$ ${i.bruto.toFixed(2)}</small></div></div>`;
         });
+        $('dashBruto').textContent = 'R$ '+bT.toFixed(2); $('dashLiq').textContent = 'R$ '+lT.toFixed(2); $('dashPend').textContent = 'R$ '+pT.toFixed(2); $('dashPago').textContent = 'R$ '+rT.toFixed(2);
+        ajustarCalc();
     }
 
-    function alternar(id) {
-        const idx = todosDados.findIndex(i => i.id === id);
-        todosDados[idx].pago = !todosDados[idx].pago;
-        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        renderizarHist(); atualizarDash();
-    }
-
-    function atualizarDash() {
-        const b = todosDados.reduce((a,x)=>a+x.bruto,0);
-        const l = todosDados.reduce((a,x)=>a+x.liquido,0);
-        const p = todosDados.filter(i=>!i.pago).reduce((a,x)=>a+x.liquido,0);
-        const r = todosDados.filter(i=>i.pago).reduce((a,x)=>a+x.liquido,0);
-        $('dashTotalBruto').textContent = fMoeda(b);
-        $('dashTotalLiquido').textContent = fMoeda(l);
-        $('dashPendente').textContent = fMoeda(p);
-        $('dashRecebido').textContent = fMoeda(r);
-    }
-    function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
+    function alternar(id) { let idx = dados.findIndex(x=>x.id===id); dados[idx].pago = !dados[idx].pago; localStorage.setItem('hist_'+logado, JSON.stringify(dados)); carregar(); }
+    function mostrarPix() { $('msgComedia').textContent = frases[Math.floor(Math.random()*frases.length)]; $('modalPix').style.display='flex'; }
+    function copiarPix() { navigator.clipboard.writeText('92994821868'); toast("Chave Copiada!"); }
+    function toggleSection(id) { $(id).classList.toggle('hidden'); }
+    function toast(m) { let t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+    
+    // BACKUP
+    function exportarDados() { let blob = new Blob([JSON.stringify(dados)], {type:'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${logado}.json`; a.click(); }
+    function importarDados() { let input = document.createElement('input'); input.type='file'; input.onchange = e => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = () => { localStorage.setItem('hist_'+logado, reader.result); carregar(); toast("Backup Restaurado!"); }; reader.readAsText(file); }; input.click(); }
+    
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 </script>
 </body>
 </html>
