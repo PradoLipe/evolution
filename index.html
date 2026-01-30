@@ -87,9 +87,13 @@
         .section-card.expanded .section-content { max-height: 2000px; padding: 0 24px 24px; }
 
         input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* DESTAQUE NOME DO NAVIO */
+        .input-navio { font-weight: 900; letter-spacing: 1px; border-color: rgba(0, 209, 178, 0.3); background: rgba(0, 209, 178, 0.05); }
 
         .btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
@@ -164,11 +168,10 @@
         </div>
 
         <div class="section-card expanded" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>WhatsApp</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>RELATÓRIO DE PRODUÇÃO</span></div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;"></div>
+                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" class="input-navio" style="text-transform:uppercase;"></div>
                 <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div><div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
-                <div class="input-group"><label class="input-label">Terno</label><select id="relTerno"><option value="1">1° Terno</option><option value="2">2° Terno</option><option value="3">3° Terno</option><option value="4">4° Terno</option></select></div>
                 <div id="relCamposProducao"></div>
                 <div id="relTotalBox" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary); margin-bottom:15px; display:none;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--primary); font-weight:700;">TOTAL</span><span id="relTotalPreview" style="font-family:monospace; font-size:1.2rem;">0</span></div></div>
                 <button class="btn btn-success" onclick="app.generateReport()">COPIAR RELATÓRIO</button>
@@ -178,7 +181,7 @@
         <div class="section-card" id="secLan">
             <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title"><span>💰</span><span>Nova Produção</span></div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div><div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;"></div></div>
+                <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div><div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" class="input-navio" style="text-transform:uppercase;"></div></div>
                 <div class="input-row"><div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div><div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
                 <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
                 <div id="calcCampos"></div>
@@ -189,11 +192,11 @@
         <div class="section-card expanded" id="secHis">
             <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
-                <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:5px;">
+                <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto;">
                     <div class="filter-chip active" id="f-all" onclick="app.filterHistory('all')">Todos</div>
                     <div class="filter-chip" id="f-pendente" onclick="app.filterHistory('pendente')">Pendentes</div>
                     <div class="filter-chip" id="f-pago" onclick="app.filterHistory('pago')">Pagos</div>
-                    <div class="filter-chip" id="f-semana" onclick="app.filterHistory('semana')">Esta Semana</div>
+                    <div class="filter-chip" id="f-semana" onclick="app.filterHistory('semana')">Semana</div>
                 </div>
                 <div id="histList"></div>
                 <div id="emptyState" class="hidden" style="text-align:center; padding:30px; color:var(--text-dim);">Nenhum registro encontrado</div>
@@ -206,14 +209,24 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="updateNotice" onclick="app.closeModal('updateNotice')">
+        <div class="modal-content" style="text-align:center;">
+            <div style="font-size:3rem; margin-bottom:15px;">🚀</div>
+            <h3 style="color:var(--primary); margin-bottom:15px;">Olá, Conferente!</h3>
+            <p style="font-size:14px; line-height:1.6; color:var(--text);">Pedimos desculpas, mas com as novas atualizações de segurança e cálculos, o histórico anterior foi resetado.</p>
+            <p style="font-size:14px; line-height:1.6; color:var(--text); margin-top:10px; font-weight:700;">Mas não se preocupe! O app está 100% atualizado e pronto para uso sem erros. Aproveite!</p>
+            <button class="btn btn-primary" style="margin-top:25px;" onclick="app.closeModal('updateNotice')">ENTENDIDO, VAMOS LÁ!</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="configModal" onclick="if(event.target.id==='configModal')app.closeModal('configModal')">
         <div class="modal-content">
             <h3 style="margin-bottom:20px; color:var(--primary);">Configurações</h3>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData()">📥 Exportar Backup (JSON)</button>
+                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData()">📥 Exportar Backup</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.importData()">📤 Importar Backup</button>
                 <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <button class="btn btn-primary" onclick="app.showPix()">☕ Apoiar Desenvolvedor</button>
+                <button class="btn btn-primary" onclick="app.showPix()">☕ Apoiar</button>
                 <button class="btn" style="background:var(--danger); color:#fff;" onclick="app.logout()">🚪 Sair</button>
             </div>
         </div>
@@ -241,8 +254,7 @@
             constructor() { this.entries = []; this.filter = 'all'; this.currentUser = null; this.init(); }
 
             init() {
-                const pin = document.getElementById('senhaInput');
-                pin.addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
+                document.getElementById('senhaInput').addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
@@ -261,11 +273,19 @@
                 this.currentUser = user;
                 localStorage.setItem('evo_session', btoa(JSON.stringify({user, code, ts: Date.now()})));
                 this.showMainPanel();
+                this.checkFirstTimeNotice();
             }
 
             checkSession() {
                 const s = localStorage.getItem('evo_session');
                 if (s) { const d = JSON.parse(atob(s)); if (d.ts > Date.now() - 86400000) { this.currentUser = d.user; this.showMainPanel(); } }
+            }
+
+            checkFirstTimeNotice() {
+                const key = `evo_v46_notice_${btoa(this.currentUser)}`;
+                if (!localStorage.getItem(key)) {
+                    setTimeout(() => { this.openModal('updateNotice'); localStorage.setItem(key, 'true'); }, 500);
+                }
             }
 
             showMainPanel() {
@@ -276,12 +296,9 @@
                 this.loadData();
             }
 
-            // RECUPERAÇÃO DE DADOS (Procura nas duas chaves possíveis)
             loadData() {
-                const keyNova = `evo_db_${btoa(this.currentUser)}`;
-                const keyAntiga = `evo_data_${btoa(this.currentUser)}`;
-                let data = localStorage.getItem(keyNova) || localStorage.getItem(keyAntiga);
-                try { this.entries = JSON.parse(data) || []; } catch(e) { this.entries = []; }
+                const key = `evo_db_${btoa(this.currentUser)}`;
+                try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; }
                 this.renderHistory(); this.updateDashboard();
             }
 
@@ -308,7 +325,7 @@
 
             generateReport() {
                 const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return this.showToast('Nome do navio!', 'error');
+                if (!n) return this.showToast('Navio?', 'error');
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
                 let m = `${n}\n${df} ${t}\n${document.getElementById('relTerno').value} TERNO\n`;
@@ -330,11 +347,7 @@
             }
 
             calcularValores(tipo, turno, v, q) {
-                const TX = { 
-                    '07x15': { normal: 5.73, feriado: 8.61 }, 
-                    '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, 
-                    '23x07': { normal: 6.88, feriado: 10.32 } 
-                };
+                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
                 let bN = 0; const nC = parseInt(q) || 1;
                 if (turno === '15x23') {
                     const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal;
@@ -350,8 +363,8 @@
                 if (!n || !d) return this.showToast('Incompleto', 'error');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
-                const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
-                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
+                const res = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
+                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: res.b, liquido: res.l, pago: false });
                 this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
 
@@ -360,21 +373,11 @@
                 let f = this.entries;
                 if (this.filter === 'pendente') f = f.filter(x => !x.pago);
                 else if (this.filter === 'pago') f = f.filter(x => x.pago);
-                else if (this.filter === 'semana') {
-                    const s = new Date(); s.setDate(s.getDate() - 7);
-                    f = f.filter(x => new Date(x.data) >= s);
-                }
+                else if (this.filter === 'semana') { const s = new Date(); s.setDate(s.getDate() - 7); f = f.filter(x => new Date(x.data) >= s); }
                 list.innerHTML = f.map(e => `
                     <div class="hist-item ${e.pago ? 'pago' : 'pendente'}">
-                        <div style="flex:1;">
-                            <div style="font-weight:700;">${e.navio}</div>
-                            <div style="font-size:11px; color:var(--text-dim); margin:4px 0;">${e.dataF} • ${e.turno}</div>
-                            <button class="status-badge ${e.pago ? 'pago' : 'pendente'}" onclick="app.togglePago(${e.id})">${e.pago ? '✓ PAGO' : '🕒 PENDENTE'}</button>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div>
-                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer;">🗑️</button>
-                        </div>
+                        <div style="flex:1;"><div style="font-weight:700;">${e.navio}</div><div style="font-size:11px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div>
+                        <div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer;">🗑️</button></div>
                     </div>`).join('');
                 document.getElementById('emptyState').classList.toggle('hidden', f.length > 0);
             }
@@ -392,44 +395,15 @@
 
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            filterHistory(t) { 
-                this.filter = t; 
-                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                document.getElementById(`f-${t}`).classList.add('active');
-                this.renderHistory(); 
-            }
+            filterHistory(t) { this.filter = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); const el = document.getElementById(`f-${t}`); if(el) el.classList.add('active'); this.renderHistory(); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
-            showToast(m, t='success') {
-                const c = document.getElementById('toastContainer'), e = document.createElement('div');
-                e.className = `toast ${t}`; e.innerHTML = m; c.appendChild(e); setTimeout(() => e.remove(), 2500);
-            }
+            showToast(m, t='success') { const c = document.getElementById('toastContainer'), e = document.createElement('div'); e.className = `toast ${t}`; e.innerHTML = m; c.appendChild(e); setTimeout(() => e.remove(), 2500); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-            exportData() {
-                if (!this.entries.length) return this.showToast('Vazio', 'error');
-                const b = new Blob([JSON.stringify(this.entries, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(b);
-                const a = document.createElement('a'); a.href = url; a.download = `backup_evolution.json`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                this.showToast('Backup Exportado');
-            }
-
-            importData() {
-                const i = document.createElement('input'); i.type = 'file'; i.accept = '.json';
-                i.onchange = (e) => {
-                    const f = e.target.files[0]; const r = new FileReader();
-                    r.onload = (ev) => {
-                        try {
-                            const d = JSON.parse(ev.target.result);
-                            if (Array.isArray(d)) { this.entries = d; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Importado!'); this.closeModal('configModal'); }
-                        } catch(err) { this.showToast('Erro no arquivo', 'error'); }
-                    }; r.readAsText(f);
-                }; i.click();
-            }
-
+            exportData() { const b = new Blob([JSON.stringify(this.entries, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); this.showToast('Backup Exportado'); }
+            importData() { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if (Array.isArray(d)) { this.entries = d; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Importado!'); this.closeModal('configModal'); } } catch(err) { this.showToast('Erro!', 'error'); } }; r.readAsText(f); }; i.click(); }
             showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { navigator.clipboard.writeText('92994821868').then(() => this.showToast('PIX de Felipe Prado copiado!')); }
+            copyPix() { navigator.clipboard.writeText('92994821868').then(() => this.showToast('PIX copiado!')); }
             toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
