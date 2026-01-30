@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V45 PREMIUM</title>
+    <title>EVOLUTION - V46 PREMIUM</title>
     <style>
         :root { 
             --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --success: #48c774;
@@ -12,207 +12,199 @@
         }
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
         input, select { user-select: text; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; overflow-x: hidden; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
         .container { max-width: 480px; width: 100%; padding: 20px; position: relative; display: flex; flex-direction: column; }
         
-        /* ESTILO PROFISSIONAL LOGIN */
-        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 40px 20px; text-align: center; }
-        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 6px; background: linear-gradient(45deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        /* LOGIN & SECURITY */
+        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 28px; padding: 45px 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
         
-        /* SEGURANÇA: LAYOUT QUEBRADO (Será ativado via JS) */
-        .layout-broken { filter: grayscale(1) blur(2px) !important; pointer-events: none !important; opacity: 0.3 !important; transform: skewX(10deg); }
-        .block-notice { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--danger); color: #fff; padding: 20px; border-radius: 10px; z-index: 9999; text-align: center; font-weight: bold; width: 80%; display: none; }
+        .layout-broken { filter: grayscale(1) contrast(0.5) blur(3px) !important; pointer-events: none !important; }
+        .block-notice { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--danger); padding: 30px; }
 
-        /* DASHBOARD */
+        /* DASHBOARD PREMIUM */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .dash-item { background: var(--card); padding: 18px; border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .dash-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-        .dash-val { font-size: 1.2rem; font-weight: 800; }
+        .dash-item { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .dash-item::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border); }
+        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; display: block; }
+        .dash-val { font-size: 1.15rem; font-weight: 800; font-family: 'Monaco', monospace; }
 
         /* SEÇÕES */
-        .section-card { background: var(--card); padding: 22px; border-radius: 22px; margin-bottom: 15px; border: 1px solid var(--border); }
-        h3 { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .section-card { background: var(--card); padding: 22px; border-radius: 24px; margin-bottom: 15px; border: 1px solid var(--border); }
+        h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: flex; justify-content: space-between; }
 
-        /* INPUTS E BOTÕES */
-        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-size: 1rem; margin-top: 10px; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; background: #2a2a32; }
-        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 15px; border-radius: 14px; font-weight: 800; padding: 16px; border:none; cursor:pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-whatsapp { background: #25d366; color: #fff; width: 100%; margin-top: 15px; border-radius: 14px; font-weight: 800; padding: 16px; border:none; }
+        /* FORMATAÇÃO DE INPUTS */
+        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 15px; color: var(--text); font-size: 1rem; margin-top: 10px; }
+        input:focus { border-color: var(--primary); outline: none; }
+        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 18px; border-radius: 15px; font-weight: 800; padding: 18px; border:none; cursor:pointer; text-transform: uppercase; }
 
-        /* FOOTER / DIREITOS */
-        .footer-premium { text-align: center; margin-top: auto; padding: 30px 0; border-top: 1px solid var(--border); }
-        .footer-premium p { font-size: 11px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-        .footer-premium .name { color: var(--primary); font-weight: 700; font-size: 12px; }
+        /* HISTÓRICO COM VALORES PREMIUM */
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .val-liq { color: var(--accent); font-weight: 800; font-size: 1rem; font-family: 'Monaco', monospace; }
+        .val-bruto { color: var(--info); font-size: 0.75rem; font-weight: 600; font-family: 'Monaco', monospace; margin-top: 2px; display: block; }
 
-        /* MODAL PIX COMÉDIA */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 25px; }
-        .modal-pix { background: var(--card); border: 2px solid var(--primary); padding: 30px; border-radius: 28px; text-align: center; max-width: 400px; width: 100%; box-shadow: 0 0 30px rgba(0,209,178,0.2); }
-        .pix-box { background: #000; padding: 20px; border-radius: 18px; border: 1px dashed var(--accent); margin: 20px 0; cursor: pointer; }
+        /* FOOTER */
+        .footer-premium { text-align: center; padding: 35px 0; opacity: 0.7; }
+        .footer-premium p { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
+        .footer-premium .name { color: var(--primary); font-weight: 700; font-size: 11px; margin-top: 4px; }
 
-        .badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; }
-        .badge-pend { background: rgba(255,56,96,0.1); color: var(--danger); border: 1px solid var(--danger); }
-        .badge-ok { background: rgba(72,199,116,0.1); color: var(--success); border: 1px solid var(--success); }
-        .toast { position: fixed; bottom: 30px; background: var(--primary); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; z-index: 2000; transform: translateY(100px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .toast.show { transform: translateY(0); }
+        /* PIX POPUP */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-pix { background: var(--card); border: 1px solid var(--primary); padding: 30px; border-radius: 30px; text-align: center; width: 100%; max-width: 380px; }
+        
+        .toast { position: fixed; bottom: 30px; background: var(--primary); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; z-index: 2000; display: none; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="block-notice" id="blockNotice">ACESSO RESTRITO<br><small>Dispositivo não autorizado para esta chave.</small></div>
+<div class="block-notice" id="blockNotice">
+    <h1 style="font-size: 4rem;">🚫</h1>
+    <h2>ACESSO RESTRITO</h2>
+    <p>Este dispositivo não está autorizado para esta licença.</p>
+    <p style="font-size: 0.7rem; margin-top: 20px; color: var(--text-dim);">Contate Felipe Prado para suporte.</p>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="modal" id="modalPix">
     <div class="modal-pix" onclick="copiarChavePix()">
-        <div style="font-size: 3.5rem; margin-bottom: 15px;">☕</div>
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Café pro Dev?</h2>
-        <p id="msgComedia" style="font-style: italic; color: var(--text-dim); line-height: 1.4; min-height: 50px;"></p>
-        <div class="pix-box">
-            <span style="font-size: 0.7rem; color: var(--accent); display:block; margin-bottom: 5px; font-weight: 800;">CLIQUE PARA COPIAR A CHAVE</span>
-            <span style="font-size: 1.1rem; font-weight: 900;">92994821868</span>
-            <span style="font-size: 0.8rem; color: var(--text-dim); display:block; margin-top: 5px;">Felipe Prado</span>
+        <div style="font-size: 3rem; margin-bottom: 15px;">☕</div>
+        <h3 style="color: var(--primary); margin-bottom: 10px;">Apoio ao Desenvolvedor</h3>
+        <p id="msgComedia" style="font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 20px;"></p>
+        <div style="background: #000; padding: 20px; border-radius: 18px; border: 1px dashed var(--accent);">
+            <span style="font-size: 1.2rem; font-weight: 900; color: var(--accent);">92994821868</span>
+            <span style="display:block; font-size: 0.7rem; color: var(--text-dim); margin-top: 5px;">Felipe Prado • Toque para copiar</span>
         </div>
-        <button onclick="event.stopPropagation(); fecharModalPix()" style="background:none; border:none; color:var(--text-dim); font-size: 0.8rem; cursor:pointer;">Talvez mais tarde...</button>
+        <button onclick="event.stopPropagation(); fecharModalPix()" style="background:none; border:none; color:var(--text-dim); margin-top: 15px; font-size: 0.8rem;">Ignorar por enquanto</button>
     </div>
 </div>
 
 <div class="container" id="login-screen">
     <div class="glass-card" style="margin-top: 15vh;">
         <div class="evolution-logo">EVOLUTION</div>
-        <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 30px; letter-spacing: 2px;">PREMIUM MANAGEMENT</p>
+        <p style="color: var(--text-dim); font-size: 0.75rem; margin-bottom: 35px; letter-spacing: 3px;">SYSTEM ADMINISTRATION</p>
         <input type="tel" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; -webkit-text-security: disc;" maxlength="6">
-        <button class="btn-main" onclick="login()">Autenticar</button>
+        <button class="btn-main" onclick="login()">ACESSAR PAINEL</button>
     </div>
     <div class="footer-premium">
-        <p>Software Licensed to</p>
+        <p>© 2026 ALL RIGHTS RESERVED TO</p>
         <div class="name">FELIPE PRADO</div>
-        <p style="font-size: 9px; margin-top: 10px; opacity: 0.5;">© 2026 ALL RIGHTS RESERVED</p>
     </div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
         <div>
-            <p style="font-size: 10px; color: var(--primary); font-weight: 800; letter-spacing: 1px;">SISTEMA OPERACIONAL</p>
-            <h2 id="userName" style="font-size: 1.4rem; font-weight: 900;">...</h2>
+            <p style="font-size: 9px; color: var(--primary); font-weight: 800; letter-spacing: 2px;">AUTENTICADO COMO</p>
+            <h2 id="userName" style="font-size: 1.3rem; font-weight: 900;">...</h2>
         </div>
-        <div style="background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--border);" onclick="alert('Backup Seguro Ativado')">⚙️</div>
+        <div style="background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid var(--border);" onclick="alert('Backup Seguro: Ativo')">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item"><span class="dash-label">Bruto Individual</span><span class="dash-val" style="color:var(--info)" id="dashTotalBruto">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">Líquido Total</span><span class="dash-val" style="color:var(--accent)" id="dashTotalLiquido">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">Aguardando</span><span class="dash-val" style="color:var(--danger)" id="dashPendente">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">Recebido</span><span class="dash-val" style="color:var(--success)" id="dashRecebido">R$ 0</span></div>
+        <div class="dash-item" style="border-left: 4px solid var(--info);"><span class="dash-label">Bruto Total</span><span class="dash-val" style="color:var(--info)" id="dashTotalBruto">R$ 0,00</span></div>
+        <div class="dash-item" style="border-left: 4px solid var(--accent);"><span class="dash-label">Líquido Geral</span><span class="dash-val" style="color:var(--accent)" id="dashTotalLiquido">R$ 0,00</span></div>
+        <div class="dash-item" style="border-left: 4px solid var(--danger);"><span class="dash-label">A Receber</span><span class="dash-val" style="color:var(--danger)" id="dashPendente">R$ 0,00</span></div>
+        <div class="dash-item" style="border-left: 4px solid var(--success);"><span class="dash-label">Já Recebido</span><span class="dash-val" style="color:var(--success)" id="dashRecebido">R$ 0,00</span></div>
     </div>
 
     <div class="section-card">
-        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerador de Relatório <span style="font-size: 10px;">EXPANDIR ▼</span></h3>
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Relatórios <span>EXPANDIR ▼</span></h3>
         <div id="rel-box" class="hidden">
             <input type="date" id="dataRel">
             <input type="text" id="navioRel" placeholder="Nome do Navio">
             <div style="display:flex; gap:10px;">
                 <input type="number" id="ternoRelInput" placeholder="Terno">
                 <select id="turnoRel" onchange="ajustarRel()">
-                    <option value="">Turno</option>
-                    <option value="07x15">07x15</option>
-                    <option value="15x23">15x23</option>
-                    <option value="23x07">23x07</option>
+                    <option value="">Selecione o Turno</option>
+                    <option value="07x15">Manhã (07x15)</option>
+                    <option value="15x23">Tarde (15x23)</option>
+                    <option value="23x07">Noite (23x07)</option>
                 </select>
             </div>
             <div id="camposRel"></div>
-            <button class="btn-whatsapp" onclick="gerarRel()">Gerar Relatório Profissional</button>
-            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:14px; margin-top:15px; font-family:'Courier New', monospace; font-size:12px; white-space:pre-wrap; border: 1px solid #222;"></div>
+            <button class="btn-main" style="background:#25d366; color:#fff;" onclick="gerarRel()">Gerar p/ WhatsApp</button>
+            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:15px; margin-top:15px; font-family:monospace; font-size:12px; white-space:pre-wrap; border: 1px solid #222;"></div>
         </div>
     </div>
 
     <div class="section-card">
-        <h3>💰 Lançamento de Produção</h3>
+        <h3>💰 Lançar Produção</h3>
         <input type="date" id="dataCalc">
-        <input type="text" id="navioCalc" placeholder="Navio">
+        <input type="text" id="navioCalc" placeholder="Nome do Navio">
         <div style="display:flex; gap:10px;">
             <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Dom/Feriado</option></select>
             <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
         </div>
         <div id="camposCalc"></div>
-        <button class="btn-main" onclick="calcularESalvar()">Confirmar e Salvar</button>
+        <button class="btn-main" onclick="calcularESalvar()">Salvar no Histórico</button>
     </div>
 
     <div class="section-card">
-        <h3>📅 Histórico Recente</h3>
+        <h3>📅 Histórico de Serviços</h3>
         <div id="listaHist"></div>
     </div>
 
     <div class="footer-premium">
-        <p>Evolution System Management</p>
+        <p>EVOLUTION • PREMIUM MANAGEMENT SYSTEM</p>
         <div class="name">Felipe Prado Signature</div>
     </div>
 </div>
 
 <script>
     const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
-    
     const frasesPix = [
         "O dev precisa pagar a internet pra você continuar usando! 🌐",
         "A Enel não perdoa, ajuda o dev a pagar a luz! ⚡",
         "Café: transformando 10 reais em novas funções no app! ☕",
-        "A bateria do notebook do dev tá viciada, ajuda aí! 💻",
         "O dev prometeu pra esposa que esse app ia dar um lanche hoje! 🍔",
         "Atualização custa caro, mas o seu Pix ajuda a manter grátis! 🚀",
-        "Um Pix de 10 reais evita que o dev chore no banho! 😅",
         "A luz de casa tá piscando... socorro! 💡",
-        "O servidor é pago em dólar, mas aceitamos Reais via Pix! 💵",
-        "Menos de um salgado pra manter o melhor app da produção! 🥐",
-        "Ajude o dev a comprar um mouse que não clica sozinho! 🖱️",
-        "O código tá pronto, mas o café acabou! ☕😩",
-        "Sua produção tá rendendo? Manda uma gorjeta pro sistema! 📈",
-        "Pelo fim da internet discada do desenvolvedor! 📞",
-        "O dev tá na base do miojo, melhore essa dieta com um Pix! 🍜",
         "Todo bug corrigido merece um brinde! 🍻",
         "Não deixe o Evolution parar por falta de cafeína! 💉☕",
-        "O dev precisa pagar o curso de programação pra não bugar tudo! 🎓",
         "Contribuição voluntária pra um dev que não dorme! 😴",
-        "Aperte o botão e ajude o Felipe Prado a continuar criando! ⭐"
+        "Pelo fim da internet discada do desenvolvedor! 📞"
     ];
 
     let logado = "", todosDados = [];
     const $ = id => document.getElementById(id);
 
-    // SEGURANÇA: Simulação de Hardware ID
-    function checkSecurity(userName) {
-        const deviceId = localStorage.getItem('evolution_hwid') || Math.random().toString(36).substring(7);
-        const registeredUser = localStorage.getItem('user_id_' + userName);
-        
-        if (!registeredUser) {
-            localStorage.setItem('user_id_' + userName, deviceId);
-            localStorage.setItem('evolution_hwid', deviceId);
-            return true;
+    // FUNÇÃO PREMIUM: Formatar Moeda BR
+    function fMoeda(v) {
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function checkSecurity(user) {
+        const devId = localStorage.getItem('evo_hwid') || Math.random().toString(36).substring(7);
+        const reg = localStorage.getItem('reg_' + user);
+        if(!reg) { 
+            localStorage.setItem('reg_' + user, devId); 
+            localStorage.setItem('evo_hwid', devId); 
+            return true; 
         }
-        
-        if (registeredUser !== localStorage.getItem('evolution_hwid')) {
-            document.body.classList.add('layout-broken');
-            $('blockNotice').style.display = 'block';
+        if(reg !== localStorage.getItem('evo_hwid')) {
+            $('main-panel').classList.add('layout-broken');
+            $('blockNotice').style.display = 'flex';
             return false;
         }
         return true;
     }
 
     const hoje = new Date().toISOString().split('T')[0];
-    $('dataCalc').value = hojs; $('dataRel').value = hoje;
+    $('dataCalc').value = hoje; $('dataRel').value = hoje;
 
     function login() {
         const key = $('senhaInput').value;
         if(USERS[key]) {
-            const user = USERS[key];
-            if(!checkSecurity(user)) return;
-            
-            logado = user;
+            if(!checkSecurity(USERS[key])) return;
+            logado = USERS[key];
             $('userName').textContent = logado;
             $('login-screen').classList.add('hidden');
             $('main-panel').classList.remove('hidden');
             carregarSistema();
             if(Math.random() <= 0.35) setTimeout(mostrarPix, 1500);
-        } else toast("Chave de acesso inválida!");
+        } else alert("Chave incorreta!");
     }
 
     function carregarSistema() {
@@ -230,55 +222,53 @@
     function ajustarRel() {
         const t = $('turnoRel').value;
         $('camposRel').innerHTML = t === "15x23" ? 
-            '<input type="number" id="p1" placeholder="Produção 15h-19h"><input type="number" id="p2" placeholder="Produção 20h-23h">' : 
+            '<input type="number" id="p1" placeholder="Prod. 15h-19h"><input type="number" id="p2" placeholder="Prod. 20h-23h">' : 
             (t ? '<input type="number" id="pGeral" placeholder="Produção Total">' : '');
     }
 
     function gerarRel() {
-        const turno = $('turnoRel').value; if(!turno) return toast("Selecione o Turno");
+        const turno = $('turnoRel').value; if(!turno) return;
         const dataF = $('dataRel').value.split('-').reverse().join('/');
-        let prodT = 0, txtProd = "";
-        
+        let prodT = 0, txtP = "";
         if(turno === "15x23") {
             const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0;
-            prodT = v1 + v2; txtProd = `15x19: ${v1}\n20x23: ${v2}\nTotal: ${prodT}`;
+            prodT = v1+v2; txtP = `15x19: ${v1}\n20x23: ${v2}\nTotal: ${prodT}`;
         } else {
-            prodT = parseInt($('pGeral').value)||0; txtProd = `Produção: ${prodT}`;
+            prodT = parseInt($('pGeral').value)||0; txtP = `Produção: ${prodT}`;
         }
-
-        const msg = `* EVOLUTION REPORT *\n\nNavio: ${($('navioRel').value||"S/N").toUpperCase()}\nData: ${dataF}\nTerno: ${$('ternoRelInput').value||"S/T"}°\nTurno: ${turno}\n\n${txtProd}\n\nConferente: ${logado}`;
+        const msg = `* EVOLUTION REPORT *\n\nNavio: ${($('navioRel').value||"S/N").toUpperCase()}\nData: ${dataF}\nTerno: ${$('ternoRelInput').value||"S/T"}°\nTurno: ${turno}\n\n${txtP}\n\nConferente: ${logado}`;
         $('relatorioArea').textContent = msg; $('relatorioArea').classList.remove('hidden');
-        navigator.clipboard.writeText(msg); toast("Relatório pronto e copiado!");
+        navigator.clipboard.writeText(msg); toast("Relatório Copiado!");
     }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
         $('camposCalc').innerHTML = t === "15x23" ? 
-            '<input type="number" id="t1" placeholder="Prod 15h-19h"><input type="number" id="t2" placeholder="Prod 20h-23h">' : 
+            '<input type="number" id="t1" placeholder="Prod. 15h-19h"><input type="number" id="t2" placeholder="Prod. 20h-23h">' : 
             '<input type="number" id="tGeral" placeholder="Produção Total">';
     }
 
     function calcularESalvar() {
         const tur = $('turnoCalc').value; const tipo = $('tipoDia').value;
-        let brutoTotal = 0;
+        let brutoT = 0;
         if(tur === "15x23") {
             const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
-            brutoTotal = (tipo === 'f') ? (v1 * 10.32) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
+            brutoT = (tipo === 'f') ? (v1 * 10.32) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
         } else {
             const prod = parseInt($('tGeral').value)||0;
             const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
-            brutoTotal = prod * taxa;
+            brutoT = prod * taxa;
         }
-        todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: brutoTotal/3, liquido: (brutoTotal/3)*0.82, pago: false });
+        todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: brutoT/3, liquido: (brutoT/3)*0.82, pago: false });
         localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        renderizarHist(); atualizarDash(); toast("Serviço registrado!");
+        renderizarHist(); atualizarDash(); toast("Serviço Salvo!");
     }
 
     function renderizarHist() {
         const container = $('listaHist'); container.innerHTML = '';
         todosDados.forEach(item => {
-            const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid var(--border);";
-            div.innerHTML = `<div><span style="font-weight:700; font-size:0.9rem; display:block;">${item.navio}</span><span style="font-size:0.7rem; color:var(--text-dim);">${item.data} • <span class="badge ${item.pago?'badge-ok':'badge-pend'}" onclick="alternar(${item.id})">${item.pago?'RECEBIDO':'PENDENTE'}</span></span></div><div style="text-align:right;"><span style="color:var(--accent); font-weight:800; font-size:0.95rem; display:block;">R$ ${item.liquido.toFixed(2)}</span><span style="color:var(--info); font-size:0.75rem; font-weight:600;">BRUTO R$ ${item.bruto.toFixed(2)}</span></div>`;
+            const div = document.createElement('div'); div.className = 'hist-item';
+            div.innerHTML = `<div><span style="font-weight:700; font-size:0.9rem; display:block;">${item.navio}</span><span style="font-size:0.7rem; color:var(--text-dim);">${item.data} • <span class="badge ${item.pago?'badge-ok':'badge-pend'}" onclick="alternar(${item.id})">${item.pago?'RECEBIDO':'PENDENTE'}</span></span></div><div style="text-align:right;"><span class="val-liq">${fMoeda(item.liquido)}</span><span class="val-bruto">BRUTO ${fMoeda(item.bruto)}</span></div>`;
             container.appendChild(div);
         });
     }
@@ -289,13 +279,17 @@
     }
 
     function atualizarDash() {
-        const b = todosDados.reduce((a,x)=>a+x.bruto,0); const l = todosDados.reduce((a,x)=>a+x.liquido,0);
-        const p = todosDados.filter(i=>!i.pago).reduce((a,x)=>a+x.liquido,0); const r = todosDados.filter(i=>i.pago).reduce((a,x)=>a+x.liquido,0);
-        $('dashTotalBruto').textContent = "R$ "+b.toFixed(0); $('dashTotalLiquido').textContent = "R$ "+l.toFixed(0);
-        $('dashPendente').textContent = "R$ "+p.toFixed(0); $('dashRecebido').textContent = "R$ "+r.toFixed(0);
+        const b = todosDados.reduce((a,x)=>a+x.bruto,0);
+        const l = todosDados.reduce((a,x)=>a+x.liquido,0);
+        const p = todosDados.filter(i=>!i.pago).reduce((a,x)=>a+x.liquido,0);
+        const r = todosDados.filter(i=>i.pago).reduce((a,x)=>a+x.liquido,0);
+        $('dashTotalBruto').textContent = fMoeda(b);
+        $('dashTotalLiquido').textContent = fMoeda(l);
+        $('dashPendente').textContent = fMoeda(p);
+        $('dashRecebido').textContent = fMoeda(r);
     }
     function toggleSection(id) { $(id).classList.toggle('hidden'); }
-    function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+    function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
 </script>
 </body>
 </html>
