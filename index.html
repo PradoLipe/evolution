@@ -67,7 +67,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .pin-display { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
-        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--input); border: 2px solid var(--border); transition: 0.3s; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); transition: 0.3s; }
         .pin-dot.filled { background: var(--primary); border-color: var(--primary); transform: scale(1.2); box-shadow: 0 0 12px var(--primary); }
         
         #senhaInput { width: 100%; padding: 18px; background: var(--input); border: 1px solid var(--border); border-radius: 16px; color: var(--text); text-align: center; font-size: 16px; font-weight: 800; letter-spacing: 2px; margin-bottom: 25px; outline: none; }
@@ -97,7 +97,7 @@
 
         .btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
-        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66) 100%; color: #fff; }
+        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
 
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .filter-chip { padding: 8px 16px; background: var(--input); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; color: var(--text-dim); transition: 0.3s; }
@@ -246,13 +246,10 @@
     </div>
 
     <script>
-        class Money {
-            constructor(cents) { this._cents = Math.round(cents); }
-            format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-            get cents() { return this._cents; }
-        }
+        class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
 
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EDILSON RJ", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY" };
+        
         const FRASES_PIX = [
             "O programador virou café. Precisa de mais café pra virar código! ☕",
             "Este app não roda a base de vento, mas sim de PIX. Ajude o dev! 😉",
@@ -311,6 +308,37 @@
                 this.loadData();
             }
 
+            // SISTEMA DE CÓPIA BLINDADO PARA CELULAR
+            generateReport() {
+                const n = document.getElementById('relNavio').value.toUpperCase();
+                if (!n) return this.showToast('Navio?', 'error');
+                const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
+                const t = document.getElementById('relTurno').value;
+                let m = `${n}\n${df} ${t}\n1° TERNO\n`;
+                if (t === '15x23') {
+                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
+                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
+                    m += `15x19 ${p1}\n19x23 ${p2}\nTOTAL ${p1+p2}\n`;
+                } else m += `TOTAL ${parseInt(document.getElementById('relPT')?.value) || 0}\n`;
+                m += this.currentUser.split(' ')[0];
+                this.forceCopy(m);
+            }
+
+            forceCopy(text) {
+                const ta = document.createElement("textarea");
+                ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+                document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    this.showToast('Relatório Copiado!');
+                } catch (e) {
+                    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
+                    window.open(url, '_blank');
+                    this.showToast('Redirecionando...', 'info');
+                }
+                document.body.removeChild(ta);
+            }
+
             startAutoPix() {
                 setInterval(() => {
                     if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
@@ -319,13 +347,21 @@
                 }, 480000); 
             }
 
-            loadData() {
-                const key = `evo_db_${btoa(this.currentUser)}`;
-                try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; }
-                this.renderHistory(); this.updateDashboard();
+            showPix() {
+                document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)];
+                this.closeModal('configModal');
+                this.openModal('pixModal');
             }
 
-            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
+            copyPix() { this.forceCopy('92994821868'); }
+
+            adjustCalcFields() {
+                const t = document.getElementById('calcTurno').value;
+                const c = document.getElementById('calcCampos');
+                c.innerHTML = t === '15x23' ? 
+                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
+                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+            }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
@@ -344,44 +380,6 @@
                 const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
                 const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
                 document.getElementById('relTotalPreview').textContent = p1 + p2;
-            }
-
-            generateReport() {
-                const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return this.showToast('Navio?', 'error');
-                const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
-                const t = document.getElementById('relTurno').value;
-                let m = `${n}\n${df} ${t}\n${document.getElementById('relTerno').value || 1} TERNO\n`;
-                if (t === '15x23') {
-                    const p1 = parseInt(document.getElementById('relP1').value) || 0;
-                    const p2 = parseInt(document.getElementById('relP2').value) || 0;
-                    m += `15x19 ${p1}\n19x23 ${p2}\nTOTAL ${p1+p2}\n`;
-                } else m += `TOTAL ${parseInt(document.getElementById('relPT').value) || 0}\n`;
-                m += this.currentUser.split(' ')[0];
-                this.copyToClipboard(m);
-            }
-
-            copyToClipboard(text) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => this.showToast('Copiado!'))
-                        .catch(() => this.fallbackCopy(text));
-                } else { this.fallbackCopy(text); }
-            }
-
-            fallbackCopy(text) {
-                const ta = document.createElement("textarea");
-                ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
-                document.body.appendChild(ta); ta.focus(); ta.select();
-                try { document.execCommand('copy'); this.showToast('Copiado!'); } catch (e) { this.showToast('Erro ao copiar', 'error'); }
-                document.body.removeChild(ta);
-            }
-
-            adjustCalcFields() {
-                const t = document.getElementById('calcTurno').value;
-                const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             calcularValores(tipo, turno, v, q) {
@@ -422,7 +420,7 @@
                         <div style="text-align:right;">
                             <div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div>
                             <div style="color:var(--text-dim); font-size:10px; font-weight:600; margin-top:2px;">Bruto: ${new Money(e.bruto).format()}</div>
-                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer;">🗑️</button>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button>
                         </div>
                     </div>`).join('');
                 document.getElementById('emptyState').classList.toggle('hidden', f.length > 0);
@@ -439,6 +437,8 @@
                 document.getElementById('countPago').textContent = `${cpa} serv.`;
             }
 
+            loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
+            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             filterHistory(t) { this.filter = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); const el = document.getElementById(`f-${t}`); if(el) el.classList.add('active'); this.renderHistory(); }
@@ -448,10 +448,8 @@
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
             toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light-mode' : 'dark'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light-mode') document.body.classList.add('light-mode'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado'); }
-            importData() { const i = document.createElement('input'); i.type = 'file'; i.onchange = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Importado!'); }; r.readAsText(f); }; i.click(); }
-            showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { this.copyToClipboard('92994821868'); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); }
+            importData() { const i = document.createElement('input'); i.type = 'file'; i.onchange = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); }; r.readAsText(f); }; i.click(); }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
         }
         const app = new EvolutionApp();
