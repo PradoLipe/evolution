@@ -52,7 +52,6 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
-        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; overflow: hidden; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
@@ -64,7 +63,6 @@
         .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
         .dash-count { font-size: 9px; margin-top: 2px; font-weight: 700; opacity: 0.8; }
 
-        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }
@@ -80,7 +78,6 @@
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
 
-        /* HISTÓRICO */
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--text) !important; }
@@ -88,13 +85,11 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
-        /* MODAIS PREMIUM */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* FOOTER */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
         .footer-line { width: 30px; height: 2px; background: var(--primary); margin: 0 auto 10px; border-radius: 2px; opacity: 0.4; }
         .footer-text { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
@@ -186,8 +181,8 @@
             <h3 style="text-align:center; font-size:0.8rem; letter-spacing:2px; margin-bottom:25px;">CONFIGURAÇÕES</h3>
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓 ALTERAR TEMA</button>
-                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData()">📥 EXPORTAR BACKUP</button>
-                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.triggerImport()">📤 IMPORTAR BACKUP</button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">📥 EXPORTAR BACKUP</button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">📤 IMPORTAR BACKUP</button>
                 <button class="btn" style="background:rgba(0, 209, 178, 0.1); border: 1px solid var(--primary); color:var(--primary);" onclick="app.showPix()">☕ APOIAR DESENVOLVEDOR</button>
                 <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">🚪 SAIR</button>
             </div>
@@ -199,12 +194,13 @@
         <div class="modal-content" style="text-align:center; padding: 40px 20px; background: rgba(22, 22, 29, 0.95); backdrop-filter: blur(20px);">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
-            <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">CAFÉ PARA O DEV</h3>
-            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px; padding: 0 10px;"></p>
-            <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700; font-size: 16px;">
-                92994821868
+            <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
+            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Ajude a manter os motores rodando! Ao realizar o apoio, verifique os dados abaixo:</p>
+            <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
+                <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
+                <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
             </div>
-            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Clique no número para copiar</p>
+            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase;">Clique na caixa para copiar a chave</p>
         </div>
     </div>
 
@@ -212,7 +208,7 @@
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
 
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café. Precisa de mais café pra virar código!", "A internet caiu, mas o PIX do dev não! 😉", "Ajude a manter o app no ar e os motores rodando!", "Mande um PIX pro dev ancorar esse navio com sucesso! 🚢" ];
+        const FRASES_PIX = [ "O programador virou café. Precisa de mais café pra virar código!", "A internet caiu, mas o PIX do dev não!", "Mande um PIX pro dev ancorar esse navio!" ];
 
         class EvolutionApp {
             constructor() { this.entries = []; this.currentUser = null; this.init(); }
@@ -248,20 +244,7 @@
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row">
-                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
-                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
-                    </div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
-            }
-
-            toggleRelatorioCampos() {
-                const t = document.getElementById('relTurno').value;
-                const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             generateReport() {
@@ -274,21 +257,14 @@
                 if (t === '15x23') { m += `15x19 ${document.getElementById('relP1').value}\n19x23 ${document.getElementById('relP2').value}\nTOTAL ${parseInt(document.getElementById('relP1').value)+parseInt(document.getElementById('relP2').value)}\n`; }
                 else m += `TOTAL ${document.getElementById('relPT').value}\n`;
                 m += this.currentUser;
-                this.forceCopy(m);
+                this.forceCopy(m, 'Relatório Copiado!');
             }
 
-            forceCopy(text) {
+            forceCopy(text, msg) {
                 const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
-                document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                alert('Relatório Copiado!');
-            }
-
-            calcularValores(tipo, turno, v, q) {
-                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
-                let bN = 0; const nC = parseInt(q) || 1;
-                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
-                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
-                const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
+                document.body.appendChild(ta); ta.focus(); ta.select(); 
+                try { document.execCommand('copy'); alert(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank'); }
+                document.body.removeChild(ta);
             }
 
             saveEntry() {
@@ -300,6 +276,14 @@
                 const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
                 this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
                 this.saveData(); this.renderHistory(); this.updateDashboard();
+            }
+
+            calcularValores(tipo, turno, v, q) {
+                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
+                let bN = 0; const nC = parseInt(q) || 1;
+                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
+                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
             }
 
             renderHistory() {
@@ -337,15 +321,20 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); }
             triggerImport() { document.getElementById('importInput').click(); }
             importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.closeModal('configModal'); }; r.readAsText(f); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
+            toggleRelatorioCampos() {
+                const t = document.getElementById('relTurno').value;
+                const c = document.getElementById('relCamposProducao');
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+            }
             startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
             showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { this.forceCopy('92994821868'); alert('PIX Copiado com Sucesso! ☕'); }
+            copyPix() { this.forceCopy('92994821868', 'Chave PIX de Felipe Prado Copiada! ☕'); }
         }
         const app = new EvolutionApp();
     </script>
