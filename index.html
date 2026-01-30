@@ -25,7 +25,7 @@
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-item { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); border-left: 4px solid var(--primary); }
         .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .dash-val { font-size: 1rem; font-weight: 800; font-family: monospace; }
+        .dash-val { font-size: 1rem; font-weight: 800; font-family: 'Monaco', monospace; }
 
         .section-card { background: var(--card); padding: 20px; border-radius: 22px; margin-bottom: 15px; border: 1px solid var(--border); }
         h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -45,84 +45,88 @@
         .modal-content { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 25px; width: 100%; max-width: 350px; text-align: center; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 10px 20px; border-radius: 50px; font-weight: 800; z-index: 2000; display: none; }
         .hidden { display: none !important; }
-        .layout-broken { filter: blur(5px); pointer-events: none; }
+        .layout-broken { filter: blur(10px) grayscale(1); pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="blockNotice" style="position:fixed; inset:0; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; color:red; text-align:center;">
-    <h1>🚫 ACESSO RESTRITO</h1><p>Contate Felipe Prado.</p>
+<div id="blockNotice" style="position:fixed; inset:0; background:#000; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; color:red; text-align:center; padding:30px;">
+    <h1>🚫 ACESSO RESTRITO</h1>
+    <p style="margin-top:15px">Este dispositivo não possui licença ativa.</p>
+    <p style="color:white; font-size:12px; margin-top:20px">Contate Felipe Prado para liberação.</p>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <div class="modal" id="modalConfig">
     <div class="modal-content">
-        <h3 style="color:var(--primary)">Configurações</h3>
-        <button class="btn-main" onclick="exportarDados()" style="background:#444; color:#fff;">Exportar Backup (JSON)</button>
-        <button class="btn-main" onclick="importarDados()" style="background:#444; color:#fff;">Importar Backup (JSON)</button>
-        <button class="btn-main" onclick="mostrarPix()">Apoiar o Dev ☕</button>
-        <hr style="margin:15px 0; border:0; border-top:1px solid var(--border);">
-        <p style="font-size:9px; color:var(--text-dim)">EVOLUTION V46 PREMIUM<br>© 2026 Felipe Prado - All Rights Reserved</p>
-        <button onclick="$('modalConfig').style.display='none'" style="background:none; border:none; color:var(--danger); margin-top:15px;">FECHAR</button>
+        <h3 style="color:var(--primary); margin-bottom:20px">Configurações Premium</h3>
+        <button class="btn-main" onclick="exportarDados()" style="background:#333; color:#fff; margin-bottom:10px">Exportar Backup</button>
+        <button class="btn-main" onclick="importarDados()" style="background:#333; color:#fff; margin-bottom:10px">Importar Backup</button>
+        <button class="btn-main" onclick="mostrarPix()">Apoiar Desenvolvedor ☕</button>
+        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border)">
+        <p style="font-size:10px; color:var(--text-dim)">EVOLUTION V46 • FELIPE PRADO<br>Todos os direitos reservados.</p>
+        <button onclick="$('modalConfig').style.display='none'" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold">FECHAR</button>
     </div>
 </div>
 
 <div class="modal" id="modalPix">
     <div class="modal-content">
-        <div style="font-size:2rem">☕</div>
-        <p id="msgComedia" style="margin:15px 0; font-size:0.8rem"></p>
-        <div onclick="copiarPix()" style="background:#000; color:var(--accent); padding:15px; border-radius:10px; font-weight:bold; cursor:pointer;">92994821868</div>
-        <p style="font-size:9px; margin-top:5px">Toque para copiar a chave</p>
-        <button onclick="$('modalPix').style.display='none'" style="background:none; border:none; color:var(--text-dim); margin-top:15px;">VOLTAR</button>
+        <div style="font-size:2.5rem">☕</div>
+        <p id="msgComedia" style="margin:15px 0; font-size:0.9rem; line-height:1.4"></p>
+        <div onclick="copiarPix()" style="background:#000; color:var(--accent); padding:18px; border-radius:15px; font-weight:900; border: 1px dashed var(--accent); cursor:pointer;">92994821868</div>
+        <p style="font-size:10px; margin-top:8px; color:var(--text-dim)">Toque para copiar o PIX</p>
+        <button onclick="$('modalPix').style.display='none'" style="background:none; border:none; color:var(--text-dim); margin-top:20px">VOLTAR</button>
     </div>
 </div>
 
 <div class="container" id="login-screen">
     <div class="glass-card" style="margin-top:20vh">
         <div class="evolution-logo">EVOLUTION</div>
-        <input type="tel" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center">
-        <button class="btn-main" onclick="login()">ACESSAR</button>
+        <p style="font-size:10px; color:var(--text-dim); letter-spacing:3px; margin-bottom:30px">PREMIUM SYSTEM</p>
+        <input type="tel" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; -webkit-text-security: disc;">
+        <button class="btn-main" onclick="login()">ENTRAR NO PAINEL</button>
     </div>
+    <div class="footer-premium" style="margin-top:auto">© 2026 <b>FELIPE PRADO</b></div>
 </div>
 
 <div class="container hidden" id="main-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <div>
-            <p style="font-size:8px; color:var(--primary)">CONFERENTE</p>
-            <h2 id="userName" style="font-size:1.2rem">...</h2>
+            <p style="font-size:8px; color:var(--primary); font-weight:bold">CONFERENTE ATIVO</p>
+            <h2 id="userName" style="font-size:1.2rem; font-weight:900">...</h2>
         </div>
         <div style="display:flex; gap:10px;">
-            <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer" onclick="toggleTheme()">🌓</div>
-            <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer" onclick="$('modalConfig').style.display='flex'">⚙️</div>
+            <div style="background:var(--card); padding:12px; border-radius:15px; border:1px solid var(--border); cursor:pointer" onclick="toggleTheme()">🌓</div>
+            <div style="background:var(--card); padding:12px; border-radius:15px; border:1px solid var(--border); cursor:pointer" onclick="$('modalConfig').style.display='flex'">⚙️</div>
         </div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto">R$ 0,00</div></div>
-        <div class="dash-item" style="border-left-color:var(--accent)"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq">R$ 0,00</div></div>
-        <div class="dash-item" style="border-left-color:var(--danger)"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend">R$ 0,00</div></div>
-        <div class="dash-item" style="border-left-color:var(--success)"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago">R$ 0,00</div></div>
+        <div class="dash-item"><span class="dash-label">Bruto Total</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--accent)"><span class="dash-label">Líquido Geral</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--danger)"><span class="dash-label">A Receber</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
+        <div class="dash-item" style="border-left-color:var(--success)"><span class="dash-label">Já Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
     </div>
 
     <div class="section-card">
-        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Relatório WhatsApp <span>▼</span></h3>
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerar Relatório WhatsApp <span>EXPANDIR ▼</span></h3>
         <div id="rel-box" class="hidden">
             <input type="date" id="dataRel">
             <input type="text" id="navioRel" placeholder="Nome do Navio">
             <select id="turnoRel" onchange="ajustarRel()">
                 <option value="">Selecione o Turno</option>
-                <option value="07x15">07x15</option>
-                <option value="15x23">15x23</option>
-                <option value="23x07">23x07</option>
+                <option value="07x15">07x15 (Manhã)</option>
+                <option value="15x23">15x23 (Tarde)</option>
+                <option value="23x07">23x07 (Noite)</option>
             </select>
             <div id="camposRel"></div>
-            <button class="btn-main" style="background:#25d366; color:#fff" onclick="gerarRel()">COPIAR RELATÓRIO</button>
+            <button class="btn-main" style="background:#25d366; color:#fff" onclick="gerarRel()">COPIAR PARA WHATSAPP</button>
         </div>
     </div>
 
     <div class="section-card">
-        <h3>💰 Lançar Produção</h3>
+        <h3>💰 Lançar Nova Produção</h3>
         <input type="date" id="dataCalc">
         <input type="text" id="navioCalc" placeholder="Nome do Navio">
         <div style="display:flex; gap:10px;">
@@ -130,26 +134,30 @@
             <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
         </div>
         <div id="camposCalc"></div>
-        <button class="btn-main" onclick="salvar()">SALVAR SERVIÇO</button>
+        <button class="btn-main" onclick="salvar()">SALVAR NO HISTÓRICO</button>
     </div>
 
     <div class="section-card">
-        <h3>📅 Histórico</h3>
+        <h3>📅 Histórico de Serviços</h3>
         <div id="listaHist"></div>
     </div>
 
     <div class="footer-premium">
-        © 2026 ALL RIGHTS RESERVED TO <b>FELIPE PRADO</b>
+        EVOLUTION V46 • ALL RIGHTS RESERVED TO <b>FELIPE PRADO</b>
     </div>
 </div>
 
 <script>
     const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
-    const frases = ["A Enel não perdoa, ajuda o dev! ⚡", "O café acabou, socorro! ☕", "Internet vencendo, ajuda aí! 🌐"];
+    const frases = ["A Enel não perdoa, ajuda o dev a pagar a luz! ⚡", "O café do dev acabou, sem ele o app trava! ☕", "Ajuda o dev a pagar o boleto da internet! 🌐"];
     let logado = "", dados = [];
     const $ = id => document.getElementById(id);
 
-    // SEGURANÇA HWID
+    // FORMATAÇÃO BRASILEIRA (Ponto no milhar, vírgula no centavo)
+    function fBR(v) {
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
     function checkSecurity(u) {
         let devId = localStorage.getItem('evo_hwid') || Math.random().toString(36).substring(7);
         let reg = localStorage.getItem('reg_' + u);
@@ -165,7 +173,7 @@
             logado = USERS[k]; $('userName').textContent = logado;
             $('login-screen').classList.add('hidden'); $('main-panel').classList.remove('hidden');
             carregar();
-        } else alert("Chave inválida!");
+        } else alert("Chave incorreta!");
     }
 
     function toggleTheme() {
@@ -175,7 +183,7 @@
 
     function ajustarRel() {
         let t = $('turnoRel').value;
-        $('camposRel').innerHTML = t === '15x23' ? '<input type="number" id="p1" placeholder="15h-19h"><input type="number" id="p2" placeholder="20h-23h">' : '<input type="number" id="pG" placeholder="Total">';
+        $('camposRel').innerHTML = t === '15x23' ? '<input type="number" id="p1" placeholder="Prod. 15h-19h"><input type="number" id="p2" placeholder="Prod. 20h-23h">' : '<input type="number" id="pG" placeholder="Produção Total">';
     }
 
     function gerarRel() {
@@ -184,13 +192,14 @@
         let prod = 0;
         if(t === '15x23') prod = (parseInt($('p1').value)||0) + (parseInt($('p2').value)||0);
         else prod = parseInt($('pG').value)||0;
-        let msg = `* EVOLUTION REPORT *\nNavio: ${nav}\nTurno: ${t}\nProdução: ${prod}\nConferente: ${logado}`;
-        navigator.clipboard.writeText(msg); toast("Copiado para o WhatsApp!");
+        let dataF = $('dataRel').value.split('-').reverse().join('/');
+        let msg = `* EVOLUTION REPORT *\n\nNavio: ${nav}\nData: ${dataF}\nTurno: ${t}\nProdução: ${prod}\n\nConferente: ${logado}`;
+        navigator.clipboard.writeText(msg); toast("Relatório Copiado!");
     }
 
     function ajustarCalc() {
         let t = $('turnoCalc').value;
-        $('camposCalc').innerHTML = t === '15x23' ? '<input type="number" id="t1" placeholder="15h-19h"><input type="number" id="t2" placeholder="20h-23h">' : '<input type="number" id="tG" placeholder="Produção">';
+        $('camposCalc').innerHTML = t === '15x23' ? '<input type="number" id="t1" placeholder="Prod. 15h-19h"><input type="number" id="t2" placeholder="Prod. 20h-23h">' : '<input type="number" id="tG" placeholder="Produção Total">';
     }
 
     function salvar() {
@@ -203,8 +212,8 @@
             let taxa = t === '07x15' ? (tipo==='f'?8.61:5.73) : 6.88;
             bruto = prod * taxa;
         }
-        dados.unshift({ id: Date.now(), navio: ($('navioCalc').value||"S/N").toUpperCase(), data: $('dataCalc').value, bruto: bruto/3, liq: (bruto/3)*0.82, pago: false });
-        localStorage.setItem('hist_'+logado, JSON.stringify(dados)); carregar(); toast("Salvo!");
+        dados.unshift({ id: Date.now(), navio: ($('navioCalc').value||"S/N").toUpperCase(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), bruto: bruto/3, liq: (bruto/3)*0.82, pago: false });
+        localStorage.setItem('hist_'+logado, JSON.stringify(dados)); carregar(); toast("Serviço Salvo!");
     }
 
     function carregar() {
@@ -213,23 +222,35 @@
         let bT=0, lT=0, pT=0, rT=0;
         dados.forEach(i => {
             bT+=i.bruto; lT+=i.liq; i.pago?rT+=i.liq:pT+=i.liq;
-            lista.innerHTML += `<div class="hist-item"><div><b>${i.navio}</b><br><small>${i.data}</small><br><span class="status-badge ${i.pago?'pago':'pendente'}" onclick="alternar(${i.id})">${i.pago?'RECEBIDO':'PENDENTE'}</span></div><div style="text-align:right"><b>R$ ${i.liq.toFixed(2)}</b><br><small>BRUTO R$ ${i.bruto.toFixed(2)}</small></div></div>`;
+            lista.innerHTML += `<div class="hist-item"><div><b>${i.navio}</b><br><small>${i.data}</small><br><span class="status-badge ${i.pago?'pago':'pendente'}" onclick="alternar(${i.id})">${i.pago?'✓ RECEBIDO':'🕒 PENDENTE'}</span></div><div style="text-align:right"><b>${fBR(i.liq)}</b><br><small>BRUTO ${fBR(i.bruto)}</small></div></div>`;
         });
-        $('dashBruto').textContent = 'R$ '+bT.toFixed(2); $('dashLiq').textContent = 'R$ '+lT.toFixed(2); $('dashPend').textContent = 'R$ '+pT.toFixed(2); $('dashPago').textContent = 'R$ '+rT.toFixed(2);
+        $('dashBruto').textContent = fBR(bT); $('dashLiq').textContent = fBR(lT); $('dashPend').textContent = fBR(pT); $('dashPago').textContent = fBR(rT);
         ajustarCalc();
     }
 
     function alternar(id) { let idx = dados.findIndex(x=>x.id===id); dados[idx].pago = !dados[idx].pago; localStorage.setItem('hist_'+logado, JSON.stringify(dados)); carregar(); }
     function mostrarPix() { $('msgComedia').textContent = frases[Math.floor(Math.random()*frases.length)]; $('modalPix').style.display='flex'; }
-    function copiarPix() { navigator.clipboard.writeText('92994821868'); toast("Chave Copiada!"); }
+    function copiarPix() { navigator.clipboard.writeText('92994821868'); toast("Chave Copiada! Valeu! ☕"); }
     function toggleSection(id) { $(id).classList.toggle('hidden'); }
-    function toast(m) { let t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+    function toast(m) { let t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
     
-    // BACKUP
-    function exportarDados() { let blob = new Blob([JSON.stringify(dados)], {type:'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${logado}.json`; a.click(); }
-    function importarDados() { let input = document.createElement('input'); input.type='file'; input.onchange = e => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = () => { localStorage.setItem('hist_'+logado, reader.result); carregar(); toast("Backup Restaurado!"); }; reader.readAsText(file); }; input.click(); }
+    function exportarDados() { 
+        let s = JSON.stringify(dados); let blob = new Blob([s], {type:'application/json'});
+        let a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `backup_evolution_${logado}.json`; a.click();
+    }
+    function importarDados() {
+        let inp = document.createElement('input'); inp.type='file';
+        inp.onchange = e => {
+            let f = e.target.files[0]; let rd = new FileReader();
+            rd.onload = () => { localStorage.setItem('hist_'+logado, rd.result); carregar(); toast("Dados Importados!"); };
+            rd.readAsText(f);
+        }; inp.click();
+    }
     
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    const h = new Date().toISOString().split('T')[0];
+    $('dataCalc').value = h; $('dataRel').value = h;
 </script>
 </body>
 </html>
