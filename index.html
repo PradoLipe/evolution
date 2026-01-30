@@ -97,12 +97,15 @@
 
         .btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
-        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66) 100%; color: #fff; }
 
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .status-badge { border: none; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; margin-top: 5px; }
-        .status-badge.pago { background: var(--success); color: #fff; }
-        .status-badge.pendente { background: var(--danger); color: #fff; }
+        .filter-chip { padding: 8px 16px; background: var(--input); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; color: var(--text-dim); transition: 0.3s; }
+        .filter-chip.active { background: var(--primary); color: #000; font-weight: 700; }
+
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; cursor: pointer; border: 1px solid transparent; }
+        .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); }
+        .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
@@ -151,8 +154,8 @@
                 <div><p style="font-size:9px; color:var(--primary); font-weight:800; letter-spacing:1px;">CONFERENTE ATIVO</p><h2 id="userName" style="font-size:1.1rem; font-weight:800;">...</h2></div>
             </div>
             <div style="display:flex; gap:10px;">
-                <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓</button>
-                <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.openModal('configModal')">⚙️</button>
+                <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="app.toggleTheme()">🌓</button>
+                <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="app.openModal('configModal')">⚙️</button>
             </div>
         </div>
 
@@ -164,11 +167,10 @@
         </div>
 
         <div class="section-card expanded" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>GERADOR DE RELATÓRIO</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>RELATÓRIO DE PRODUÇÃO</span></div><span>▼</span></div>
             <div class="section-content">
                 <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" class="input-navio" style="text-transform:uppercase;"></div>
                 <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div><div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
-                <div class="input-group"><label class="input-label">Terno</label><input type="number" id="relTerno" value="1"></div>
                 <div id="relCamposProducao"></div>
                 <div id="relTotalBox" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary); margin-bottom:15px; display:none;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--primary); font-weight:700;">TOTAL</span><span id="relTotalPreview" style="font-family:monospace; font-size:1.2rem;">0</span></div></div>
                 <button class="btn btn-success" onclick="app.generateReport()">COPIAR RELATÓRIO</button>
@@ -191,15 +193,16 @@
         </div>
 
         <div class="section-card expanded" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
                 <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:5px;">
                     <div class="filter-chip active" id="f-all" onclick="app.filterHistory('all')">Todos</div>
                     <div class="filter-chip" id="f-pendente" onclick="app.filterHistory('pendente')">Pendentes</div>
                     <div class="filter-chip" id="f-pago" onclick="app.filterHistory('pago')">Pagos</div>
+                    <div class="filter-chip" id="f-semana" onclick="app.filterHistory('semana')">Semana</div>
                 </div>
                 <div id="histList"></div>
-                <div id="emptyState" class="hidden" style="text-align:center; padding:30px; color:var(--text-dim);">Vazio</div>
+                <div id="emptyState" class="hidden" style="text-align:center; padding:30px; color:var(--text-dim);">Nenhum registro encontrado</div>
             </div>
         </div>
 
@@ -209,7 +212,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="updateNotice">
+    <div class="modal-overlay" id="updateNotice" onclick="app.closeModal('updateNotice')">
         <div class="modal-content" style="text-align:center;">
             <div style="font-size:3rem; margin-bottom:15px;">🚀</div>
             <h3 style="color:var(--primary); margin-bottom:15px;">Olá, Conferente!</h3>
@@ -219,7 +222,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="pixModal">
+    <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
         <div class="modal-content" style="text-align:center;">
             <button style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-dim); font-size:20px;" onclick="app.closeModal('pixModal')">×</button>
             <div style="font-size:3rem; margin-bottom:15px;">☕</div>
@@ -243,16 +246,19 @@
     </div>
 
     <script>
-        class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
+        class Money {
+            constructor(cents) { this._cents = Math.round(cents); }
+            format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+            get cents() { return this._cents; }
+        }
 
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EDILSON RJ", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY" };
-        
         const FRASES_PIX = [
             "O programador virou café. Precisa de mais café pra virar código! ☕",
             "Este app não roda a base de vento, mas sim de PIX. Ajude o dev! 😉",
             "Minha calculadora tá fazendo greve. Só um PIX resolve o motim! 💰",
             "Se você está lendo isso, a geladeira do dev está vazia. PIX nela! 🍔",
-            "A internet caiu, mas o PIX do dev não! 🚀 Ajude a manter o sinal.",
+            "A internet caiu, mas o PIX do dev não! 🚀",
             "PIX para o dev: combustível para a mente (e pra pagar o boleto)! 😂",
             "Conferente feliz, dev feliz! E dev feliz é dev que recebe PIX! ✨",
             "Erro 404: PIX não encontrado. Por favor, corrija este erro! 💸",
@@ -305,67 +311,21 @@
                 this.loadData();
             }
 
-            // CORREÇÃO DO RELATÓRIO E SISTEMA DE CÓPIA ROBUSTO
-            generateReport() {
-                const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return this.showToast('Navio?', 'error');
-                const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
-                const t = document.getElementById('relTurno').value;
-                const terno = document.getElementById('relTerno').value;
-                let m = `${n}\n${df} ${t}\n${terno} TERNO\n`;
-                if (t === '15x23') {
-                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
-                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
-                    m += `15x19 ${p1}\n19x23 ${p2}\nTOTAL ${p1+p2}\n`;
-                } else {
-                    const pt = parseInt(document.getElementById('relPT')?.value) || 0;
-                    m += `TOTAL ${pt}\n`;
-                }
-                m += this.currentUser.split(' ')[0];
-                this.copyToClipboard(m);
-            }
-
-            copyToClipboard(text) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => this.showToast('Copiado!'))
-                        .catch(() => this.fallbackCopy(text));
-                } else { this.fallbackCopy(text); }
-            }
-
-            fallbackCopy(text) {
-                const ta = document.createElement("textarea");
-                ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
-                document.body.appendChild(ta); ta.focus(); ta.select();
-                try { document.execCommand('copy'); this.showToast('Copiado!'); } 
-                catch (e) { this.showToast('Erro ao copiar', 'error'); }
-                document.body.removeChild(ta);
-            }
-
-            // SISTEMA DE MENSAGENS ALEATÓRIAS
             startAutoPix() {
                 setInterval(() => {
                     if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
                         this.showPix();
                     }
-                }, 480000); // Aparece a cada 8 minutos
+                }, 480000); 
             }
 
-            showPix() {
-                document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)];
-                this.closeModal('configModal');
-                this.openModal('pixModal');
+            loadData() {
+                const key = `evo_db_${btoa(this.currentUser)}`;
+                try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; }
+                this.renderHistory(); this.updateDashboard();
             }
 
-            copyPix() { this.copyToClipboard('92994821868'); }
-
-            // LÓGICA DE CÁLCULOS E PRODUÇÃO
-            adjustCalcFields() {
-                const t = document.getElementById('calcTurno').value;
-                const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
-            }
+            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
@@ -384,6 +344,44 @@
                 const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
                 const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
                 document.getElementById('relTotalPreview').textContent = p1 + p2;
+            }
+
+            generateReport() {
+                const n = document.getElementById('relNavio').value.toUpperCase();
+                if (!n) return this.showToast('Navio?', 'error');
+                const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
+                const t = document.getElementById('relTurno').value;
+                let m = `${n}\n${df} ${t}\n${document.getElementById('relTerno').value || 1} TERNO\n`;
+                if (t === '15x23') {
+                    const p1 = parseInt(document.getElementById('relP1').value) || 0;
+                    const p2 = parseInt(document.getElementById('relP2').value) || 0;
+                    m += `15x19 ${p1}\n19x23 ${p2}\nTOTAL ${p1+p2}\n`;
+                } else m += `TOTAL ${parseInt(document.getElementById('relPT').value) || 0}\n`;
+                m += this.currentUser.split(' ')[0];
+                this.copyToClipboard(m);
+            }
+
+            copyToClipboard(text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => this.showToast('Copiado!'))
+                        .catch(() => this.fallbackCopy(text));
+                } else { this.fallbackCopy(text); }
+            }
+
+            fallbackCopy(text) {
+                const ta = document.createElement("textarea");
+                ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+                document.body.appendChild(ta); ta.focus(); ta.select();
+                try { document.execCommand('copy'); this.showToast('Copiado!'); } catch (e) { this.showToast('Erro ao copiar', 'error'); }
+                document.body.removeChild(ta);
+            }
+
+            adjustCalcFields() {
+                const t = document.getElementById('calcTurno').value;
+                const c = document.getElementById('calcCampos');
+                c.innerHTML = t === '15x23' ? 
+                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
+                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             calcularValores(tipo, turno, v, q) {
@@ -408,17 +406,24 @@
                 this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
 
-            loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
-            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
             renderHistory() {
                 const list = document.getElementById('histList');
                 let f = this.entries;
                 if (this.filter === 'pendente') f = f.filter(x => !x.pago);
                 else if (this.filter === 'pago') f = f.filter(x => x.pago);
+                else if (this.filter === 'semana') { const s = new Date(); s.setDate(s.getDate() - 7); f = f.filter(x => new Date(x.data) >= s); }
                 list.innerHTML = f.map(e => `
                     <div class="hist-item">
-                        <div style="flex:1;"><div style="font-weight:700;">${e.navio}</div><div style="font-size:11px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div>
-                        <div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700;">${e.navio}</div>
+                            <div style="font-size:11px; color:var(--text-dim); margin:4px 0;">${e.dataF}</div>
+                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div>
+                            <div style="color:var(--text-dim); font-size:10px; font-weight:600; margin-top:2px;">Bruto: ${new Money(e.bruto).format()}</div>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer;">🗑️</button>
+                        </div>
                     </div>`).join('');
                 document.getElementById('emptyState').classList.toggle('hidden', f.length > 0);
             }
@@ -436,7 +441,7 @@
 
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            filterHistory(t) { this.filter = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); document.getElementById(`f-${t}`).classList.add('active'); this.renderHistory(); }
+            filterHistory(t) { this.filter = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); const el = document.getElementById(`f-${t}`); if(el) el.classList.add('active'); this.renderHistory(); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             showToast(m, t='success') { const c = document.getElementById('toastContainer'), e = document.createElement('div'); e.className = `toast ${t}`; e.innerHTML = m; c.appendChild(e); setTimeout(() => e.remove(), 2500); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -445,6 +450,8 @@
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light-mode') document.body.classList.add('light-mode'); }
             exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado'); }
             importData() { const i = document.createElement('input'); i.type = 'file'; i.onchange = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Importado!'); }; r.readAsText(f); }; i.click(); }
+            showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
+            copyPix() { this.copyToClipboard('92994821868'); }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
         }
         const app = new EvolutionApp();
