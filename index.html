@@ -56,9 +56,6 @@
             transition: background 0.5s ease;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
         .glass-panel { background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); padding: 40px 30px; text-align: center; }
 
@@ -90,7 +87,6 @@
         .section-card.expanded .section-content { max-height: 2000px; padding: 0 24px 24px; }
 
         input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -103,6 +99,9 @@
         .hist-item.pago { border-left: 4px solid var(--success); }
         .hist-item.pendente { border-left: 4px solid var(--danger); }
 
+        .filter-chip { padding: 8px 16px; background: var(--input); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.3s; color: var(--text-dim); }
+        .filter-chip.active { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
+
         .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; cursor: pointer; border: 1px solid transparent; }
         .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); }
@@ -112,22 +111,16 @@
         .modal-content { background: var(--card-solid); border-radius: 28px; width: 100%; max-width: 400px; padding: 32px; position: relative; }
 
         .toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
-        .toast { background: var(--card-solid); padding: 12px 24px; border-radius: 50px; border: 1px solid var(--border); font-size: 14px; font-weight: 700; animation: fadeIn 0.3s ease; }
+        .toast { background: var(--card-solid); padding: 12px 24px; border-radius: 50px; border: 1px solid var(--border); font-size: 14px; font-weight: 700; box-shadow: var(--shadow); }
 
         .copyright-box { margin-top: auto; padding: 30px 0; text-align: center; opacity: 0.6; }
         .copyright-text { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--text-dim); }
         
         .hidden { display: none !important; }
         .user-avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; }
-
-        @media (max-width: 480px) { .evolution-logo { font-size: 2rem; letter-spacing: 6px; } }
     </style>
 </head>
 <body>
-
-    <div id="blockNotice" class="hidden" style="position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; align-items:center; justify-content:center; color:var(--danger); text-align:center;">
-        <h1 style="font-size:1.5rem;">ACESSO RESTRITO</h1>
-    </div>
 
     <div class="toast-container" id="toastContainer"></div>
 
@@ -137,20 +130,14 @@
                 <div style="font-size:3rem; margin-bottom:10px;">🔐</div>
                 <div class="evolution-logo">EVOLUTION</div>
                 <p style="font-size:10px; color:var(--text-dim); letter-spacing:4px; margin-bottom:32px; font-weight:700;">V46 ULTRA PREMIUM</p>
-                
                 <div class="pin-display" id="pinDisplay">
                     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
                     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
                 </div>
-                
-                <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" 
-                       style="text-align:center; letter-spacing:10px; font-size:20px; font-weight:900; margin-bottom:24px;" 
-                       maxlength="6" inputmode="numeric">
-                
+                <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; letter-spacing:10px; font-size:20px; font-weight:900; margin-bottom:24px;" maxlength="6" inputmode="numeric">
                 <button class="btn btn-primary" onclick="app.login()">ENTRAR NO SISTEMA</button>
             </div>
         </div>
-        
         <div class="copyright-box">
             <p class="copyright-text">© 2026 FELIPE PRADO SYSTEMS</p>
             <p style="font-size:8px; color:var(--primary); margin-top:5px; letter-spacing:1px;">TODOS OS DIREITOS RESERVADOS</p>
@@ -161,10 +148,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
             <div style="display:flex; align-items:center; gap:12px;">
                 <div class="user-avatar" id="userAvatar">FP</div>
-                <div>
-                    <p style="font-size:9px; color:var(--primary); font-weight:700;">CONFERENTE</p>
-                    <h2 id="userName" style="font-size:1rem; font-weight:800;">...</h2>
-                </div>
+                <div><p style="font-size:9px; color:var(--primary); font-weight:700;">CONFERENTE</p><h2 id="userName" style="font-size:1rem; font-weight:800;">...</h2></div>
             </div>
             <div style="display:flex; gap:8px;">
                 <button style="width:40px; height:40px; border-radius:10px; background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓</button>
@@ -173,25 +157,20 @@
         </div>
 
         <div class="dash-grid">
-            <div class="dash-card" onclick="app.filterHistory('all')"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card accent" onclick="app.filterHistory('all')"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card danger" onclick="app.filterHistory('pendente')"><span class="dash-label">A Receber</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px;">0 serv.</div></div>
-            <div class="dash-card success" onclick="app.filterHistory('pago')"><span class="dash-label">Já Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
+            <div class="dash-card"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+            <div class="dash-card accent"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card danger"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px;">0 serv.</div></div>
+            <div class="dash-card success"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
         </div>
 
         <div class="section-card expanded" id="secRel">
             <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>WhatsApp</span></div><span>▼</span></div>
             <div class="section-content">
                 <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;"></div>
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
-                </div>
+                <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div><div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
                 <div class="input-group"><label class="input-label">Terno</label><select id="relTerno"><option value="1">1° Terno</option><option value="2">2° Terno</option><option value="3">3° Terno</option><option value="4">4° Terno</option></select></div>
                 <div id="relCamposProducao"></div>
-                <div id="relTotalBox" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary); margin-bottom:15px; display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--primary); font-weight:700;">TOTAL</span><span id="relTotalPreview" style="font-family:monospace; font-size:1.2rem;">0</span></div>
-                </div>
+                <div id="relTotalBox" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary); margin-bottom:15px; display:none;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--primary); font-weight:700;">TOTAL</span><span id="relTotalPreview" style="font-family:monospace; font-size:1.2rem;">0</span></div></div>
                 <button class="btn btn-success" onclick="app.generateReport()">COPIAR RELATÓRIO</button>
             </div>
         </div>
@@ -199,14 +178,8 @@
         <div class="section-card" id="secLan">
             <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title"><span>💰</span><span>Nova Produção</span></div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
-                    <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;"></div>
-                </div>
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
-                </div>
+                <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div><div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;"></div></div>
+                <div class="input-row"><div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div><div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
                 <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
                 <div id="calcCampos"></div>
                 <button class="btn btn-primary" onclick="app.saveEntry()">SALVAR REGISTRO</button>
@@ -214,21 +187,22 @@
         </div>
 
         <div class="section-card expanded" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
-                <div style="display:flex; gap:8px; margin-bottom:15px; overflow-x:auto;">
-                    <div class="filter-chip active" onclick="app.filterHistory('all')">Todos</div>
-                    <div class="filter-chip" onclick="app.filterHistory('pendente')">Pendentes</div>
-                    <div class="filter-chip" onclick="app.filterHistory('pago')">Pagos</div>
+                <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:5px;">
+                    <div class="filter-chip active" id="f-all" onclick="app.filterHistory('all')">Todos</div>
+                    <div class="filter-chip" id="f-pendente" onclick="app.filterHistory('pendente')">Pendentes</div>
+                    <div class="filter-chip" id="f-pago" onclick="app.filterHistory('pago')">Pagos</div>
+                    <div class="filter-chip" id="f-semana" onclick="app.filterHistory('semana')">Esta Semana</div>
                 </div>
                 <div id="histList"></div>
-                <div id="emptyState" class="hidden" style="text-align:center; padding:30px; color:var(--text-dim);">Vazio</div>
+                <div id="emptyState" class="hidden" style="text-align:center; padding:30px; color:var(--text-dim);">Nenhum registro encontrado</div>
             </div>
         </div>
 
         <div style="margin-top:auto; padding:20px 0; text-align:center; border-top:1px solid var(--border);">
             <p style="font-size:10px; font-weight:800; color:var(--primary); letter-spacing:2px;">EVOLUTION ULTRA PREMIUM</p>
-            <p style="font-size:8px; color:var(--text-dim); margin-top:5px;">FELIPE PRADO SYSTEMS © 2026</p>
+            <p style="font-size:8px; color:var(--text-dim); margin-top:5px;">FELIPE PRADO SYSTEMS © 2026 | TODOS OS DIREITOS RESERVADOS</p>
         </div>
     </div>
 
@@ -236,10 +210,10 @@
         <div class="modal-content">
             <h3 style="margin-bottom:20px; color:var(--primary);">Configurações</h3>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData('json')">📥 Exportar JSON</button>
+                <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData()">📥 Exportar Backup (JSON)</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.importData()">📤 Importar Backup</button>
                 <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <button class="btn btn-primary" onclick="app.showPix()">☕ Apoiar</button>
+                <button class="btn btn-primary" onclick="app.showPix()">☕ Apoiar Desenvolvedor</button>
                 <button class="btn" style="background:var(--danger); color:#fff;" onclick="app.logout()">🚪 Sair</button>
             </div>
         </div>
@@ -267,12 +241,12 @@
             constructor() { this.entries = []; this.filter = 'all'; this.currentUser = null; this.init(); }
 
             init() {
-                document.getElementById('senhaInput').addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
+                const pin = document.getElementById('senhaInput');
+                pin.addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
-                this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme();
-                this.checkSession();
+                this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
             }
 
             updatePinDisplay(val) {
@@ -291,10 +265,7 @@
 
             checkSession() {
                 const s = localStorage.getItem('evo_session');
-                if (s) {
-                    const d = JSON.parse(atob(s));
-                    if (d.ts > Date.now() - 86400000) { this.currentUser = d.user; this.showMainPanel(); }
-                }
+                if (s) { const d = JSON.parse(atob(s)); if (d.ts > Date.now() - 86400000) { this.currentUser = d.user; this.showMainPanel(); } }
             }
 
             showMainPanel() {
@@ -304,6 +275,17 @@
                 document.getElementById('userAvatar').textContent = this.currentUser.substring(0,2);
                 this.loadData();
             }
+
+            // RECUPERAÇÃO DE DADOS (Procura nas duas chaves possíveis)
+            loadData() {
+                const keyNova = `evo_db_${btoa(this.currentUser)}`;
+                const keyAntiga = `evo_data_${btoa(this.currentUser)}`;
+                let data = localStorage.getItem(keyNova) || localStorage.getItem(keyAntiga);
+                try { this.entries = JSON.parse(data) || []; } catch(e) { this.entries = []; }
+                this.renderHistory(); this.updateDashboard();
+            }
+
+            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
@@ -353,44 +335,45 @@
                     '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, 
                     '23x07': { normal: 6.88, feriado: 10.32 } 
                 };
-                let brutoNavio = 0; const nC = parseInt(q) || 1;
+                let bN = 0; const nC = parseInt(q) || 1;
                 if (turno === '15x23') {
                     const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal;
-                    brutoNavio = (parseInt(v[0]) || 0) * t.p1 + (parseInt(v[1]) || 0) * t.p2;
-                } else brutoNavio = (parseInt(v[0]) || 0) * TX[turno][tipo === 'feriado' ? 'feriado' : 'normal'];
-                const mb = (brutoNavio / nC);
+                    bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2;
+                } else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                const mb = (bN / nC);
                 return { b: mb * 100, l: mb * 82 };
             }
 
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
-                if (!n || !d) return this.showToast('Dados incompletos', 'error');
+                if (!n || !d) return this.showToast('Incompleto', 'error');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
-                const res = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
-                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: res.b, liquido: res.l, pago: false });
+                const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
+                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
                 this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
-
-            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            loadData() { try { this.entries = JSON.parse(localStorage.getItem(`evo_db_${btoa(this.currentUser)}`)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
 
             renderHistory() {
                 const list = document.getElementById('histList');
                 let f = this.entries;
                 if (this.filter === 'pendente') f = f.filter(x => !x.pago);
                 else if (this.filter === 'pago') f = f.filter(x => x.pago);
+                else if (this.filter === 'semana') {
+                    const s = new Date(); s.setDate(s.getDate() - 7);
+                    f = f.filter(x => new Date(x.data) >= s);
+                }
                 list.innerHTML = f.map(e => `
                     <div class="hist-item ${e.pago ? 'pago' : 'pendente'}">
                         <div style="flex:1;">
-                            <div style="font-weight:700; font-size:14px;">${e.navio}</div>
+                            <div style="font-weight:700;">${e.navio}</div>
                             <div style="font-size:11px; color:var(--text-dim); margin:4px 0;">${e.dataF} • ${e.turno}</div>
                             <button class="status-badge ${e.pago ? 'pago' : 'pendente'}" onclick="app.togglePago(${e.id})">${e.pago ? '✓ PAGO' : '🕒 PENDENTE'}</button>
                         </div>
                         <div style="text-align:right;">
                             <div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div>
-                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer; font-size:16px;">🗑️</button>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; cursor:pointer;">🗑️</button>
                         </div>
                     </div>`).join('');
                 document.getElementById('emptyState').classList.toggle('hidden', f.length > 0);
@@ -409,7 +392,12 @@
 
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            filterHistory(t) { this.filter = t; this.renderHistory(); }
+            filterHistory(t) { 
+                this.filter = t; 
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                document.getElementById(`f-${t}`).classList.add('active');
+                this.renderHistory(); 
+            }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             showToast(m, t='success') {
                 const c = document.getElementById('toastContainer'), e = document.createElement('div');
@@ -418,11 +406,11 @@
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-            exportData(fmt) {
+            exportData() {
                 if (!this.entries.length) return this.showToast('Vazio', 'error');
-                const blob = new Blob([JSON.stringify(this.entries, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `backup_evo_${Date.now()}.json`;
+                const b = new Blob([JSON.stringify(this.entries, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(b);
+                const a = document.createElement('a'); a.href = url; a.download = `backup_evolution.json`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                 this.showToast('Backup Exportado');
             }
@@ -434,10 +422,9 @@
                     r.onload = (ev) => {
                         try {
                             const d = JSON.parse(ev.target.result);
-                            if (Array.isArray(d)) { this.entries = d; this.saveData(); this.loadData(); this.showToast('Importado!'); this.closeModal('configModal'); }
+                            if (Array.isArray(d)) { this.entries = d; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Importado!'); this.closeModal('configModal'); }
                         } catch(err) { this.showToast('Erro no arquivo', 'error'); }
-                    };
-                    r.readAsText(f);
+                    }; r.readAsText(f);
                 }; i.click();
             }
 
