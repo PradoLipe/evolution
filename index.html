@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V50 PREMIUM</title>
+    <title>EVOLUTION - V51 PREMIUM</title>
     <style>
         :root { 
             --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --success: #48c774;
@@ -11,57 +11,55 @@
             --text: #ffffff; --text-dim: #8e8e93; --border: rgba(255,255,255,0.08);
         }
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
-        input, select, textarea { user-select: text; }
+        input, select { user-select: text; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
-        .container { max-width: 480px; width: 100%; padding: 20px; position: relative; }
+        .container { max-width: 480px; width: 100%; padding: 20px; }
         
         /* LOGIN PREMIUM */
         .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 30px; padding: 50px 25px; text-align: center; margin-top: 15vh; }
-        .evolution-logo { font-size: 2.8rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* INPUTS */
-        input, select { width: 100%; padding: 18px; background: var(--input); border: 1px solid var(--border); border-radius: 16px; color: var(--text); font-size: 1rem; margin-top: 12px; }
-        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 20px; border-radius: 16px; font-weight: 800; padding: 18px; border:none; cursor:pointer; text-transform: uppercase; }
+        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 15px; color: var(--text); font-size: 1rem; margin-top: 12px; }
+        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 20px; border-radius: 15px; font-weight: 800; padding: 18px; border:none; cursor:pointer; text-transform: uppercase; }
 
         /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .dash-item { background: var(--card); padding: 20px; border-radius: 22px; border: 1px solid var(--border); }
-        .dash-val { font-size: 1.2rem; font-weight: 800; display: block; margin-top: 5px; }
+        .dash-item { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
+        .dash-val { font-size: 1.1rem; font-weight: 800; display: block; margin-top: 5px; }
 
-        /* HISTÓRICO */
-        .section-card { background: var(--card); padding: 22px; border-radius: 26px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border); }
-        .val-liq { color: var(--accent); font-weight: 900; font-size: 1.1rem; }
+        /* SEÇÕES */
+        .section-card { background: var(--card); padding: 22px; border-radius: 24px; margin-bottom: 15px; border: 1px solid var(--border); }
+        h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
 
-        /* MODAIS */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; }
+        /* HISTÓRICO (ESTILO FOTO) */
+        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .val-liq { color: var(--accent); font-weight: 800; font-size: 1rem; }
+        .val-bruto { color: var(--text-dim); font-size: 0.75rem; display: block; }
 
-        .footer-rights { text-align: center; padding: 40px 0; opacity: 0.8; font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
+        .footer-rights { text-align: center; padding: 30px 0; font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
         .hidden { display: none !important; }
-        .toast { position: fixed; bottom: 30px; background: var(--primary); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; z-index: 2000; display: none; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-<div class="toast" id="toast"></div>
-
 <div class="modal" id="modalConfig">
     <div class="modal-content">
-        <h3 style="color:var(--primary); margin-bottom: 20px;">CONFIGURAÇÕES</h3>
+        <h3 style="color:var(--primary);">Configurações</h3>
         <button class="btn-main" onclick="exportarExcel()" style="background:var(--success); color:#fff;">📊 Baixar Planilha Excel</button>
-        <button class="btn-main" onclick="exportarJSON()">📤 Exportar Backup</button>
-        <button class="btn-main" onclick="importarJSON()">📥 Importar Backup</button>
-        <button onclick="fecharModal()" style="background:none; border:none; color:var(--danger); margin-top:25px; font-weight:bold; cursor:pointer;">FECHAR</button>
+        <button class="btn-main" onclick="exportarJSON()">📤 Copiar Backup</button>
+        <button class="btn-main" onclick="importarJSON()">📥 Restaurar Backup</button>
+        <button onclick="fecharModal()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold;">FECHAR</button>
     </div>
 </div>
 
 <div class="container" id="login-screen">
     <div class="glass-card">
         <div class="evolution-logo">EVOLUTION</div>
-        <p style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">PREMIUM SYSTEM</p>
-        <input type="text" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center;">
-        <button class="btn-main" id="btnLogin">ENTRAR NO PAINEL</button>
+        <p style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">SISTEMA ADMINISTRATIVO</p>
+        <input type="password" id="senhaInput" placeholder="DIGITE SUA SENHA">
+        <button class="btn-main" onclick="login()">ENTRAR</button>
     </div>
     <div class="footer-rights">
         © 2026 ALL RIGHTS RESERVED TO<br>
@@ -70,33 +68,47 @@
 </div>
 
 <div class="container hidden" id="main-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
         <h2 id="userName" style="font-weight:900;">...</h2>
-        <div style="background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid var(--border); cursor:pointer;" onclick="abrirModal()">⚙️</div>
+        <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer;" onclick="abrirModal()">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item"><span style="font-size:10px; color:var(--text-dim);">BRUTO</span><div id="dashTotalBruto" style="color:var(--info);" class="dash-val">R$ 0,00</div></div>
-        <div class="dash-item"><span style="font-size:10px; color:var(--text-dim);">LÍQUIDO</span><div id="dashTotalLiquido" style="color:var(--accent);" class="dash-val">R$ 0,00</div></div>
+        <div class="dash-item"><span style="font-size:9px; color:var(--text-dim);">BRUTO</span><div id="dashTotalBruto" style="color:var(--info);" class="dash-val">R$ 0,00</div></div>
+        <div class="dash-item"><span style="font-size:9px; color:var(--text-dim);">LÍQUIDO</span><div id="dashTotalLiquido" style="color:var(--accent);" class="dash-val">R$ 0,00</div></div>
     </div>
 
     <div class="section-card">
-        <h3 style="font-size:0.7rem; color:var(--text-dim); margin-bottom:15px;">💰 LANÇAR PRODUÇÃO</h3>
+        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 GERADOR DE RELATÓRIO <span>▼</span></h3>
+        <div id="rel-box" class="hidden">
+            <input type="date" id="dataRel">
+            <input type="text" id="navioRel" placeholder="Nome do Navio">
+            <select id="turnoRel" onchange="ajustarRel()">
+                <option value="">Selecione o Turno</option>
+                <option value="07x15">07x15</option>
+                <option value="15x23">15x23</option>
+                <option value="23x07">23x07</option>
+            </select>
+            <div id="camposRel"></div>
+            <button class="btn-main" style="background:#25d366; color:#fff;" onclick="gerarRel()">Copiar p/ WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h3>💰 LANÇAR PRODUÇÃO</h3>
         <input type="date" id="dataCalc">
-        <input type="text" id="navioCalc" placeholder="Nome do Navio">
-        <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
+        <input type="text" id="navioCalc" placeholder="Navio">
+        <select id="turnoCalc" onchange="ajustarCalc()"><option value="15x23">15x23</option><option value="07x15">07x15</option><option value="23x07">23x07</option></select>
         <div id="camposCalc"></div>
         <button class="btn-main" onclick="salvar()">SALVAR SERVIÇO</button>
     </div>
 
     <div class="section-card">
-        <h3 style="font-size:0.7rem; color:var(--text-dim); margin-bottom:15px;">📅 HISTÓRICO</h3>
+        <h3>📅 HISTÓRICO</h3>
         <div id="listaHist"></div>
     </div>
     
-    <div class="footer-rights">
-        EVOLUTION V50 • <span style="color:var(--primary);">FELIPE PRADO</span>
-    </div>
+    <div class="footer-rights">EVOLUTION • FELIPE PRADO</div>
 </div>
 
 <script>
@@ -104,63 +116,71 @@
     let logado = "", todosDados = [];
     const $ = id => document.getElementById(id);
 
-    // FUNÇÃO DE LOGIN CORRIGIDA
-    document.getElementById('btnLogin').addEventListener('click', function() {
+    function login() {
         const key = $('senhaInput').value;
         if(USERS[key]) {
             logado = USERS[key];
             $('userName').textContent = logado;
             $('login-screen').classList.add('hidden');
             $('main-panel').classList.remove('hidden');
-            carregarDados();
-        } else {
-            alert("Acesso negado. Verifique a chave.");
-        }
-    });
+            carregar();
+        } else alert("Senha incorreta!");
+    }
 
-    function carregarDados() {
+    function carregar() {
         todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
         render(); atualizarDash(); ajustarCalc();
         $('dataCalc').value = new Date().toISOString().split('T')[0];
     }
 
-    function abrirModal() { $('modalConfig').style.display = 'flex'; }
-    function fecharModal() { $('modalConfig').style.display = 'none'; }
+    function ajustarRel() {
+        const t = $('turnoRel').value;
+        $('camposRel').innerHTML = t === "15x23" ? '<input type="number" id="p1" placeholder="Prod 15-19h"><input type="number" id="p2" placeholder="Prod 20-23h">' : (t ? '<input type="number" id="pG" placeholder="Total">' : '');
+    }
+
+    function gerarRel() {
+        const t = $('turnoRel').value;
+        const navio = ($('navioRel').value || "S/N").toUpperCase();
+        let prod = t === "15x23" ? (parseInt($('p1').value)||0) + (parseInt($('p2').value)||0) : (parseInt($('pG').value)||0);
+        const msg = `*EVOLUTION REPORT*\n\nNavio: ${navio}\nTurno: ${t}\nProdução: ${prod}\nConferente: ${logado}`;
+        navigator.clipboard.writeText(msg); alert("Relatório copiado!");
+    }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
-        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="Prod 15-19h"><input type="number" id="t2" placeholder="Prod 20-23h">' : '<input type="number" id="tGeral" placeholder="Total">';
+        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="15-19h"><input type="number" id="t2" placeholder="20-23h">' : '<input type="number" id="tG" placeholder="Total">';
     }
 
     function salvar() {
         const t = $('turnoCalc').value;
-        let b = 0;
-        if(t === "15x23") { b = ((parseInt($('t1').value)||0)*5.73) + ((parseInt($('t2').value)||0)*6.88); }
-        else { b = (parseInt($('tGeral').value)||0) * 5.73; }
+        let b = t === "15x23" ? ((parseInt($('t1').value)||0)*5.73) + ((parseInt($('t2').value)||0)*6.88) : (parseInt($('tG').value)||0) * 5.73;
         todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: b/3, liquido: (b/3)*0.82 });
         localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        render(); atualizarDash(); toast("Salvo!");
+        render(); atualizarDash();
     }
 
     function render() {
         const c = $('listaHist'); c.innerHTML = '';
         todosDados.forEach(i => {
             const d = document.createElement('div'); d.className='hist-item';
-            d.innerHTML = `<div><b>${i.navio}</b><br><small color="gray">${i.data}</small></div><div style="text-align:right"><span class="val-liq">${i.liquido.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span><br><small>BRUTO ${i.bruto.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</small></div><div onclick="remover(${i.id})" style="color:red; margin-left:10px;">×</div>`;
+            d.innerHTML = `<div><b>${i.navio}</b><br><small>${i.data}</small></div><div style="text-align:right"><span class="val-liq">R$ ${i.liquido.toFixed(2).replace('.',',')}</span><span class="val-bruto">BRUTO R$ ${i.bruto.toFixed(2).replace('.',',')}</span></div><div onclick="remover(${i.id})" style="color:red; margin-left:15px; font-weight:bold;">×</div>`;
             c.appendChild(d);
         });
     }
 
-    function remover(id) { if(confirm("Excluir?")) { todosDados = todosDados.filter(x => x.id !== id); localStorage.setItem('hist_'+logado, JSON.stringify(todosDados)); render(); atualizarDash(); } }
+    function remover(id) { if(confirm("Remover?")) { todosDados = todosDados.filter(x => x.id !== id); localStorage.setItem('hist_'+logado, JSON.stringify(todosDados)); render(); atualizarDash(); } }
     function atualizarDash() {
         const b = todosDados.reduce((a,x)=>a+x.bruto,0);
         const l = todosDados.reduce((a,x)=>a+x.liquido,0);
-        $('dashTotalBruto').textContent = b.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-        $('dashTotalLiquido').textContent = l.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        $('dashTotalBruto').textContent = "R$ " + b.toFixed(2).replace('.',',');
+        $('dashTotalLiquido').textContent = "R$ " + l.toFixed(2).replace('.',',');
     }
 
-    function exportarJSON() { navigator.clipboard.writeText(JSON.stringify(todosDados)); alert("Código de backup copiado!"); }
-    function importarJSON() { const c = prompt("Cole o backup:"); if(c) { todosDados = JSON.parse(c); localStorage.setItem('hist_'+logado, c); carregarDados(); } }
+    function abrirModal() { $('modalConfig').style.display = 'flex'; }
+    function fecharModal() { $('modalConfig').style.display = 'none'; }
+    function toggleSection(id) { $(id).classList.toggle('hidden'); }
+    function exportarJSON() { navigator.clipboard.writeText(JSON.stringify(todosDados)); alert("Backup copiado!"); }
+    function importarJSON() { const c = prompt("Cole o backup:"); if(c) { todosDados = JSON.parse(c); localStorage.setItem('hist_'+logado, c); carregar(); } }
     function exportarExcel() {
         let csv = "Data;Navio;Bruto;Liquido\n";
         todosDados.forEach(i => { csv += `${i.data};${i.navio};${i.bruto.toFixed(2)};${i.liquido.toFixed(2)}\n`; });
@@ -170,7 +190,6 @@
         link.download = `Evolution_${logado}.csv`;
         link.click();
     }
-    function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
 </script>
 </body>
 </html>
