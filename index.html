@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V43</title>
+    <title>EVOLUTION - V44</title>
     <style>
         :root { 
             --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --success: #48c774;
@@ -15,14 +15,12 @@
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; min-height: 100vh; display: flex; justify-content: center; }
         .container { max-width: 480px; width: 100%; position: relative; display: flex; flex-direction: column; }
         
-        /* HEADER & DASH */
+        /* DASHBOARD */
         .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .config-btn { background: var(--card); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
         .dash-item { background: var(--card); padding: 15px; border-radius: 16px; border: 1px solid var(--border); }
         .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; display: block; }
         .dash-val { font-size: 1.1rem; font-weight: 800; }
-        .val-bruto-top { color: var(--info); } .val-liq-top { color: var(--accent); } .val-pend-top { color: var(--danger); } .val-rec-top { color: var(--success); }
 
         /* SEÇÕES */
         .section-card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
@@ -30,19 +28,15 @@
 
         /* HISTÓRICO */
         .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        .hist-info { flex: 1; }
-        .hist-name { font-weight: 700; font-size: 0.9rem; display: block; }
-        .hist-meta { font-size: 0.7rem; color: var(--text-dim); }
-        .hist-values { text-align: right; margin-right: 12px; }
         .val-liq { color: var(--accent); font-weight: 800; font-size: 0.95rem; display: block; }
         .val-bruto { color: var(--info); font-size: 0.75rem; font-weight: 600; display: block; }
 
-        /* INPUTS */
+        /* INPUTS E BOTÕES */
         input, select { width: 100%; padding: 14px; background: var(--input); border: 1px solid transparent; border-radius: 12px; color: var(--text); font-size: 0.95rem; margin-top: 8px; }
         .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 15px; border-radius: 12px; font-weight: 700; padding: 14px; border:none; cursor:pointer; }
-        .btn-whatsapp { background: #25d366; color: #fff; width: 100%; margin-top: 15px; border-radius: 12px; font-weight: 700; padding: 14px; border:none; }
+        .btn-whatsapp { background: #25d366; color: #fff; width: 100%; margin-top: 15px; border-radius: 12px; font-weight: 700; padding: 14px; border:none; cursor:pointer; }
 
-        .footer-rights { text-align: center; color: var(--text-dim); font-size: 10px; padding: 20px 0; margin-top: auto; }
+        .footer-rights { text-align: center; color: var(--text-dim); font-size: 10px; padding: 20px 0; margin-top: auto; letter-spacing: 1px; }
         .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; cursor: pointer; }
         .badge-pend { background: rgba(255,56,96,0.15); color: var(--danger); border: 1px solid var(--danger); }
         .badge-ok { background: rgba(72,199,116,0.15); color: var(--success); border: 1px solid var(--success); }
@@ -62,7 +56,7 @@
     <div class="modal-content" onclick="copiarChavePix()">
         <div style="font-size: 3rem;">☕</div>
         <h4 style="margin: 10px 0;">Apoie o Projeto</h4>
-        <p id="msgPix" style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;"></p>
+        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Ajude a manter o Evolution atualizado!</p>
         <div style="background: var(--input); padding: 15px; border-radius: 12px; border: 1px dashed var(--primary);">
             <span style="font-size: 1.1rem; font-weight: 800; color: var(--accent);">92994821868</span>
         </div>
@@ -82,33 +76,40 @@
 <div class="container hidden" id="main-panel">
     <div class="app-header">
         <div><span style="font-size: 0.6rem; color: var(--text-dim);">SISTEMA ATIVO</span><h2 id="userName">...</h2></div>
-        <div class="config-btn" onclick="alert('Configurações em breve')">⚙️</div>
+        <div class="config-btn" onclick="alert('Opções de Backup em breve')">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item"><span class="dash-label">Bruto</span><span class="dash-val val-bruto-top" id="dashTotalBruto">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">Líquido</span><span class="dash-val val-liq-top" id="dashTotalLiquido">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">A Receber</span><span class="dash-val val-pend-top" id="dashPendente">R$ 0</span></div>
-        <div class="dash-item"><span class="dash-label">Recebido</span><span class="dash-val val-rec-top" id="dashRecebido">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Bruto</span><span class="dash-val" style="color:var(--info)" id="dashTotalBruto">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Líquido</span><span class="dash-val" style="color:var(--accent)" id="dashTotalLiquido">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Pendente</span><span class="dash-val" style="color:var(--danger)" id="dashPendente">R$ 0</span></div>
+        <div class="dash-item"><span class="dash-label">Recebido</span><span class="dash-val" style="color:var(--success)" id="dashRecebido">R$ 0</span></div>
     </div>
 
     <div class="section-card">
         <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 Gerador de Relatório <span>▼</span></h3>
         <div id="rel-box" class="hidden">
-            <input type="date" id="dataRel"> <input type="text" id="navioRel" placeholder="Nome do Navio">
+            <input type="date" id="dataRel">
+            <input type="text" id="navioRel" placeholder="Nome do Navio">
             <div style="display:flex; gap:8px;">
                 <input type="number" id="ternoRelInput" placeholder="Terno">
-                <select id="turnoRel" onchange="ajustarRel()"><option value="">Turno</option><option value="07x15">07x15</option><option value="15x23">15x23</option><option value="23x07">23x07</option></select>
+                <select id="turnoRel" onchange="ajustarRel()">
+                    <option value="">Selecione o Turno</option>
+                    <option value="07x15">07x15</option>
+                    <option value="15x23">15x23</option>
+                    <option value="23x07">23x07</option>
+                </select>
             </div>
             <div id="camposRel"></div>
-            <button class="btn-whatsapp" onclick="gerarRel()">GERAR PARA WHATSAPP</button>
-            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:12px; margin-top:15px; font-family:monospace; font-size:11px; white-space:pre-wrap;"></div>
+            <button class="btn-whatsapp" onclick="gerarRel()">GERAR E COPIAR WHATSAPP</button>
+            <div id="relatorioArea" class="hidden" style="background:#000; color:var(--primary); padding:15px; border-radius:12px; margin-top:15px; font-family:monospace; font-size:11px; white-space:pre-wrap; border: 1px solid #333;"></div>
         </div>
     </div>
 
     <div class="section-card">
         <h3>💰 Controle de Produção</h3>
-        <input type="date" id="dataCalc"> <input type="text" id="navioCalc" placeholder="Nome do Navio">
+        <input type="date" id="dataCalc">
+        <input type="text" id="navioCalc" placeholder="Nome do Navio">
         <div style="display:flex; gap:8px;">
             <select id="tipoDia"><option value="n">Dia Normal</option><option value="f">Dom/Feriado</option></select>
             <select id="turnoCalc" onchange="ajustarCalc()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select>
@@ -130,10 +131,9 @@
     let logado = "", todosDados = [];
     const $ = id => document.getElementById(id);
 
-    // Inicializa datas com hoje
+    // Setup inicial de data
     const hoje = new Date().toISOString().split('T')[0];
-    $('dataCalc').value = hoje;
-    $('dataRel').value = hoje;
+    $('dataCalc').value = hoje; $('dataRel').value = hoje;
 
     function login() {
         const key = $('senhaInput').value;
@@ -144,42 +144,62 @@
             $('main-panel').classList.remove('hidden');
             carregarSistema();
             if(Math.random() <= 0.35) setTimeout(mostrarPix, 1200);
-        } else alert("Acesso Negado");
+        } else toast("Senha Inválida");
     }
 
     function carregarSistema() {
         todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        renderizarHist(); atualizarDash();
+        renderizarHist(); atualizarDash(); ajustarCalc();
     }
-
-    function mostrarPix() { 
-        $('msgPix').textContent = "Ajude a manter o Evolution atualizado!";
-        $('modalPix').style.display = 'flex'; 
-    }
-    function fecharModalPix() { $('modalPix').style.display = 'none'; }
-    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); alert("Chave Pix Copiada!"); fecharModalPix(); }
 
     function ajustarRel() {
         const t = $('turnoRel').value;
-        $('camposRel').innerHTML = t === "15x23" ? '<input type="number" id="p1" placeholder="15h-19h"><input type="number" id="p2" placeholder="20h-23h">' : (t ? '<input type="number" id="pGeral" placeholder="Total">' : '');
+        $('camposRel').innerHTML = t === "15x23" ? 
+            '<input type="number" id="p1" placeholder="Produção 15h-19h"><input type="number" id="p2" placeholder="Produção 20h-23h">' : 
+            (t ? '<input type="number" id="pGeral" placeholder="Produção Total">' : '');
     }
 
     function gerarRel() {
+        const navio = ($('navioRel').value || "NAVIO").toUpperCase();
         const dataF = $('dataRel').value.split('-').reverse().join('/');
-        const texto = `* Relatório de Produção *\nNavio: ${$('navioRel').value}\nData: ${dataF}\nTurno: ${$('turnoRel').value}\nConferente: ${logado}`;
-        $('relatorioArea').textContent = texto; $('relatorioArea').classList.remove('hidden');
-        navigator.clipboard.writeText(texto); toast("Copiado para o WhatsApp!");
+        const terno = $('ternoRelInput').value || "S/T";
+        const turno = $('turnoRel').value;
+        if(!turno) return toast("Selecione o turno!");
+
+        let prodText = "";
+        let total = 0;
+
+        if(turno === "15x23") {
+            const v1 = parseInt($('p1').value) || 0;
+            const v2 = parseInt($('p2').value) || 0;
+            total = v1 + v2;
+            prodText = `15x19: ${v1}\n20x23: ${v2}\nTotal: ${total}`;
+        } else {
+            total = parseInt($('pGeral').value) || 0;
+            prodText = `Produção: ${total}`;
+        }
+
+        const msg = `* Relatório de Produção *\n\nNavio: ${navio}\nData: ${dataF}\nTerno: ${terno}°\nTurno: ${turno}\n\n${prodText}\n\nConferente: ${logado}`;
+        
+        $('relatorioArea').textContent = msg;
+        $('relatorioArea').classList.remove('hidden');
+        navigator.clipboard.writeText(msg);
+        toast("Relatório copiado!");
     }
 
     function ajustarCalc() {
         const t = $('turnoCalc').value;
-        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="15h-19h"><input type="number" id="t2" placeholder="20h-23h">' : '<input type="number" id="tGeral" placeholder="Total">';
+        $('camposCalc').innerHTML = t === "15x23" ? 
+            '<input type="number" id="t1" placeholder="Prod 15h-19h"><input type="number" id="t2" placeholder="Prod 20h-23h">' : 
+            '<input type="number" id="tGeral" placeholder="Produção Total">';
     }
 
     function calcularESalvar() {
+        const navio = ($('navioCalc').value || "S/N").toUpperCase();
         const dataSel = $('dataCalc').value.split('-').reverse().join('/').substring(0,5);
         const tur = $('turnoCalc').value; const tipo = $('tipoDia').value;
         let brutoTotal = 0;
+
         if(tur === "15x23") {
             const v1 = parseInt($('t1').value)||0; const v2 = parseInt($('t2').value)||0;
             brutoTotal = (tipo === 'f') ? (v1 * 10.32) + (v2 * 10.32) : (v1 * 5.73) + (v2 * 6.88);
@@ -188,31 +208,51 @@
             const taxa = (tur === "07x15") ? (tipo === 'f' ? 8.61 : 5.73) : 6.88;
             brutoTotal = prod * taxa;
         }
-        todosDados.unshift({ id: Date.now(), data: dataSel, navio: $('navioCalc').value.toUpperCase(), bruto: brutoTotal/3, liquido: (brutoTotal/3)*0.82, pago: false });
-        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        renderizarHist(); atualizarDash();
+
+        todosDados.unshift({ id: Date.now(), data: dataSel, navio, bruto: brutoTotal/3, liquido: (brutoTotal/3)*0.82, pago: false });
+        localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+        renderizarHist(); atualizarDash(); toast("Salvo com sucesso!");
     }
 
     function renderizarHist() {
         const container = $('listaHist'); container.innerHTML = '';
         todosDados.forEach(item => {
             const div = document.createElement('div'); div.className = 'hist-item';
-            div.innerHTML = `<div class="hist-info"><span class="hist-name">${item.navio}</span><span class="hist-meta">${item.data} • <span class="badge ${item.pago?'badge-ok':'badge-pend'}" onclick="alternar(${item.id})">${item.pago?'PAGO':'PENDENTE'}</span></span></div><div class="hist-values"><span class="val-liq">R$ ${item.liquido.toFixed(2)}</span><span class="val-bruto">BRUTO R$ ${item.bruto.toFixed(2)}</span></div>`;
+            div.innerHTML = `
+                <div class="hist-info">
+                    <span class="hist-name">${item.navio}</span>
+                    <span class="hist-meta">${item.data} • <span class="badge ${item.pago?'badge-ok':'badge-pend'}" onclick="alternar(${item.id})">${item.pago?'PAGO':'PENDENTE'}</span></span>
+                </div>
+                <div class="hist-values">
+                    <span class="val-liq">R$ ${item.liquido.toFixed(2)}</span>
+                    <span class="val-bruto">BRUTO R$ ${item.bruto.toFixed(2)}</span>
+                </div>
+            `;
             container.appendChild(div);
         });
     }
 
     function alternar(id) {
-        const idx = todosDados.findIndex(i => i.id === id); todosDados[idx].pago = !todosDados[idx].pago;
-        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados)); renderizarHist(); atualizarDash();
+        const idx = todosDados.findIndex(i => i.id === id);
+        todosDados[idx].pago = !todosDados[idx].pago;
+        localStorage.setItem('hist_' + logado, JSON.stringify(todosDados));
+        renderizarHist(); atualizarDash();
     }
 
     function atualizarDash() {
-        const b = todosDados.reduce((a,x)=>a+x.bruto,0); const l = todosDados.reduce((a,x)=>a+x.liquido,0);
-        const p = todosDados.filter(i=>!i.pago).reduce((a,x)=>a+x.liquido,0); const r = todosDados.filter(i=>i.pago).reduce((a,x)=>a+x.liquido,0);
-        $('dashTotalBruto').textContent = "R$ "+b.toFixed(0); $('dashTotalLiquido').textContent = "R$ "+l.toFixed(0);
-        $('dashPendente').textContent = "R$ "+p.toFixed(0); $('dashRecebido').textContent = "R$ "+r.toFixed(0);
+        const b = todosDados.reduce((a,x)=>a+x.bruto,0);
+        const l = todosDados.reduce((a,x)=>a+x.liquido,0);
+        const p = todosDados.filter(i=>!i.pago).reduce((a,x)=>a+x.liquido,0);
+        const r = todosDados.filter(i=>i.pago).reduce((a,x)=>a+x.liquido,0);
+        $('dashTotalBruto').textContent = "R$ "+b.toFixed(0);
+        $('dashTotalLiquido').textContent = "R$ "+l.toFixed(0);
+        $('dashPendente').textContent = "R$ "+p.toFixed(0);
+        $('dashRecebido').textContent = "R$ "+r.toFixed(0);
     }
+
+    function mostrarPix() { $('modalPix').style.display = 'flex'; }
+    function fecharModalPix() { $('modalPix').style.display = 'none'; }
+    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); toast("Pix Copiado!"); fecharModalPix(); }
     function toggleSection(id) { $(id).classList.toggle('hidden'); }
     function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
 </script>
