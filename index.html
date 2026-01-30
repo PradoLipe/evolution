@@ -3,57 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V54 FINAL PREMIUM</title>
+    <title>EVOLUTION - PREMIUM V28</title>
     <style>
         :root { 
-            --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --success: #48c774;
-            --bg: #0a0a0f; --card: rgba(22, 22, 29, 0.7); --input: #1c1c24; --text: #ffffff;
+            --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; 
+            --bg: #0a0a0f; --card: #16161d; --input: #1c1c24; --text: #ffffff;
         }
-        * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; font-family: 'Inter', system-ui, sans-serif; }
+        * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 15px; }
         .container { max-width: 450px; width: 100%; }
 
-        /* LAYOUT ESPELHADO / PREMIUM */
+        /* O LAYOUT QUE VOCÊ ELOGIOU (BORDAS ESPELHADAS) */
         .premium-card { 
-            background: var(--card); backdrop-filter: blur(10px);
-            border-radius: 22px; padding: 20px; margin-bottom: 15px; 
+            background: var(--card); 
+            border-radius: 22px; 
+            padding: 22px; 
+            margin-bottom: 18px; 
             border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
-        .glow-cyan { border: 1.5px solid var(--primary); box-shadow: 0 0 15px rgba(0, 209, 178, 0.2); }
-        .glow-gold { border: 1.5px solid var(--accent); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+        
+        .glow-cyan { border: 1.5px solid var(--primary); box-shadow: 0 0 20px rgba(0, 209, 178, 0.15); }
+        .glow-gold { border: 1.5px solid var(--accent); box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); }
 
-        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .dash-label { font-size: 9px; color: #8e8e93; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; display: block; }
-        .dash-val { font-size: 1.25rem; font-weight: 900; }
+        .dash-label { font-size: 10px; color: #8e8e93; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+        .dash-val { font-size: 1.3rem; font-weight: 900; margin-top: 5px; }
 
-        /* INPUTS */
         input, select { 
             width: 100%; padding: 16px; background: var(--input); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; 
-            color: var(--text); font-size: 1rem; margin-top: 10px; 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; 
+            color: var(--text); font-size: 1rem; margin-top: 10px;
         }
-        .btn-main { 
+        
+        .btn-premium { 
             background: var(--primary); color: #000; width: 100%; 
-            margin-top: 15px; border-radius: 14px; font-weight: 800; 
+            margin-top: 20px; border-radius: 15px; font-weight: 900; 
             padding: 18px; border:none; text-transform: uppercase; cursor: pointer;
         }
 
-        /* HISTÓRICO DAS FOTOS */
         .hist-item { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        .h-navio { font-size: 1rem; font-weight: 800; text-transform: uppercase; }
-        .h-sub { font-size: 0.75rem; color: #8e8e93; margin-top: 4px; }
-        .h-liq { color: var(--accent); font-weight: 900; font-size: 1.1rem; text-align: right; }
-        .h-bruto { font-size: 0.7rem; color: #666; text-decoration: none; }
+        .h-main { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; }
+        .h-sub { font-size: 0.8rem; color: #8e8e93; margin-top: 5px; }
+        .h-val-primary { color: var(--accent); font-weight: 900; font-size: 1.2rem; text-align: right; }
+        .h-val-sub { font-size: 0.75rem; color: #555; text-align: right; }
         
-        .badge-pend { color: var(--danger); font-size: 9px; border: 1px solid var(--danger); padding: 2px 8px; border-radius: 5px; font-weight: 900; }
-        .btn-del { color: var(--danger); font-size: 1.5rem; padding-left: 15px; cursor: pointer; opacity: 0.7; }
+        .badge-status { font-size: 9px; padding: 3px 8px; border-radius: 6px; font-weight: 900; border: 1px solid var(--danger); color: var(--danger); }
+        .del-icon { color: var(--danger); font-size: 1.6rem; margin-left: 15px; cursor: pointer; opacity: 0.5; }
 
-        .footer { text-align: center; font-size: 10px; color: #555; padding: 40px 0; letter-spacing: 2px; }
+        .footer-rights { text-align: center; font-size: 10px; color: #444; padding: 40px 0; letter-spacing: 3px; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -62,137 +63,113 @@
 <div class="container" id="login-screen">
     <div style="text-align: center; margin-top: 15vh;">
         <h1 style="font-size: 2.5rem; letter-spacing: 10px; color: var(--primary); font-weight: 900;">EVOLUTION</h1>
-        <p style="font-size: 0.7rem; color: #555; margin-bottom: 40px;">PREMIUM MANAGEMENT SYSTEM</p>
-        <input type="password" id="pass" placeholder="••••••" style="text-align: center; font-size: 1.5rem;">
-        <button class="btn-main" onclick="entrar()">ENTRAR</button>
+        <input type="password" id="acesso" placeholder="••••••" style="text-align: center; font-size: 1.5rem;">
+        <button class="btn-premium" onclick="fazerLogin()">ENTRAR</button>
     </div>
-    <div class="footer">© 2026 ALL RIGHTS RESERVED TO <br><b>FELIPE PRADO</b></div>
+    <div class="footer-rights">© 2026 ALL RIGHTS RESERVED TO <br><b>FELIPE PRADO</b></div>
 </div>
 
-<div class="container hidden" id="main-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-        <h2 id="uName" style="font-weight:900; font-size: 1.4rem;"></h2>
-        <div style="cursor:pointer; font-size: 1.3rem;" onclick="abrirConfig()">⚙️</div>
+<div class="container hidden" id="app-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
+        <h2 id="displayNome" style="font-weight:900; font-size: 1.5rem;"></h2>
+        <div style="cursor:pointer;" onclick="abrirConfig()">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="premium-card glow-cyan" style="margin:0; padding:15px;">
+        <div class="premium-card glow-cyan" style="margin:0; padding:18px;">
             <span class="dash-label">Bruto Total</span>
-            <div id="dBruto" class="dash-val" style="color:var(--primary)">R$ 0,00</div>
+            <div id="resBruto" class="dash-val" style="color:var(--primary)">R$ 0,00</div>
         </div>
-        <div class="premium-card glow-gold" style="margin:0; padding:15px;">
+        <div class="premium-card glow-gold" style="margin:0; padding:18px;">
             <span class="dash-label">Líquido</span>
-            <div id="dLiq" class="dash-val" style="color:var(--accent)">R$ 0,00</div>
-        </div>
-    </div>
-
-    <div class="premium-card">
-        <h3 class="dash-label" onclick="toggle('rel-box')" style="cursor:pointer">📄 Gerador de Relatório ▼</h3>
-        <div id="rel-box" class="hidden">
-            <input type="text" id="rNavio" placeholder="Navio">
-            <select id="rTurno">
-                <option value="15x23">15x23</option>
-                <option value="07x15">07x15</option>
-                <option value="23x07">23x07</option>
-            </select>
-            <button class="btn-main" style="background:#25d366; color:#fff;" onclick="copiarRel()">COPIAR P/ WHATSAPP</button>
+            <div id="resLiq" class="dash-val" style="color:var(--accent)">R$ 0,00</div>
         </div>
     </div>
 
     <div class="premium-card">
         <h3 class="dash-label">💰 Lançar Produção</h3>
-        <input type="date" id="lData">
-        <input type="text" id="lNavio" placeholder="Navio">
-        <input type="number" id="lProd" placeholder="Quantidade Produzida">
-        <button class="btn-main" onclick="salvar()">SALVAR SERVIÇO</button>
+        <input type="date" id="inData">
+        <input type="text" id="inNavio" placeholder="Nome do Navio">
+        <input type="number" id="inProd" placeholder="Quantidade">
+        <button class="btn-premium" onclick="adicionarServico()">SALVAR SERVIÇO</button>
     </div>
 
     <div class="premium-card">
         <h3 class="dash-label">🗓️ Histórico</h3>
-        <div id="lista-hist"></div>
+        <div id="render-lista"></div>
     </div>
 
-    <div class="footer">EVOLUTION • FELIPE PRADO</div>
+    <div class="footer-rights">EVOLUTION PREMIUM • FELIPE PRADO</div>
 </div>
 
 <script>
-    const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS"};
-    let user = "", dados = [];
+    const ACESSOS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO"};
+    let logado = "", bancoDados = [];
 
-    function entrar() {
-        const p = document.getElementById('pass').value;
-        if(USERS[p]) {
-            user = USERS[p];
-            document.getElementById('uName').innerText = user;
+    function fazerLogin() {
+        const p = document.getElementById('acesso').value;
+        if(ACESSOS[p]) {
+            logado = ACESSOS[p];
+            document.getElementById('displayNome').innerText = logado;
             document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-panel').classList.remove('hidden');
-            document.getElementById('lData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('app-panel').classList.remove('hidden');
+            document.getElementById('inData').value = new Date().toISOString().split('T')[0];
             
-            // CHAVE DE RECUPERAÇÃO DE DADOS (voltei para a original)
-            dados = JSON.parse(localStorage.getItem('hist_' + user)) || [];
-            renderizar();
-        } else alert("Acesso Negado!");
+            // VOLTA PARA A CHAVE ORIGINAL DE DADOS
+            bancoDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+            atualizarTudo();
+        } else alert("Senha incorreta!");
     }
 
-    function salvar() {
-        const n = document.getElementById('lNavio').value.toUpperCase() || "S/N";
-        const p = parseFloat(document.getElementById('lProd').value) || 0;
-        const d = document.getElementById('lData').value.split('-').reverse().join('/').substring(0,5);
-        
-        const bruto = (p * 5.73) / 3;
+    function adicionarServico() {
+        const navio = document.getElementById('inNavio').value.toUpperCase() || "S/N";
+        const prod = parseFloat(document.getElementById('inProd').value) || 0;
+        const data = document.getElementById('inData').value.split('-').reverse().join('/').substring(0,5);
+        const bruto = (prod * 5.73) / 3;
         const liq = bruto * 0.82;
 
-        dados.unshift({ id: Date.now(), navio: n, data: d, bruto: bruto, liq: liq, pago: false });
-        localStorage.setItem('hist_' + user, JSON.stringify(dados));
-        renderizar();
+        bancoDados.unshift({ id: Date.now(), navio: navio, data: data, bruto: bruto, liq: liq });
+        localStorage.setItem('hist_' + logado, JSON.stringify(bancoDados));
+        atualizarTudo();
     }
 
-    function renderizar() {
-        const l = document.getElementById('lista-hist');
-        l.innerHTML = '';
-        let tb = 0, tl = 0;
+    function atualizarTudo() {
+        const lista = document.getElementById('render-lista');
+        lista.innerHTML = '';
+        let totalB = 0, totalL = 0;
 
-        dados.forEach(i => {
-            tb += i.bruto; tl += i.liq;
-            l.innerHTML += `
+        bancoDados.forEach(item => {
+            totalB += item.bruto; totalL += item.liq;
+            lista.innerHTML += `
                 <div class="hist-item">
                     <div>
-                        <div class="h-navio">${i.navio}</div>
-                        <div class="h-sub">${i.data} • <span class="badge-pend">PENDENTE</span></div>
+                        <div class="h-main">${item.navio}</div>
+                        <div class="h-sub">${item.data} • <span class="badge-status">PENDENTE</span></div>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <div style="text-align:right">
-                            <div class="h-liq">R$ ${i.liq.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
-                            <div class="h-bruto">BRUTO R$ ${i.bruto.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+                        <div>
+                            <div class="h-val-primary">R$ ${item.liq.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+                            <div class="h-val-sub">BRUTO R$ ${item.bruto.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
                         </div>
-                        <div class="btn-del" onclick="remover(${i.id})">×</div>
+                        <div class="del-icon" onclick="deletar(${item.id})">×</div>
                     </div>
                 </div>`;
         });
-        document.getElementById('dBruto').innerText = "R$ " + tb.toLocaleString('pt-BR',{minimumFractionDigits:2});
-        document.getElementById('dLiq').innerText = "R$ " + tl.toLocaleString('pt-BR',{minimumFractionDigits:2});
+        document.getElementById('resBruto').innerText = "R$ " + totalB.toLocaleString('pt-BR',{minimumFractionDigits:2});
+        document.getElementById('resLiq').innerText = "R$ " + totalL.toLocaleString('pt-BR',{minimumFractionDigits:2});
     }
 
-    function remover(id) {
-        if(confirm("Excluir este registro?")) {
-            dados = dados.filter(x => x.id !== id);
-            localStorage.setItem('hist_' + user, JSON.stringify(dados));
-            renderizar();
+    function deletar(id) {
+        if(confirm("Excluir registro?")) {
+            bancoDados = bancoDados.filter(x => x.id !== id);
+            localStorage.setItem('hist_' + logado, JSON.stringify(bancoDados));
+            atualizarTudo();
         }
     }
 
-    function copiarRel() {
-        const n = document.getElementById('rNavio').value || "NAVIO";
-        const t = document.getElementById('rTurno').value;
-        const texto = `*RELATÓRIO EVOLUTION*\nNavio: ${n}\nTurno: ${t}\nConferente: ${user}`;
-        navigator.clipboard.writeText(texto);
-        alert("Copiado para o WhatsApp!");
-    }
-
-    function toggle(id) { document.getElementById(id).classList.toggle('hidden'); }
-    function abrirConfig() { 
-        const acao = prompt("1 - Baixar Excel\n2 - Fazer Backup\n3 - Importar Backup");
-        if(acao == "2") { navigator.clipboard.writeText(JSON.stringify(dados)); alert("Backup copiado!"); }
+    function abrirConfig() {
+        const op = prompt("1-Excel | 2-Backup | 3-Importar");
+        if(op == "2") { navigator.clipboard.writeText(JSON.stringify(bancoDados)); alert("Backup copiado!"); }
     }
 </script>
 </body>
