@@ -594,7 +594,7 @@
             </div>
         </div>
 
-        <!-- Relatório WhatsApp - Formato solicitado -->
+        <!-- Relatório WhatsApp - Formato FINAL CORRIGIDO -->
         <div class="section-card expanded" id="secRelatorio">
             <div class="section-header" onclick="app.toggleSection('secRelatorio')">
                 <div class="section-title">
@@ -615,8 +615,8 @@
                         <input type="date" id="relData">
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Turno Operação</label>
-                        <select id="relTurnoOperacao" onchange="app.adjustRelFields()">
+                        <label class="input-label">Turno</label>
+                        <select id="relTurno" onchange="app.toggleRelatorioCampos()">
                             <option value="07x15">07x15</option>
                             <option value="15x23" selected>15x23</option>
                             <option value="23x07">23x07</option>
@@ -624,37 +624,33 @@
                     </div>
                 </div>
 
-                <!-- Seu Turno de Trabalho -->
+                <!-- Terno: 1, 2, 3 ou 4 -->
                 <div class="input-group">
-                    <label class="input-label">Seu Turno (1º, 2º ou 3º)</label>
-                    <select id="relTurnoTrabalho">
-                        <option value="1">1 TERNO</option>
-                        <option value="2" selected>2 TERNO</option>
-                        <option value="3">3 TERNO</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="5x2">ESCALA 5x2</option>
-                        <option value="12x36">ESCALA 12x36</option>
+                    <label class="input-label">Terno</label>
+                    <select id="relTerno">
+                        <option value="1">1° Terno</option>
+                        <option value="2">2° Terno</option>
+                        <option value="3">3° Terno</option>
+                        <option value="4">4° Terno</option>
                     </select>
                 </div>
 
-                <!-- Campos de produção dinâmicos -->
-                <div id="relCampos">
+                <!-- Campos dinâmicos baseados no turno -->
+                <div id="relCamposProducao">
                     <div class="input-row">
                         <div class="input-group">
-                            <label class="input-label">15x19</label>
-                            <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
+                            <label class="input-label">Produção 15x19</label>
+                            <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotalRelatorio()">
                         </div>
                         <div class="input-group">
-                            <label class="input-label">19x23</label>
-                            <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
+                            <label class="input-label">Produção 19x23</label>
+                            <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotalRelatorio()">
                         </div>
                     </div>
                 </div>
 
-                <!-- Preview do Total -->
-                <div class="input-group" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary);">
+                <!-- Preview do Total (apenas para 15x23) -->
+                <div class="input-group" id="relTotalBox" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary);">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-weight:700; color:var(--primary);">TOTAL</span>
                         <span id="relTotalPreview" style="font-family:'Space Mono',monospace; font-size:1.3rem; font-weight:800;">0</span>
@@ -812,11 +808,13 @@
                 pinInput.addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
                 pinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.login(); });
                 
+                // Data automática para hoje
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 
                 this.adjustCalcFields();
+                this.toggleRelatorioCampos();
                 this.loadTheme();
                 
                 const session = localStorage.getItem('evo_session');
@@ -909,6 +907,118 @@
                 return true;
             }
 
+            // Lógica para mostrar/esconder campos do relatório baseado no turno
+            toggleRelatorioCampos() {
+                const turno = document.getElementById('relTurno').value;
+                const container = document.getElementById('relCamposProducao');
+                const totalBox = document.getElementById('relTotalBox');
+                
+                if (turno === '15x23') {
+                    // Turno da tarde: dois horários (15-19 e 20-23)
+                    container.innerHTML = `
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label class="input-label">Produção 15x19</label>
+                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotalRelatorio()">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Produção 19x23</label>
+                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotalRelatorio()">
+                            </div>
+                        </div>
+                    `;
+                    totalBox.style.display = 'block';
+                } else {
+                    // 07x15 ou 23x07: apenas um campo de produção
+                    container.innerHTML = `
+                        <div class="input-group">
+                            <label class="input-label">Produção Total</label>
+                            <input type="number" id="relPTotal" placeholder="0" min="0">
+                        </div>
+                    `;
+                    totalBox.style.display = 'none';
+                }
+            }
+
+            updateTotalRelatorio() {
+                const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
+                const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
+                const total = p1 + p2;
+                document.getElementById('relTotalPreview').textContent = total;
+            }
+
+            // GERAR RELATÓRIO FORMATO FINAL SEM "Nome do navio:"
+            generateReport() {
+                const data = document.getElementById('relData').value;
+                const navio = document.getElementById('relNavio').value.trim().toUpperCase();
+                const turno = document.getElementById('relTurno').value;
+                const terno = document.getElementById('relTerno').value;
+                
+                if (!navio) {
+                    this.showToast('Digite o nome do navio', 'error');
+                    return;
+                }
+                
+                // Formatar data
+                const dataObj = new Date(data + 'T12:00:00');
+                const dataF = dataObj.toLocaleDateString('pt-BR');
+                
+                // Pegar apenas o primeiro nome do conferente (ex: ANDERSON PRADO -> ANDERSON)
+                const primeiroNome = this.currentUser.split(' ')[0];
+                
+                // Montar texto SEM "Nome do navio:" no início
+                let msg = `${navio}\n`;
+                msg += `${dataF} ${turno}\n`;
+                msg += `${terno} TERNO\n`;
+                
+                if (turno === '15x23') {
+                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
+                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
+                    const total = p1 + p2;
+                    
+                    msg += `15x19 ${p1}\n`;
+                    msg += `19x23 ${p2}\n`;
+                    msg += `TOTAL ${total}\n`;
+                } else {
+                    // 07x15 ou 23x07 - apenas um valor
+                    const prod = parseInt(document.getElementById('relPTotal')?.value) || 0;
+                    msg += `TOTAL ${prod}\n`;
+                }
+                
+                // Nome do conferente (apenas primeiro nome)
+                msg += `${primeiroNome}`;
+                
+                // Copiar
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(msg).then(() => {
+                        this.showToast('Relatório copiado!', 'success');
+                    }).catch(() => {
+                        this.fallbackCopy(msg);
+                    });
+                } else {
+                    this.fallbackCopy(msg);
+                }
+            }
+
+            fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    this.showToast('Relatório copiado!', 'success');
+                } catch (err) {
+                    this.showToast('Erro ao copiar', 'error');
+                    console.log(text);
+                }
+                document.body.removeChild(textarea);
+            }
+
+            // CALCULADORA FINANCEIRA (mantida como estava)
             calcularValores(tipoDia, turno, valores) {
                 const TAXAS = {
                     '07x15': { normal: 573, feriado: 861 },
@@ -966,155 +1076,6 @@
                         </div>
                     `;
                 }
-            }
-
-            adjustRelFields() {
-                const turno = document.getElementById('relTurnoOperacao').value;
-                const container = document.getElementById('relCampos');
-                
-                if (turno === '15x23') {
-                    container.innerHTML = `
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label class="input-label">15x19</label>
-                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">19x23</label>
-                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                        </div>
-                    `;
-                } else if (turno === '07x15') {
-                    container.innerHTML = `
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label class="input-label">07x11</label>
-                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">11x15</label>
-                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                        </div>
-                    `;
-                } else if (turno === '23x07') {
-                    container.innerHTML = `
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label class="input-label">23x03</label>
-                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                            <div class="input-group">
-                                <label class="input-label">03x07</label>
-                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
-                            </div>
-                        </div>
-                    `;
-                }
-                this.updateTotal();
-            }
-
-            updateTotal() {
-                const turno = document.getElementById('relTurnoOperacao').value;
-                let total = 0;
-                
-                if (turno === '15x23' || turno === '07x15' || turno === '23x07') {
-                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
-                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
-                    total = p1 + p2;
-                } else {
-                    total = parseInt(document.getElementById('relPTotal')?.value) || 0;
-                }
-                
-                document.getElementById('relTotalPreview').textContent = total;
-            }
-
-            // GERAR RELATÓRIO NO FORMATO EXATO SOLICITADO
-            generateReport() {
-                const data = document.getElementById('relData').value;
-                const navio = document.getElementById('relNavio').value.trim().toUpperCase();
-                const turnoOperacao = document.getElementById('relTurnoOperacao').value;
-                const turnoTrabalho = document.getElementById('relTurnoTrabalho').value;
-                
-                if (!navio) {
-                    this.showToast('Digite o nome do navio', 'error');
-                    return;
-                }
-                
-                // Obter valores
-                let p1 = 0, p2 = 0, total = 0;
-                
-                if (turnoOperacao === '15x23' || turnoOperacao === '07x15' || turnoOperacao === '23x07') {
-                    p1 = parseInt(document.getElementById('relP1')?.value) || 0;
-                    p2 = parseInt(document.getElementById('relP2')?.value) || 0;
-                    total = p1 + p2;
-                } else {
-                    total = parseInt(document.getElementById('relPTotal')?.value) || 0;
-                }
-                
-                // Formatar data
-                const dataObj = new Date(data + 'T12:00:00');
-                const dataF = dataObj.toLocaleDateString('pt-BR');
-                
-                // Montar texto exatamente como solicitado
-                let msg = `Nome do navio: ${navio}\n`;
-                msg += `${dataF} ${turnoOperacao}\n`;
-                
-                // Adicionar turno de trabalho formatado
-                let turnoTexto = turnoTrabalho;
-                if (turnoTrabalho === '1' || turnoTrabalho === '2' || turnoTrabalho === '3') {
-                    turnoTexto = turnoTrabalho + ' TERNO';
-                } else if (turnoTrabalho === '5x2') {
-                    turnoTexto = 'ESCALA 5x2';
-                } else if (turnoTrabalho === '12x36') {
-                    turnoTexto = 'ESCALA 12x36';
-                }
-                msg += `${turnoTexto}\n`;
-                
-                // Horários específicos conforme o turno
-                if (turnoOperacao === '15x23') {
-                    msg += `15x19 ${p1}\n`;
-                    msg += `19x23 ${p2}\n`;
-                } else if (turnoOperacao === '07x15') {
-                    msg += `07x11 ${p1}\n`;
-                    msg += `11x15 ${p2}\n`;
-                } else if (turnoOperacao === '23x07') {
-                    msg += `23x03 ${p1}\n`;
-                    msg += `03x07 ${p2}\n`;
-                }
-                
-                msg += `TOTAL ${total}\n`;
-                msg += `${this.currentUser}`;
-                
-                // Copiar
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(msg).then(() => {
-                        this.showToast('Relatório copiado!', 'success');
-                    }).catch(() => {
-                        this.fallbackCopy(msg);
-                    });
-                } else {
-                    this.fallbackCopy(msg);
-                }
-            }
-
-            fallbackCopy(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.left = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.select();
-                
-                try {
-                    document.execCommand('copy');
-                    this.showToast('Relatório copiado!', 'success');
-                } catch (err) {
-                    this.showToast('Erro ao copiar', 'error');
-                    console.log(text);
-                }
-                document.body.removeChild(textarea);
             }
 
             saveEntry() {
@@ -1249,11 +1210,11 @@
                                 </button>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-family:monospace; font-weight:700; color:${entry.pago ? 'var(--success)' : 'var(--danger)'};">
-                                    ${liquido.format()}
+                                <div style="font-family:monospace; font-weight:700; color:var(--accent);">
+                                    Liq: ${liquido.format()}
                                 </div>
-                                <div style="font-size:11px; color:var(--text-dim); text-decoration:line-through;">
-                                    ${bruto.format()}
+                                <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">
+                                    Bruto: ${bruto.format()}
                                 </div>
                                 <button onclick="app.deleteEntry(${entry.id})" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; margin-top:4px;">🗑️</button>
                             </div>
