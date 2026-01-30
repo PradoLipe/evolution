@@ -90,16 +90,16 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
+        /* TOAST PREMIUM */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
+        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 20px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: toastIn 0.3s ease-out forwards; }
+        @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         /* MODAIS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-        /* TOAST SYSTEM */
-        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
-        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 20px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: toastIn 0.3s ease-out forwards; }
-        @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* FOOTER */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
@@ -148,7 +148,7 @@
         </div>
 
         <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>RELATÓRIO DE PRODUÇÃO</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">RELATÓRIO DE PRODUÇÃO</div><span>▼</span></div>
             <div class="section-content">
                 <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;"></div>
                 <div class="input-row">
@@ -162,7 +162,7 @@
         </div>
 
         <div class="section-card" id="secLan">
-            <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title"><span>💰</span><span>NOVA PRODUÇÃO</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title">NOVA PRODUÇÃO</div><span>▼</span></div>
             <div class="section-content">
                 <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
                 <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;"></div>
@@ -177,7 +177,7 @@
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>HISTÓRICO</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">HISTÓRICO</div><span>▼</span></div>
             <div class="section-content"><div id="histList"></div></div>
         </div>
 
@@ -192,23 +192,22 @@
         <div class="modal-content">
             <button class="close-modal-btn" onclick="app.closeModal('configModal')">✕</button>
             <h3 style="text-align:center; font-size:0.8rem; letter-spacing:2px; margin-bottom:25px;">CONFIGURAÇÕES</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓 ALTERAR TEMA</button>
-                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">📥 EXPORTAR BACKUP</button>
-                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">📤 IMPORTAR BACKUP</button>
-                <button class="btn" style="background:rgba(0, 209, 178, 0.1); border: 1px solid var(--primary); color:var(--primary);" onclick="app.showPix()">☕ APOIAR DESENVOLVEDOR</button>
-                <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">🚪 SAIR</button>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">ALTERAR TEMA</button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">EXPORTAR BACKUP</button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">IMPORTAR BACKUP</button>
+                <button class="btn" style="background:rgba(0, 209, 178, 0.1); border: 1px solid var(--primary); color:var(--primary);" onclick="app.showPix()">APOIAR DESENVOLVEDOR</button>
+                <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">SAIR</button>
             </div>
             <input type="file" id="importInput" style="display:none" accept=".json">
         </div>
     </div>
 
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
-        <div class="modal-content" style="text-align:center; padding: 40px 20px; background: rgba(22, 22, 29, 0.95); backdrop-filter: blur(20px);">
+        <div class="modal-content" style="text-align:center; padding: 40px 20px;">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
-            <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Verifique os dados antes de copiar:</p>
+            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Verifique os dados antes de copiar:</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
@@ -219,26 +218,18 @@
 
     <script>
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
-
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café! 😉", "A internet caiu, mas o PIX não!", "Mande um café pro dev ancorar o navio! 🚢" ];
 
         class EvolutionApp {
             constructor() { this.entries = []; this.currentUser = null; this.init(); }
 
             init() {
-                document.getElementById('senhaInput').addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
                 document.getElementById('importInput').addEventListener('change', (e) => this.importData(e));
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
                 this.startAutoPix();
-            }
-
-            updatePinDisplay(val) {
-                document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < val.length));
-                if (val.length === 6) setTimeout(() => this.login(), 300);
             }
 
             login() {
@@ -260,38 +251,27 @@
                 this.loadData();
             }
 
-            // CORREÇÃO DEFINITIVA DAS CAIXAS DINÂMICAS
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                if (t === '15x23') {
-                    c.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>`;
-                } else {
-                    c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
-                }
-            }
-
-            toggleRelatorioCampos() {
-                const t = document.getElementById('relTurno').value;
-                const c = document.getElementById('relCamposProducao');
-                if (t === '15x23') {
-                    c.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>`;
-                } else {
-                    c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
-                }
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             generateReport() {
-                const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return this.showToast('Navio?');
+                const n = document.getElementById('relNavio').value.toUpperCase().trim();
+                if (!n) return this.showToast('Digite o Navio');
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
-                let m = `*${n}*\n📅 ${df} 🕐 ${t}\n👥 ${terno}\n`;
-                if (t === '15x23') { m += `🕒 15x19: ${document.getElementById('relP1').value}\n🕕 19x23: ${document.getElementById('relP2').value}\n📊 TOTAL: ${parseInt(document.getElementById('relP1').value||0)+parseInt(document.getElementById('relP2').value||0)}\n`; }
-                else m += `📊 TOTAL: ${document.getElementById('relPT').value}\n`;
-                m += `✍️ ${this.currentUser}`;
-                this.forceCopy(m, 'Relatório Copiado! 📱');
+                
+                let m = `*${n}*\nData: ${df} Turno: ${t}\nTerno: ${terno}\n`;
+                if (t === '15x23') {
+                    const p1 = document.getElementById('relP1').value || 0;
+                    const p2 = document.getElementById('relP2').value || 0;
+                    m += `15x19: ${p1}\n19x23: ${p2}\nTOTAL: ${parseInt(p1)+parseInt(p2)}\n`;
+                } else m += `TOTAL: ${document.getElementById('relPT').value || 0}\n`;
+                m += `Responsavel: ${this.currentUser}`;
+                this.forceCopy(m, 'Relatorio Copiado');
             }
 
             forceCopy(text, msg) {
@@ -312,12 +292,12 @@
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
-                if (!n || !d) return this.showToast('Incompleto!');
+                if (!n || !d) return this.showToast('Incompleto');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
                 const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
                 this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
-                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo com Sucesso!');
+                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo');
             }
 
             calcularValores(tipo, turno, v, q) {
@@ -363,15 +343,20 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado ✅'); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); this.showToast('Backup Exportado'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado! 🚀'); this.closeModal('configModal'); }; r.readAsText(f); }
+            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado'); this.closeModal('configModal'); }; r.readAsText(f); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Status Atualizado'); } }
-            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Excluído'); } }
+            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Excluido'); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
+            toggleRelatorioCampos() {
+                const t = document.getElementById('relTurno').value;
+                const c = document.getElementById('relCamposProducao');
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+            }
             startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
-            showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { this.forceCopy('92994821868', 'Chave de Felipe Prado Copiada! ☕'); }
+            showPix() { this.closeModal('configModal'); this.openModal('pixModal'); }
+            copyPix() { this.forceCopy('92994821868', 'Chave PIX Copiada'); }
         }
         const app = new EvolutionApp();
     </script>
