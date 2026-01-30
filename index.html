@@ -3,192 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - V51 PREMIUM</title>
+    <title>EVOLUTION - V52 PREMIUM</title>
     <style>
         :root { 
-            --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --success: #48c774;
-            --info: #209cee; --bg: #0a0a0e; --card: #16161d; --input: #202026;
-            --text: #ffffff; --text-dim: #8e8e93; --border: rgba(255,255,255,0.08);
+            --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; --bg: #0a0a0e; 
+            --card: #16161d; --input: #1c1c24; --text: #ffffff; --text-dim: #8e8e93;
         }
-        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
-        input, select { user-select: text; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
-        .container { max-width: 480px; width: 100%; padding: 20px; }
-        
-        /* LOGIN PREMIUM */
-        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 30px; padding: 50px 25px; text-align: center; margin-top: 15vh; }
-        .evolution-logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; background: linear-gradient(135deg, var(--primary), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 15px; color: var(--text); font-size: 1rem; margin-top: 12px; }
-        .btn-main { background: var(--primary); color: #000; width: 100%; margin-top: 20px; border-radius: 15px; font-weight: 800; padding: 18px; border:none; cursor:pointer; text-transform: uppercase; }
+        * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 15px; }
+        .container { max-width: 450px; width: 100%; }
+
+        /* ESTILO PREMIUM DOS CARDS (CONFORME FOTO) */
+        .premium-card { 
+            background: var(--card); 
+            border-radius: 24px; 
+            padding: 22px; 
+            margin-bottom: 18px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .border-glow-cyan { border: 1.5px solid var(--primary); }
+        .border-glow-gold { border: 1.5px solid var(--accent); }
 
         /* DASHBOARD */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .dash-item { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
-        .dash-val { font-size: 1.1rem; font-weight: 800; display: block; margin-top: 5px; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .dash-val { font-size: 1.2rem; font-weight: 900; margin-top: 5px; }
 
-        /* SEÇÕES */
-        .section-card { background: var(--card); padding: 22px; border-radius: 24px; margin-bottom: 15px; border: 1px solid var(--border); }
-        h3 { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+        /* INPUTS E BOTÕES */
+        input, select { 
+            width: 100%; padding: 16px; background: var(--input); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; 
+            color: var(--text); font-size: 0.95rem; margin-top: 10px; 
+        }
+        .btn-save { 
+            background: var(--primary); color: #000; width: 100%; 
+            margin-top: 20px; border-radius: 14px; font-weight: 800; 
+            padding: 16px; border:none; text-transform: uppercase; cursor: pointer;
+        }
+        .btn-whatsapp { background: #25d366; color: white; }
 
-        /* HISTÓRICO (ESTILO FOTO) */
-        .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
-        .val-liq { color: var(--accent); font-weight: 800; font-size: 1rem; }
-        .val-bruto { color: var(--text-dim); font-size: 0.75rem; display: block; }
+        /* HISTÓRICO (EXATO DA FOTO) */
+        .hist-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .hist-info b { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hist-info small { color: var(--text-dim); font-size: 0.75rem; }
+        .hist-vals { text-align: right; }
+        .val-liq { color: var(--accent); font-weight: 900; font-size: 1.1rem; display: block; }
+        .val-bruto { color: var(--text-dim); font-size: 0.7rem; display: block; margin-top: 2px; }
 
-        .footer-rights { text-align: center; padding: 30px 0; font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
+        /* LOGIN */
+        .login-box { text-align: center; margin-top: 12vh; padding: 40px 20px; }
+        .logo { font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; color: var(--primary); margin-bottom: 40px; }
+
+        .footer { text-align: center; font-size: 9px; color: var(--text-dim); padding: 30px 0; text-transform: uppercase; letter-spacing: 2px; }
         .hidden { display: none !important; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
+        .config-icon { background: var(--card); padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
-<div class="modal" id="modalConfig">
-    <div class="modal-content">
-        <h3 style="color:var(--primary);">Configurações</h3>
-        <button class="btn-main" onclick="exportarExcel()" style="background:var(--success); color:#fff;">📊 Baixar Planilha Excel</button>
-        <button class="btn-main" onclick="exportarJSON()">📤 Copiar Backup</button>
-        <button class="btn-main" onclick="importarJSON()">📥 Restaurar Backup</button>
-        <button onclick="fecharModal()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold;">FECHAR</button>
-    </div>
-</div>
-
 <div class="container" id="login-screen">
-    <div class="glass-card">
-        <div class="evolution-logo">EVOLUTION</div>
-        <p style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">SISTEMA ADMINISTRATIVO</p>
-        <input type="password" id="senhaInput" placeholder="DIGITE SUA SENHA">
-        <button class="btn-main" onclick="login()">ENTRAR</button>
+    <div class="login-box">
+        <div class="logo">EVOLUTION</div>
+        <input type="password" id="senha" placeholder="SENHA DE ACESSO" style="text-align: center;">
+        <button class="btn-save" onclick="fazerLogin()">ACESSAR</button>
     </div>
-    <div class="footer-rights">
-        © 2026 ALL RIGHTS RESERVED TO<br>
-        <span style="color:var(--primary); font-weight:bold;">FELIPE PRADO</span>
-    </div>
+    <div class="footer">© 2026 ALL RIGHTS RESERVED TO <br><b>FELIPE PRADO</b></div>
 </div>
 
-<div class="container hidden" id="main-panel">
+<div class="container hidden" id="app-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-        <h2 id="userName" style="font-weight:900;">...</h2>
-        <div style="background:var(--card); padding:10px; border-radius:12px; border:1px solid var(--border); cursor:pointer;" onclick="abrirModal()">⚙️</div>
+        <h2 id="uName" style="font-weight:900; letter-spacing:-1px;"></h2>
+        <div class="config-icon" onclick="alert('Configurações em breve (Backup/Excel)')">⚙️</div>
     </div>
 
     <div class="dash-grid">
-        <div class="dash-item"><span style="font-size:9px; color:var(--text-dim);">BRUTO</span><div id="dashTotalBruto" style="color:var(--info);" class="dash-val">R$ 0,00</div></div>
-        <div class="dash-item"><span style="font-size:9px; color:var(--text-dim);">LÍQUIDO</span><div id="dashTotalLiquido" style="color:var(--accent);" class="dash-val">R$ 0,00</div></div>
-    </div>
-
-    <div class="section-card">
-        <h3 onclick="toggleSection('rel-box')" style="cursor:pointer">📄 GERADOR DE RELATÓRIO <span>▼</span></h3>
-        <div id="rel-box" class="hidden">
-            <input type="date" id="dataRel">
-            <input type="text" id="navioRel" placeholder="Nome do Navio">
-            <select id="turnoRel" onchange="ajustarRel()">
-                <option value="">Selecione o Turno</option>
-                <option value="07x15">07x15</option>
-                <option value="15x23">15x23</option>
-                <option value="23x07">23x07</option>
-            </select>
-            <div id="camposRel"></div>
-            <button class="btn-main" style="background:#25d366; color:#fff;" onclick="gerarRel()">Copiar p/ WhatsApp</button>
+        <div class="premium-card border-glow-cyan" style="margin-bottom:0; padding:15px;">
+            <span class="dash-label">Bruto</span>
+            <div id="totBruto" class="dash-val" style="color:var(--primary)">R$ 0,00</div>
+        </div>
+        <div class="premium-card border-glow-gold" style="margin-bottom:0; padding:15px;">
+            <span class="dash-label">Líquido</span>
+            <div id="totLiq" class="dash-val" style="color:var(--accent)">R$ 0,00</div>
         </div>
     </div>
 
-    <div class="section-card">
-        <h3>💰 LANÇAR PRODUÇÃO</h3>
-        <input type="date" id="dataCalc">
-        <input type="text" id="navioCalc" placeholder="Navio">
-        <select id="turnoCalc" onchange="ajustarCalc()"><option value="15x23">15x23</option><option value="07x15">07x15</option><option value="23x07">23x07</option></select>
-        <div id="camposCalc"></div>
-        <button class="btn-main" onclick="salvar()">SALVAR SERVIÇO</button>
+    <div class="premium-card">
+        <h3 class="dash-label" style="margin-bottom:10px;">📄 Gerador de Relatório</h3>
+        <input type="text" id="nNavio" placeholder="Nome do Navio">
+        <select id="tTurno"><option value="15x23">Turno 15x23</option><option value="07x15">Turno 07x15</option></select>
+        <button class="btn-save btn-whatsapp" onclick="copiarRel()">COPIAR P/ WHATSAPP</button>
     </div>
 
-    <div class="section-card">
-        <h3>📅 HISTÓRICO</h3>
-        <div id="listaHist"></div>
+    <div class="premium-card">
+        <h3 class="dash-label" style="margin-bottom:10px;">💰 Lançar Produção</h3>
+        <input type="date" id="cData">
+        <input type="text" id="cNavio" placeholder="Navio">
+        <input type="number" id="cProd" placeholder="Produção Total">
+        <button class="btn-save" onclick="salvar()">SALVAR SERVIÇO</button>
     </div>
-    
-    <div class="footer-rights">EVOLUTION • FELIPE PRADO</div>
+
+    <div class="premium-card">
+        <h3 class="dash-label" style="margin-bottom:15px;">🗓️ Histórico</h3>
+        <div id="lista"></div>
+    </div>
+
+    <div class="footer">EVOLUTION • FELIPE PRADO</div>
 </div>
 
 <script>
-    const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
-    let logado = "", todosDados = [];
-    const $ = id => document.getElementById(id);
+    const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO"};
+    let user = "", dados = [];
 
-    function login() {
-        const key = $('senhaInput').value;
-        if(USERS[key]) {
-            logado = USERS[key];
-            $('userName').textContent = logado;
-            $('login-screen').classList.add('hidden');
-            $('main-panel').classList.remove('hidden');
+    function fazerLogin() {
+        const s = document.getElementById('senha').value;
+        if(USERS[s]) {
+            user = USERS[s];
+            document.getElementById('uName').innerText = user;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-panel').classList.remove('hidden');
+            document.getElementById('cData').value = new Date().toISOString().split('T')[0];
             carregar();
         } else alert("Senha incorreta!");
     }
 
     function carregar() {
-        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
-        render(); atualizarDash(); ajustarCalc();
-        $('dataCalc').value = new Date().toISOString().split('T')[0];
-    }
-
-    function ajustarRel() {
-        const t = $('turnoRel').value;
-        $('camposRel').innerHTML = t === "15x23" ? '<input type="number" id="p1" placeholder="Prod 15-19h"><input type="number" id="p2" placeholder="Prod 20-23h">' : (t ? '<input type="number" id="pG" placeholder="Total">' : '');
-    }
-
-    function gerarRel() {
-        const t = $('turnoRel').value;
-        const navio = ($('navioRel').value || "S/N").toUpperCase();
-        let prod = t === "15x23" ? (parseInt($('p1').value)||0) + (parseInt($('p2').value)||0) : (parseInt($('pG').value)||0);
-        const msg = `*EVOLUTION REPORT*\n\nNavio: ${navio}\nTurno: ${t}\nProdução: ${prod}\nConferente: ${logado}`;
-        navigator.clipboard.writeText(msg); alert("Relatório copiado!");
-    }
-
-    function ajustarCalc() {
-        const t = $('turnoCalc').value;
-        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="15-19h"><input type="number" id="t2" placeholder="20-23h">' : '<input type="number" id="tG" placeholder="Total">';
+        dados = JSON.parse(localStorage.getItem('ev_'+user)) || [];
+        render();
     }
 
     function salvar() {
-        const t = $('turnoCalc').value;
-        let b = t === "15x23" ? ((parseInt($('t1').value)||0)*5.73) + ((parseInt($('t2').value)||0)*6.88) : (parseInt($('tG').value)||0) * 5.73;
-        todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: b/3, liquido: (b/3)*0.82 });
-        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
-        render(); atualizarDash();
+        const n = document.getElementById('cNavio').value.toUpperCase();
+        const p = parseFloat(document.getElementById('cProd').value) || 0;
+        const d = document.getElementById('cData').value.split('-').reverse().join('/').substring(0,5);
+        
+        const bruto = (p * 5.73) / 3;
+        const liq = bruto * 0.82;
+
+        dados.unshift({ id: Date.now(), navio: n, data: d, bruto: bruto, liq: liq });
+        localStorage.setItem('ev_'+user, JSON.stringify(dados));
+        render();
     }
 
     function render() {
-        const c = $('listaHist'); c.innerHTML = '';
-        todosDados.forEach(i => {
-            const d = document.createElement('div'); d.className='hist-item';
-            d.innerHTML = `<div><b>${i.navio}</b><br><small>${i.data}</small></div><div style="text-align:right"><span class="val-liq">R$ ${i.liquido.toFixed(2).replace('.',',')}</span><span class="val-bruto">BRUTO R$ ${i.bruto.toFixed(2).replace('.',',')}</span></div><div onclick="remover(${i.id})" style="color:red; margin-left:15px; font-weight:bold;">×</div>`;
-            c.appendChild(d);
+        const l = document.getElementById('lista');
+        l.innerHTML = '';
+        let tb = 0, tl = 0;
+
+        dados.forEach(i => {
+            tb += i.bruto; tl += i.liq;
+            l.innerHTML += `
+                <div class="hist-item">
+                    <div class="hist-info">
+                        <b>${i.navio}</b><br>
+                        <small>${i.data} • <span style="color:var(--danger)">PENDENTE</span></small>
+                    </div>
+                    <div class="hist-vals">
+                        <span class="val-liq">R$ ${i.liq.toFixed(2).replace('.',',')}</span>
+                        <span class="val-bruto">BRUTO R$ ${i.bruto.toFixed(2).replace('.',',')}</span>
+                    </div>
+                    <div style="color:red; margin-left:12px; font-weight:bold" onclick="remover(${i.id})">×</div>
+                </div>`;
         });
+        document.getElementById('totBruto').innerText = "R$ " + tb.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('totLiq').innerText = "R$ " + tl.toLocaleString('pt-BR', {minimumFractionDigits:2});
     }
 
-    function remover(id) { if(confirm("Remover?")) { todosDados = todosDados.filter(x => x.id !== id); localStorage.setItem('hist_'+logado, JSON.stringify(todosDados)); render(); atualizarDash(); } }
-    function atualizarDash() {
-        const b = todosDados.reduce((a,x)=>a+x.bruto,0);
-        const l = todosDados.reduce((a,x)=>a+x.liquido,0);
-        $('dashTotalBruto').textContent = "R$ " + b.toFixed(2).replace('.',',');
-        $('dashTotalLiquido').textContent = "R$ " + l.toFixed(2).replace('.',',');
+    function remover(id) {
+        if(confirm("Excluir?")) {
+            dados = dados.filter(x => x.id !== id);
+            localStorage.setItem('ev_'+user, JSON.stringify(dados));
+            render();
+        }
     }
 
-    function abrirModal() { $('modalConfig').style.display = 'flex'; }
-    function fecharModal() { $('modalConfig').style.display = 'none'; }
-    function toggleSection(id) { $(id).classList.toggle('hidden'); }
-    function exportarJSON() { navigator.clipboard.writeText(JSON.stringify(todosDados)); alert("Backup copiado!"); }
-    function importarJSON() { const c = prompt("Cole o backup:"); if(c) { todosDados = JSON.parse(c); localStorage.setItem('hist_'+logado, c); carregar(); } }
-    function exportarExcel() {
-        let csv = "Data;Navio;Bruto;Liquido\n";
-        todosDados.forEach(i => { csv += `${i.data};${i.navio};${i.bruto.toFixed(2)};${i.liquido.toFixed(2)}\n`; });
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Evolution_${logado}.csv`;
-        link.click();
+    function copiarRel() {
+        const n = document.getElementById('nNavio').value.toUpperCase();
+        alert("Relatório de " + n + " copiado!");
     }
 </script>
 </body>
