@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION - PREMIUM V28</title>
+    <title>EVOLUTION - PREMIUM V28 RESTORED</title>
     <style>
         :root { 
             --primary: #00d1b2; --accent: #ffd700; --danger: #ff3860; 
@@ -56,9 +56,23 @@
 
         .footer-rights { text-align: center; font-size: 10px; color: #444; padding: 40px 0; letter-spacing: 3px; }
         .hidden { display: none !important; }
+        
+        /* MODAL CONFIG */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
+
+<div class="modal" id="modalConf">
+    <div class="modal-content">
+        <h3 style="color:var(--primary); margin-bottom: 20px;">CONFIGURAÇÕES</h3>
+        <button class="btn-premium" onclick="exportarExcel()" style="background:#48c774; color:#fff;">📊 BAIXAR EXCEL</button>
+        <button class="btn-premium" onclick="copiarBackup()">📤 COPIAR BACKUP</button>
+        <button class="btn-premium" onclick="importarBackup()">📥 RESTAURAR BACKUP</button>
+        <button onclick="fecharModal()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold; cursor:pointer;">FECHAR</button>
+    </div>
+</div>
 
 <div class="container" id="login-screen">
     <div style="text-align: center; margin-top: 15vh;">
@@ -72,7 +86,7 @@
 <div class="container hidden" id="app-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
         <h2 id="displayNome" style="font-weight:900; font-size: 1.5rem;"></h2>
-        <div style="cursor:pointer;" onclick="abrirConfig()">⚙️</div>
+        <div style="cursor:pointer; font-size: 1.5rem;" onclick="abrirModal()">⚙️</div>
     </div>
 
     <div class="dash-grid">
@@ -91,7 +105,7 @@
         <input type="date" id="inData">
         <input type="text" id="inNavio" placeholder="Nome do Navio">
         <input type="number" id="inProd" placeholder="Quantidade">
-        <button class="btn-premium" onclick="adicionarServico()">SALVAR SERVIÇO</button>
+        <button class="btn-premium" onclick="adicionarServico()">SALVAR NO HISTÓRICO</button>
     </div>
 
     <div class="premium-card">
@@ -115,7 +129,7 @@
             document.getElementById('app-panel').classList.remove('hidden');
             document.getElementById('inData').value = new Date().toISOString().split('T')[0];
             
-            // VOLTA PARA A CHAVE ORIGINAL DE DADOS
+            // CHAVE DE DADOS QUE VOCÊ USAVA NAS 23H
             bancoDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
             atualizarTudo();
         } else alert("Senha incorreta!");
@@ -167,9 +181,22 @@
         }
     }
 
-    function abrirConfig() {
-        const op = prompt("1-Excel | 2-Backup | 3-Importar");
-        if(op == "2") { navigator.clipboard.writeText(JSON.stringify(bancoDados)); alert("Backup copiado!"); }
+    // FUNÇÕES DA CATRACA
+    function abrirModal() { document.getElementById('modalConf').style.display = 'flex'; }
+    function fecharModal() { document.getElementById('modalConf').style.display = 'none'; }
+    function copiarBackup() { navigator.clipboard.writeText(JSON.stringify(bancoDados)); alert("Backup copiado!"); }
+    function importarBackup() { 
+        const b = prompt("Cole o código de backup:"); 
+        if(b) { bancoDados = JSON.parse(b); localStorage.setItem('hist_'+logado, b); atualizarTudo(); fecharModal(); } 
+    }
+    function exportarExcel() {
+        let csv = "Data;Navio;Bruto;Liquido\n";
+        bancoDados.forEach(i => { csv += `${i.data};${i.navio};${i.bruto.toFixed(2)};${i.liq.toFixed(2)}\n`; });
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Evolution_${logado}.csv`;
+        link.click();
     }
 </script>
 </body>
