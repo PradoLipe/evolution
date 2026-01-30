@@ -47,12 +47,12 @@
             display: flex;
             flex-direction: column;
             transition: all 0.5s ease;
-            font-size: 14px; /* FONTE REDUZIDA PARA VISUAL PREMIUM */
+            font-size: 14px;
         }
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
-        /* DASHBOARD - CORES E ESTRUTURA */
+        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; overflow: hidden; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
@@ -71,16 +71,22 @@
         .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; padding: 0 20px; }
         .section-card.expanded .section-content { max-height: 1500px; padding: 0 20px 20px; }
 
-        input, select { width: 100%; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; }
+        input, select { width: 100%; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 13px; outline: none; }
         .input-group { margin-bottom: 12px; width: 100%; }
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
-        
-        /* GRID DE PRODUÇÃO CIRÚRGICO */
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
+
+        /* HISTÓRICO */
+        .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .navio-pendente { color: var(--danger) !important; }
+        .navio-pago { color: var(--text) !important; }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1px solid transparent; margin-top: 5px; }
+        .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
+        .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
         /* MODAIS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -223,7 +229,6 @@
                 this.loadData();
             }
 
-            // AJUSTE CIRÚRGICO: GRID FIXO 50/50 PARA PRODUÇÃO
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
@@ -262,6 +267,14 @@
                 alert('Relatório Copiado!');
             }
 
+            calcularValores(tipo, turno, v, q) {
+                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
+                let bN = 0; const nC = parseInt(q) || 1;
+                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
+                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
+            }
+
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
@@ -273,23 +286,21 @@
                 this.saveData(); this.renderHistory(); this.updateDashboard();
             }
 
-            calcularValores(tipo, turno, v, q) {
-                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
-                let bN = 0; const nC = parseInt(q) || 1;
-                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
-                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
-                const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
-            }
-
-            loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
-            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            
             renderHistory() {
                 const list = document.getElementById('histList');
+                // NOME DO NAVIO COLORIDO: VERMELHO SE PENDENTE
                 list.innerHTML = this.entries.map(e => `
                     <div class="hist-item">
-                        <div style="flex:1;"><div style="font-weight:700; font-size:13px;">${e.navio}</div><div style="font-size:10px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div>
-                        <div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:9px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:5px; font-size:12px;">🗑️</button></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:13px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
+                            <div style="font-size:10px; color:var(--text-dim);">${e.dataF}</div>
+                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div>
+                            <div style="color:var(--text-dim); font-size:9px;">Bruto: ${new Money(e.bruto).format()}</div>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:5px; font-size:12px;">🗑️</button>
+                        </div>
                     </div>`).join('');
             }
 
@@ -304,16 +315,18 @@
                 document.getElementById('countPago').textContent = `${cpa} serv.`;
             }
 
+            loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
+            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
+            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
+            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); alert('Backup Criado! ✅'); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
             triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); alert('Dados Restaurados! 🚀'); this.closeModal('configModal'); }; r.readAsText(f); }
-            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
+            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.closeModal('configModal'); }; r.readAsText(f); }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
         }
         const app = new EvolutionApp();
