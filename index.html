@@ -15,7 +15,6 @@
             --danger: #ff3860;
             --success: #48c774;
             --info: #209cee;
-            --warning: #ff9f43;
             --bg: #0a0a0e;
             --bg-gradient: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0e 50%, #000000 100%);
             --card: rgba(22, 22, 29, 0.75);
@@ -24,10 +23,8 @@
             --text: #ffffff;
             --text-dim: #8e8e93;
             --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(255, 255, 255, 0.03);
             --blur: blur(25px);
             --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            --glow: 0 0 25px rgba(0, 209, 178, 0.35);
         }
         
         body.light-mode {
@@ -39,7 +36,6 @@
             --text: #1a1a1a;
             --text-dim: #666666;
             --border: rgba(0, 0, 0, 0.08);
-            --glass: rgba(255, 255, 255, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
@@ -57,7 +53,6 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 25px; min-height: 100vh; display: flex; flex-direction: column; flex: 1; }
 
-        /* TELA LOGIN */
         .login-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .glass-panel-login { background: var(--card); backdrop-filter: var(--blur); border: 1px solid var(--border); border-radius: 32px; box-shadow: var(--shadow); padding: 50px 35px; text-align: center; width: 100%; animation: fadeIn 0.8s ease-out; }
         .evolution-logo-login { font-size: 2.2rem; font-weight: 900; letter-spacing: 6px; background: linear-gradient(135deg, var(--primary) 0%, #fff 50%, var(--primary) 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; text-shadow: 0 0 20px rgba(0, 209, 178, 0.3); margin-bottom: 5px; display: block; width: 100%; }
@@ -72,21 +67,28 @@
         
         #senhaInput { width: 100%; padding: 18px; background: var(--input); border: 1px solid var(--border); border-radius: 16px; color: var(--text); text-align: center; font-size: 16px; font-weight: 800; letter-spacing: 2px; margin-bottom: 25px; outline: none; }
 
-        /* DASHBOARD */
+        /* DASHBOARD - CORES RESTAURADAS */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
         .dash-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
-        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
-        .dash-val { font-size: 1.3rem; font-weight: 800; font-family: 'Space Mono', monospace; }
-        .dash-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        
+        /* CORES ESPECÍFICAS POR TIPO */
+        .dash-bruto::before { background: var(--info); }
+        .dash-liq::before { background: var(--accent); }
+        .dash-pend::before { background: var(--danger); }
+        .dash-pago::before { background: var(--success); }
 
-        /* SEÇÕES */
+        .dash-val { font-size: 1.2rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 5px; }
+        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .dash-count { font-size: 10px; margin-top: 4px; font-weight: 700; }
+
         .section-card { background: var(--card); border-radius: 24px; margin-bottom: 20px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
         .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; padding: 0 24px; }
         .section-card.expanded .section-content { max-height: 2000px; padding: 0 24px 24px; }
 
-        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; }
+        input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; }
         .input-group { margin-bottom: 16px; width: 100%; }
         .input-label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -101,24 +103,21 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); }
 
-        /* MODAIS PREMIUM */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 35px; width: 100%; max-width: 400px; padding: 40px 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-content { background: var(--card-solid); border-radius: 35px; width: 100%; max-width: 400px; padding: 40px 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
+        .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-        /* TOAST */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
-        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 24px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 13px; box-shadow: var(--shadow); margin-bottom: 12px; animation: toastIn 0.3s ease-out forwards; display: flex; align-items: center; gap: 12px; }
-        @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 24px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 13px; box-shadow: var(--shadow); margin-bottom: 12px; }
 
-        .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
-        .footer-text { font-size: 10px; letter-spacing: 2px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+        /* FOOTER DINÂMICO */
+        .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; border-top: 1px solid var(--border); }
+        .footer-text { font-size: 11px; letter-spacing: 2px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+        .footer-text span { color: var(--primary); }
         
         .hidden { display: none !important; }
-        .user-avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+        .user-avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -139,7 +138,7 @@
                 <button class="btn btn-primary" onclick="app.login()">ACESSAR SISTEMA</button>
             </div>
         </div>
-        <div class="footer-copyright"><p class="footer-text">© 2026 FELIPE PRADO SYSTEMS</p></div>
+        <div class="footer-copyright"><p class="footer-text">© 2026 <span>FELIPE PRADO SYSTEMS</span></p></div>
     </div>
 
     <div class="container hidden" id="mainPanel">
@@ -152,10 +151,10 @@
         </div>
 
         <div class="dash-grid">
-            <div class="dash-card"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card accent"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card danger"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
-            <div class="dash-card success"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
+            <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+            <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div class="dash-count" id="countPend" style="color:var(--danger)">0 serv.</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div class="dash-count" id="countPago" style="color:var(--success)">0 serv.</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -188,37 +187,27 @@
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico</span></div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
                 <div id="histList"></div>
             </div>
         </div>
 
-        <div class="footer-copyright"><p class="footer-text">EVOLUTION V46 | © 2026 FELIPE PRADO</p></div>
+        <div class="footer-copyright"><p class="footer-text">EVOLUTION V46 | © 2026 <span>FELIPE PRADO</span></p></div>
     </div>
 
     <div class="modal-overlay" id="configModal" onclick="if(event.target.id==='configModal')app.closeModal('configModal')">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="app.closeModal('configModal')">✕</button>
-            <div style="text-align:center; margin-bottom:30px;">
-                <div style="font-size:2.5rem; margin-bottom:10px;">⚙️</div>
-                <h3 style="color:var(--primary); letter-spacing:2px;">Configurações</h3>
-            </div>
-            
+            <div style="text-align:center; margin-bottom:30px;"><div style="font-size:2.5rem; margin-bottom:10px;">⚙️</div><h3 style="color:var(--primary); letter-spacing:2px; text-transform:uppercase;">Configurações</h3></div>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">
-                    <span id="themeIcon">🌓</span> Mudar Visual do App
-                </button>
+                <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()"><span id="themeIcon">🌓</span> Mudar Visual</button>
                 <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">
-                    📥 Exportar Backup
-                </button>
-                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">
-                    📤 Importar Backup
-                </button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">📥 Exportar Backup</button>
+                <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">📤 Importar Backup</button>
                 <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
                 <button class="btn btn-primary" onclick="app.showPix()">☕ Apoiar Desenvolvedor</button>
-                <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">🚪 Desconectar</button>
+                <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">🚪 Sair</button>
             </div>
             <input type="file" id="importInput" style="display:none" accept=".json">
         </div>
@@ -230,7 +219,6 @@
             <div style="font-size:3rem; margin-bottom:15px;">☕</div>
             <p id="pixMsg" style="margin-bottom:20px; font-weight:700; color:var(--text);"></p>
             <div onclick="app.copyPix()" style="background:#1a1a1a; color:var(--accent); padding:20px; border-radius:15px; font-family:monospace; border:2px dashed var(--accent); cursor:pointer;">92994821868</div>
-            <p style="font-size:10px; color:var(--text-dim); margin-top:15px;">Felipe Prado - Clique para copiar</p>
         </div>
     </div>
 
@@ -241,7 +229,7 @@
         const FRASES_PIX = [ "O programador virou café. Precisa de mais café pra virar código! ☕", "Este app não roda a base de vento, mas sim de PIX. Ajude o dev! 😉", "A internet caiu, mas o PIX do dev não! 🚀", "Mande um PIX pro dev ancorar esse navio! 🚢" ];
 
         class EvolutionApp {
-            constructor() { this.entries = []; this.filter = 'all'; this.currentUser = null; this.init(); }
+            constructor() { this.entries = []; this.currentUser = null; this.init(); }
 
             init() {
                 document.getElementById('senhaInput').addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
@@ -261,7 +249,7 @@
             login() {
                 const code = document.getElementById('senhaInput').value;
                 const user = SECURE_USERS[code];
-                if (!user) { this.showToast('Chave Incorreta', 'error'); return; }
+                if (!user) { this.showToast('Chave Incorreta'); return; }
                 this.currentUser = user;
                 localStorage.setItem('evo_session', btoa(JSON.stringify({user, code, ts: Date.now()})));
                 this.showMainPanel();
@@ -277,38 +265,27 @@
                 this.loadData();
             }
 
-            // CORREÇÃO DEFINITIVA DAS CAIXAS DE PRODUÇÃO (AGORA SÃO IDÊNTICAS)
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                // Usamos input-row para forçar as duas caixas a terem 50% de largura cada uma
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row">
-                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
-                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
-                    </div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             generateReport() {
                 const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return this.showToast('Navio?', 'error');
+                if (!n) return this.showToast('Navio?');
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
-                const ternoEscolhido = document.getElementById('relTernoSelecao').value;
-                let m = `${n}\n${df} ${t}\nTerno: ${ternoEscolhido}\n`;
-                if (t === '15x23') {
-                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
-                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
-                    m += `15x19 ${p1}\n19x23 ${p2}\nTOTAL ${p1+p2}\n`;
-                } else m += `TOTAL ${parseInt(document.getElementById('relPT')?.value) || 0}\n`;
+                const terno = document.getElementById('relTernoSelecao').value;
+                let m = `${n}\n${df} ${t}\nTerno: ${terno}\n`;
+                if (t === '15x23') { m += `15x19 ${document.getElementById('relP1').value}\n19x23 ${document.getElementById('relP2').value}\nTOTAL ${parseInt(document.getElementById('relP1').value)+parseInt(document.getElementById('relP2').value)}\n`; }
+                else m += `TOTAL ${document.getElementById('relPT').value}\n`;
                 m += this.currentUser;
                 this.forceCopy(m, 'Relatório Copiado!');
             }
 
             forceCopy(text, msg) {
-                const ta = document.createElement("textarea");
-                ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+                const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
                 document.body.appendChild(ta); ta.focus(); ta.select();
                 try { document.execCommand('copy'); this.showToast(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank'); }
                 document.body.removeChild(ta);
@@ -321,7 +298,7 @@
                     const a = document.createElement('a'); a.href = url; a.download = `backup_evolution.json`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     this.showToast('Backup Criado! ✅');
-                } catch (e) { this.showToast('Erro no Backup', 'error'); }
+                } catch (e) { this.showToast('Erro no Backup'); }
             }
 
             triggerImport() { document.getElementById('importInput').click(); }
@@ -332,19 +309,15 @@
                 reader.onload = (ev) => {
                     try {
                         const data = JSON.parse(ev.target.result);
-                        if (Array.isArray(data)) {
-                            this.entries = data; this.saveData(); this.renderHistory(); this.updateDashboard();
-                            this.showToast('Dados Restaurados! 🚀'); this.closeModal('configModal');
-                        }
-                    } catch (err) { this.showToast('Arquivo Inválido!', 'error'); }
+                        if (Array.isArray(data)) { this.entries = data; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Dados Restaurados! 🚀'); this.closeModal('configModal'); }
+                    } catch (err) { this.showToast('Arquivo Inválido!'); }
                 };
                 reader.readAsText(file);
             }
 
-            showToast(m, t='success') {
+            showToast(m) {
                 const container = document.getElementById('toastContainer');
-                const e = document.createElement('div');
-                e.className = `toast`; e.innerHTML = `<span>✔</span> ${m}`;
+                const e = document.createElement('div'); e.className = `toast`; e.innerHTML = `<span>✔</span> ${m}`;
                 container.appendChild(e);
                 setTimeout(() => { e.style.opacity = '0'; setTimeout(() => e.remove(), 300); }, 3000);
             }
@@ -354,7 +327,6 @@
                 const isLight = document.body.classList.contains('light-mode');
                 localStorage.setItem('evo_theme', isLight ? 'light' : 'dark');
                 document.getElementById('themeIcon').textContent = isLight ? '☀️' : '🌓';
-                this.showToast(`Modo ${isLight ? 'Claro' : 'Escuro'} Ativado`);
             }
 
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') { document.body.classList.add('light-mode'); document.getElementById('themeIcon').textContent = '☀️'; } }
@@ -367,38 +339,41 @@
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
                 const c = document.getElementById('relCamposProducao');
-                if (t === '15x23') {
-                    c.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>`;
-                } else {
-                    c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
-                }
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
             }
             calcularValores(tipo, turno, v, q) {
                 const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
                 let bN = 0; const nC = parseInt(q) || 1;
-                if (turno === '15x23') {
-                    const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal;
-                    bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2;
-                } else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
+                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
                 const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
             }
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
-                if (!n || !d) return this.showToast('Incompleto!', 'error');
+                if (!n || !d) return this.showToast('Incompleto!');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
                 const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
                 this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
-                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo com Sucesso!');
+                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
             saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
             renderHistory() {
-                const list = document.getElementById('histList'); let f = this.entries;
-                list.innerHTML = f.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:700;">${e.navio}</div><div style="font-size:11px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:10px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button></div></div>`).join('');
+                const list = document.getElementById('histList');
+                list.innerHTML = this.entries.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:700;">${e.navio}</div><div style="font-size:11px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:10px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button></div></div>`).join('');
             }
-            updateDashboard() { let b=0, l=0, pe=0, pa=0; this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; if(e.pago)pa+=e.liquido; else pe+=e.liquido; }); document.getElementById('dashBruto').textContent = new Money(b).format(); document.getElementById('dashLiq').textContent = new Money(l).format(); document.getElementById('dashPend').textContent = new Money(pe).format(); document.getElementById('dashPago').textContent = new Money(pa).format(); }
+            updateDashboard() {
+                let b=0, l=0, pe=0, pa=0, cpe=0, cpa=0;
+                this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; if(e.pago){pa+=e.liquido; cpa++;} else {pe+=e.liquido; cpe++;} });
+                document.getElementById('dashBruto').textContent = new Money(b).format();
+                document.getElementById('dashLiq').textContent = new Money(l).format();
+                document.getElementById('dashPend').textContent = new Money(pe).format();
+                document.getElementById('dashPago').textContent = new Money(pa).format();
+                document.getElementById('countPend').textContent = `${cpe} serv.`;
+                document.getElementById('countPago').textContent = `${cpa} serv.`;
+            }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
