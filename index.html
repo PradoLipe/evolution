@@ -63,7 +63,6 @@
             transition: background 0.5s ease;
         }
 
-        /* Animações Premium */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -111,7 +110,6 @@
             to { background-position: 200% center; }
         }
 
-        /* Login Fixes - PIN de 6 dígitos */
         .pin-display {
             display: flex;
             gap: 12px;
@@ -162,7 +160,6 @@
             z-index: 10;
         }
 
-        /* Dashboard */
         .dash-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -217,7 +214,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* Seções */
         .section-card {
             background: var(--card);
             border-radius: 24px;
@@ -345,7 +341,6 @@
             color: #fff;
         }
 
-        /* Histórico */
         .hist-list {
             display: flex;
             flex-direction: column;
@@ -395,7 +390,6 @@
             border: 1px solid rgba(255, 56, 96, 0.3);
         }
 
-        /* Modais */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -532,14 +526,13 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Login Screen - Corrigido para 6 dígitos -->
+    <!-- Login Screen -->
     <div class="container login-screen" id="loginScreen">
         <div class="glass-panel" style="padding: 40px 30px; text-align: center;">
             <div style="font-size:3rem; margin-bottom:16px;">🔐</div>
             <div class="evolution-logo" style="font-size: 2rem; margin-bottom: 8px;">EVOLUTION</div>
             <p style="font-size:11px; color:var(--text-dim); letter-spacing:4px; margin-bottom:32px; font-weight:600;">V46 ULTRA PREMIUM</p>
             
-            <!-- 6 Dots para senhas de 4 ou 6 dígitos -->
             <div class="pin-display" id="pinDisplay">
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
@@ -560,14 +553,7 @@
             
             <button class="btn btn-primary" onclick="app.login()" style="margin-bottom:12px;">
                 <span>ENTRAR NO SISTEMA</span>
-                <span>→</span>
             </button>
-            
-            <div style="margin-top:24px; padding-top:24px; border-top:1px solid var(--border);">
-                <p style="font-size:10px; color:var(--text-dim); letter-spacing:1px;">
-                    © 2026 <b style="color:var(--primary)">FELIPE PRADO</b>
-                </p>
-            </div>
         </div>
     </div>
 
@@ -608,7 +594,7 @@
             </div>
         </div>
 
-        <!-- Relatório WhatsApp - Agora com Turno de Trabalho -->
+        <!-- Relatório WhatsApp - Formato solicitado -->
         <div class="section-card expanded" id="secRelatorio">
             <div class="section-header" onclick="app.toggleSection('secRelatorio')">
                 <div class="section-title">
@@ -618,66 +604,66 @@
                 <span class="section-icon">▼</span>
             </div>
             <div class="section-content">
+                <div class="input-group">
+                    <label class="input-label">Nome do Navio</label>
+                    <input type="text" id="relNavio" placeholder="Ex: LOGIN EVOLUTION" style="text-transform:uppercase;">
+                </div>
+
                 <div class="input-row">
                     <div class="input-group">
-                        <label class="input-label">Data da Operação</label>
+                        <label class="input-label">Data</label>
                         <input type="date" id="relData">
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Navio</label>
-                        <input type="text" id="relNavio" placeholder="Nome do Navio" style="text-transform:uppercase;">
-                    </div>
-                </div>
-                
-                <!-- NOVO CAMPO: Turno de Trabalho -->
-                <div class="input-row">
-                    <div class="input-group">
-                        <label class="input-label">Seu Turno (Escala)</label>
-                        <select id="relTurnoTrabalho">
-                            <option value="">Selecione seu turno...</option>
-                            <option value="A">Turno A (Manhã)</option>
-                            <option value="B">Turno B (Tarde)</option>
-                            <option value="C">Turno C (Noite)</option>
-                            <option value="1º">1º Turno</option>
-                            <option value="2º">2º Turno</option>
-                            <option value="3º">3º Turno</option>
-                            <option value="ESCALA 5x2">Escala 5x2</option>
-                            <option value="ESCALA 12x36">Escala 12x36</option>
-                            <option value="ADM">Administrativo</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Terminal/Local</label>
-                        <input type="text" id="relTerminal" placeholder="Ex: TECON, TPN, etc" style="text-transform:uppercase;">
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label class="input-label">Turno da Operação</label>
+                        <label class="input-label">Turno Operação</label>
                         <select id="relTurnoOperacao" onchange="app.adjustRelFields()">
-                            <option value="">Selecione...</option>
-                            <option value="07x15">07x15 (Manhã)</option>
-                            <option value="15x23">15x23 (Tarde)</option>
-                            <option value="23x07">23x07 (Noite)</option>
+                            <option value="07x15">07x15</option>
+                            <option value="15x23" selected>15x23</option>
+                            <option value="23x07">23x07</option>
                         </select>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Equipe/Turma</label>
-                        <input type="text" id="relEquipe" placeholder="Opcional">
                     </div>
                 </div>
 
-                <div id="relCampos"></div>
+                <!-- Seu Turno de Trabalho -->
+                <div class="input-group">
+                    <label class="input-label">Seu Turno (1º, 2º ou 3º)</label>
+                    <select id="relTurnoTrabalho">
+                        <option value="1">1 TERNO</option>
+                        <option value="2" selected>2 TERNO</option>
+                        <option value="3">3 TERNO</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="5x2">ESCALA 5x2</option>
+                        <option value="12x36">ESCALA 12x36</option>
+                    </select>
+                </div>
 
-                <div class="input-group" style="margin-top:16px;">
-                    <label class="input-label">Observações (opcional)</label>
-                    <input type="text" id="relObs" placeholder="Alguma observação importante...">
+                <!-- Campos de produção dinâmicos -->
+                <div id="relCampos">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">15x19</label>
+                            <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">19x23</label>
+                            <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview do Total -->
+                <div class="input-group" style="background:rgba(0,209,178,0.1); padding:12px; border-radius:12px; border:1px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; color:var(--primary);">TOTAL</span>
+                        <span id="relTotalPreview" style="font-family:'Space Mono',monospace; font-size:1.3rem; font-weight:800;">0</span>
+                    </div>
                 </div>
 
                 <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:8px;">
                     <span>📋</span>
-                    <span>GERAR RELATÓRIO WHATSAPP</span>
+                    <span>COPIAR PARA WHATSAPP</span>
                 </button>
             </div>
         </div>
@@ -714,9 +700,9 @@
                     <div class="input-group">
                         <label class="input-label">Turno</label>
                         <select id="calcTurno" onchange="app.adjustCalcFields()">
-                            <option value="07x15">07x15 (Manhã)</option>
-                            <option value="15x23" selected>15x23 (Tarde)</option>
-                            <option value="23x07">23x07 (Noite)</option>
+                            <option value="07x15">07x15</option>
+                            <option value="15x23" selected>15x23</option>
+                            <option value="23x07">23x07</option>
                         </select>
                     </div>
                 </div>
@@ -763,9 +749,8 @@
         <div class="modal-content">
             <button style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;" onclick="app.closeModal('configModal')">×</button>
             <h3 style="font-size:1.2rem; margin-bottom:8px; color:var(--primary);">Configurações</h3>
-            <p style="font-size:13px; color:var(--text-dim); margin-bottom:24px;">Gerencie seus dados</p>
             
-            <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData('json')">📥 Exportar JSON</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData('csv')">📊 Exportar Excel</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.importData()">📤 Importar Backup</button>
@@ -788,7 +773,6 @@
     </div>
 
     <script>
-        // Sistema de Precisão Financeira
         class Money {
             constructor(cents) { this._cents = Math.round(cents); }
             static fromFloat(value) { return new Money(Math.round((value || 0) * 100)); }
@@ -824,23 +808,17 @@
             }
 
             init() {
-                // Configurar input de senha
                 const pinInput = document.getElementById('senhaInput');
                 pinInput.addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
-                pinInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.login();
-                });
+                pinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.login(); });
                 
-                // Data atual
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 
                 this.adjustCalcFields();
-                this.adjustRelFields();
                 this.loadTheme();
                 
-                // Verificar sessão
                 const session = localStorage.getItem('evo_session');
                 if (session) {
                     try {
@@ -859,16 +837,10 @@
             updatePinDisplay(value) {
                 const dots = document.querySelectorAll('.pin-dot');
                 const len = value.length;
-                
-                // Atualiza dots (6 dots total)
                 dots.forEach((dot, idx) => {
                     dot.classList.toggle('filled', idx < len);
                 });
-                
-                // Login automático quando completar 4 ou 6 dígitos
-                if (len === 4 || len === 6) {
-                    setTimeout(() => this.login(), 300);
-                }
+                if (len === 4 || len === 6) setTimeout(() => this.login(), 300);
             }
 
             togglePasswordVisibility() {
@@ -893,7 +865,6 @@
                 this.currentUser = user;
                 this.userCode = code;
                 
-                // Salvar sessão
                 const sessionData = btoa(JSON.stringify({
                     user: user,
                     code: code,
@@ -938,14 +909,10 @@
                 return true;
             }
 
-            // Cálculos Financeiros
             calcularValores(tipoDia, turno, valores) {
                 const TAXAS = {
                     '07x15': { normal: 573, feriado: 861 },
-                    '15x23': { 
-                        normal: { padrao: 573, extra: 688 },
-                        feriado: 1032
-                    },
+                    '15x23': { normal: { padrao: 573, extra: 688 }, feriado: 1032 },
                     '23x07': { normal: 688, feriado: 1032 }
                 };
 
@@ -1009,82 +976,121 @@
                     container.innerHTML = `
                         <div class="input-row">
                             <div class="input-group">
-                                <label class="input-label">Prod. 15h-19h</label>
-                                <input type="number" id="relP1" placeholder="0" min="0">
+                                <label class="input-label">15x19</label>
+                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
                             </div>
                             <div class="input-group">
-                                <label class="input-label">Prod. 20h-23h</label>
-                                <input type="number" id="relP2" placeholder="0" min="0">
+                                <label class="input-label">19x23</label>
+                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
                             </div>
                         </div>
                     `;
-                } else if (turno) {
+                } else if (turno === '07x15') {
                     container.innerHTML = `
-                        <div class="input-group">
-                            <label class="input-label">Produção Total</label>
-                            <input type="number" id="relPTotal" placeholder="0" min="0">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label class="input-label">07x11</label>
+                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">11x15</label>
+                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
+                            </div>
                         </div>
                     `;
-                } else {
-                    container.innerHTML = '';
+                } else if (turno === '23x07') {
+                    container.innerHTML = `
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label class="input-label">23x03</label>
+                                <input type="number" id="relP1" placeholder="0" min="0" oninput="app.updateTotal()">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">03x07</label>
+                                <input type="number" id="relP2" placeholder="0" min="0" oninput="app.updateTotal()">
+                            </div>
+                        </div>
+                    `;
                 }
+                this.updateTotal();
             }
 
-            // GERAR RELATÓRIO COM TURNO DE TRABALHO
+            updateTotal() {
+                const turno = document.getElementById('relTurnoOperacao').value;
+                let total = 0;
+                
+                if (turno === '15x23' || turno === '07x15' || turno === '23x07') {
+                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
+                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
+                    total = p1 + p2;
+                } else {
+                    total = parseInt(document.getElementById('relPTotal')?.value) || 0;
+                }
+                
+                document.getElementById('relTotalPreview').textContent = total;
+            }
+
+            // GERAR RELATÓRIO NO FORMATO EXATO SOLICITADO
             generateReport() {
                 const data = document.getElementById('relData').value;
-                const navio = document.getElementById('relNavio').value.trim().toUpperCase() || 'S/N';
+                const navio = document.getElementById('relNavio').value.trim().toUpperCase();
                 const turnoOperacao = document.getElementById('relTurnoOperacao').value;
                 const turnoTrabalho = document.getElementById('relTurnoTrabalho').value;
-                const terminal = document.getElementById('relTerminal').value.trim().toUpperCase();
-                const equipe = document.getElementById('relEquipe').value.trim();
-                const obs = document.getElementById('relObs').value.trim();
                 
-                if (!turnoOperacao) {
-                    this.showToast('Selecione o turno da operação', 'error');
+                if (!navio) {
+                    this.showToast('Digite o nome do navio', 'error');
                     return;
                 }
                 
-                let prod = 0;
-                if (turnoOperacao === '15x23') {
-                    const p1 = parseInt(document.getElementById('relP1')?.value) || 0;
-                    const p2 = parseInt(document.getElementById('relP2')?.value) || 0;
-                    prod = p1 + p2;
+                // Obter valores
+                let p1 = 0, p2 = 0, total = 0;
+                
+                if (turnoOperacao === '15x23' || turnoOperacao === '07x15' || turnoOperacao === '23x07') {
+                    p1 = parseInt(document.getElementById('relP1')?.value) || 0;
+                    p2 = parseInt(document.getElementById('relP2')?.value) || 0;
+                    total = p1 + p2;
                 } else {
-                    prod = parseInt(document.getElementById('relPTotal')?.value) || 0;
+                    total = parseInt(document.getElementById('relPTotal')?.value) || 0;
                 }
                 
-                const dataF = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
+                // Formatar data
+                const dataObj = new Date(data + 'T12:00:00');
+                const dataF = dataObj.toLocaleDateString('pt-BR');
                 
-                // Monta mensagem completa com turno de trabalho
-                let msg = `*📊 RELATÓRIO DE OPERAÇÃO - EVOLUTION*\n\n`;
-                msg += `*Data:* ${dataF}\n`;
-                msg += `*Navio:* ${navio}\n`;
+                // Montar texto exatamente como solicitado
+                let msg = `Nome do navio: ${navio}\n`;
+                msg += `${dataF} ${turnoOperacao}\n`;
                 
-                if (turnoTrabalho) {
-                    msg += `*Meu Turno:* ${turnoTrabalho}\n`;
+                // Adicionar turno de trabalho formatado
+                let turnoTexto = turnoTrabalho;
+                if (turnoTrabalho === '1' || turnoTrabalho === '2' || turnoTrabalho === '3') {
+                    turnoTexto = turnoTrabalho + ' TERNO';
+                } else if (turnoTrabalho === '5x2') {
+                    turnoTexto = 'ESCALA 5x2';
+                } else if (turnoTrabalho === '12x36') {
+                    turnoTexto = 'ESCALA 12x36';
                 }
-                if (terminal) {
-                    msg += `*Terminal:* ${terminal}\n`;
+                msg += `${turnoTexto}\n`;
+                
+                // Horários específicos conforme o turno
+                if (turnoOperacao === '15x23') {
+                    msg += `15x19 ${p1}\n`;
+                    msg += `19x23 ${p2}\n`;
+                } else if (turnoOperacao === '07x15') {
+                    msg += `07x11 ${p1}\n`;
+                    msg += `11x15 ${p2}\n`;
+                } else if (turnoOperacao === '23x07') {
+                    msg += `23x03 ${p1}\n`;
+                    msg += `03x07 ${p2}\n`;
                 }
                 
-                msg += `*Turno Op:* ${turnoOperacao}\n`;
-                msg += `*Produção:* ${prod} unidades\n`;
+                msg += `TOTAL ${total}\n`;
+                msg += `${this.currentUser}`;
                 
-                if (equipe) {
-                    msg += `*Equipe:* ${equipe}\n`;
-                }
-                if (obs) {
-                    msg += `*Obs:* ${obs}\n`;
-                }
-                
-                msg += `\n*Conferente:* ${this.currentUser}\n`;
-                msg += `_Sistema Evolution V46_`;
-                
-                // Tentar copiar para clipboard
+                // Copiar
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(msg).then(() => {
-                        this.showToast('Relatório copiado! Cole no WhatsApp', 'success');
+                        this.showToast('Relatório copiado!', 'success');
                     }).catch(() => {
                         this.fallbackCopy(msg);
                     });
@@ -1103,12 +1109,11 @@
                 
                 try {
                     document.execCommand('copy');
-                    this.showToast('Relatório copiado! Cole no WhatsApp', 'success');
+                    this.showToast('Relatório copiado!', 'success');
                 } catch (err) {
-                    this.showToast('Erro ao copiar. Tule manualmente.', 'error');
-                    console.log(text); // Para debug
+                    this.showToast('Erro ao copiar', 'error');
+                    console.log(text);
                 }
-                
                 document.body.removeChild(textarea);
             }
 
@@ -1159,7 +1164,6 @@
                 this.updateDashboard();
                 this.showToast('Serviço salvo!', 'success');
                 
-                // Limpar
                 document.getElementById('calcNavio').value = '';
                 if (turno === '15x23') {
                     document.getElementById('calcP1').value = '';
@@ -1176,17 +1180,17 @@
                     this.saveData();
                     this.renderHistory();
                     this.updateDashboard();
-                    this.showToast(entry.pago ? 'Pagamento confirmado!' : 'Marcado como pendente', entry.pago ? 'success' : 'warning');
+                    this.showToast(entry.pago ? 'Pago confirmado!' : 'Pendente', entry.pago ? 'success' : 'warning');
                 }
             }
 
             deleteEntry(id) {
-                if (confirm('Excluir este registro permanentemente?')) {
+                if (confirm('Excluir este registro?')) {
                     this.entries = this.entries.filter(e => e.id !== id);
                     this.saveData();
                     this.renderHistory();
                     this.updateDashboard();
-                    this.showToast('Registro excluído', 'success');
+                    this.showToast('Excluído', 'success');
                 }
             }
 
@@ -1398,7 +1402,6 @@
                         this.showToast('Chave PIX copiada!', 'success');
                     });
                 } else {
-                    // Fallback
                     const ta = document.createElement('textarea');
                     ta.value = pix;
                     document.body.appendChild(ta);
