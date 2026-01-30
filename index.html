@@ -52,6 +52,7 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
+        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; overflow: hidden; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
@@ -63,6 +64,7 @@
         .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
         .dash-count { font-size: 9px; margin-top: 2px; font-weight: 700; opacity: 0.8; }
 
+        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }
@@ -72,12 +74,15 @@
         input, select { width: 100%; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 13px; outline: none; }
         .input-group { margin-bottom: 12px; width: 100%; }
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
+        
+        /* GRID FIXO DE 2 COLUNAS PARA EVITAR QUEBRA */
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
 
+        /* HISTÓRICO */
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--text) !important; }
@@ -85,11 +90,13 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
+        /* MODAIS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
+        /* RODAPÉ PREMIUM */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
         .footer-line { width: 30px; height: 2px; background: var(--primary); margin: 0 auto 10px; border-radius: 2px; opacity: 0.4; }
         .footer-text { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
@@ -105,7 +112,7 @@
     <div class="container" id="loginScreen">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
             <div style="background: var(--card); padding: 40px 30px; border-radius: 28px; width: 100%; text-align: center; border: 1px solid var(--border);">
-                <h1 style="font-size: 2rem; letter-spacing: 5px; font-weight: 900; color: var(--primary); margin-bottom: 5px;">EVOLUTION</h1>
+                <h1 style="font-size: 2rem; letter-spacing: 5px; font-weight: 900; color: var(--primary);">EVOLUTION</h1>
                 <p style="font-size: 9px; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 30px;">V46 ULTRA PREMIUM</p>
                 <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" maxlength="6" style="text-align: center; font-weight: 800; letter-spacing: 4px; margin-bottom: 20px;">
                 <button class="btn btn-primary" onclick="app.login()">ACESSAR</button>
@@ -195,12 +202,12 @@
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Ajude a manter os motores rodando! Ao realizar o apoio, verifique os dados abaixo:</p>
+            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Verifique os dados antes de confirmar:</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
             </div>
-            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase;">Clique na caixa para copiar a chave</p>
+            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase;">Toque na caixa para copiar</p>
         </div>
     </div>
 
@@ -208,18 +215,23 @@
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
 
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café. Precisa de mais café pra virar código!", "A internet caiu, mas o PIX do dev não!", "Mande um PIX pro dev ancorar esse navio!" ];
+        const FRASES_PIX = [ "O programador virou café! 😉", "A internet caiu, mas o PIX não!", "Mande um café pro dev ancorar o navio! 🚢" ];
 
         class EvolutionApp {
             constructor() { this.entries = []; this.currentUser = null; this.init(); }
 
             init() {
+                document.getElementById('senhaInput').addEventListener('input', (e) => this.updatePinDisplay(e.target.value));
                 document.getElementById('importInput').addEventListener('change', (e) => this.importData(e));
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
-                this.startAutoPix();
+            }
+
+            updatePinDisplay(val) {
+                document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < val.length));
+                if (val.length === 4 || val.length === 6) setTimeout(() => this.login(), 300);
             }
 
             login() {
@@ -241,10 +253,24 @@
                 this.loadData();
             }
 
+            // CORREÇÃO DOS CAMPOS DE PRODUÇÃO
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                c.innerHTML = t === '15x23' ? 
+                    `<div class="input-row">
+                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
+                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
+                    </div>` :
+                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+            }
+
+            toggleRelatorioCampos() {
+                const t = document.getElementById('relTurno').value;
+                const c = document.getElementById('relCamposProducao');
+                c.innerHTML = t === '15x23' ? 
+                    `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` :
+                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
             }
 
             generateReport() {
@@ -257,7 +283,7 @@
                 if (t === '15x23') { m += `15x19 ${document.getElementById('relP1').value}\n19x23 ${document.getElementById('relP2').value}\nTOTAL ${parseInt(document.getElementById('relP1').value)+parseInt(document.getElementById('relP2').value)}\n`; }
                 else m += `TOTAL ${document.getElementById('relPT').value}\n`;
                 m += this.currentUser;
-                this.forceCopy(m, 'Relatório Copiado!');
+                this.forceCopy(m, 'Relatório Copiado! 📱');
             }
 
             forceCopy(text, msg) {
@@ -321,18 +347,12 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
             triggerImport() { document.getElementById('importInput').click(); }
             importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.closeModal('configModal'); }; r.readAsText(f); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
-            toggleRelatorioCampos() {
-                const t = document.getElementById('relTurno').value;
-                const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
-            }
-            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
             showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
             copyPix() { this.forceCopy('92994821868', 'Chave PIX de Felipe Prado Copiada! ☕'); }
         }
