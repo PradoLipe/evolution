@@ -88,11 +88,11 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
-        /* MODAIS */
+        /* MODAIS PREMIUM */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; }
-        .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
+        .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
         /* FOOTER */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
@@ -188,9 +188,23 @@
                 <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓 ALTERAR TEMA</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.exportData()">📥 EXPORTAR BACKUP</button>
                 <button class="btn" style="background:var(--input); color:var(--text);" onclick="app.triggerImport()">📤 IMPORTAR BACKUP</button>
+                <button class="btn" style="background:rgba(0, 209, 178, 0.1); border: 1px solid var(--primary); color:var(--primary);" onclick="app.showPix()">☕ APOIAR DESENVOLVEDOR</button>
                 <button class="btn" style="background:var(--danger); color:#fff; margin-top:10px;" onclick="app.logout()">🚪 SAIR</button>
             </div>
             <input type="file" id="importInput" style="display:none" accept=".json">
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
+        <div class="modal-content" style="text-align:center; padding: 40px 20px; background: rgba(22, 22, 29, 0.95); backdrop-filter: blur(20px);">
+            <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
+            <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
+            <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">CAFÉ PARA O DEV</h3>
+            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px; padding: 0 10px;"></p>
+            <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700; font-size: 16px;">
+                92994821868
+            </div>
+            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Clique no número para copiar</p>
         </div>
     </div>
 
@@ -198,6 +212,7 @@
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
 
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
+        const FRASES_PIX = [ "O programador virou café. Precisa de mais café pra virar código!", "A internet caiu, mas o PIX do dev não! 😉", "Ajude a manter o app no ar e os motores rodando!", "Mande um PIX pro dev ancorar esse navio com sucesso! 🚢" ];
 
         class EvolutionApp {
             constructor() { this.entries = []; this.currentUser = null; this.init(); }
@@ -208,6 +223,7 @@
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
+                this.startAutoPix();
             }
 
             login() {
@@ -288,7 +304,6 @@
 
             renderHistory() {
                 const list = document.getElementById('histList');
-                // NOME DO NAVIO COLORIDO: VERMELHO SE PENDENTE
                 list.innerHTML = this.entries.map(e => `
                     <div class="hist-item">
                         <div style="flex:1;">
@@ -317,8 +332,6 @@
 
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
             saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
@@ -327,7 +340,12 @@
             exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
             triggerImport() { document.getElementById('importInput').click(); }
             importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.closeModal('configModal'); }; r.readAsText(f); }
+            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
+            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
+            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
+            showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
+            copyPix() { this.forceCopy('92994821868'); alert('PIX Copiado com Sucesso! ☕'); }
         }
         const app = new EvolutionApp();
     </script>
