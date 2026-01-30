@@ -38,7 +38,7 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; }
 
-        /* LOGIN - CORREÇÃO DE CLIQUE */
+        /* LOGIN - CORREÇÃO DE FOCO E CLIQUE */
         .login-box { 
             background: var(--card); 
             padding: 50px 35px; 
@@ -51,19 +51,20 @@
         }
         .logo-text { font-size: 2.2rem; letter-spacing: 6px; font-weight: 900; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
         
-        .pin-wrapper { position: relative; margin-bottom: 30px; cursor: text; }
+        .pin-wrapper { position: relative; margin-bottom: 30px; cursor: text; height: 40px; }
         .pin-display { display: flex; justify-content: center; gap: 12px; pointer-events: none; }
         .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
         .pin-dot.filled { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
         
-        /* A INPUT AGORA COBRE TODA A ÁREA DE PONTINHOS PARA FACILITAR O TOQUE */
         .pin-input { 
             position: absolute; 
             top: 0; left: 0; width: 100%; height: 100%; 
             opacity: 0; 
-            font-size: 16px; /* Evita zoom no iOS */
+            font-size: 16px; 
             z-index: 2;
             cursor: pointer;
+            border: none;
+            background: transparent;
         }
 
         /* DASHBOARD */
@@ -92,7 +93,7 @@
 </head>
 <body>
 
-    <div id="toast" class="toast">COPIADO</div>
+    <div id="toast" class="toast">CONCLUÍDO</div>
 
     <div class="container" id="loginScreen">
         <div class="login-box">
@@ -128,6 +129,25 @@
             <div class="dash-card"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
         </div>
 
+        <div class="section-card" id="secRel">
+            <div class="section-header" onclick="app.toggleSection('secRel')"><span>GERADOR WHATSAPP</span><span>+</span></div>
+            <div class="section-content">
+                <input type="text" id="relNavio" placeholder="NAVIO">
+                <div class="input-row">
+                    <input type="date" id="relData">
+                    <select id="relTurno" onchange="app.ajustarInterfaceRelatorio()">
+                        <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
+                    </select>
+                </div>
+                <select id="relTerno" style="margin-top: 5px;">
+                    <option value="1 TERNO">1 TERNO</option><option value="2 TERNO">2 TERNO</option>
+                    <option value="3 TERNO">3 TERNO</option><option value="4 TERNO">4 TERNO</option>
+                </select>
+                <div id="relCamposDinamicos"></div>
+                <button class="btn btn-success" onclick="app.copiarRelatorio()">COPIAR RELATÓRIO</button>
+            </div>
+        </div>
+
         <div class="section-card expanded" id="secLan">
             <div class="section-header" onclick="app.toggleSection('secLan')"><span>NOVA PRODUCAO</span><span>-</span></div>
             <div class="section-content">
@@ -151,7 +171,7 @@
     </div>
 
     <div class="modal-overlay" id="configModal" onclick="if(event.target === this) app.closeModal('configModal')">
-        <div class="modal-content" style="background:var(--card-solid); padding:25px; border-radius:20px; width:90%; max-width:400px;">
+        <div class="modal-content" style="background:var(--card-solid); padding:25px; border-radius:20px; width:90%; max-width:400px; margin: auto; position: relative; top: 20%;">
             <h3 style="margin-bottom:20px; text-align:center;">CONFIGURACOES</h3>
             <button class="btn btn-primary" style="margin-bottom:10px" onclick="app.toggleTheme()">ALTERNAR TEMA</button>
             <button class="btn btn-success" style="margin-bottom:10px" onclick="app.exportarBackup()">BACKUP JSON</button>
@@ -180,6 +200,8 @@
                 
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
+                document.getElementById('relData').value = hoje;
+                this.ajustarInterfaceRelatorio();
                 this.ajustarInterfaceProducao();
                 this.verificarSessao();
             }
@@ -217,10 +239,38 @@
                 this.carregarDados();
             }
 
+            ajustarInterfaceRelatorio() {
+                const t = document.getElementById('relTurno').value;
+                const div = document.getElementById('relCamposDinamicos');
+                div.innerHTML = t === '15x23' ? `<div class="input-row"><input type="number" id="relP1" placeholder="15-19h"><input type="number" id="relP2" placeholder="19-23h"></div>` : `<input type="number" id="relPT" placeholder="TOTAL">`;
+            }
+
             ajustarInterfaceProducao() {
                 const t = document.getElementById('calcTurno').value;
                 const div = document.getElementById('prodCamposDinamicos');
                 div.innerHTML = t === '15x23' ? `<div class="input-row"><input type="number" id="prodP1" placeholder="15-19h"><input type="number" id="prodP2" placeholder="19-23h"></div>` : `<input type="number" id="prodPT" placeholder="TOTAL">`;
+            }
+
+            copiarRelatorio() {
+                const n = document.getElementById('relNavio').value.toUpperCase();
+                const d = document.getElementById('relData').value.split('-').reverse().join('/');
+                const t = document.getElementById('relTurno').value;
+                const terno = document.getElementById('relTerno').value;
+                if(!n) return this.exibirToast('INFORME O NAVIO');
+
+                let msg = `*${n}*\nDATA: ${d} - TURNO: ${t}\n${terno}\n\n`;
+                if(t === '15x23') {
+                    const p1 = document.getElementById('relP1').value || 0;
+                    const p2 = document.getElementById('relP2').value || 0;
+                    msg += `15H AS 19H: *${p1}*\n19H AS 23H: *${p2}*\nTOTAL: *${parseInt(p1)+parseInt(p2)}*`;
+                } else {
+                    const pt = document.getElementById('relPT').value || 0;
+                    msg += `TOTAL: *${pt}*`;
+                }
+                msg += `\n\nCONFERENTE: ${this.user}`;
+                
+                navigator.clipboard.writeText(msg);
+                this.exibirToast('COPIADO');
             }
 
             salvarNoHistorico() {
@@ -252,12 +302,12 @@
                     <div class="hist-item">
                         <div>
                             <div style="font-weight:800; color:${item.pago?'var(--success)':'var(--danger)'}">${item.navio}</div>
-                            <div style="font-size:10px; color:var(--text-dim)">${item.data} | ${item.turno}</div>
-                            <button class="status-badge" onclick="app.alternarPagamento(${item.id})" style="background:${item.pago?'var(--success)':'var(--danger)'}; color:#fff; border:none; padding:4px 8px; border-radius:10px; font-size:9px; margin-top:5px; cursor:pointer;">${item.pago?'PAGO':'PENDENTE'}</button>
+                            <div style="font-size:10px; color:var(--text-dim)">${item.data.split('-').reverse().join('/')} | ${item.turno}</div>
+                            <button onclick="app.alternarPagamento(${item.id})" style="background:${item.pago?'rgba(72,199,116,0.2)':'rgba(255,56,96,0.2)'}; color:${item.pago?'var(--success)':'var(--danger)'}; border:1px solid; padding:4px 8px; border-radius:10px; font-size:9px; margin-top:5px; cursor:pointer;">${item.pago?'PAGO':'PENDENTE'}</button>
                         </div>
                         <div style="text-align:right">
                             <div style="font-family:Space Mono; font-weight:800; color:var(--primary)">R$ ${(item.liquido/100).toFixed(2)}</div>
-                            <button onclick="app.removerRegistro(${item.id})" style="background:none; border:none; color:var(--danger); font-size:9px; cursor:pointer">EXCLUIR</button>
+                            <button onclick="app.removerRegistro(${item.id})" style="background:none; border:none; color:var(--danger); font-size:9px; cursor:pointer; margin-top: 10px;">EXCLUIR</button>
                         </div>
                     </div>`).join('');
                 this.atualizarDashboard();
@@ -282,7 +332,7 @@
             exibirToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
             toggleTheme() { document.body.classList.toggle('light-mode'); }
             logout() { localStorage.removeItem('evo_v46_session'); location.reload(); }
-            exportarBackup() { const blob = new Blob([JSON.stringify(this.db)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
+            exportarBackup() { const blob = new Blob([JSON.stringify(this.db)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); }
         }
         const app = new EvolutionApp();
     </script>
