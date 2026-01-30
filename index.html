@@ -57,7 +57,6 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 25px; min-height: 100vh; display: flex; flex-direction: column; flex: 1; }
 
-        /* TELA DE LOGIN */
         .login-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .glass-panel-login { background: var(--card); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--border); border-radius: 32px; box-shadow: var(--shadow); padding: 50px 35px; text-align: center; width: 100%; animation: fadeIn 0.8s ease-out; }
         .evolution-logo-login { font-size: 2.2rem; font-weight: 900; letter-spacing: 6px; background: linear-gradient(135deg, var(--primary) 0%, #fff 50%, var(--primary) 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; text-shadow: 0 0 20px rgba(0, 209, 178, 0.3); margin-bottom: 5px; display: block; width: 100%; }
@@ -67,12 +66,11 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .pin-display { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
-        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); transition: 0.3s; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--input); border: 2px solid var(--border); transition: 0.3s; }
         .pin-dot.filled { background: var(--primary); border-color: var(--primary); transform: scale(1.2); box-shadow: 0 0 12px var(--primary); }
         
         #senhaInput { width: 100%; padding: 18px; background: var(--input); border: 1px solid var(--border); border-radius: 16px; color: var(--text); text-align: center; font-size: 16px; font-weight: 800; letter-spacing: 2px; margin-bottom: 25px; outline: none; }
 
-        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
         .dash-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: all 0.3s ease; cursor: pointer; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
@@ -82,7 +80,6 @@
         .dash-val { font-size: 1.3rem; font-weight: 800; font-family: 'Space Mono', monospace; }
         .dash-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
 
-        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 24px; margin-bottom: 20px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
@@ -166,7 +163,7 @@
             <div class="dash-card success"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
         </div>
 
-        <div class="section-card expanded" id="secRel">
+        <div class="section-card" id="secRel">
             <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title"><span>📱</span><span>RELATÓRIO DE PRODUÇÃO</span></div><span>▼</span></div>
             <div class="section-content">
                 <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" class="input-navio" style="text-transform:uppercase;"></div>
@@ -192,7 +189,7 @@
             </div>
         </div>
 
-        <div class="section-card expanded" id="secHis">
+        <div class="section-card" id="secHis">
             <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
                 <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:5px;">
@@ -308,7 +305,6 @@
                 this.loadData();
             }
 
-            // SISTEMA DE CÓPIA BLINDADO PARA CELULAR
             generateReport() {
                 const n = document.getElementById('relNavio').value.toUpperCase();
                 if (!n) return this.showToast('Navio?', 'error');
@@ -339,27 +335,15 @@
                 document.body.removeChild(ta);
             }
 
-            startAutoPix() {
-                setInterval(() => {
-                    if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
-                        this.showPix();
-                    }
-                }, 480000); 
-            }
-
-            showPix() {
-                document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)];
-                this.closeModal('configModal');
-                this.openModal('pixModal');
-            }
-
+            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
+            showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
             copyPix() { this.forceCopy('92994821868'); }
 
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
                 c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
+                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">20h-23h</label><input type="number" id="calcP2"></div></div>` :
                     `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
@@ -412,33 +396,15 @@
                 else if (this.filter === 'semana') { const s = new Date(); s.setDate(s.getDate() - 7); f = f.filter(x => new Date(x.data) >= s); }
                 list.innerHTML = f.map(e => `
                     <div class="hist-item">
-                        <div style="flex:1;">
-                            <div style="font-weight:700;">${e.navio}</div>
-                            <div style="font-size:11px; color:var(--text-dim); margin:4px 0;">${e.dataF}</div>
-                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div>
-                            <div style="color:var(--text-dim); font-size:10px; font-weight:600; margin-top:2px;">Bruto: ${new Money(e.bruto).format()}</div>
-                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button>
-                        </div>
+                        <div style="flex:1;"><div style="font-weight:700;">${e.navio}</div><div style="font-size:11px; color:var(--text-dim); margin:4px 0;">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div>
+                        <div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:1.1rem;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:10px; font-weight:600; margin-top:2px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px;">🗑️</button></div>
                     </div>`).join('');
                 document.getElementById('emptyState').classList.toggle('hidden', f.length > 0);
             }
 
-            updateDashboard() {
-                let b=0, l=0, pe=0, pa=0, cpe=0, cpa=0;
-                this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; if(e.pago){pa+=e.liquido; cpa++;} else {pe+=e.liquido; cpe++;} });
-                document.getElementById('dashBruto').textContent = new Money(b).format();
-                document.getElementById('dashLiq').textContent = new Money(l).format();
-                document.getElementById('dashPend').textContent = new Money(pe).format();
-                document.getElementById('dashPago').textContent = new Money(pa).format();
-                document.getElementById('countPend').textContent = `${cpe} serv.`;
-                document.getElementById('countPago').textContent = `${cpa} serv.`;
-            }
-
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
             saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
+            updateDashboard() { let b=0, l=0, pe=0, pa=0, cpe=0, cpa=0; this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; if(e.pago){pa+=e.liquido; cpa++;} else {pe+=e.liquido; cpe++;} }); document.getElementById('dashBruto').textContent = new Money(b).format(); document.getElementById('dashLiq').textContent = new Money(l).format(); document.getElementById('dashPend').textContent = new Money(pe).format(); document.getElementById('dashPago').textContent = new Money(pa).format(); document.getElementById('countPend').textContent = `${cpe} serv.`; document.getElementById('countPago').textContent = `${cpa} serv.`; }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
             filterHistory(t) { this.filter = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); const el = document.getElementById(`f-${t}`); if(el) el.classList.add('active'); this.renderHistory(); }
