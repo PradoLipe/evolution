@@ -75,13 +75,14 @@
         .input-group { margin-bottom: 12px; width: 100%; }
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
         
-        /* GRID DE PRODUÇÃO FIXO */
-        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
+        /* GRID DE PRODUÇÃO FIXO - SOLUÇÃO DEFINITIVA */
+        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; margin-bottom: 12px; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
 
+        /* HISTÓRICO */
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--text) !important; }
@@ -95,6 +96,7 @@
         .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
+        /* TOAST */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
         .toast { background: var(--card-solid); color: var(--primary); padding: 16px 20px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: toastIn 0.3s ease-out forwards; }
         @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -141,8 +143,8 @@
         <div class="dash-grid">
             <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
             <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div class="dash-count" id="countPend" style="color:var(--danger)">0 serv.</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div class="dash-count" id="countPago" style="color:var(--success)">0 serv.</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px;">0 serv.</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -206,7 +208,6 @@
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Sua contribuição mantém o sistema online!</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
@@ -218,7 +219,6 @@
     <script>
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café! 😉", "A internet caiu, mas o PIX não!", "Mande um café pro dev ancorar o navio! 🚢" ];
 
         class EvolutionApp {
             constructor() { this.entries = []; this.currentUser = null; this.init(); }
@@ -230,7 +230,6 @@
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
-                this.startAutoPix();
             }
 
             updatePinDisplay(val) {
@@ -257,16 +256,33 @@
                 this.loadData();
             }
 
+            // CORREÇÃO DOS CAMPOS DE PRODUÇÃO - GARANTINDO ESTRUTURA DE GRADE
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                if (t === '15x23') {
+                    c.innerHTML = `
+                        <div class="input-row">
+                            <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
+                            <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
+                        </div>`;
+                } else {
+                    c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                }
             }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
                 const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+                if (t === '15x23') {
+                    c.innerHTML = `
+                        <div class="input-row">
+                            <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1"></div>
+                            <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2"></div>
+                        </div>`;
+                } else {
+                    c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+                }
             }
 
             generateReport() {
@@ -275,9 +291,13 @@
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
+                
                 let m = `*${n}*\nData: ${df} - ${t}\nTerno: ${terno}\n`;
-                if (t === '15x23') { m += `15x19: ${document.getElementById('relP1').value}\n19x23: ${document.getElementById('relP2').value}\nTOTAL: ${parseInt(document.getElementById('relP1').value||0)+parseInt(document.getElementById('relP2').value||0)}\n`; }
-                else m += `TOTAL: ${document.getElementById('relPT').value || 0}\n`;
+                if (t === '15x23') {
+                    const p1 = document.getElementById('relP1').value || 0;
+                    const p2 = document.getElementById('relP2').value || 0;
+                    m += `15x19: ${p1}\n19x23: ${p2}\nTOTAL: ${parseInt(p1)+parseInt(p2)}\n`;
+                } else m += `TOTAL: ${document.getElementById('relPT').value || 0}\n`;
                 m += `${this.currentUser}`;
                 this.forceCopy(m, 'Relatório Copiado');
             }
@@ -318,7 +338,19 @@
 
             renderHistory() {
                 const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:700; font-size:13px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div><div style="font-size:10px; color:var(--text-dim);">${e.dataF}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:9px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:5px; font-size:12px;">🗑️</button></div></div>`).join('');
+                list.innerHTML = this.entries.map(e => `
+                    <div class="hist-item">
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:13px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
+                            <div style="font-size:10px; color:var(--text-dim);">${e.dataF}</div>
+                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--accent); font-weight:800; font-family:monospace;">${new Money(e.liquido).format()}</div>
+                            <div style="color:var(--text-dim); font-size:9px;">Bruto: ${new Money(e.bruto).format()}</div>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:5px; font-size:12px;">🗑️</button>
+                        </div>
+                    </div>`).join('');
             }
 
             updateDashboard() {
@@ -339,15 +371,15 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado ✅'); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado! 🚀'); this.closeModal('configModal'); }; r.readAsText(f); }
+            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado!'); this.closeModal('configModal'); }; r.readAsText(f); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Status Atualizado'); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Excluído'); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
-            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
+            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.openModal('pixModal'); } }, 480000); }
             showPix() { this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { this.forceCopy('92994821868', 'Chave PIX de Felipe Prado Copiada! ☕'); }
+            copyPix() { this.forceCopy('92994821868', 'Chave de Felipe Prado Copiada'); }
         }
         const app = new EvolutionApp();
     </script>
