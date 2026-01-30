@@ -75,7 +75,7 @@
         .input-group { margin-bottom: 12px; width: 100%; }
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
         
-        /* GRID FIXO DE 2 COLUNAS PARA EVITAR QUEBRA */
+        /* GRID DE PRODUÇÃO 50/50 FIXO */
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
@@ -96,7 +96,12 @@
         .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* RODAPÉ PREMIUM */
+        /* TOAST PREMIUM (SUBSTITUI O ALERT) */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
+        .toast { background: var(--card-solid); color: var(--primary); padding: 16px 20px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: toastIn 0.3s ease-out forwards; display: flex; align-items: center; gap: 10px; }
+        @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* FOOTER */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
         .footer-line { width: 30px; height: 2px; background: var(--primary); margin: 0 auto 10px; border-radius: 2px; opacity: 0.4; }
         .footer-text { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
@@ -107,7 +112,7 @@
 </head>
 <body>
 
-    <div class="toast-container" id="toastContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
     <div class="container" id="loginScreen">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -202,7 +207,7 @@
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Verifique os dados antes de confirmar:</p>
+            <p id="pixMsg" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Verifique os dados antes de copiar:</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
@@ -227,17 +232,18 @@
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
+                this.startAutoPix();
             }
 
             updatePinDisplay(val) {
                 document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < val.length));
-                if (val.length === 4 || val.length === 6) setTimeout(() => this.login(), 300);
+                if (val.length === 6) setTimeout(() => this.login(), 300);
             }
 
             login() {
                 const code = document.getElementById('senhaInput').value;
                 const user = SECURE_USERS[code];
-                if (!user) { alert('Chave Incorreta'); return; }
+                if (!user) { this.showToast('Chave Incorreta'); return; }
                 this.currentUser = user;
                 localStorage.setItem('evo_session', btoa(JSON.stringify({user, code, ts: Date.now()})));
                 this.showMainPanel();
@@ -253,29 +259,21 @@
                 this.loadData();
             }
 
-            // CORREÇÃO DOS CAMPOS DE PRODUÇÃO
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row">
-                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
-                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
-                    </div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
                 const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` :
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15x19</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19x23</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
             }
 
             generateReport() {
                 const n = document.getElementById('relNavio').value.toUpperCase();
-                if (!n) return;
+                if (!n) return this.showToast('Navio?');
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
@@ -289,19 +287,28 @@
             forceCopy(text, msg) {
                 const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
                 document.body.appendChild(ta); ta.focus(); ta.select(); 
-                try { document.execCommand('copy'); alert(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank'); }
+                try { document.execCommand('copy'); this.showToast(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank'); }
                 document.body.removeChild(ta);
+            }
+
+            showToast(m) {
+                const container = document.getElementById('toastContainer');
+                const e = document.createElement('div');
+                e.className = `toast`;
+                e.innerHTML = `<span>✔</span> <span>${m}</span>`;
+                container.appendChild(e);
+                setTimeout(() => { e.style.opacity = '0'; setTimeout(() => e.remove(), 400); }, 3000);
             }
 
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
-                if (!n || !d) return;
+                if (!n || !d) return this.showToast('Incompleto!');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
                 const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
                 this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
-                this.saveData(); this.renderHistory(); this.updateDashboard();
+                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
 
             calcularValores(tipo, turno, v, q) {
@@ -342,17 +349,18 @@
 
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
             saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
+            toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); this.showToast('Tema Alterado'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado ✅'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.closeModal('configModal'); }; r.readAsText(f); }
-            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); } }
-            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
+            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado! 🚀'); this.closeModal('configModal'); }; r.readAsText(f); }
+            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Status Atualizado'); } }
+            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Excluído'); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
+            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
             showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
             copyPix() { this.forceCopy('92994821868', 'Chave PIX de Felipe Prado Copiada! ☕'); }
         }
