@@ -52,7 +52,6 @@
 
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; }
 
-        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; overflow: hidden; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
@@ -62,12 +61,10 @@
         .dash-pago::before { background: var(--success); }
         .dash-val { font-size: 1.1rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 5px; }
         .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-        .dash-count { font-size: 9px; margin-top: 2px; font-weight: 700; opacity: 0.8; }
 
-        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }
+        .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; }
         .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; padding: 0 20px; }
         .section-card.expanded .section-content { max-height: 1500px; padding: 0 20px 20px; }
 
@@ -76,13 +73,12 @@
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
         
         /* GRID DE PRODUÇÃO FIXO */
-        .input-row { display: grid; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
+        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-success { background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); color: #fff; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
 
-        /* HISTÓRICO */
         .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--text) !important; }
@@ -90,18 +86,15 @@
         .status-badge.pago { background: rgba(72, 199, 116, 0.1); color: var(--success); }
         .status-badge.pendente { background: rgba(255, 56, 96, 0.1); color: var(--danger); }
 
-        /* MODAIS */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-content { background: var(--card-solid); border-radius: 30px; width: 100%; max-width: 380px; padding: 30px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow); }
         .close-modal-btn { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* TOAST NEON */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
         .toast { background: var(--card-solid); color: var(--primary); padding: 16px 20px; border-radius: 16px; border-left: 5px solid var(--primary); font-weight: 700; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: toastIn 0.3s ease-out forwards; }
         @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* FOOTER */
         .footer-copyright { padding: 30px 0; text-align: center; width: 100%; margin-top: auto; }
         .footer-line { width: 30px; height: 2px; background: var(--primary); margin: 0 auto 10px; border-radius: 2px; opacity: 0.4; }
         .footer-text { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
@@ -143,8 +136,8 @@
         <div class="dash-grid">
             <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
             <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div class="dash-count" id="countPend" style="color:var(--danger)">0 serv.</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div class="dash-count" id="countPago" style="color:var(--success)">0 serv.</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px;">0 serv.</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px;">0 serv.</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -192,7 +185,7 @@
         <div class="modal-content">
             <button class="close-modal-btn" onclick="app.closeModal('configModal')">✕</button>
             <h3 style="text-align:center; font-size:0.8rem; letter-spacing:2px; margin-bottom:25px;">CONFIGURAÇÕES</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
                 <button class="btn" style="background:var(--card); border:1px solid var(--border); color:var(--text);" onclick="app.toggleTheme()">🌓 ALTERAR TEMA</button>
                 <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.exportData()">📥 EXPORTAR BACKUP</button>
                 <button class="btn" style="background:var(--input); color:var(--text); border:1px solid var(--border);" onclick="app.triggerImport()">📤 IMPORTAR BACKUP</button>
@@ -204,11 +197,10 @@
     </div>
 
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
-        <div class="modal-content" style="text-align:center; padding: 40px 20px; background: rgba(22, 22, 29, 0.98); backdrop-filter: blur(25px); border: 1px solid var(--primary);">
+        <div class="modal-content" style="text-align:center; padding: 40px 20px;">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Sua contribuição mantém o sistema online!</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
@@ -231,7 +223,6 @@
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
                 this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
-                this.startAutoPix();
             }
 
             updatePinDisplay(val) {
@@ -258,39 +249,34 @@
                 this.loadData();
             }
 
-            // TRAVA DEFINITIVA DE GRADE 50/50
+            // TRAVA DE GRADE 50/50
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row">
-                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div>
-                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div>
-                    </div>` : 
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
                 const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row">
-                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1"></div>
-                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2"></div>
-                    </div>` : 
-                    `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
+                c.innerHTML = t === '15x23' ? `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2"></div></div>` : `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT"></div>`;
             }
 
+            // GERADOR DE RELATÓRIO PROFISSIONAL (SEM EMOJIS)
             generateReport() {
                 const n = document.getElementById('relNavio').value.toUpperCase().trim();
                 if (!n) return this.showToast('Digite o Navio');
                 const df = new Date(document.getElementById('relData').value + 'T12:00:00').toLocaleDateString('pt-BR');
                 const t = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
-                let m = `*${n}*\nData: ${df} Turno: ${t}\nTerno: ${terno}\n`;
-                if (t === '15x23') { m += `15x19: ${document.getElementById('relP1').value}\n19x23: ${document.getElementById('relP2').value}\nTOTAL: ${parseInt(document.getElementById('relP1').value||0)+parseInt(document.getElementById('relP2').value||0)}\n`; }
-                else m += `TOTAL: ${document.getElementById('relPT').value || 0}\n`;
-                m += `Responsável: ${this.currentUser}`;
+                
+                let m = `*${n}*\nData: ${df} - ${t}\nTerno: ${terno}\n`;
+                if (t === '15x23') {
+                    const p1 = document.getElementById('relP1').value || 0;
+                    const p2 = document.getElementById('relP2').value || 0;
+                    m += `15x19: ${p1}\n19x23: ${p2}\nTOTAL: ${parseInt(p1)+parseInt(p2)}\n`;
+                } else m += `TOTAL: ${document.getElementById('relPT').value || 0}\n`;
+                m += `${this.currentUser}`;
                 this.forceCopy(m, 'Relatório Copiado');
             }
 
@@ -351,15 +337,14 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             openModal(id) { document.getElementById(id).classList.add('active'); }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado'); }
+            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo.json`; a.click(); this.showToast('Backup Exportado ✅'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado!'); this.closeModal('configModal'); }; r.readAsText(f); }
+            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Restaurado! 🚀'); this.closeModal('configModal'); }; r.readAsText(f); }
             togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Status Atualizado'); } }
             del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Excluído'); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
-            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.showPix(); } }, 480000); }
             showPix() { this.closeModal('configModal'); this.openModal('pixModal'); }
-            copyPix() { this.forceCopy('92994821868', 'Chave de Felipe Prado Copiada'); }
+            copyPix() { this.forceCopy('92994821868', 'Chave PIX de Felipe Prado Copiada! ☕'); }
         }
         const app = new EvolutionApp();
     </script>
