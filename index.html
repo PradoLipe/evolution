@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION V46 - COMPLETO</title>
+    <title>EVOLUTION V46 ULTRA PREMIUM</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
         :root {
-            --primary: #00d1b2; --danger: #ff3860; --success: #48c774;
-            --bg: #0a0a0e; --card: rgba(22, 22, 29, 0.75); --text: #fff; --border: rgba(255, 255, 255, 0.1);
+            --primary: #00d1b2; --danger: #ff3860; --success: #48c774; --info: #209cee; --accent: #ffd700;
+            --bg: #000000; --card: #16161d; --text: #fff; --border: rgba(255, 255, 255, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -18,16 +18,22 @@
         
         /* LOGIN CENTRALIZADO ORIGINAL */
         #loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        
+        .login-title { color: var(--primary); font-size: 2rem; letter-spacing: 5px; font-weight: 900; margin-bottom: 30px; }
+
+        /* DASHBOARD COMPLETO */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
-        .dash-pend::before { background: var(--danger); } .dash-pago::before { background: var(--success); }
+        .dash-bruto::before { background: var(--info); }
+        .dash-liq::before { background: var(--accent); }
+        .dash-pend::before { background: var(--danger); }
+        .dash-pago::before { background: var(--success); }
+        .dash-label { font-size: 8px; color: #8e8e93; text-transform: uppercase; letter-spacing: 1px; }
         .dash-val { font-size: 1.1rem; font-weight: 800; margin-top: 5px; }
 
         /* GRADE DE HORÁRIO 50/50 - FIXA LADO A LADO */
         .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; margin-bottom: 12px; }
-        input, select { width: 100%; padding: 14px; background: rgba(32, 32, 38, 0.8); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; font-size: 14px; }
+        input, select { width: 100%; padding: 14px; background: #202026; border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; font-size: 14px; }
         .input-label { display: block; font-size: 10px; color: #8e8e93; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
 
         .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
@@ -39,22 +45,33 @@
         .section-content { display: none; padding: 0 20px 20px; }
         .section-card.expanded .section-content { display: block; }
 
-        .hist-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        /* FOOTER DIREITOS RESERVADOS */
+        .footer { text-align: center; padding: 40px 0; }
+        .footer-line { width: 30px; height: 2px; background: var(--primary); margin: 0 auto 10px; opacity: 0.4; }
+        .footer-text { font-size: 9px; letter-spacing: 2px; color: #8e8e93; text-transform: uppercase; }
+        .footer-author { font-size: 11px; font-weight: 900; color: var(--primary); margin-top: 5px; }
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="container" id="loginScreen">
-        <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 10px; font-weight: 900;">EVOLUTION</h1>
-        <p style="font-size: 9px; color: #8e8e93; letter-spacing: 2px; margin-bottom: 30px;">V46 ULTRA PREMIUM</p>
+        <h1 class="login-title">EVOLUTION</h1>
         <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; max-width: 280px;">
         <button class="btn btn-primary" style="margin-top:20px; max-width: 280px;" onclick="app.login()">ACESSAR</button>
+        <div class="footer" style="margin-top: 50px;">
+            <div class="footer-line"></div>
+            <p class="footer-text">Todos os direitos reservados</p>
+            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <div class="container hidden" id="mainPanel">
         <div class="dash-grid">
-            <div class="dash-card dash-pend"><div>PENDENTE</div><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
-            <div class="dash-card dash-pago"><div>PAGO</div><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
+            <div class="dash-card dash-bruto"><div class="dash-label">Bruto</div><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+            <div class="dash-card dash-liq"><div class="dash-label">Líquido</div><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card dash-pend"><div class="dash-label">Pendente</div><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
+            <div class="dash-card dash-pago"><div class="dash-label">Pago</div><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -87,6 +104,12 @@
             <div class="section-header" onclick="app.toggle('secHis')">HISTÓRICO<span>▼</span></div>
             <div class="section-content"><div id="histList"></div></div>
         </div>
+
+        <div class="footer">
+            <div class="footer-line"></div>
+            <p class="footer-text">Todos os direitos reservados</p>
+            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <script>
@@ -102,8 +125,7 @@
                     this.currentUser = this.users[s];
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('mainPanel').classList.remove('hidden');
-                    this.loadData();
-                    this.render();
+                    this.loadData(); this.render();
                 } else { alert("Chave Incorreta"); }
             }
 
@@ -116,14 +138,8 @@
             render() {
                 const tc = document.getElementById('turno').value;
                 const tr = document.getElementById('relTurno').value;
-                
-                document.getElementById('camposCalc').innerHTML = tc === '15x23' ? 
-                    `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="p1"></div><div><label class="input-label">19h-23h</label><input type="number" id="p2"></div></div>` : 
-                    `<div style="margin-bottom:12px;"><label class="input-label">Total</label><input type="number" id="pt"></div>`;
-
-                document.getElementById('camposRel').innerHTML = tr === '15x23' ? 
-                    `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="rp1"></div><div><label class="input-label">19h-23h</label><input type="number" id="rp2"></div></div>` : 
-                    `<div style="margin-bottom:12px;"><label class="input-label">Total</label><input type="number" id="rpt"></div>`;
+                document.getElementById('camposCalc').innerHTML = tc === '15x23' ? `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="p1"></div><div><label class="input-label">19h-23h</label><input type="number" id="p2"></div></div>` : `<div style="margin-bottom:12px;"><label class="input-label">Total</label><input type="number" id="pt"></div>`;
+                document.getElementById('camposRel').innerHTML = tr === '15x23' ? `<div class="input-row"><div><label class="input-label">15h-19h</label><input type="number" id="rp1"></div><div><label class="input-label">19h-23h</label><input type="number" id="rp2"></div></div>` : `<div style="margin-bottom:12px;"><label class="input-label">Total</label><input type="number" id="rpt"></div>`;
             }
 
             saveEntry() {
@@ -132,20 +148,22 @@
                 const p1 = parseFloat(document.getElementById('p1')?.value || 0);
                 const p2 = parseFloat(document.getElementById('p2')?.value || 0);
                 const pt = document.getElementById('pt') ? parseFloat(document.getElementById('pt').value) : (p1 + p2);
-                const val = (document.getElementById('tipo').value === 'feriado' ? pt * 8.61 : pt * 5.73) / 3;
-                
-                this.entries.unshift({ id: Date.now(), navio: n, valor: val, pago: false, data: new Date().toLocaleDateString('pt-BR') });
+                const brutoTotal = (document.getElementById('tipo').value === 'feriado' ? pt * 8.61 : pt * 5.73);
+                const brutoIndiv = brutoTotal / 3;
+                this.entries.unshift({ id: Date.now(), navio: n, bruto: brutoIndiv, liq: brutoIndiv * 0.82, pago: false, data: new Date().toLocaleDateString('pt-BR') });
                 localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries));
-                this.updateUI();
-                alert("Salvo com sucesso!");
+                this.updateUI(); alert("Salvo!");
             }
 
             updateUI() {
-                let pend = 0, pago = 0;
+                let brt = 0, liq = 0, pend = 0, pago = 0;
                 document.getElementById('histList').innerHTML = this.entries.map(e => {
-                    if(e.pago) pago += e.valor; else pend += e.valor;
-                    return `<div class="hist-item"><div><b>${e.navio}</b><br><small>${e.data}</small></div><div style="text-align:right">R$ ${e.valor.toFixed(2)}<br><button onclick="app.togglePago(${e.id})" style="background:none; border:none; color:var(--primary); font-size:10px;">${e.pago?'PAGO':'PENDENTE'}</button></div></div>`;
+                    brt += e.bruto; liq += e.liq;
+                    if(e.pago) pago += e.liq; else pend += e.liq;
+                    return `<div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid var(--border);"><div><b>${e.navio}</b><br><small>${e.data}</small></div><div style="text-align:right">R$ ${e.liq.toFixed(2)}<br><button onclick="app.togglePago(${e.id})" style="background:none; border:none; color:var(--primary); font-size:10px;">${e.pago?'PAGO':'PENDENTE'}</button></div></div>`;
                 }).join('');
+                document.getElementById('dashBruto').innerText = `R$ ${brt.toFixed(2)}`;
+                document.getElementById('dashLiq').innerText = `R$ ${liq.toFixed(2)}`;
                 document.getElementById('dashPend').innerText = `R$ ${pend.toFixed(2)}`;
                 document.getElementById('dashPago').innerText = `R$ ${pago.toFixed(2)}`;
             }
