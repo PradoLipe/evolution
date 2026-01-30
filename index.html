@@ -88,12 +88,11 @@
 
         input, select { width: 100%; padding: 16px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); }
-        .input-group { margin-bottom: 16px; }
+        .input-group { margin-bottom: 16px; width: 100%; }
         .input-label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
 
-        /* DESTAQUE NOME DO NAVIO */
-        .input-navio { font-weight: 900; letter-spacing: 1px; border-color: rgba(0, 209, 178, 0.3); background: rgba(0, 209, 178, 0.05); }
+        .input-navio { font-weight: 900; letter-spacing: 1px; border-color: rgba(0, 209, 178, 0.3); background: rgba(0, 209, 178, 0.05); width: 100%; }
 
         .btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #000; }
@@ -181,8 +180,13 @@
         <div class="section-card" id="secLan">
             <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title"><span>💰</span><span>Nova Produção</span></div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-row"><div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div><div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" class="input-navio" style="text-transform:uppercase;"></div></div>
-                <div class="input-row"><div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div><div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div></div>
+                <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
+                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" class="input-navio" style="text-transform:uppercase;"></div>
+                
+                <div class="input-row">
+                    <div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
+                    <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
+                </div>
                 <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
                 <div id="calcCampos"></div>
                 <button class="btn btn-primary" onclick="app.saveEntry()">SALVAR REGISTRO</button>
@@ -192,7 +196,7 @@
         <div class="section-card expanded" id="secHis">
             <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title"><span>📅</span><span>Histórico de Serviços</span></div><span>▼</span></div>
             <div class="section-content">
-                <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto;">
+                <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:5px;">
                     <div class="filter-chip active" id="f-all" onclick="app.filterHistory('all')">Todos</div>
                     <div class="filter-chip" id="f-pendente" onclick="app.filterHistory('pendente')">Pendentes</div>
                     <div class="filter-chip" id="f-pago" onclick="app.filterHistory('pago')">Pagos</div>
@@ -363,8 +367,8 @@
                 if (!n || !d) return this.showToast('Incompleto', 'error');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
-                const res = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
-                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: res.b, liquido: res.l, pago: false });
+                const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
+                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
                 this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo!');
             }
 
