@@ -204,7 +204,6 @@
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
             <div style="font-size:3.5rem; margin-bottom:20px;">☕</div>
             <h3 style="color: var(--primary); letter-spacing: 1px; margin-bottom: 10px;">APOIO AO DESENVOLVEDOR</h3>
-            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px;">Sua contribuição mantém o sistema online!</p>
             <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 20px; border-radius: 18px; font-family: 'Space Mono', monospace; border: 1px dashed var(--primary); cursor: pointer;">
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">92994821868</div>
                 <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8;">Favorecido: Felipe Prado</div>
@@ -215,8 +214,19 @@
 
     <script>
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
-        const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "1234": "teste", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café! 😉", "A internet caiu, mas o PIX não!", "Mande um café pro dev ancorar o navio! 🚢" ];
+        
+        // LISTA DE USUÁRIOS ATUALIZADA
+        const SECURE_USERS = { 
+            "002451": "FELIPE PRADO", 
+            "7806": "EdilsonJr", 
+            "1980": "ANDERSON PRADO", 
+            "2026": "FABRICIO DIAS", 
+            "302466": "RODRIGO COSTA", 
+            "3373": "RICARDO PRADO", 
+            "2912": "JOHNY", 
+            "0420": "FERNANDO SOARES",
+            "1234": "USUÁRIO TESTE" 
+        };
 
         class EvolutionApp {
             constructor() { 
@@ -229,7 +239,7 @@
             getOrCreateDeviceId() {
                 let id = localStorage.getItem('evo_device_dna');
                 if (!id) {
-                    id = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                    id = 'ID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
                     localStorage.setItem('evo_device_dna', id);
                 }
                 return id;
@@ -254,14 +264,19 @@
                 const user = SECURE_USERS[code];
                 if (!user) { this.showToast('Chave Incorreta'); return; }
 
-                // TRAVA DE SEGURANÇA 2.3
+                // LÓGICA DE BLOQUEIO SELETIVO (TRAVA NO SEGUNDO APARELHO)
                 if (code !== "002451") {
-                    const vinculodaSenha = localStorage.getItem(`vinc_dna_${code}`);
-                    if (vinculodaSenha && vinculodaSenha !== this.deviceId) {
-                        this.breakSite();
-                        return;
-                    } else if (!vinculodaSenha) {
-                        localStorage.setItem(`vinc_dna_${code}`, this.deviceId);
+                    const dnaOriginal = localStorage.getItem(`evo_dna_vinc_${code}`);
+                    
+                    if (dnaOriginal) {
+                        // Se já tem DNA registrado, mas é diferente deste aparelho, BLOQUEIA.
+                        if (dnaOriginal !== this.deviceId) {
+                            this.breakSite();
+                            return;
+                        }
+                    } else {
+                        // Primeiro acesso: registra o DNA deste aparelho permanentemente para esta senha.
+                        localStorage.setItem(`evo_dna_vinc_${code}`, this.deviceId);
                     }
                 }
 
@@ -276,8 +291,8 @@
                         <div style="font-size: 5rem; margin-bottom: 20px;">⚠️</div>
                         <h1 style="letter-spacing: 2px; font-weight: 900;">ERRO DE SEGURANÇA</h1>
                         <p style="color: #8e8e93; margin-top: 20px; font-size: 14px; line-height: 1.6;">
-                            Esta chave de acesso já está vinculada a outro dispositivo.<br>
-                            O acesso simultâneo ou compartilhamento é proibido.
+                            Acesso bloqueado! Esta chave de acesso já está vinculada a outro celular.<br>
+                            O uso simultâneo ou compartilhamento não é permitido.
                         </p>
                         <div style="margin-top: 40px; padding: 20px; border: 1px solid #333; border-radius: 15px;">
                             <p style="font-size: 10px; color: #555; text-transform: uppercase;">Procure o desenvolvedor</p>
@@ -370,8 +385,8 @@
             calcularValores(tipo, turno, v, q) {
                 const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
                 let bN = 0; const nC = parseInt(q) || 1;
-                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
-                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                if (turno === '15x23') { const t = (tipo === 'feriado' || tipo === 'Domingo / Feriado') ? TX['15x23'].feriado : TX['15x23'].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
+                else bN = (parseInt(v[0])||0)*TX[turno][(tipo==='feriado'||tipo==='Domingo / Feriado')?'feriado':'normal'];
                 const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
             }
 
@@ -412,4 +427,3 @@
     </script>
 </body>
 </html>
-
