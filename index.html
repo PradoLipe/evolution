@@ -15,99 +15,100 @@
             --danger: #ff3860;
             --success: #48c774;
             --info: #209cee;
-            --warning: #ff9f43;
             --bg: #0a0a0e;
             --card: rgba(22, 22, 29, 0.85);
             --card-solid: #16161d;
-            --input: rgba(32, 32, 38, 0.9);
+            --input-bg: rgba(32, 32, 38, 0.9);
             --text: #ffffff;
             --text-dim: #8e8e93;
             --border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.05);
-            --shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
         body.light-mode {
             --bg: #f0f2f5;
             --card: rgba(255, 255, 255, 0.9);
             --card-solid: #ffffff;
-            --input: rgba(240, 240, 240, 0.95);
+            --input-bg: rgba(240, 240, 240, 0.95);
             --text: #1a1a1a;
             --text-dim: #666666;
             --border: rgba(0, 0, 0, 0.08);
-            --glass: rgba(0, 0, 0, 0.03);
-            --shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
         .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; }
 
-        .login-box { background: var(--card); padding: 50px 35px; border-radius: 28px; text-align: center; border: 1px solid var(--border); margin-top: 15vh; box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+        /* LOGIN - CORREÇÃO DE CLIQUE */
+        .login-box { 
+            background: var(--card); 
+            padding: 50px 35px; 
+            border-radius: 28px; 
+            text-align: center; 
+            border: 1px solid var(--border); 
+            margin-top: 15vh; 
+            position: relative;
+            z-index: 1;
+        }
         .logo-text { font-size: 2.2rem; letter-spacing: 6px; font-weight: 900; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-        .pin-display { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; }
-        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
+        
+        .pin-wrapper { position: relative; margin-bottom: 30px; cursor: text; }
+        .pin-display { display: flex; justify-content: center; gap: 12px; pointer-events: none; }
+        .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); transition: 0.3s; }
         .pin-dot.filled { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
-        .pin-input { position: absolute; opacity: 0; pointer-events: none; }
-        .security-warning { background: rgba(255, 56, 96, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 10px; border-radius: 8px; font-size: 11px; margin-top: 15px; display: none; }
+        
+        /* A INPUT AGORA COBRE TODA A ÁREA DE PONTINHOS PARA FACILITAR O TOQUE */
+        .pin-input { 
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            opacity: 0; 
+            font-size: 16px; /* Evita zoom no iOS */
+            z-index: 2;
+            cursor: pointer;
+        }
 
+        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .dash-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .dash-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
         .dash-val { font-size: 1.1rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 8px; }
         .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
-        .section-card { background: var(--card); border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
-        .section-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.02); }
-        .section-title { font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+        /* SEÇÕES */
+        .section-card { background: var(--card); border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border); overflow: hidden; }
+        .section-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; padding: 0 20px; }
         .section-card.expanded .section-content { max-height: 1500px; padding-bottom: 20px; padding-top: 10px; }
 
-        input, select { width: 100%; padding: 14px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; color: var(--text); margin-bottom: 12px; font-size: 14px; outline: none; }
+        input, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: var(--text); margin-bottom: 12px; font-size: 14px; outline: none; }
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; }
-
+        
         .btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.3s; font-size: 12px; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #000; }
         .btn-success { background: var(--success); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-secondary { background: var(--glass); color: var(--text); border: 1px solid var(--border); margin-top: 10px; }
 
         .hist-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 9px; font-weight: 800; border: none; cursor: pointer; margin-top: 8px; text-transform: uppercase; }
-        .status-badge.pendente { background: rgba(255, 56, 96, 0.2); color: var(--danger); }
-        .status-badge.pago { background: rgba(72, 199, 116, 0.2); color: var(--success); }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 28px; width: 100%; max-width: 400px; border: 1px solid var(--border); overflow: hidden; }
-        .modal-header { background: rgba(255,255,255,0.02); padding: 20px; border-bottom: 1px solid var(--border); text-align: center; }
-        .modal-body { padding: 20px; }
-        .config-btn { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--glass); color: var(--text); font-weight: 700; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-
         .hidden { display: none !important; }
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 800; z-index: 10000; display: none; }
-        .session-alert { background: rgba(255, 56, 96, 0.1); border: 1px solid var(--danger); border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 12px; display: none; color: var(--text); }
-        .session-alert.active { display: block; }
     </style>
 </head>
 <body>
 
     <div id="toast" class="toast">COPIADO</div>
-    <div class="session-alert" id="sessionAlert">
-        <strong style="color: var(--danger);">⚠️ AVISO:</strong> Conta acessada em outro dispositivo.
-    </div>
 
     <div class="container" id="loginScreen">
         <div class="login-box">
             <h1 class="logo-text">EVOLUTION</h1>
             <p style="font-size:9px; color:var(--text-dim); margin-bottom:40px; letter-spacing:3px;">V46 ULTRA PREMIUM</p>
-            <div class="pin-display" id="pinDisplay">
-                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
-                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            
+            <div class="pin-wrapper" onclick="document.getElementById('senhaInput').focus()">
+                <div class="pin-display" id="pinDisplay">
+                    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+                    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+                </div>
+                <input type="password" id="senhaInput" class="pin-input" maxlength="6" inputmode="numeric" autocomplete="off" autofocus>
             </div>
-            <input type="password" id="senhaInput" class="pin-input" maxlength="6" autofocus autocomplete="off">
+
             <button class="btn btn-primary" onclick="app.login()">ACESSAR SISTEMA</button>
-            <div id="loginWarning" class="security-warning"></div>
+            <div id="loginWarning" style="color:var(--danger); font-size:11px; margin-top:15px; display:none;"></div>
         </div>
     </div>
 
@@ -117,38 +118,20 @@
                 <p style="font-size:10px; color:var(--primary); font-weight:800;">ATIVO</p>
                 <h2 id="userName" style="text-transform:uppercase; font-size: 1.1rem;">---</h2>
             </div>
-            <button onclick="app.openModal('configModal')" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 8px 12px; border-radius: 10px; font-weight:800; font-size:9px; cursor:pointer;">CONFIG</button>
+            <button onclick="app.openModal('configModal')" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 8px 12px; border-radius: 10px; font-weight:800; font-size:9px;">CONFIG</button>
         </div>
 
         <div class="dash-grid">
             <div class="dash-card"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card"><span class="dash-label">Liquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
             <div class="dash-card"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
-            <div class="dash-card"><span class="dash-label">Recebido</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
-        </div>
-
-        <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><span>RELATÓRIO WHATSAPP</span><span>+</span></div>
-            <div class="section-content">
-                <input type="text" id="relNavio" placeholder="NAVIO">
-                <div class="input-row">
-                    <input type="date" id="relData">
-                    <select id="relTurno" onchange="app.ajustarInterfaceRelatorio()">
-                        <option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option>
-                    </select>
-                </div>
-                <div id="relCamposDinamicos"></div>
-                <button class="btn btn-success" onclick="app.copiarRelatorio()">COPIAR</button>
-            </div>
+            <div class="dash-card"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
         </div>
 
         <div class="section-card expanded" id="secLan">
-            <div class="section-header" onclick="app.toggleSection('secLan')"><span>LANÇAMENTO</span><span>-</span></div>
+            <div class="section-header" onclick="app.toggleSection('secLan')"><span>NOVA PRODUCAO</span><span>-</span></div>
             <div class="section-content">
-                <div class="input-row">
-                    <input type="text" id="calcNavio" placeholder="NAVIO">
-                    <input type="date" id="calcData">
-                </div>
+                <div class="input-row"><input type="text" id="calcNavio" placeholder="NAVIO"><input type="date" id="calcData"></div>
                 <div class="input-row">
                     <select id="calcTipoDia"><option value="normal">NORMAL</option><option value="feriado">FERIADO</option></select>
                     <select id="calcTurno" onchange="app.ajustarInterfaceProducao()">
@@ -162,23 +145,17 @@
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><span>HISTÓRICO</span><span>+</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><span>HISTORICO</span><span>+</span></div>
             <div class="section-content"><div id="histList"></div></div>
         </div>
     </div>
 
     <div class="modal-overlay" id="configModal" onclick="if(event.target === this) app.closeModal('configModal')">
-        <div class="modal-content">
-            <div class="modal-header"><h3>CONFIGURAÇÕES</h3></div>
-            <div class="modal-body">
-                <button class="config-btn" onclick="app.toggleTheme()">🎨 Alternar Tema</button>
-                <button class="config-btn" onclick="app.exportarBackup()">💾 Exportar Backup</button>
-                <button class="config-btn" style="color:var(--danger)" onclick="app.limparBaseDados()">🗑️ Limpar Tudo</button>
-                <div style="font-size:10px; color:var(--text-dim); margin-top:15px; text-align:center">
-                    ID: <span id="deviceId"></span>
-                </div>
-                <button class="btn btn-danger" style="margin-top:20px" onclick="app.logout()">SAIR</button>
-            </div>
+        <div class="modal-content" style="background:var(--card-solid); padding:25px; border-radius:20px; width:90%; max-width:400px;">
+            <h3 style="margin-bottom:20px; text-align:center;">CONFIGURACOES</h3>
+            <button class="btn btn-primary" style="margin-bottom:10px" onclick="app.toggleTheme()">ALTERNAR TEMA</button>
+            <button class="btn btn-success" style="margin-bottom:10px" onclick="app.exportarBackup()">BACKUP JSON</button>
+            <button class="btn btn-danger" onclick="app.logout()">SAIR</button>
         </div>
     </div>
 
@@ -190,15 +167,7 @@
             constructor() {
                 this.db = [];
                 this.user = null;
-                this.userPin = null;
-                this.deviceId = this.gerarDeviceId();
                 this.init();
-            }
-
-            gerarDeviceId() {
-                let id = localStorage.getItem('evo_device_id') || 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-                localStorage.setItem('evo_device_id', id);
-                return id;
             }
 
             init() {
@@ -211,30 +180,22 @@
                 
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
-                document.getElementById('relData').value = hoje;
-                this.ajustarInterfaceRelatorio();
                 this.ajustarInterfaceProducao();
                 this.verificarSessao();
             }
 
             login() {
-                const input = document.getElementById('senhaInput');
-                const pin = input.value;
-                const warningEl = document.getElementById('loginWarning');
-                
+                const pin = document.getElementById('senhaInput').value;
                 if(USUARIOS[pin]) {
                     this.user = USUARIOS[pin];
-                    this.userPin = pin;
-                    const sessionData = {name: this.user, pin: pin, device: this.deviceId, loginTime: Date.now()};
-                    localStorage.setItem('evo_v46_session', btoa(JSON.stringify(sessionData)));
-                    localStorage.setItem('evo_v46_session_global', btoa(JSON.stringify(sessionData)));
+                    localStorage.setItem('evo_v46_session', btoa(JSON.stringify({name: this.user, pin: pin, loginTime: Date.now()})));
                     this.carregarPainel();
                 } else {
-                    input.value = '';
+                    document.getElementById('senhaInput').value = '';
                     document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
-                    warningEl.textContent = '❌ PIN INCORRETO';
-                    warningEl.style.display = 'block';
-                    setTimeout(() => warningEl.style.display = 'none', 2000);
+                    const w = document.getElementById('loginWarning');
+                    w.textContent = 'PIN INCORRETO'; w.style.display = 'block';
+                    setTimeout(() => w.style.display = 'none', 2000);
                 }
             }
 
@@ -244,7 +205,6 @@
                     const data = JSON.parse(atob(s));
                     if(Date.now() - data.loginTime < 86400000) {
                         this.user = data.name;
-                        this.userPin = data.pin;
                         this.carregarPainel();
                     }
                 }
@@ -254,35 +214,13 @@
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainPanel').classList.remove('hidden');
                 document.getElementById('userName').textContent = this.user;
-                document.getElementById('deviceId').textContent = this.deviceId;
                 this.carregarDados();
-                setInterval(() => {
-                    const global = localStorage.getItem('evo_v46_session_global');
-                    if(global && this.userPin) {
-                        const data = JSON.parse(atob(global));
-                        if(data.pin === this.userPin && data.device !== this.deviceId) {
-                            document.getElementById('sessionAlert').classList.add('active');
-                        }
-                    }
-                }, 5000);
-            }
-
-            ajustarInterfaceRelatorio() {
-                const t = document.getElementById('relTurno').value;
-                const div = document.getElementById('relCamposDinamicos');
-                div.innerHTML = t === '15x23' ? `<div class="input-row"><input type="number" id="relP1" placeholder="15-19h"><input type="number" id="relP2" placeholder="19-23h"></div>` : `<input type="number" id="relPT" placeholder="TOTAL">`;
             }
 
             ajustarInterfaceProducao() {
                 const t = document.getElementById('calcTurno').value;
                 const div = document.getElementById('prodCamposDinamicos');
                 div.innerHTML = t === '15x23' ? `<div class="input-row"><input type="number" id="prodP1" placeholder="15-19h"><input type="number" id="prodP2" placeholder="19-23h"></div>` : `<input type="number" id="prodPT" placeholder="TOTAL">`;
-            }
-
-            copiarRelatorio() {
-                const n = document.getElementById('relNavio').value.toUpperCase();
-                if(!n) return this.exibirToast('NAVIO?');
-                this.exibirToast('RELATÓRIO COPIADO');
             }
 
             salvarNoHistorico() {
@@ -305,6 +243,7 @@
                 this.db.unshift({id: Date.now(), navio, data, turno, bruto: Math.round(bruto*100), liquido: Math.round(bruto*0.82*100), pago: false});
                 this.persistirDados();
                 this.renderizarHistorico();
+                this.exibirToast('SALVO');
             }
 
             renderizarHistorico() {
@@ -312,9 +251,9 @@
                 list.innerHTML = this.db.map(item => `
                     <div class="hist-item">
                         <div>
-                            <div class="${item.pago ? 'navio-status-pago' : 'navio-status-pendente'}">${item.navio}</div>
-                            <div style="font-size:10px; color:var(--text-dim)">${item.data}</div>
-                            <button class="status-badge ${item.pago?'pago':'pendente'}" onclick="app.alternarPagamento(${item.id})">${item.pago?'PAGO':'PENDENTE'}</button>
+                            <div style="font-weight:800; color:${item.pago?'var(--success)':'var(--danger)'}">${item.navio}</div>
+                            <div style="font-size:10px; color:var(--text-dim)">${item.data} | ${item.turno}</div>
+                            <button class="status-badge" onclick="app.alternarPagamento(${item.id})" style="background:${item.pago?'var(--success)':'var(--danger)'}; color:#fff; border:none; padding:4px 8px; border-radius:10px; font-size:9px; margin-top:5px; cursor:pointer;">${item.pago?'PAGO':'PENDENTE'}</button>
                         </div>
                         <div style="text-align:right">
                             <div style="font-family:Space Mono; font-weight:800; color:var(--primary)">R$ ${(item.liquido/100).toFixed(2)}</div>
@@ -343,7 +282,6 @@
             exibirToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
             toggleTheme() { document.body.classList.toggle('light-mode'); }
             logout() { localStorage.removeItem('evo_v46_session'); location.reload(); }
-            limparBaseDados() { if(confirm('LIMPAR TUDO?')) { this.db = []; this.persistirDados(); this.renderizarHistorico(); this.closeModal('configModal'); } }
             exportarBackup() { const blob = new Blob([JSON.stringify(this.db)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; a.click(); }
         }
         const app = new EvolutionApp();
