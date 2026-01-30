@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION V46 - FINAL</title>
+    <title>EVOLUTION V46 - COMPLETO</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
@@ -16,8 +16,8 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; padding: 20px; }
         
-        /* LOGIN CENTRALIZADO */
-        #loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        /* LOGIN CENTRALIZADO ORIGINAL */
+        #loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; }
@@ -25,7 +25,7 @@
         .dash-pend::before { background: var(--danger); } .dash-pago::before { background: var(--success); }
         .dash-val { font-size: 1.1rem; font-weight: 800; margin-top: 5px; }
 
-        /* GRADE 50/50 TRAVADA - LADO A LADO */
+        /* GRADE DE HORÁRIO 50/50 - FIXA LADO A LADO */
         .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; margin-bottom: 12px; }
         input, select { width: 100%; padding: 14px; background: rgba(32, 32, 38, 0.8); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; font-size: 14px; }
         .input-label { display: block; font-size: 10px; color: #8e8e93; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
@@ -45,9 +45,10 @@
 </head>
 <body>
     <div class="container" id="loginScreen">
-        <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 30px;">EVOLUTION</h1>
-        <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; max-width: 300px;">
-        <button class="btn btn-primary" style="margin-top:20px; max-width: 300px;" onclick="app.login()">ACESSAR</button>
+        <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 10px; font-weight: 900;">EVOLUTION</h1>
+        <p style="font-size: 9px; color: #8e8e93; letter-spacing: 2px; margin-bottom: 30px;">V46 ULTRA PREMIUM</p>
+        <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; max-width: 280px;">
+        <button class="btn btn-primary" style="margin-top:20px; max-width: 280px;" onclick="app.login()">ACESSAR</button>
     </div>
 
     <div class="container hidden" id="mainPanel">
