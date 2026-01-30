@@ -187,8 +187,12 @@
                     <div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
                     <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
                 </div>
-                <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
-                <div id="calcCampos"></div>
+                <div class="input-row">
+                    <div class="input-group" style="width: 30%;"><label class="input-label">Nº Conf.</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
+                    <div id="calcCamposContainer" style="width: 70%;">
+                        <div id="calcCampos"></div>
+                    </div>
+                </div>
                 <button class="btn btn-primary" onclick="app.saveEntry()">SALVAR REGISTRO</button>
             </div>
         </div>
