@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVOLUTION V46 - VERSÃO ESTÁVEL</title>
+    <title>EVOLUTION V46 - FINAL</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
@@ -16,16 +16,17 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; padding: 20px; }
         
-        /* DASHBOARD COMPLETO */
+        /* LOGIN CENTRALIZADO */
+        #loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); position: relative; }
         .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
         .dash-pend::before { background: var(--danger); } .dash-pago::before { background: var(--success); }
         .dash-val { font-size: 1.1rem; font-weight: 800; margin-top: 5px; }
 
-        /* GRID DE PRODUÇÃO 50/50 BLINDADO */
+        /* GRADE 50/50 TRAVADA - LADO A LADO */
         .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; margin-bottom: 12px; }
-        
         input, select { width: 100%; padding: 14px; background: rgba(32, 32, 38, 0.8); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; font-size: 14px; }
         .input-label { display: block; font-size: 10px; color: #8e8e93; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
 
@@ -33,24 +34,20 @@
         .btn-primary { background: var(--primary); color: #000; }
         .btn-success { background: var(--success); color: #fff; }
 
-        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 18px 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 800; font-size: 0.75rem; }
         .section-content { display: none; padding: 0 20px 20px; }
         .section-card.expanded .section-content { display: block; }
 
-        /* HISTÓRICO */
         .hist-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="container" id="loginScreen">
-        <div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 30px;">EVOLUTION</h1>
-            <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center;">
-            <button class="btn btn-primary" style="margin-top:20px;" onclick="app.login()">ACESSAR</button>
-        </div>
+        <h1 style="color:var(--primary); letter-spacing:5px; margin-bottom: 30px;">EVOLUTION</h1>
+        <input type="password" id="senhaInput" placeholder="CHAVE DE ACESSO" style="text-align:center; max-width: 300px;">
+        <button class="btn btn-primary" style="margin-top:20px; max-width: 300px;" onclick="app.login()">ACESSAR</button>
     </div>
 
     <div class="container hidden" id="mainPanel">
@@ -94,8 +91,8 @@
     <script>
         class EvolutionApp {
             constructor() {
-                this.entries = JSON.parse(localStorage.getItem('evo_db_RkVMSVBFIFBSQURP')) || [];
                 this.users = {"002451": "FELIPE PRADO", "7806": "EdilsonJr", "2026": "FABRICIO", "1234": "TESTE"};
+                this.entries = [];
             }
 
             login() {
@@ -104,9 +101,15 @@
                     this.currentUser = this.users[s];
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('mainPanel').classList.remove('hidden');
-                    this.render(); 
-                    this.updateUI();
-                } else { alert("Senha Incorreta"); }
+                    this.loadData();
+                    this.render();
+                } else { alert("Chave Incorreta"); }
+            }
+
+            loadData() {
+                const key = `evo_db_${btoa(this.currentUser)}`;
+                this.entries = JSON.parse(localStorage.getItem(key)) || [];
+                this.updateUI();
             }
 
             render() {
@@ -124,22 +127,23 @@
 
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
-                if(!n) return alert("Digite o Navio");
+                if(!n) return alert("Informe o Navio");
                 const p1 = parseFloat(document.getElementById('p1')?.value || 0);
                 const p2 = parseFloat(document.getElementById('p2')?.value || 0);
                 const pt = document.getElementById('pt') ? parseFloat(document.getElementById('pt').value) : (p1 + p2);
                 const val = (document.getElementById('tipo').value === 'feriado' ? pt * 8.61 : pt * 5.73) / 3;
+                
                 this.entries.unshift({ id: Date.now(), navio: n, valor: val, pago: false, data: new Date().toLocaleDateString('pt-BR') });
-                localStorage.setItem('evo_db_RkVMSVBFIFBSQURP', JSON.stringify(this.entries));
-                this.updateUI(); alert("Registro Salvo!");
+                localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries));
+                this.updateUI();
+                alert("Salvo com sucesso!");
             }
 
             updateUI() {
                 let pend = 0, pago = 0;
-                const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => {
+                document.getElementById('histList').innerHTML = this.entries.map(e => {
                     if(e.pago) pago += e.valor; else pend += e.valor;
-                    return `<div class="hist-item"><div><b>${e.navio}</b><br><small>${e.data}</small></div><div style="text-align:right">R$ ${e.valor.toFixed(2)}<br><button onclick="app.togglePago(${e.id})" style="background:none; border:none; color:var(--primary); font-size:10px;">${e.pago?'Pago':'Pendente'}</button></div></div>`;
+                    return `<div class="hist-item"><div><b>${e.navio}</b><br><small>${e.data}</small></div><div style="text-align:right">R$ ${e.valor.toFixed(2)}<br><button onclick="app.togglePago(${e.id})" style="background:none; border:none; color:var(--primary); font-size:10px;">${e.pago?'PAGO':'PENDENTE'}</button></div></div>`;
                 }).join('');
                 document.getElementById('dashPend').innerText = `R$ ${pend.toFixed(2)}`;
                 document.getElementById('dashPago').innerText = `R$ ${pago.toFixed(2)}`;
@@ -147,7 +151,7 @@
 
             togglePago(id) {
                 const e = this.entries.find(x => x.id === id);
-                if(e) { e.pago = !e.pago; localStorage.setItem('evo_db_RkVMSVBFIFBSQURP', JSON.stringify(this.entries)); this.updateUI(); }
+                if(e) { e.pago = !e.pago; localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); this.updateUI(); }
             }
 
             copyRel() {
