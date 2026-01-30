@@ -62,9 +62,7 @@
         .dash-pago::before { background: var(--success); }
         .dash-val { font-size: 1.1rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 5px; }
         .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-        .dash-count { font-size: 10px; margin-top: 5px; font-weight: 700; }
 
-        /* SEÇÕES */
         .section-card { background: var(--card); border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); overflow: hidden; }
         .section-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; }
@@ -75,7 +73,7 @@
         .input-group { margin-bottom: 12px; width: 100%; }
         .input-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
         
-        /* GRID DE PRODUÇÃO FIXO */
+        /* GRID DE PRODUÇÃO FIXO 50/50 */
         .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
@@ -264,19 +262,18 @@
                 const user = SECURE_USERS[code];
                 if (!user) { this.showToast('Chave Incorreta'); return; }
 
-                // LÓGICA DE BLOQUEIO SELETIVO (TRAVA NO SEGUNDO APARELHO)
+                // TRAVA DE SEGURANÇA 2.6 - BLOQUEIO POR FALTA DE DNA
                 if (code !== "002451") {
-                    const dnaOriginal = localStorage.getItem(`evo_dna_vinc_${code}`);
+                    // Simulação de banco de dados por Token (exige pareamento local)
+                    const dnaVinculado = localStorage.getItem(`vinc_dna_${code}`);
                     
-                    if (dnaOriginal) {
-                        // Se já tem DNA registrado, mas é diferente deste aparelho, BLOQUEIA.
-                        if (dnaOriginal !== this.deviceId) {
-                            this.breakSite();
-                            return;
-                        }
-                    } else {
-                        // Primeiro acesso: registra o DNA deste aparelho permanentemente para esta senha.
-                        localStorage.setItem(`evo_dna_vinc_${code}`, this.deviceId);
+                    if (dnaVinculado && dnaVinculado !== this.deviceId) {
+                        // Bloqueio forçado para o segundo aparelho
+                        this.breakSite();
+                        return;
+                    } else if (!dnaVinculado) {
+                        // Registra apenas o primeiro aparelho
+                        localStorage.setItem(`vinc_dna_${code}`, this.deviceId);
                     }
                 }
 
@@ -291,8 +288,8 @@
                         <div style="font-size: 5rem; margin-bottom: 20px;">⚠️</div>
                         <h1 style="letter-spacing: 2px; font-weight: 900;">ERRO DE SEGURANÇA</h1>
                         <p style="color: #8e8e93; margin-top: 20px; font-size: 14px; line-height: 1.6;">
-                            Acesso bloqueado! Esta chave de acesso já está vinculada a outro celular.<br>
-                            O uso simultâneo ou compartilhamento não é permitido.
+                            Acesso negado! Esta chave de acesso já pertence a outro dispositivo.<br>
+                            O compartilhamento de senhas é proibido pelo administrador.
                         </p>
                         <div style="margin-top: 40px; padding: 20px; border: 1px solid #333; border-radius: 15px;">
                             <p style="font-size: 10px; color: #555; text-transform: uppercase;">Procure o desenvolvedor</p>
