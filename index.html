@@ -158,3 +158,144 @@
     const USERS = {"002451": "FELIPE PRADO", "7806": "EdilsonRj", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY"};
     const frasesPix = ["Café pro dev: pagando a internet! 🌐", "A Enel não perdoa, ajuda o dev! ⚡", "Apoie o Evolution! ☕"];
     let logado = "", todosDados = [];
+    const $ = id => document.getElementById(id);
+
+    function fMoeda(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
+
+    function login() {
+        const key = $('senhaInput').value;
+        if(USERS[key]) {
+            logado = USERS[key];
+            $('userName').textContent = logado;
+            $('login-screen').classList.add('hidden');
+            $('main-panel').classList.remove('hidden');
+            carregarSistema();
+        } else alert("Chave inválida!");
+    }
+
+    function carregarSistema() {
+        todosDados = JSON.parse(localStorage.getItem('hist_' + logado)) || [];
+        renderizarHist(); atualizarDash(); ajustarCalc();
+        $('dataCalc').value = new Date().toISOString().split('T')[0];
+        $('dataRel').value = new Date().toISOString().split('T')[0];
+    }
+
+    function toggleConfig() {
+        const content = $('configContent');
+        const seta = $('setaConfig');
+        const isHidden = content.style.display === 'none' || content.style.display === '';
+        content.style.display = isHidden ? 'block' : 'none';
+        seta.textContent = isHidden ? '▲' : '▼';
+    }
+
+    function toggleTheme() {
+        const b = document.body;
+        const novo = b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        b.setAttribute('data-theme', novo);
+        toast("Tema alterado!");
+    }
+
+    function exportarExcel() {
+        let csv = "Data;Navio;Bruto;Liquido;Status\n";
+        todosDados.forEach(i => { csv += `${i.data};${i.navio};${i.bruto.toFixed(2)};${i.liquido.toFixed(2)};${i.pago?'Pago':'Pendente'}\n`; });
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Evolution_FelipePrado.csv`;
+        link.click();
+    }
+
+    function exportarJSON() { navigator.clipboard.writeText(JSON.stringify(todosDados)); alert("Backup Copiado!"); }
+    function importarJSON() { 
+        const code = prompt("Cole o código de backup:"); 
+        if(code) { todosDados = JSON.parse(code); localStorage.setItem('hist_'+logado, code); carregarSistema(); }
+    }
+
+    function mostrarPix() { 
+        $('msgComedia').textContent = frasesPix[Math.floor(Math.random()*frasesPix.length)];
+        $('modalPix').style.display = 'flex'; 
+    }
+    function fecharModalPix() { $('modalPix').style.display = 'none'; }
+    function copiarChavePix() { navigator.clipboard.writeText('92994821868'); toast("Pix Copiado! ☕"); fecharModalPix(); }
+
+    function ajustarRel() {
+        const t = $('turnoRel').value;
+        $('camposRel').innerHTML = t === "15x23" ? 
+            '<input type="number" id="p1" placeholder="Prod 15h-19h"><input type="number" id="p2" placeholder="Prod 20h-23h">' : 
+            (t ? '<input type="number" id="pGeral" placeholder="Produção Total">' : '');
+    }
+
+    function gerarRel() {
+        const t = $('turnoRel').value; if(!t) return;
+        let prod = 0, txt = "";
+        if(t === "15x23") {
+            const v1 = parseInt($('p1').value)||0; const v2 = parseInt($('p2').value)||0;
+            prod = v1+v2; txt = `15x19: ${v1}\n20x23: ${v2}\nTotal: ${prod}`;
+        } else {
+            prod = parseInt($('pGeral').value)||0; txt = `Produção: ${prod}`;
+        }
+        const msg = `* Relatório de Produção *\n\nNavio: ${($('navioRel').value||"S/N").toUpperCase()}\nData: ${$('dataRel').value.split('-').reverse().join('/')}\nTerno: ${$('ternoRelInput').value||"S/T"}°\nTurno: ${t}\n\n${txt}\n\nConferente: ${logado}`;
+        $('relatorioArea').textContent = msg; $('relatorioArea').classList.remove('hidden');
+        navigator.clipboard.writeText(msg); toast("Copiado!");
+    }
+
+    function ajustarCalc() {
+        const t = $('turnoCalc').value;
+        $('camposCalc').innerHTML = t === "15x23" ? '<input type="number" id="t1" placeholder="15h-19h"><input type="number" id="t2" placeholder="20h-23h">' : '<input type="number" id="tGeral" placeholder="Total">';
+    }
+
+    function calcularESalvar() {
+        const tur = $('turnoCalc').value;
+        let b = 0;
+        if(tur === "15x23") { b = ((parseInt($('t1').value)||0)*5.73) + ((parseInt($('t2').value)||0)*6.88); }
+        else { b = (parseInt($('tGeral').value)||0) * 5.73; }
+        todosDados.unshift({ id: Date.now(), data: $('dataCalc').value.split('-').reverse().join('/').substring(0,5), navio: ($('navioCalc').value||"S/N").toUpperCase(), bruto: b/3, liquido: (b/3)*0.82, pago: false });
+        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
+        renderizarHist(); atualizarDash(); toast("Salvo!");
+    }
+
+    function renderizarHist() {
+        const c = $('listaHist'); c.innerHTML = '';
+        todosDados.forEach(i => {
+            const d = document.createElement('div'); d.className='hist-item';
+            d.innerHTML = `
+                <div class="hist-info">
+                    <span class="hist-name">${i.navio}</span>
+                    <span class="hist-date">${i.data} • <span class="badge ${i.pago?'badge-ok':'badge-pend'}" onclick="alternarStatus(${i.id})">${i.pago?'PAGO':'PENDENTE'}</span></span>
+                </div>
+                <div class="hist-values">
+                    <span class="val-liq">${fMoeda(i.liquido)}</span>
+                    <span class="val-bruto">R$ ${(i.bruto).toFixed(2)}</span>
+                </div>
+                <div class="btn-del" onclick="remover(${i.id})">×</div>
+            `;
+            c.appendChild(d);
+        });
+    }
+
+    function alternarStatus(id) {
+        const idx = todosDados.findIndex(i => i.id === id);
+        todosDados[idx].pago = !todosDados[idx].pago;
+        localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
+        renderizarHist(); atualizarDash();
+    }
+
+    function remover(id) {
+        if(confirm("Excluir serviço?")) {
+            todosDados = todosDados.filter(i => i.id !== id);
+            localStorage.setItem('hist_'+logado, JSON.stringify(todosDados));
+            renderizarHist(); atualizarDash();
+        }
+    }
+
+    function atualizarDash() {
+        const b = todosDados.reduce((a,x)=>a+x.bruto,0);
+        const l = todosDados.reduce((a,x)=>a+x.liquido,0);
+        $('dashTotalBruto').textContent = fMoeda(b);
+        $('dashTotalLiquido').textContent = fMoeda(l);
+    }
+    function toggleSection(id) { $(id).classList.toggle('hidden'); }
+</script>
+</body>
+</html>
