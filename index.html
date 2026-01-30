@@ -187,12 +187,8 @@
                     <div class="input-group"><label class="input-label">Tipo Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
                     <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
                 </div>
-                <div class="input-row">
-                    <div class="input-group" style="width: 30%;"><label class="input-label">Nº Conf.</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
-                    <div id="calcCamposContainer" style="width: 70%;">
-                        <div id="calcCampos"></div>
-                    </div>
-                </div>
+                <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
+                <div id="calcCampos"></div>
                 <button class="btn btn-primary" onclick="app.saveEntry()">SALVAR REGISTRO</button>
             </div>
         </div>
@@ -266,7 +262,7 @@
         
         const FRASES_PIX = [
             "O programador virou café. Precisa de mais café pra virar código! ☕",
-            "Este app não roda a base de vento, mas sim de PIX. Ajude o dev! 😉",
+            "Este app não roda a base de vento, mas sim de PIX. Ajude le dev! 😉",
             "Minha calculadora tá fazendo greve. Só um PIX resolve o motim! 💰",
             "Se você está lendo isso, a geladeira do dev está vazia. PIX nela! 🍔",
             "A internet caiu, mas o PIX do dev não! 🚀",
@@ -363,11 +359,12 @@
             showPix() { document.getElementById('pixMsg').textContent = FRASES_PIX[Math.floor(Math.random()*FRASES_PIX.length)]; this.closeModal('configModal'); this.openModal('pixModal'); }
             copyPix() { this.forceCopy('92994821868'); }
 
+            // CORREÇÃO: CAMPOS DE PRODUÇÃO VOLTAM PARA DUAS COLUNAS GRANDES
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
                 const c = document.getElementById('calcCampos');
                 c.innerHTML = t === '15x23' ? 
-                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-row"><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` :
+                    `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2"></div></div>` :
                     `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT"></div>`;
             }
 
