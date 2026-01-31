@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a0a0e">
     <title>EVOLUTION V46 ULTRA PREMIUM</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
         
         :root {
             --primary: #00b4a0;
@@ -59,15 +59,16 @@
             flex-direction: column;
             align-items: center;
             transition: all 0.4s ease;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 400;
+            line-height: 1.5;
         }
 
         .container { 
-            max-width: 400px; 
+            max-width: 420px; 
             width: 100%; 
             margin: 0 auto; 
-            padding: 16px; 
+            padding: 20px; 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
@@ -75,8 +76,8 @@
 
         .login-card {
             background: var(--card);
-            padding: 32px 24px;
-            border-radius: 20px;
+            padding: 40px 28px;
+            border-radius: 24px;
             width: 100%;
             text-align: center;
             border: 1px solid var(--border);
@@ -92,17 +93,17 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
+            height: 3px;
             background: linear-gradient(90deg, transparent, var(--primary), transparent);
             opacity: 0.6;
         }
 
-        /* DASHBOARD */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        /* DASHBOARD - FONTES MAIORES */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
         .dash-card { 
             background: var(--card); 
-            padding: 14px; 
-            border-radius: 14px; 
+            padding: 18px; 
+            border-radius: 16px; 
             border: 1px solid var(--border); 
             position: relative; 
             overflow: hidden;
@@ -113,44 +114,44 @@
             transform: translateY(-2px); 
             border-color: rgba(0, 180, 160, 0.3);
         }
-        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; opacity: 0.7; }
+        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; opacity: 0.7; }
         .dash-bruto::before { background: var(--info); }
         .dash-liq::before { background: var(--accent); }
         .dash-pend::before { background: var(--danger); }
         .dash-pago::before { background: var(--success); }
         .dash-val { 
-            font-size: 0.9rem; 
-            font-weight: 500; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
             font-family: 'JetBrains Mono', monospace; 
-            margin-top: 4px;
+            margin-top: 6px;
             letter-spacing: -0.5px;
         }
         .dash-label { 
-            font-size: 8px; 
+            font-size: 11px; 
             color: var(--text-dim); 
             text-transform: uppercase; 
             letter-spacing: 1.5px;
-            font-weight: 500;
+            font-weight: 600;
         }
         .dash-count { 
-            font-size: 8px; 
-            margin-top: 4px; 
+            font-size: 11px; 
+            margin-top: 6px; 
             font-weight: 500;
             opacity: 0.8;
         }
 
-        /* SEÇÕES */
+        /* SEÇÕES - MELHOR LEGIBILIDADE */
         .section-card { 
             background: var(--card); 
-            border-radius: 14px; 
-            margin-bottom: 10px; 
+            border-radius: 16px; 
+            margin-bottom: 12px; 
             border: 1px solid var(--border); 
             overflow: hidden;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
         .section-header { 
-            padding: 14px 16px; 
+            padding: 18px 20px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
@@ -164,15 +165,15 @@
             background: linear-gradient(90deg, rgba(0, 180, 160, 0.06) 0%, transparent 100%);
         }
         .section-title { 
-            font-size: 0.65rem; 
-            font-weight: 600; 
+            font-size: 13px; 
+            font-weight: 700; 
             letter-spacing: 2px;
             color: var(--primary);
             text-transform: uppercase;
         }
         .section-header span { 
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            font-size: 9px;
+            font-size: 12px;
             opacity: 0.6;
             color: var(--text-dim);
         }
@@ -182,61 +183,65 @@
             max-height: 0; 
             overflow: hidden; 
             transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease; 
-            padding: 0 16px;
+            padding: 0 20px;
         }
         .section-card.expanded .section-content { 
             max-height: 1500px; 
-            padding: 0 16px 16px; 
+            padding: 0 20px 20px; 
         }
 
+        /* INPUTS MAIORES E MAIS LEGÍVEIS */
         input, select { 
             width: 100%; 
-            padding: 10px 12px; 
+            padding: 14px 16px; 
             background: var(--input); 
             border: 1px solid var(--border); 
-            border-radius: 8px; 
+            border-radius: 12px; 
             color: var(--text); 
-            font-size: 12px; 
+            font-size: 15px; 
             outline: none;
             transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
-            font-weight: 400;
+            font-weight: 500;
+            height: 48px;
         }
         input:focus, select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(0, 180, 160, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 180, 160, 0.15);
         }
-        .input-group { margin-bottom: 10px; width: 100%; }
+        .input-group { margin-bottom: 14px; width: 100%; }
         .input-label { 
             display: block; 
-            font-size: 8px; 
+            font-size: 12px; 
             color: var(--text-dim); 
-            margin-bottom: 4px; 
-            font-weight: 500; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
         }
         
-        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
+        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; width: 100% !important; }
 
+        /* BOTÕES MAIORES PARA TOUCH */
         .btn { 
             width: 100%; 
-            padding: 12px; 
+            padding: 16px; 
             border: none; 
-            border-radius: 10px; 
-            font-weight: 600; 
-            font-size: 10px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            font-size: 13px; 
             text-transform: uppercase; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 6px; 
+            gap: 8px; 
             transition: all 0.3s ease;
             letter-spacing: 1.5px;
             position: relative;
             overflow: hidden;
             font-family: 'Inter', sans-serif;
+            min-height: 48px;
         }
         .btn:active { transform: scale(0.98); }
         
@@ -257,41 +262,104 @@
             transform: translateY(-1px);
         }
 
+        /* HISTÓRICO COM LIXEIRA E FONTES MAIORES */
         .hist-item { 
             background: var(--glass); 
             border: 1px solid var(--border); 
-            border-radius: 12px; 
-            padding: 12px; 
+            border-radius: 14px; 
+            padding: 16px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             transition: all 0.3s ease;
+            position: relative;
         }
         .hist-item:hover {
             transform: translateX(3px);
             border-color: rgba(0, 180, 160, 0.2);
             background: rgba(0, 180, 160, 0.03);
         }
+        .hist-info { flex: 1; min-width: 0; }
+        .hist-navio { 
+            font-weight: 700; 
+            font-size: 15px; 
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--success) !important; }
+        .hist-meta {
+            font-size: 12px; 
+            color: var(--text-dim); 
+            font-weight: 500; 
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
         .status-badge { 
-            padding: 3px 8px; 
-            border-radius: 12px; 
-            font-size: 8px; 
-            font-weight: 600; 
+            padding: 6px 10px; 
+            border-radius: 20px; 
+            font-size: 10px; 
+            font-weight: 700; 
             border: 1px solid transparent; 
-            margin-top: 4px;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
             letter-spacing: 0.5px;
         }
         .status-badge:hover { transform: scale(1.05); }
         .status-badge.pago { background: rgba(52, 211, 153, 0.1); color: var(--success); border-color: rgba(52, 211, 153, 0.2); }
         .status-badge.pendente { background: rgba(248, 113, 113, 0.1); color: var(--danger); border-color: rgba(248, 113, 113, 0.2); }
+
+        .hist-values { 
+            text-align: right; 
+            margin-right: 12px;
+            min-width: 100px;
+        }
+        .hist-liquido {
+            color: var(--accent); 
+            font-weight: 600; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 16px; 
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+        }
+        .hist-bruto {
+            color: var(--text-dim); 
+            font-size: 11px; 
+            font-weight: 500;
+        }
+
+        /* BOTÃO LIXEIRA VISÍVEL */
+        .btn-delete {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+        .btn-delete:active {
+            transform: scale(0.95);
+        }
 
         /* MODAL CONFIGURAÇÕES */
         .modal-overlay { 
@@ -315,9 +383,9 @@
         
         .modal-content { 
             background: var(--card-solid); 
-            border-radius: 16px; 
+            border-radius: 20px; 
             width: 100%; 
-            max-width: 340px; 
+            max-width: 360px; 
             padding: 0; 
             border: 1px solid var(--border); 
             position: relative; 
@@ -334,29 +402,29 @@
         
         .modal-header {
             background: linear-gradient(180deg, rgba(0, 180, 160, 0.08) 0%, transparent 100%);
-            padding: 24px 16px 16px;
+            padding: 28px 20px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border);
             position: relative;
         }
         
         .modal-avatar {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 12px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px;
-            font-size: 20px;
+            margin: 0 auto 12px;
+            font-size: 24px;
             color: #fff;
             box-shadow: 0 8px 20px rgba(0, 180, 160, 0.3);
         }
         
         .modal-title {
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
             letter-spacing: 3px;
             color: var(--text);
             margin: 0;
@@ -364,37 +432,37 @@
         }
         
         .modal-subtitle {
-            font-size: 9px;
+            font-size: 13px;
             color: var(--text-dim);
-            margin-top: 4px;
-            font-weight: 400;
+            margin-top: 6px;
+            font-weight: 500;
             letter-spacing: 0.5px;
         }
 
         .pix-message-box {
             background: rgba(0, 180, 160, 0.05);
             border: 1px solid rgba(0, 180, 160, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .pix-message {
-            font-size: 11px;
+            font-size: 13px;
             color: var(--primary);
             font-weight: 500;
             font-style: italic;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         
         .close-modal-btn { 
             position: absolute; 
-            top: 12px; 
-            right: 12px; 
-            width: 28px; 
-            height: 28px; 
-            border-radius: 8px; 
+            top: 16px; 
+            right: 16px; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 10px; 
             background: var(--glass); 
             border: 1px solid var(--border); 
             color: var(--text-dim); 
@@ -403,7 +471,7 @@
             justify-content: center; 
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 12px;
+            font-size: 14px;
             z-index: 10;
         }
         .close-modal-btn:hover { 
@@ -414,25 +482,25 @@
         }
 
         .modal-body {
-            padding: 16px;
+            padding: 20px;
         }
 
         .config-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
         
         .config-btn {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 6px;
+            border-radius: 14px;
+            padding: 20px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             color: var(--text);
@@ -447,7 +515,7 @@
         .config-btn:active { transform: translateY(0); }
         
         .config-icon {
-            font-size: 18px;
+            font-size: 24px;
             opacity: 0.9;
             transition: all 0.3s;
             filter: grayscale(0.2);
@@ -459,8 +527,8 @@
         }
         
         .config-label {
-            font-size: 8px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-dim);
@@ -473,17 +541,17 @@
             background: linear-gradient(135deg, rgba(0, 180, 160, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
             border: 1px solid rgba(0, 180, 160, 0.3);
             color: var(--primary);
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 10px;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
             transition: all 0.3s;
             letter-spacing: 1.5px;
             position: relative;
@@ -506,16 +574,16 @@
             background: rgba(248, 113, 113, 0.08);
             border: 1px solid rgba(248, 113, 113, 0.2);
             color: var(--danger);
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 10px;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.3s;
             letter-spacing: 1.5px;
         }
@@ -529,29 +597,29 @@
 
         .toast-container { 
             position: fixed; 
-            top: 16px; 
+            top: 20px; 
             left: 50%; 
             transform: translateX(-50%); 
             z-index: 9999; 
             width: 90%; 
-            max-width: 300px; 
+            max-width: 340px; 
             pointer-events: none; 
         }
         .toast { 
             background: var(--card-solid); 
             color: var(--primary); 
-            padding: 12px 16px; 
-            border-radius: 10px; 
-            border-left: 2px solid var(--primary); 
-            font-weight: 500; 
-            font-size: 11px; 
+            padding: 16px 20px; 
+            border-radius: 12px; 
+            border-left: 3px solid var(--primary); 
+            font-weight: 600; 
+            font-size: 14px; 
             box-shadow: 0 16px 32px rgba(0,0,0,0.3); 
-            margin-bottom: 8px; 
+            margin-bottom: 10px; 
             animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             letter-spacing: 0.3px;
         }
         @keyframes toastIn { 
@@ -560,30 +628,30 @@
         }
 
         .footer-copyright { 
-            padding: 24px 0; 
+            padding: 28px 0; 
             text-align: center; 
             width: 100%; 
             margin-top: auto; 
         }
         .footer-line { 
-            width: 24px; 
-            height: 1px; 
+            width: 40px; 
+            height: 2px; 
             background: linear-gradient(90deg, transparent, var(--primary), transparent); 
-            margin: 0 auto 10px; 
+            margin: 0 auto 12px; 
             opacity: 0.4;
         }
         .footer-text { 
-            font-size: 7px; 
+            font-size: 10px; 
             letter-spacing: 3px; 
             color: var(--text-dim); 
             text-transform: uppercase;
-            font-weight: 500;
+            font-weight: 600;
         }
         .footer-author { 
-            font-size: 9px; 
-            font-weight: 600; 
+            font-size: 13px; 
+            font-weight: 700; 
             color: var(--primary); 
-            margin-top: 4px;
+            margin-top: 6px;
             letter-spacing: 2px;
             opacity: 0.9;
         }
@@ -591,25 +659,25 @@
         .hidden { display: none !important; }
         
         .user-avatar { 
-            width: 36px; 
-            height: 36px; 
-            border-radius: 10px; 
+            width: 44px; 
+            height: 44px; 
+            border-radius: 12px; 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
             color: #fff; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-weight: 600;
-            font-size: 12px;
-            box-shadow: 0 4px 10px rgba(0, 180, 160, 0.25);
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0, 180, 160, 0.25);
             letter-spacing: 0.5px;
         }
         
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 7px;
+            gap: 6px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--success);
             text-transform: uppercase;
@@ -617,11 +685,11 @@
         }
         
         .status-dot {
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         
@@ -630,17 +698,20 @@
             50% { opacity: 0.5; }
         }
 
+        /* INPUT DE SENHA MAIOR */
         #senhaInput {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            letter-spacing: 8px;
-            height: 48px;
+            font-size: 28px;
+            letter-spacing: 12px;
+            height: 60px;
             background: rgba(20, 20, 28, 0.6);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             text-align: center;
+            border-radius: 16px;
         }
         #senhaInput:focus {
             background: rgba(20, 20, 28, 0.8);
+            border-color: var(--primary);
         }
 
         /* Centralização vertical no mobile */
@@ -648,6 +719,14 @@
             #loginScreen {
                 justify-content: center;
             }
+        }
+
+        /* Ajustes para telas muito pequenas */
+        @media (max-width: 360px) {
+            body { font-size: 15px; }
+            .dash-val { font-size: 1rem; }
+            .hist-navio { font-size: 14px; }
+            .hist-liquido { font-size: 15px; }
         }
     </style>
 </head>
@@ -658,11 +737,11 @@
     <div class="container" id="loginScreen">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60vh;">
             <div class="login-card">
-                <h1 style="font-size: 1.5rem; letter-spacing: 6px; font-weight: 600; color: var(--text); margin-bottom: 2px;">EVOLUTION</h1>
-                <p style="font-size: 8px; color: var(--primary); letter-spacing: 3px; margin-bottom: 28px; font-weight: 500;">V46 ULTRA PREMIUM</p>
+                <h1 style="font-size: 2rem; letter-spacing: 6px; font-weight: 700; color: var(--text); margin-bottom: 4px;">EVOLUTION</h1>
+                <p style="font-size: 12px; color: var(--primary); letter-spacing: 4px; margin-bottom: 32px; font-weight: 600;">V46 ULTRA PREMIUM</p>
                 <input type="password" id="senhaInput" placeholder="••••••" maxlength="6">
-                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 6px;">Acessar</button>
-                <div style="margin-top: 20px; font-size: 8px; color: var(--text-dim); letter-spacing: 1px; font-weight: 400;">
+                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 10px;">Acessar Sistema</button>
+                <div style="margin-top: 24px; font-size: 13px; color: var(--text-dim); letter-spacing: 1px; font-weight: 500;">
                     Insira sua chave de acesso
                 </div>
             </div>
@@ -675,25 +754,25 @@
     </div>
 
     <div class="container hidden" id="mainPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; margin-top: 8px;">
-            <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; margin-top: 12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
                 <div id="userAvatar" class="user-avatar">FP</div>
                 <div>
                     <div class="status-indicator">
                         <div class="status-dot"></div>
                         <span>Online</span>
                     </div>
-                    <h2 id="userName" style="font-size:0.85rem; font-weight:600; margin-top:2px; letter-spacing: 0.3px;">...</h2>
+                    <h2 id="userName" style="font-size:1.1rem; font-weight:700; margin-top:4px; letter-spacing: 0.5px;">...</h2>
                 </div>
             </div>
-            <button style="width:36px; height:36px; border-radius:8px; background:var(--card); border:1px solid var(--border); color:var(--text-dim); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s; font-size:14px;" onclick="app.openModal('configModal')" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'; this.style.transform='rotate(30deg)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'; this.style.transform='rotate(0deg)';">⚙</button>
+            <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text-dim); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s; font-size:18px;" onclick="app.openModal('configModal')" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'; this.style.transform='rotate(30deg)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'; this.style.transform='rotate(0deg)';">⚙</button>
         </div>
 
         <div class="dash-grid">
             <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
             <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" class="dash-count">0 serv.</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" class="dash-count">0 serv.</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" class="dash-count">0 serviços</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" class="dash-count">0 serviços</div></div>
         </div>
 
         <div class="section-card" id="secRel">
@@ -706,7 +785,7 @@
                 </div>
                 <div class="input-group"><label class="input-label">Terno</label><select id="relTernoSelecao"><option value="1°">1° Terno</option><option value="2°">2° Terno</option><option value="3°">3° Terno</option><option value="4°">4° Terno</option></select></div>
                 <div id="relCamposProducao"></div>
-                <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:2px;">Copiar Relatório</button>
+                <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:4px;">Copiar Relatório</button>
             </div>
         </div>
 
@@ -721,7 +800,7 @@
                 </div>
                 <div class="input-group"><label class="input-label">Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
                 <div id="calcCampos"></div>
-                <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:2px;">Salvar Registro</button>
+                <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:4px;">Salvar Registro</button>
             </div>
         </div>
 
@@ -788,20 +867,20 @@
     </div>
 
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
-        <div class="modal-content" style="text-align:center; padding: 28px 16px; background: var(--card-solid); border: 1px solid var(--border);">
+        <div class="modal-content" style="text-align:center; padding: 32px 20px; background: var(--card-solid); border: 1px solid var(--border);">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
-            <div style="font-size:2rem; margin-bottom:16px; opacity:0.9;">☕</div>
-            <h3 style="color: var(--primary); letter-spacing: 2px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 600;">APOIO AO DESENVOLVEDOR</h3>
+            <div style="font-size:2.5rem; margin-bottom:20px; opacity:0.9;">☕</div>
+            <h3 style="color: var(--primary); letter-spacing: 3px; margin-bottom: 12px; font-size: 14px; font-weight: 700;">APOIO AO DESENVOLVEDOR</h3>
             
-            <div class="pix-message-box" style="margin: 12px 0;">
+            <div class="pix-message-box" style="margin: 16px 0;">
                 <div class="pix-message" id="pixModalMessage"></div>
             </div>
 
-            <div onclick="app.copyPix()" style="background: var(--input); color: var(--primary); padding: 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 500; letter-spacing: 1px;">
+            <div onclick="app.copyPix()" style="background: var(--input); color: var(--primary); padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; border: 2px solid var(--border); cursor: pointer; transition: all 0.3s; font-size: 20px; font-weight: 600; letter-spacing: 2px;">
                 92994821868
-                <div style="font-size: 8px; text-transform: uppercase; opacity: 0.6; margin-top: 4px; font-family: 'Inter', sans-serif; letter-spacing: 1px; font-weight: 500;">CHAVE PIX: Felipe Prado</div>
+                <div style="font-size: 11px; text-transform: uppercase; opacity: 0.6; margin-top: 8px; font-family: 'Inter', sans-serif; letter-spacing: 2px; font-weight: 600;">CHAVE PIX: Felipe Prado</div>
             </div>
-            <p style="font-size: 8px; color: var(--text-dim); margin-top: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500;">Toque na chave acima para copiar</p>
+            <p style="font-size: 12px; color: var(--text-dim); margin-top: 16px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Toque na chave acima para copiar</p>
         </div>
     </div>
 
@@ -907,14 +986,14 @@
                 document.body.innerHTML = `
                     <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0e; color: #f87171; padding: 30px; text-align: center; font-family: 'Inter', sans-serif;">
                         <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.8;">⚠</div>
-                        <h1 style="letter-spacing: 3px; font-weight: 600; font-size: 1rem; margin-bottom: 16px;">ERRO DE SEGURANÇA</h1>
-                        <p style="color: #64748b; font-size: 12px; line-height: 1.6; font-weight: 400;">
+                        <h1 style="letter-spacing: 3px; font-weight: 700; font-size: 1.2rem; margin-bottom: 16px;">ERRO DE SEGURANÇA</h1>
+                        <p style="color: #64748b; font-size: 14px; line-height: 1.6; font-weight: 500;">
                             Esta chave está vinculada a outro dispositivo.<br>
                             Acesso simultâneo detectado e bloqueado.
                         </p>
-                        <div style="margin-top: 32px; padding: 16px; border: 1px solid #1e293b; border-radius: 10px; background: rgba(30, 30, 40, 0.5);">
-                            <p style="font-size: 8px; color: #475569; text-transform: uppercase; letter-spacing: 2px; font-weight: 500;">Suporte</p>
-                            <p style="font-size: 14px; font-weight: 600; color: #00b4a0; margin-top: 4px; letter-spacing: 1px;">FELIPE PRADO</p>
+                        <div style="margin-top: 32px; padding: 16px; border: 1px solid #1e293b; border-radius: 12px; background: rgba(30, 30, 40, 0.5);">
+                            <p style="font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Suporte</p>
+                            <p style="font-size: 16px; font-weight: 700; color: #00b4a0; margin-top: 4px; letter-spacing: 1px;">FELIPE PRADO</p>
                         </div>
                     </div>`;
             }
@@ -983,14 +1062,14 @@
             forceCopy(text, msg) {
                 const ta = document.createElement("textarea"); ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.opacity = '0';
                 document.body.appendChild(ta); ta.focus(); ta.select(); 
-                try { document.execCommand('copy'); this.showToast(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text= " + encodeURIComponent(text), '_blank'); }
+                try { document.execCommand('copy'); this.showToast(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=  " + encodeURIComponent(text), '_blank'); }
                 document.body.removeChild(ta);
             }
 
             showToast(m) {
                 const container = document.getElementById('toastContainer');
                 const e = document.createElement('div'); e.className = 'toast'; 
-                e.innerHTML = `<span style="font-size:12px; font-weight: 500;">✓</span> <span>${m}</span>`;
+                e.innerHTML = `<span style="font-size:16px; font-weight: 700;">✓</span> <span>${m}</span>`;
                 container.appendChild(e);
                 setTimeout(() => { e.style.opacity = '0'; e.style.transform = 'translateY(-10px)'; setTimeout(() => e.remove(), 400); }, 3000);
             }
@@ -1016,7 +1095,24 @@
 
             renderHistory() {
                 const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:600; font-size:12px; letter-spacing: 0.3px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div><div style="font-size:8px; color:var(--text-dim); font-weight: 500; margin-top:2px; letter-spacing: 0.5px;">${e.dataF} • ${e.turno}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'◐ PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:500; font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing: -0.5px;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:7px; margin-top:2px; font-weight: 500;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:6px; font-size:10px; cursor:pointer; opacity:0.4; transition:all 0.2s; color: var(--text-dim);" onmouseover="this.style.opacity='1'; this.style.color='var(--danger)'" onmouseout="this.style.opacity='0.4'; this.style.color='var(--text-dim)'">✕</button></div></div>`).join('');
+                list.innerHTML = this.entries.map(e => `
+                    <div class="hist-item">
+                        <div class="hist-info">
+                            <div class="hist-navio ${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
+                            <div class="hist-meta">${e.dataF} • ${e.turno}</div>
+                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">
+                                ${e.pago?'✓ PAGO':'◐ PENDENTE'}
+                            </button>
+                        </div>
+                        <div class="hist-values">
+                            <div class="hist-liquido">${new Money(e.liquido).format()}</div>
+                            <div class="hist-bruto">Bruto: ${new Money(e.bruto).format()}</div>
+                        </div>
+                        <button class="btn-delete" onclick="app.del(${e.id})" title="Excluir registro">
+                            🗑️
+                        </button>
+                    </div>
+                `).join('');
             }
 
             updateDashboard() {
@@ -1026,8 +1122,8 @@
                 document.getElementById('dashLiq').textContent = new Money(l).format();
                 document.getElementById('dashPend').textContent = new Money(pe).format();
                 document.getElementById('dashPago').textContent = new Money(pa).format();
-                document.getElementById('countPend').textContent = `${cpe} serv.`;
-                document.getElementById('countPago').textContent = `${cpa} serv.`;
+                document.getElementById('countPend').textContent = `${cpe} serviços`;
+                document.getElementById('countPago').textContent = `${cpa} serviços`;
             }
 
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
