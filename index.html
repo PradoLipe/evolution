@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a0a0e">
     <title>EVOLUTION V46 ULTRA PREMIUM</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         
         :root {
             --primary: #00b4a0;
@@ -56,151 +56,115 @@
             flex-direction: column;
             align-items: center;
             transition: all 0.4s ease;
-            font-size: 14px; /* Aumentado base */
+            font-size: 12px;
         }
 
         .container { max-width: 400px; width: 100%; margin: 0 auto; padding: 16px; flex: 1; display: flex; flex-direction: column; }
 
-        /* ESTILO PROFISSIONAL DO FOOTER (BASEADO NA IMAGEM) */
-        .footer-copyright { 
-            padding: 40px 0 30px; 
-            text-align: center; 
-            width: 100%; 
-            margin-top: auto; 
-        }
-        .footer-brand { 
-            font-size: 14px; 
-            letter-spacing: 4px; 
-            color: #94a3b8; 
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .footer-details { 
-            font-size: 10px; 
-            font-weight: 600; 
-            color: var(--primary); 
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            opacity: 0.9;
+        .login-card {
+            background: var(--card);
+            padding: 32px 24px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            position: relative;
         }
 
-        /* HISTÓRICO MELHORADO */
-        .hist-item { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            border-radius: 16px; 
-            padding: 18px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 12px;
-            backdrop-filter: blur(10px);
-        }
-        .hist-main-info { flex: 1; }
-        .hist-navio-title { 
-            font-weight: 700; 
-            font-size: 15px; 
-            letter-spacing: 0.5px; 
-            margin-bottom: 4px;
-        }
-        .hist-meta { 
-            font-size: 11px; 
-            color: var(--text-dim); 
-            font-weight: 500; 
-            margin-bottom: 8px;
-        }
-        .hist-value-box { text-align: right; }
-        .hist-value-liq { 
-            color: var(--accent); 
-            font-weight: 600; 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 15px; 
-        }
-        .hist-value-bruto { 
-            color: var(--text-dim); 
-            font-size: 10px; 
-            margin-top: 2px; 
-        }
-
-        /* RESTANTE DOS ESTILOS MANTIDOS */
-        .login-card { background: var(--card); padding: 32px 24px; border-radius: 20px; width: 100%; text-align: center; border: 1px solid var(--border); backdrop-filter: blur(20px); position: relative; }
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .dash-card { background: var(--card); padding: 14px; border-radius: 14px; border: 1px solid var(--border); position: relative; }
-        .dash-val { font-size: 1.1rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
-        .dash-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
-        .section-card { background: var(--card); border-radius: 14px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
-        .section-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; }
-        .section-content { max-height: 0; overflow: hidden; transition: all 0.5s ease; padding: 0 16px; }
+        .dash-card { 
+            background: var(--card); 
+            padding: 14px; 
+            border-radius: 14px; 
+            border: 1px solid var(--border); 
+            position: relative; 
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; opacity: 0.7; }
+        .dash-bruto::before { background: var(--info); }
+        .dash-liq::before { background: var(--accent); }
+        .dash-pend::before { background: var(--danger); }
+        .dash-pago::before { background: var(--success); }
+        .dash-val { font-size: 0.9rem; font-weight: 500; font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+        .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+
+        .section-card { background: var(--card); border-radius: 14px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; transition: all 0.3s ease; }
+        .section-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .section-title { font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; }
+        .section-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, padding 0.4s ease; padding: 0 16px; }
         .section-card.expanded .section-content { max-height: 1500px; padding: 0 16px 16px; }
-        input, select { width: 100%; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 14px; outline: none; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 1.5px; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; }
-        .btn-success { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: #fff; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 9px; font-weight: 700; border: none; cursor: pointer; }
-        .status-badge.pago { background: rgba(52, 211, 153, 0.15); color: var(--success); }
-        .status-badge.pendente { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-solid); border-radius: 20px; width: 100%; max-width: 340px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+
+        input, select { width: 100%; padding: 10px 12px; background: var(--input); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; outline: none; }
+        .input-group { margin-bottom: 10px; }
+        .input-label { display: block; font-size: 8px; color: var(--text-dim); margin-bottom: 4px; text-transform: uppercase; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 10px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s; letter-spacing: 1.5px; }
+        .btn-success { background: linear-gradient(135deg, var(--success), #059669); color: #fff; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+
+        .hist-item { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 8px; font-weight: 600; border: 1px solid transparent; margin-top: 4px; cursor: pointer; }
+        .status-badge.pago { background: rgba(52, 211, 153, 0.1); color: var(--success); }
+        .status-badge.pendente { background: rgba(248, 113, 113, 0.1); color: var(--danger); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--card-solid); border-radius: 16px; width: 100%; max-width: 340px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .modal-header { background: rgba(0, 180, 160, 0.08); padding: 24px 16px 16px; text-align: center; border-bottom: 1px solid var(--border); }
+        .pix-message-box { background: rgba(0, 180, 160, 0.05); border: 1px solid rgba(0, 180, 160, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 16px; }
+        .pix-message { font-size: 11px; color: var(--primary); font-style: italic; }
+
+        .footer-copyright { padding: 24px 0; text-align: center; width: 100%; margin-top: auto; }
+        .footer-line { width: 24px; height: 1px; background: var(--primary); margin: 0 auto 10px; opacity: 0.4; }
+        .footer-text { font-size: 7px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+
         .hidden { display: none !important; }
-        #senhaInput { font-family: 'JetBrains Mono', monospace; font-size: 22px; letter-spacing: 10px; text-align: center; }
+        #senhaInput { font-family: 'JetBrains Mono', monospace; font-size: 18px; letter-spacing: 8px; text-align: center; height: 48px; }
     </style>
 </head>
 <body>
 
+    <div class="toast-container" id="toastContainer" style="position:fixed; top:20px; z-index:9999;"></div>
+
     <div class="container" id="loginScreen">
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
             <div class="login-card">
-                <h1 style="font-size: 1.8rem; letter-spacing: 8px; font-weight: 700; color: var(--text); margin-bottom: 4px;">EVOLUTION</h1>
-                <p style="font-size: 10px; color: var(--primary); letter-spacing: 4px; margin-bottom: 30px; font-weight: 600;">V46 ULTRA PREMIUM</p>
+                <h1 style="font-size: 1.5rem; letter-spacing: 6px; margin-bottom: 28px;">EVOLUTION</h1>
                 <input type="password" id="senhaInput" placeholder="••••••" maxlength="6">
-                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 10px;">Acessar Sistema</button>
+                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 10px;">Acessar</button>
             </div>
         </div>
-        
-        <footer class="footer-copyright">
-            <div class="footer-brand">
-                <span>©</span> 2026 FELIPE PRADO SYSTEMS
-            </div>
-            <div class="footer-details">
-                EVOLUTION V46 ULTRA PREMIUM | TODOS OS DIREITOS RESERVADOS
-            </div>
-        </footer>
+        <div class="footer-copyright">
+            <div class="footer-line"></div>
+            <p class="footer-text">© 2026 FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <div class="container hidden" id="mainPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; margin-top: 10px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div id="userAvatar" style="width:40px; height:40px; border-radius:12px; background:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:700;">FP</div>
-                <h2 id="userName" style="font-size:1rem; font-weight:700;">...</h2>
-            </div>
-            <button onclick="app.openModal('configModal')" style="background:var(--card); border:1px solid var(--border); padding:10px; border-radius:10px; color:var(--text); cursor:pointer;">⚙</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="userName" style="font-size:0.85rem; letter-spacing: 1px;">...</h2>
+            <button onclick="app.openModal('configModal')" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:8px; cursor:pointer;">⚙</button>
         </div>
 
         <div class="dash-grid">
-            <div class="dash-card"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+            <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div></div>
         </div>
 
         <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">Relatório de Produção</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">Relatório</div><span>▼</span></div>
             <div class="section-content">
-                <input type="text" id="relNavio" placeholder="NOME DO NAVIO" style="margin-bottom:10px; text-transform:uppercase;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="relNavio" placeholder="NAVIO" style="margin-bottom:10px;">
+                <div class="input-row">
                     <input type="date" id="relData">
-                    <select id="relTurno" onchange="app.toggleRelatorioCampos()">
-                        <option value="07x15">07x15</option>
-                        <option value="15x23" selected>15x23</option>
-                        <option value="23x07">23x07</option>
-                    </select>
+                    <select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="15x23">15x23</option><option value="07x15">07x15</option></select>
                 </div>
-                <div id="relCamposProducao"></div>
+                <div id="relCamposProducao" style="margin-top:10px;"></div>
                 <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:10px;">Copiar Relatório</button>
             </div>
         </div>
@@ -208,46 +172,73 @@
         <div class="section-card" id="secLan">
             <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title">Nova Produção</div><span>▼</span></div>
             <div class="section-content">
-                <input type="text" id="calcNavio" placeholder="NOME DO NAVIO" style="margin-bottom:10px; text-transform:uppercase;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="calcNavio" placeholder="NAVIO" style="margin-bottom:10px;">
+                <div class="input-row">
                     <input type="date" id="calcData">
-                    <select id="calcTurno" onchange="app.adjustCalcFields()">
-                        <option value="07x15">07x15</option>
-                        <option value="15x23" selected>15x23</option>
-                        <option value="23x07">23x07</option>
-                    </select>
+                    <select id="calcTurno" onchange="app.adjustCalcFields()"><option value="15x23">15x23</option><option value="07x15">07x15</option></select>
                 </div>
-                <div id="calcCampos"></div>
-                <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:10px;">Salvar no Histórico</button>
+                <div id="calcCampos" style="margin-top:10px;"></div>
+                <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:10px;">Salvar</button>
             </div>
         </div>
 
-        <div class="section-card expanded" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">Histórico de Atividades</div><span>▼</span></div>
+        <div class="section-card" id="secHis">
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">Histórico</div><span>▼</span></div>
             <div class="section-content"><div id="histList"></div></div>
         </div>
 
-        <footer class="footer-copyright">
-            <div class="footer-brand">
-                <span>©</span> 2026 FELIPE PRADO SYSTEMS
-            </div>
-            <div class="footer-details">
-                EVOLUTION V46 ULTRA PREMIUM | TODOS OS DIREITOS RESERVADOS
-            </div>
-        </footer>
+        <div class="footer-copyright">
+            <div class="footer-line"></div>
+            <p class="footer-text">© 2026 FELIPE PRADO SYSTEMS</p>
+        </div>
     </div>
 
     <div class="modal-overlay" id="configModal" onclick="if(event.target.id==='configModal')app.closeModal('configModal')">
-        <div class="modal-content" style="padding:20px;">
-            <h3 style="text-align:center; margin-bottom:20px; letter-spacing:2px; font-size:0.8rem;">CONFIGURAÇÕES</h3>
-            <button class="btn btn-primary" onclick="app.exportData()" style="margin-bottom:10px;">Exportar Backup</button>
-            <button class="btn btn-primary" onclick="app.logout()" style="background:var(--danger);">Sair do Sistema</button>
-            <button class="btn" onclick="app.closeModal('configModal')" style="margin-top:10px; background:none; border:1px solid var(--border);">Fechar</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Configurações</h3>
+            </div>
+            <div style="padding:16px;">
+                <div class="pix-message-box"><div class="pix-message" id="pixMessage"></div></div>
+                <button class="btn btn-primary" onclick="app.showPix()" id="apoioText" style="margin-bottom:10px;">☕ Apoiar Evolução</button>
+                <button class="btn" onclick="app.logout()" style="background:rgba(248,113,113,0.1); color:var(--danger);">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
+        <div class="modal-content" style="text-align:center; padding:24px;">
+            <div style="font-size:2rem; margin-bottom:10px;">☕</div>
+            <h3 style="color:var(--primary); font-size:0.7rem; margin-bottom:16px;">APOIO AO DESENVOLVEDOR</h3>
+            <div class="pix-message-box"><div class="pix-message" id="pixModalMessage"></div></div>
+            <div onclick="app.copyPix()" style="background:var(--input); color:var(--primary); padding:16px; border-radius:10px; cursor:pointer; font-family:'JetBrains Mono';">
+                92994821868
+                <div style="font-size:8px; margin-top:4px; opacity:0.8;">CHAVE PIX: FELIPE PRADO</div>
+            </div>
+            <p style="font-size:8px; margin-top:10px; color:var(--text-dim);">TOQUE PARA COPIAR A CHAVE PIX</p>
         </div>
     </div>
 
     <script>
-        const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
+        const PIX_MESSAGES = [
+            "☕ Um café mantém as atualizações fluindo!",
+            "🚀 Sua ajuda impulsiona melhorias no sistema!",
+            "⚡ Energia para otimizar suas ferramentas!",
+            "🎯 Contribuições mantêm o Evolution ativo!",
+            "🔧 Manutenção do app com sua colaboração!",
+            "📱 O sistema agradece sua parceria!",
+            "⚓ Ajude a manter o código navegando!",
+            "💡 Garantir novas funcionalidades!"
+        ];
+
+        const APOIO_MESSAGES = [
+            "☕ Pagar um café ao dev",
+            "🚀 Impulsionar o sistema",
+            "🎯 Valorizar o Evolution",
+            "🔧 Manter o app atualizado",
+            "📱 Investir em novas funções",
+            "⚓ Fortalecer o projeto"
+        ];
 
         class EvolutionApp {
             constructor() {
@@ -265,22 +256,23 @@
                 this.checkSession();
             }
 
-            checkSession() {
-                const s = localStorage.getItem('evo_session');
-                if (s) {
-                    const d = JSON.parse(atob(s));
-                    this.currentUser = d.user;
-                    this.showMainPanel();
-                }
-            }
+            getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
             login() {
                 const code = document.getElementById('senhaInput').value;
                 const user = SECURE_USERS[code];
-                if (!user) { alert('Chave incorreta'); return; }
+                if (!user) return alert('Chave incorreta');
                 this.currentUser = user;
-                localStorage.setItem('evo_session', btoa(JSON.stringify({user, ts: Date.now()})));
+                localStorage.setItem('evo_session', btoa(JSON.stringify({user, code, ts: Date.now()})));
                 this.showMainPanel();
+            }
+
+            checkSession() {
+                const s = localStorage.getItem('evo_session');
+                if (s) {
+                    const d = JSON.parse(atob(s));
+                    if (d.ts > Date.now() - 86400000) { this.currentUser = d.user; this.showMainPanel(); }
+                }
             }
 
             showMainPanel() {
@@ -292,80 +284,87 @@
 
             adjustCalcFields() {
                 const t = document.getElementById('calcTurno').value;
-                const c = document.getElementById('calcCampos');
-                c.innerHTML = t === '15x23' ? 
-                    `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="calcP1" placeholder="15h-19h"><input type="number" id="calcP2" placeholder="19h-23h"></div>` :
-                    `<input type="number" id="calcPT" placeholder="Produção Total">`;
+                document.getElementById('calcCampos').innerHTML = t === '15x23' ? 
+                    `<div class="input-row"><input type="number" id="calcP1" placeholder="15-19"><input type="number" id="calcP2" placeholder="19-23"></div>` :
+                    `<input type="number" id="calcPT" placeholder="TOTAL">`;
             }
 
             toggleRelatorioCampos() {
                 const t = document.getElementById('relTurno').value;
-                const c = document.getElementById('relCamposProducao');
-                c.innerHTML = t === '15x23' ? 
-                    `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="relP1" placeholder="15h-19h"><input type="number" id="relP2" placeholder="19h-23h"></div>` :
-                    `<input type="number" id="relPT" placeholder="Produção Total">`;
+                document.getElementById('relCamposProducao').innerHTML = t === '15x23' ?
+                    `<div class="input-row"><input type="number" id="relP1" placeholder="15-19"><input type="number" id="relP2" placeholder="19-23"></div>` :
+                    `<input type="number" id="relPT" placeholder="TOTAL">`;
+            }
+
+            generateReport() {
+                const n = document.getElementById('relNavio').value.toUpperCase();
+                const t = document.getElementById('relTurno').value;
+                let msg = `*${n}*\nTurno: ${t}\n`;
+                if(t==='15x23') msg += `15-19: ${document.getElementById('relP1').value}\n19-23: ${document.getElementById('relP2').value}`;
+                else msg += `TOTAL: ${document.getElementById('relPT').value}`;
+                this.copyToClipboard(msg, 'Relatório Copiado!');
             }
 
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
-                const d = document.getElementById('calcData').value;
-                if (!n) { alert('Informe o navio'); return; }
-                
-                const entry = {
-                    id: Date.now(),
-                    navio: n,
-                    data: d,
-                    dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'),
-                    turno: document.getElementById('calcTurno').value,
-                    bruto: Math.random() * 500, // Simulação de cálculo
-                    liquido: Math.random() * 400,
-                    pago: false
-                };
-
-                this.entries.unshift(entry);
+                if(!n) return;
+                const e = { id: Date.now(), navio: n, pago: false, bruto: Math.random()*50000, liquido: Math.random()*40000 };
+                this.entries.unshift(e);
                 this.saveData();
                 this.renderHistory();
-                this.updateDashboard();
             }
 
             renderHistory() {
-                const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => `
+                document.getElementById('histList').innerHTML = this.entries.map(e => `
                     <div class="hist-item">
-                        <div class="hist-main-info">
-                            <div class="hist-navio-title ${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
-                            <div class="hist-meta">${e.dataF} • ${e.turno}</div>
-                            <button class="status-badge ${e.pago ? 'pago' : 'pendente'}" onclick="app.togglePago(${e.id})">
-                                ${e.pago ? '✓ RECEBIDO' : '◐ PENDENTE'}
-                            </button>
+                        <div>
+                            <div style="font-weight:600;">${e.navio}</div>
+                            <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'PAGO':'PENDENTE'}</button>
                         </div>
-                        <div class="hist-value-box">
-                            <div class="hist-value-liq">R$ ${e.liquido.toFixed(2)}</div>
-                            <div class="hist-value-bruto">Bruto: R$ ${e.bruto.toFixed(2)}</div>
-                            <div onclick="app.del(${e.id})" style="margin-top:10px; color:var(--danger); font-size:10px; cursor:pointer; opacity:0.6;">EXCLUIR</div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--accent); font-family:JetBrains Mono;">R$ ${e.liquido.toFixed(2)}</div>
+                            <button onclick="app.del(${e.id})" style="background:none; border:none; color:var(--danger); font-size:10px; cursor:pointer;">EXCLUIR</button>
                         </div>
                     </div>
                 `).join('');
+                this.updateDash();
             }
 
-            updateDashboard() {
-                let b=0, l=0;
-                this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; });
+            updateDash() {
+                const b = this.entries.reduce((a,b)=>a+b.bruto, 0);
+                const l = this.entries.reduce((a,b)=>a+b.liquido, 0);
                 document.getElementById('dashBruto').textContent = `R$ ${b.toFixed(2)}`;
                 document.getElementById('dashLiq').textContent = `R$ ${l.toFixed(2)}`;
             }
 
-            toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
-            openModal(id) { document.getElementById(id).classList.add('active'); }
+            copyToClipboard(text, successMsg) {
+                navigator.clipboard.writeText(text).then(() => alert(successMsg));
+            }
+
+            copyPix() { this.copyToClipboard('92994821868', 'Chave PIX Copiada!'); }
+
+            showPix() {
+                this.closeModal('configModal');
+                document.getElementById('pixModalMessage').textContent = this.getRandom(PIX_MESSAGES);
+                setTimeout(() => this.openModal('pixModal'), 300);
+            }
+
+            openModal(id) { 
+                document.getElementById(id).classList.add('active'); 
+                if(id==='configModal') {
+                    document.getElementById('pixMessage').textContent = this.getRandom(PIX_MESSAGES);
+                    document.getElementById('apoioText').textContent = this.getRandom(APOIO_MESSAGES);
+                }
+            }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
+            loadData() { const k = `evo_db_${btoa(this.currentUser)}`; this.entries = JSON.parse(localStorage.getItem(k)) || []; this.renderHistory(); }
             saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            loadData() { this.entries = JSON.parse(localStorage.getItem(`evo_db_${btoa(this.currentUser)}`)) || []; this.renderHistory(); this.updateDashboard(); }
-            togglePago(id) { const e = this.entries.find(x => x.id === id); e.pago = !e.pago; this.saveData(); this.renderHistory(); }
-            del(id) { if(confirm('Excluir?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); } }
+            togglePago(id) { const e = this.entries.find(x=>x.id===id); e.pago = !e.pago; this.saveData(); this.renderHistory(); }
+            del(id) { if(confirm('Excluir?')) { this.entries = this.entries.filter(x=>x.id!==id); this.saveData(); this.renderHistory(); } }
             logout() { localStorage.removeItem('evo_session'); location.reload(); }
-            generateReport() { alert('Relatório copiado (simulação)'); }
         }
 
+        const SECURE_USERS = { "002451": "FELIPE PRADO", "2026": "FABRICIO DIAS" };
         const app = new EvolutionApp();
     </script>
 </body>
