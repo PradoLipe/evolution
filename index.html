@@ -6,42 +6,43 @@
     <meta name="theme-color" content="#0a0a0e">
     <title>EVOLUTION V46 ULTRA PREMIUM</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         
         :root {
-            --primary: #00b4a0;
-            --primary-light: #00d1b2;
-            --primary-dark: #009e8c;
-            --accent: #fbbf24;
-            --danger: #f87171;
-            --success: #34d399;
-            --info: #60a5fa;
-            --bg: #0a0a0e;
-            --bg-gradient: radial-gradient(ellipse at top, #1a1a2e 0%, #0f1117 50%, #000000 100%);
-            --card: rgba(30, 30, 40, 0.6);
-            --card-solid: #1e1e28;
-            --input: rgba(20, 20, 28, 0.8);
-            --text: #f8fafc;
-            --text-dim: #94a3b8;
+            --primary: #00d4aa;
+            --primary-dark: #00b894;
+            --accent: #ffd700;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --info: #1e90ff;
+            --bg: #0a0a0f;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #151520 0%, #0a0a0f 100%);
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.06);
+            --card: rgba(20, 20, 28, 0.6);
+            --input: rgba(255, 255, 255, 0.05);
+            --text: #f8f9fa;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
             --border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.02);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
         
         body.light-mode {
-            --bg: #f8fafc;
-            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            --card: rgba(255, 255, 255, 0.7);
-            --card-solid: #ffffff;
-            --input: rgba(241, 245, 249, 0.9);
-            --text: #0f172a;
-            --text-dim: #64748b;
-            --border: rgba(0, 0, 0, 0.06);
-            --glass: rgba(0, 0, 0, 0.02);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            --bg: #f5f5f7;
+            --bg-gradient: linear-gradient(180deg, #f5f5f7 0%, #e8e8ec 100%);
+            --surface: rgba(255, 255, 255, 0.7);
+            --surface-hover: rgba(255, 255, 255, 0.9);
+            --card: rgba(255, 255, 255, 0.6);
+            --input: rgba(0, 0, 0, 0.05);
+            --text: #1a1a1f;
+            --text-secondary: #6e6e73;
+            --text-muted: #aeaeb2;
+            --border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         html, body {
             height: 100%;
@@ -49,7 +50,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
             background-image: var(--bg-gradient);
             background-attachment: fixed;
@@ -58,17 +59,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: all 0.4s ease;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .container { 
-            max-width: 420px; 
+            max-width: 400px; 
             width: 100%; 
             margin: 0 auto; 
-            padding: 20px; 
+            padding: 16px; 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
@@ -76,8 +76,8 @@
 
         .login-card {
             background: var(--card);
-            padding: 40px 28px;
-            border-radius: 24px;
+            padding: 36px 24px;
+            border-radius: 16px;
             width: 100%;
             text-align: center;
             border: 1px solid var(--border);
@@ -93,216 +93,269 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            opacity: 0.6;
         }
 
-        /* DASHBOARD - FONTES MAIORES */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        /* DASHBOARD PREMIUM */
+        .dash-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        
         .dash-card { 
-            background: var(--card); 
-            padding: 18px; 
-            border-radius: 16px; 
+            background: var(--surface); 
+            padding: 14px 12px; 
+            border-radius: 12px; 
             border: 1px solid var(--border); 
             position: relative; 
             overflow: hidden;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         .dash-card:hover { 
-            transform: translateY(-2px); 
-            border-color: rgba(0, 180, 160, 0.3);
+            background: var(--surface-hover);
+            transform: translateY(-1px);
+            border-color: rgba(0, 212, 170, 0.2);
         }
-        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; opacity: 0.7; }
+        
+        .dash-card::before { 
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 2px; 
+            opacity: 0.8;
+        }
+        
         .dash-bruto::before { background: var(--info); }
         .dash-liq::before { background: var(--accent); }
         .dash-pend::before { background: var(--danger); }
         .dash-pago::before { background: var(--success); }
+        
         .dash-val { 
-            font-size: 1.1rem; 
+            font-size: 0.95rem; 
             font-weight: 600; 
             font-family: 'JetBrains Mono', monospace; 
-            margin-top: 6px;
+            margin-top: 4px;
             letter-spacing: -0.5px;
         }
+        
         .dash-label { 
-            font-size: 11px; 
-            color: var(--text-dim); 
+            font-size: 10px; 
+            color: var(--text-secondary); 
             text-transform: uppercase; 
             letter-spacing: 1.5px;
             font-weight: 600;
         }
+        
         .dash-count { 
             font-size: 11px; 
             margin-top: 6px; 
-            font-weight: 500;
-            opacity: 0.8;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
         }
 
-        /* SEÇÕES - MELHOR LEGIBILIDADE */
+        /* SEÇÕES PREMIUM */
         .section-card { 
-            background: var(--card); 
-            border-radius: 16px; 
-            margin-bottom: 12px; 
+            background: var(--surface); 
+            border-radius: 12px; 
+            margin-bottom: 10px; 
             border: 1px solid var(--border); 
             overflow: hidden;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
+        
+        .section-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        
         .section-header { 
-            padding: 18px 20px; 
+            padding: 14px 16px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             cursor: pointer;
-            background: linear-gradient(90deg, rgba(0, 180, 160, 0.03) 0%, transparent 100%);
-            border-bottom: 1px solid transparent;
+            background: linear-gradient(90deg, rgba(0, 212, 170, 0.03) 0%, transparent 100%);
             transition: all 0.3s ease;
         }
+        
         .section-card.expanded .section-header {
-            border-bottom-color: var(--border);
-            background: linear-gradient(90deg, rgba(0, 180, 160, 0.06) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(0, 212, 170, 0.06) 0%, transparent 100%);
         }
+        
         .section-title { 
-            font-size: 13px; 
+            font-size: 11px; 
             font-weight: 700; 
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             color: var(--primary);
             text-transform: uppercase;
         }
+        
         .section-header span { 
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            font-size: 12px;
-            opacity: 0.6;
-            color: var(--text-dim);
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
         }
-        .section-card.expanded .section-header span { transform: rotate(180deg); opacity: 1; color: var(--primary); }
+        
+        .section-card.expanded .section-header span { 
+            transform: rotate(180deg); 
+            color: var(--primary); 
+        }
         
         .section-content { 
             max-height: 0; 
             overflow: hidden; 
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease; 
-            padding: 0 20px;
+            transition: max-height 0.4s ease, padding 0.3s ease; 
+            padding: 0 16px;
         }
+        
         .section-card.expanded .section-content { 
-            max-height: 1500px; 
-            padding: 0 20px 20px; 
+            max-height: 1200px; 
+            padding: 0 16px 16px; 
         }
 
-        /* INPUTS MAIORES E MAIS LEGÍVEIS */
+        /* INPUTS PREMIUM */
         input, select { 
             width: 100%; 
-            padding: 14px 16px; 
+            padding: 12px; 
             background: var(--input); 
             border: 1px solid var(--border); 
-            border-radius: 12px; 
+            border-radius: 8px; 
             color: var(--text); 
-            font-size: 15px; 
+            font-size: 14px; 
             outline: none;
             transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            height: 48px;
+            height: 44px;
         }
+        
         input:focus, select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 180, 160, 0.15);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
         }
-        .input-group { margin-bottom: 14px; width: 100%; }
+        
+        .input-group { margin-bottom: 10px; width: 100%; }
+        
         .input-label { 
             display: block; 
-            font-size: 12px; 
-            color: var(--text-dim); 
-            margin-bottom: 6px; 
+            font-size: 10px; 
+            color: var(--text-secondary); 
+            margin-bottom: 4px; 
             font-weight: 600; 
             text-transform: uppercase;
             letter-spacing: 1.2px;
         }
         
-        .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; width: 100% !important; }
+        .input-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            width: 100%; 
+        }
 
-        /* BOTÕES MAIORES PARA TOUCH */
+        /* BOTÕES PREMIUM */
         .btn { 
             width: 100%; 
-            padding: 16px; 
+            padding: 12px; 
             border: none; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            font-size: 13px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 11px; 
             text-transform: uppercase; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 8px; 
+            gap: 6px; 
             transition: all 0.3s ease;
             letter-spacing: 1.5px;
             position: relative;
             overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            min-height: 48px;
+            height: 44px;
         }
+        
         .btn:active { transform: scale(0.98); }
         
         .btn-success { 
-            background: linear-gradient(135deg, var(--success) 0%, #059669 100%); 
+            background: linear-gradient(135deg, var(--success) 0%, #26af61 100%); 
             color: #fff; 
-            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2);
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.2);
         }
-        .btn-success:hover { box-shadow: 0 6px 16px rgba(52, 211, 153, 0.3); transform: translateY(-1px); }
+        
+        .btn-success:hover { 
+            box-shadow: 0 6px 16px rgba(46, 213, 115, 0.3); 
+            transform: translateY(-1px); 
+        }
         
         .btn-primary { 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
-            color: #fff; 
-            box-shadow: 0 4px 12px rgba(0, 180, 160, 0.25);
+            color: #0a0a0f; 
+            box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
+            font-weight: 700;
         }
+        
         .btn-primary:hover { 
-            box-shadow: 0 6px 16px rgba(0, 180, 160, 0.35); 
+            box-shadow: 0 6px 16px rgba(0, 212, 170, 0.3); 
             transform: translateY(-1px);
         }
 
-        /* HISTÓRICO COM LIXEIRA E FONTES MAIORES */
+        /* HISTÓRICO PREMIUM - SEM TURNO */
         .hist-item { 
-            background: var(--glass); 
+            background: var(--surface); 
             border: 1px solid var(--border); 
-            border-radius: 14px; 
-            padding: 16px; 
+            border-radius: 10px; 
+            padding: 14px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             transition: all 0.3s ease;
             position: relative;
         }
+        
         .hist-item:hover {
-            transform: translateX(3px);
-            border-color: rgba(0, 180, 160, 0.2);
-            background: rgba(0, 180, 160, 0.03);
+            background: var(--surface-hover);
+            border-color: rgba(0, 212, 170, 0.15);
+            transform: translateX(2px);
         }
-        .hist-info { flex: 1; min-width: 0; }
+        
+        .hist-info { 
+            flex: 1; 
+            min-width: 0; 
+            margin-right: 12px;
+        }
+        
         .hist-navio { 
-            font-weight: 700; 
-            font-size: 15px; 
+            font-weight: 600; 
+            font-size: 14px; 
             letter-spacing: 0.3px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: var(--text);
         }
+        
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--success) !important; }
+        
         .hist-meta {
-            font-size: 12px; 
-            color: var(--text-dim); 
+            font-size: 11px; 
+            color: var(--text-secondary); 
             font-weight: 500; 
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
+        
         .status-badge { 
-            padding: 6px 10px; 
-            border-radius: 20px; 
-            font-size: 10px; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 9px; 
             font-weight: 700; 
             border: 1px solid transparent; 
             cursor: pointer;
@@ -312,61 +365,78 @@
             gap: 4px;
             letter-spacing: 0.5px;
         }
-        .status-badge:hover { transform: scale(1.05); }
-        .status-badge.pago { background: rgba(52, 211, 153, 0.1); color: var(--success); border-color: rgba(52, 211, 153, 0.2); }
-        .status-badge.pendente { background: rgba(248, 113, 113, 0.1); color: var(--danger); border-color: rgba(248, 113, 113, 0.2); }
+        
+        .status-badge:hover { 
+            transform: scale(1.05); 
+            opacity: 0.9;
+        }
+        
+        .status-badge.pago { 
+            background: rgba(46, 213, 115, 0.1); 
+            color: var(--success); 
+            border-color: rgba(46, 213, 115, 0.3); 
+        }
+        
+        .status-badge.pendente { 
+            background: rgba(255, 71, 87, 0.1); 
+            color: var(--danger); 
+            border-color: rgba(255, 71, 87, 0.3); 
+        }
 
         .hist-values { 
             text-align: right; 
             margin-right: 12px;
-            min-width: 100px;
+            min-width: 90px;
         }
+        
         .hist-liquido {
             color: var(--accent); 
             font-weight: 600; 
             font-family: 'JetBrains Mono', monospace; 
-            font-size: 16px; 
+            font-size: 14px; 
             letter-spacing: -0.5px;
             margin-bottom: 2px;
         }
+        
         .hist-bruto {
-            color: var(--text-dim); 
-            font-size: 11px; 
+            color: var(--text-muted); 
+            font-size: 10px; 
             font-weight: 500;
         }
 
-        /* BOTÃO LIXEIRA VISÍVEL */
+        /* ÍCONE LIXEIRA PREMIUM (SVG) */
         .btn-delete {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.2);
-            color: var(--danger);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 18px;
             transition: all 0.2s;
             flex-shrink: 0;
         }
+        
         .btn-delete:hover {
-            background: var(--danger);
-            color: #fff;
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+            background: rgba(255, 71, 87, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+            transform: scale(1.05);
         }
+        
         .btn-delete:active {
             transform: scale(0.95);
         }
 
-        /* MODAL CONFIGURAÇÕES */
+        /* MODAIS PREMIUM */
         .modal-overlay { 
             position: fixed; 
             inset: 0; 
-            background: rgba(0, 0, 0, 0.85); 
-            backdrop-filter: blur(16px); 
+            background: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(20px); 
             z-index: 1000; 
             display: none; 
             align-items: center; 
@@ -375,215 +445,158 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        body.light-mode .modal-overlay { background: rgba(241, 245, 249, 0.9); }
+        
+        body.light-mode .modal-overlay { 
+            background: rgba(245, 245, 247, 0.9); 
+        }
+        
         .modal-overlay.active { 
             display: flex; 
             opacity: 1;
         }
         
         .modal-content { 
-            background: var(--card-solid); 
-            border-radius: 20px; 
+            background: var(--card); 
+            border-radius: 16px; 
             width: 100%; 
-            max-width: 360px; 
+            max-width: 340px; 
             padding: 0; 
             border: 1px solid var(--border); 
             position: relative; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95) translateY(10px);
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.6);
+            transform: scale(0.95);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             overflow: hidden;
         }
+        
         .modal-overlay.active .modal-content {
-            transform: scale(1) translateY(0);
+            transform: scale(1);
             opacity: 1;
         }
         
         .modal-header {
-            background: linear-gradient(180deg, rgba(0, 180, 160, 0.08) 0%, transparent 100%);
-            padding: 28px 20px 20px;
+            background: linear-gradient(180deg, rgba(0, 212, 170, 0.05) 0%, transparent 100%);
+            padding: 24px 16px 16px;
             text-align: center;
             border-bottom: 1px solid var(--border);
-            position: relative;
         }
         
         .modal-avatar {
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 12px;
-            font-size: 24px;
-            color: #fff;
-            box-shadow: 0 8px 20px rgba(0, 180, 160, 0.3);
+            color: #0a0a0f;
+            font-weight: 700;
+            font-size: 20px;
         }
         
         .modal-title {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 700;
             letter-spacing: 3px;
             color: var(--text);
-            margin: 0;
             text-transform: uppercase;
         }
         
         .modal-subtitle {
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
             font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        .pix-message-box {
-            background: rgba(0, 180, 160, 0.05);
-            border: 1px solid rgba(0, 180, 160, 0.2);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .pix-message {
-            font-size: 13px;
-            color: var(--primary);
-            font-weight: 500;
-            font-style: italic;
-            line-height: 1.5;
-        }
-        
-        .close-modal-btn { 
-            position: absolute; 
-            top: 16px; 
-            right: 16px; 
-            width: 36px; 
-            height: 36px; 
-            border-radius: 10px; 
-            background: var(--glass); 
-            border: 1px solid var(--border); 
-            color: var(--text-dim); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            z-index: 10;
-        }
-        .close-modal-btn:hover { 
-            background: var(--danger); 
-            color: #fff;
-            border-color: var(--danger);
-            transform: rotate(90deg);
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 16px;
         }
 
         .config-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .config-btn {
-            background: var(--card);
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px 8px;
+            border-radius: 10px;
+            padding: 16px 6px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
             color: var(--text);
         }
         
         .config-btn:hover {
-            transform: translateY(-2px);
+            background: var(--surface-hover);
             border-color: var(--primary);
-            background: rgba(0, 180, 160, 0.05);
+            transform: translateY(-2px);
         }
-        
-        .config-btn:active { transform: translateY(0); }
         
         .config-icon {
-            font-size: 24px;
-            opacity: 0.9;
-            transition: all 0.3s;
-            filter: grayscale(0.2);
-        }
-        
-        .config-btn:hover .config-icon {
-            transform: scale(1.1);
-            filter: grayscale(0) drop-shadow(0 0 6px rgba(0, 180, 160, 0.4));
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 600;
         }
         
         .config-label {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-dim);
+            color: var(--text-secondary);
         }
-        
-        .config-btn:hover .config-label { color: var(--primary); }
 
         .btn-apoio {
             width: 100%;
-            background: linear-gradient(135deg, rgba(0, 180, 160, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
-            border: 1px solid rgba(0, 180, 160, 0.3);
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(0, 212, 170, 0.3);
             color: var(--primary);
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 10px;
             transition: all 0.3s;
             letter-spacing: 1.5px;
-            position: relative;
-        }
-
-        .btn-apoio-text {
-            position: relative;
-            z-index: 2;
         }
         
         .btn-apoio:hover {
-            background: linear-gradient(135deg, rgba(0, 180, 160, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 180, 160, 0.15);
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(255, 215, 0, 0.1) 100%);
             border-color: var(--primary);
+            transform: translateY(-1px);
         }
 
         .btn-logout {
             width: 100%;
-            background: rgba(248, 113, 113, 0.08);
-            border: 1px solid rgba(248, 113, 113, 0.2);
+            background: rgba(255, 71, 87, 0.05);
+            border: 1px solid rgba(255, 71, 87, 0.2);
             color: var(--danger);
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s;
             letter-spacing: 1.5px;
         }
@@ -591,85 +604,115 @@
         .btn-logout:hover {
             background: var(--danger);
             color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(248, 113, 113, 0.25);
+            transform: translateY(-1px);
         }
 
+        .close-modal-btn { 
+            position: absolute; 
+            top: 12px; 
+            right: 12px; 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 8px; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            color: var(--text-secondary); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 10;
+        }
+        
+        .close-modal-btn:hover { 
+            background: var(--danger); 
+            color: #fff;
+            border-color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        /* TOAST PREMIUM */
         .toast-container { 
             position: fixed; 
-            top: 20px; 
+            top: 16px; 
             left: 50%; 
             transform: translateX(-50%); 
             z-index: 9999; 
             width: 90%; 
-            max-width: 340px; 
+            max-width: 320px; 
             pointer-events: none; 
         }
+        
         .toast { 
-            background: var(--card-solid); 
-            color: var(--primary); 
-            padding: 16px 20px; 
-            border-radius: 12px; 
+            background: var(--card); 
+            color: var(--text); 
+            padding: 14px 18px; 
+            border-radius: 10px; 
             border-left: 3px solid var(--primary); 
             font-weight: 600; 
-            font-size: 14px; 
-            box-shadow: 0 16px 32px rgba(0,0,0,0.3); 
-            margin-bottom: 10px; 
+            font-size: 13px; 
+            box-shadow: 0 16px 32px rgba(0,0,0,0.4); 
+            margin-bottom: 8px; 
             animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: 0.3px;
         }
+        
         @keyframes toastIn { 
-            from { transform: translateY(-20px) scale(0.95); opacity: 0; } 
-            to { transform: translateY(0) scale(1); opacity: 1; } 
+            from { transform: translateY(-20px); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
         }
 
         .footer-copyright { 
-            padding: 28px 0; 
+            padding: 20px 0; 
             text-align: center; 
             width: 100%; 
             margin-top: auto; 
         }
+        
         .footer-line { 
-            width: 40px; 
-            height: 2px; 
+            width: 30px; 
+            height: 1px; 
             background: linear-gradient(90deg, transparent, var(--primary), transparent); 
-            margin: 0 auto 12px; 
-            opacity: 0.4;
+            margin: 0 auto 8px; 
+            opacity: 0.5;
         }
+        
         .footer-text { 
-            font-size: 10px; 
-            letter-spacing: 3px; 
-            color: var(--text-dim); 
+            font-size: 9px; 
+            letter-spacing: 2px; 
+            color: var(--text-muted); 
             text-transform: uppercase;
             font-weight: 600;
         }
+        
         .footer-author { 
-            font-size: 13px; 
+            font-size: 11px; 
             font-weight: 700; 
             color: var(--primary); 
-            margin-top: 6px;
+            margin-top: 2px;
             letter-spacing: 2px;
-            opacity: 0.9;
+            text-transform: uppercase;
         }
 
         .hidden { display: none !important; }
         
         .user-avatar { 
-            width: 44px; 
-            height: 44px; 
-            border-radius: 12px; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 10px; 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
-            color: #fff; 
+            color: #0a0a0f; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: 700;
-            font-size: 15px;
-            box-shadow: 0 4px 12px rgba(0, 180, 160, 0.25);
+            font-size: 13px;
             letter-spacing: 0.5px;
         }
         
@@ -677,7 +720,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--success);
             text-transform: uppercase;
@@ -689,8 +732,8 @@
             height: 6px;
             background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            box-shadow: 0 0 0 2px rgba(46, 213, 115, 0.3);
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -698,35 +741,28 @@
             50% { opacity: 0.5; }
         }
 
-        /* INPUT DE SENHA MAIOR */
+        /* SENHA INPUT PREMIUM */
         #senhaInput {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 28px;
-            letter-spacing: 12px;
-            height: 60px;
-            background: rgba(20, 20, 28, 0.6);
-            border: 2px solid var(--border);
+            font-size: 24px;
+            letter-spacing: 8px;
+            height: 56px;
+            background: var(--input);
+            border: 1px solid var(--border);
             text-align: center;
-            border-radius: 16px;
+            border-radius: 12px;
+            font-weight: 600;
         }
+        
         #senhaInput:focus {
-            background: rgba(20, 20, 28, 0.8);
             border-color: var(--primary);
+            background: rgba(0, 212, 170, 0.05);
         }
 
-        /* Centralização vertical no mobile */
         @media (min-height: 700px) {
             #loginScreen {
                 justify-content: center;
             }
-        }
-
-        /* Ajustes para telas muito pequenas */
-        @media (max-width: 360px) {
-            body { font-size: 15px; }
-            .dash-val { font-size: 1rem; }
-            .hist-navio { font-size: 14px; }
-            .hist-liquido { font-size: 15px; }
         }
     </style>
 </head>
@@ -737,11 +773,11 @@
     <div class="container" id="loginScreen">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60vh;">
             <div class="login-card">
-                <h1 style="font-size: 2rem; letter-spacing: 6px; font-weight: 700; color: var(--text); margin-bottom: 4px;">EVOLUTION</h1>
-                <p style="font-size: 12px; color: var(--primary); letter-spacing: 4px; margin-bottom: 32px; font-weight: 600;">V46 ULTRA PREMIUM</p>
+                <h1 style="font-size: 1.8rem; letter-spacing: 8px; font-weight: 300; color: var(--text); margin-bottom: 4px; font-family: 'Inter', sans-serif;">EVOLUTION</h1>
+                <p style="font-size: 11px; color: var(--primary); letter-spacing: 4px; margin-bottom: 32px; font-weight: 600; opacity: 0.8;">V46 ULTRA PREMIUM</p>
                 <input type="password" id="senhaInput" placeholder="••••••" maxlength="6">
-                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 10px;">Acessar Sistema</button>
-                <div style="margin-top: 24px; font-size: 13px; color: var(--text-dim); letter-spacing: 1px; font-weight: 500;">
+                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 8px;">Acessar</button>
+                <div style="margin-top: 24px; font-size: 12px; color: var(--text-secondary); letter-spacing: 1px; font-weight: 500;">
                     Insira sua chave de acesso
                 </div>
             </div>
@@ -749,12 +785,12 @@
         <div class="footer-copyright">
             <div class="footer-line"></div>
             <p class="footer-text">Todos os direitos reservados</p>
-            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+            <p class="footer-author">Felipe Prado Systems</p>
         </div>
     </div>
 
     <div class="container hidden" id="mainPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; margin-top: 12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; margin-top: 8px;">
             <div style="display:flex; align-items:center; gap:12px;">
                 <div id="userAvatar" class="user-avatar">FP</div>
                 <div>
@@ -762,57 +798,125 @@
                         <div class="status-dot"></div>
                         <span>Online</span>
                     </div>
-                    <h2 id="userName" style="font-size:1.1rem; font-weight:700; margin-top:4px; letter-spacing: 0.5px;">...</h2>
+                    <h2 id="userName" style="font-size:1rem; font-weight:700; margin-top:4px; letter-spacing: 0.5px; color: var(--text);">...</h2>
                 </div>
             </div>
-            <button style="width:44px; height:44px; border-radius:12px; background:var(--card); border:1px solid var(--border); color:var(--text-dim); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s; font-size:18px;" onclick="app.openModal('configModal')" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'; this.style.transform='rotate(30deg)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'; this.style.transform='rotate(0deg)';">⚙</button>
+            <button style="width:40px; height:40px; border-radius:10px; background:var(--surface); border:1px solid var(--border); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s; font-size:16px;" onclick="app.openModal('configModal')" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)';">⚙</button>
         </div>
 
         <div class="dash-grid">
-            <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" class="dash-count">0 serviços</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" class="dash-count">0 serviços</div></div>
+            <div class="dash-card dash-bruto">
+                <span class="dash-label">Bruto</span>
+                <div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div>
+            </div>
+            <div class="dash-card dash-liq">
+                <span class="dash-label">Líquido</span>
+                <div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div>
+            </div>
+            <div class="dash-card dash-pend">
+                <span class="dash-label">Pendente</span>
+                <div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div>
+                <div id="countPend" class="dash-count">0 serviços</div>
+            </div>
+            <div class="dash-card dash-pago">
+                <span class="dash-label">Pago</span>
+                <div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div>
+                <div id="countPago" class="dash-count">0 serviços</div>
+            </div>
         </div>
 
         <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">Relatório de Produção</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')">
+                <div class="section-title">Relatório de Produção</div>
+                <span>▼</span>
+            </div>
             <div class="section-content">
-                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;" placeholder="Nome do navio"></div>
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
+                <div class="input-group">
+                    <label class="input-label">Navio</label>
+                    <input type="text" id="relNavio" style="text-transform:uppercase;" placeholder="Nome do navio">
                 </div>
-                <div class="input-group"><label class="input-label">Terno</label><select id="relTernoSelecao"><option value="1°">1° Terno</option><option value="2°">2° Terno</option><option value="3°">3° Terno</option><option value="4°">4° Terno</option></select></div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label">Data</label>
+                        <input type="date" id="relData">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Turno</label>
+                        <select id="relTurno" onchange="app.toggleRelatorioCampos()">
+                            <option value="07x15">07x15</option>
+                            <option value="15x23" selected>15x23</option>
+                            <option value="23x07">23x07</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Terno</label>
+                    <select id="relTernoSelecao">
+                        <option value="1°">1° Terno</option>
+                        <option value="2°">2° Terno</option>
+                        <option value="3°">3° Terno</option>
+                        <option value="4°">4° Terno</option>
+                    </select>
+                </div>
                 <div id="relCamposProducao"></div>
                 <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:4px;">Copiar Relatório</button>
             </div>
         </div>
 
         <div class="section-card" id="secLan">
-            <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title">Nova Produção</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secLan')">
+                <div class="section-title">Nova Produção</div>
+                <span>▼</span>
+            </div>
             <div class="section-content">
-                <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
-                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;" placeholder="Nome do navio"></div>
-                <div class="input-row">
-                    <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
-                    <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
+                <div class="input-group">
+                    <label class="input-label">Data</label>
+                    <input type="date" id="calcData">
                 </div>
-                <div class="input-group"><label class="input-label">Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
+                <div class="input-group">
+                    <label class="input-label">Navio</label>
+                    <input type="text" id="calcNavio" style="text-transform:uppercase;" placeholder="Nome do navio">
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label">Tipo</label>
+                        <select id="calcTipoDia">
+                            <option value="normal">Normal</option>
+                            <option value="feriado">Dom/Feriado</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Turno</label>
+                        <select id="calcTurno" onchange="app.adjustCalcFields()">
+                            <option value="07x15">07x15</option>
+                            <option value="15x23" selected>15x23</option>
+                            <option value="23x07">23x07</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Conferentes</label>
+                    <input type="number" id="calcQtdConf" value="3" min="1">
+                </div>
                 <div id="calcCampos"></div>
                 <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:4px;">Salvar Registro</button>
             </div>
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">Histórico</div><span>▼</span></div>
-            <div class="section-content"><div id="histList"></div></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')">
+                <div class="section-title">Histórico</div>
+                <span>▼</span>
+            </div>
+            <div class="section-content">
+                <div id="histList"></div>
+            </div>
         </div>
 
         <div class="footer-copyright">
             <div class="footer-line"></div>
             <p class="footer-text">Todos os direitos reservados</p>
-            <p class="footer-author">FELIPE PRADO SYSTEMS</p>
+            <p class="footer-author">Felipe Prado Systems</p>
         </div>
     </div>
 
@@ -827,10 +931,6 @@
             </div>
             
             <div class="modal-body">
-                <div class="pix-message-box" id="pixMessageBox" style="display: none;">
-                    <div class="pix-message" id="pixMessage"></div>
-                </div>
-
                 <div class="config-grid">
                     <button class="config-btn" onclick="app.toggleTheme()">
                         <span class="config-icon" id="themeIcon">◐</span>
@@ -854,7 +954,7 @@
                 </div>
 
                 <button class="btn-apoio" onclick="app.showPix()">
-                    <span class="btn-apoio-text" id="apoioText">☕ Apoiar Evolução</span>
+                    <span id="apoioText">Apoiar Evolução</span>
                 </button>
 
                 <button class="btn-logout" onclick="app.logout()">
@@ -867,52 +967,66 @@
     </div>
 
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
-        <div class="modal-content" style="text-align:center; padding: 32px 20px; background: var(--card-solid); border: 1px solid var(--border);">
+        <div class="modal-content" style="text-align:center; padding: 24px 16px;">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
-            <div style="font-size:2.5rem; margin-bottom:20px; opacity:0.9;">☕</div>
-            <h3 style="color: var(--primary); letter-spacing: 3px; margin-bottom: 12px; font-size: 14px; font-weight: 700;">APOIO AO DESENVOLVEDOR</h3>
+            <div style="font-size:2rem; margin-bottom:16px;">♦</div>
+            <h3 style="color: var(--primary); letter-spacing: 3px; margin-bottom: 8px; font-size: 12px; font-weight: 700;">APOIO AO DESENVOLVEDOR</h3>
             
-            <div class="pix-message-box" style="margin: 16px 0;">
-                <div class="pix-message" id="pixModalMessage"></div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 16px 0;">
+                <div style="font-size: 12px; color: var(--text-secondary); font-style: italic; line-height: 1.4;" id="pixModalMessage"></div>
             </div>
 
-            <div onclick="app.copyPix()" style="background: var(--input); color: var(--primary); padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; border: 2px solid var(--border); cursor: pointer; transition: all 0.3s; font-size: 20px; font-weight: 600; letter-spacing: 2px;">
+            <div onclick="app.copyPix()" style="background: var(--input); color: var(--primary); padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); cursor: pointer; transition: all 0.3s; font-size: 18px; font-weight: 600; letter-spacing: 1px;">
                 92994821868
-                <div style="font-size: 11px; text-transform: uppercase; opacity: 0.6; margin-top: 8px; font-family: 'Inter', sans-serif; letter-spacing: 2px; font-weight: 600;">CHAVE PIX: Felipe Prado</div>
+                <div style="font-size: 9px; text-transform: uppercase; opacity: 0.6; margin-top: 4px; font-family: 'Inter', sans-serif; letter-spacing: 1px; font-weight: 600;">CHAVE PIX: Felipe Prado</div>
             </div>
-            <p style="font-size: 12px; color: var(--text-dim); margin-top: 16px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Toque na chave acima para copiar</p>
+            <p style="font-size: 10px; color: var(--text-secondary); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Toque para copiar</p>
         </div>
     </div>
 
     <script>
         const PIX_MESSAGES = [
-            "☕ Um café mantém as atualizações fluindo!",
-            "🚀 Sua ajuda impulsiona melhorias no sistema!",
-            "⚡ Energia para otimizar suas ferramentas!",
-            "🎯 Contribuições mantêm o Evolution ativo!",
-            "💡 Cada apoio gera uma nova melhoria!",
-            "🔧 Manutenção do app com sua colaboração!",
-            "📱 O sistema agradece sua parceria!",
-            "⚓ Ajude a manter o código navegando!",
-            "💎 Apoie quem cuida da sua produção!",
-            "🎁 Presenteie o dev por essa ferramenta!"
+            "Um café mantém as atualizações fluindo.",
+            "Sua ajuda impulsiona melhorias no sistema.",
+            "Energia para otimizar suas ferramentas.",
+            "Contribuições mantêm o Evolution ativo.",
+            "Cada apoio gera uma nova melhoria.",
+            "Manutenção do app com sua colaboração.",
+            "O sistema agradece sua parceria.",
+            "Ajude a manter o código navegando.",
+            "Apoie quem cuida da sua produção.",
+            "Presenteie o dev por essa ferramenta."
         ];
 
         const APOIO_MESSAGES = [
-            "☕ Pagar um café ao dev",
-            "🍕 Patrocinar melhorias",
-            "⚡ Impulsionar o sistema",
-            "🎯 Valorizar o Evolution",
-            "🔧 Manter o app atualizado",
-            "📱 Investir em novas funções",
-            "⭐ Ser um apoiador VIP",
-            "⚓ Fortalecer o projeto",
-            "💡 Garantir estabilidade",
-            "🚀 Decolar com o sistema"
+            "Pagar um café ao dev",
+            "Patrocinar melhorias",
+            "Impulsionar o sistema",
+            "Valorizar o Evolution",
+            "Manter o app atualizado",
+            "Investir em novas funções",
+            "Ser um apoiador VIP",
+            "Fortalecer o projeto",
+            "Garantir estabilidade",
+            "Decolar com o sistema"
         ];
 
-        class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
-        const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
+        class Money { 
+            constructor(cents) { this._cents = Math.round(cents); } 
+            format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } 
+            get cents() { return this._cents; } 
+        }
+        
+        const SECURE_USERS = { 
+            "002451": "FELIPE PRADO", 
+            "7806": "EDILSON JR", 
+            "1980": "ANDERSON PRADO", 
+            "2026": "FABRICIO DIAS", 
+            "302466": "RODRIGO COSTA", 
+            "3373": "RICARDO PRADO", 
+            "2912": "JOHNY", 
+            "0420": "FERNANDO SOARES" 
+        };
 
         class EvolutionApp {
             constructor() { 
@@ -924,20 +1038,6 @@
 
             getRandomMessage(messages) {
                 return messages[Math.floor(Math.random() * messages.length)];
-            }
-
-            updatePixMessages() {
-                const configMessageBox = document.getElementById('pixMessageBox');
-                const configMessage = document.getElementById('pixMessage');
-                if (configMessageBox && configMessage) {
-                    configMessageBox.style.display = 'block';
-                    configMessage.textContent = this.getRandomMessage(PIX_MESSAGES);
-                }
-
-                const apoioText = document.getElementById('apoioText');
-                if (apoioText) {
-                    apoioText.textContent = this.getRandomMessage(APOIO_MESSAGES);
-                }
             }
 
             getOrCreateDeviceId() {
@@ -955,7 +1055,10 @@
                 const hoje = new Date().toISOString().split('T')[0];
                 document.getElementById('calcData').value = hoje;
                 document.getElementById('relData').value = hoje;
-                this.adjustCalcFields(); this.toggleRelatorioCampos(); this.loadTheme(); this.checkSession();
+                this.adjustCalcFields(); 
+                this.toggleRelatorioCampos(); 
+                this.loadTheme(); 
+                this.checkSession();
             }
 
             updatePinDisplay(val) {
@@ -984,21 +1087,32 @@
 
             breakSite() {
                 document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0e; color: #f87171; padding: 30px; text-align: center; font-family: 'Inter', sans-serif;">
-                        <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.8;">⚠</div>
-                        <h1 style="letter-spacing: 3px; font-weight: 700; font-size: 1.2rem; margin-bottom: 16px;">ERRO DE SEGURANÇA</h1>
-                        <p style="color: #64748b; font-size: 14px; line-height: 1.6; font-weight: 500;">
+                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); color: var(--danger); padding: 30px; text-align: center; font-family: 'Inter', sans-serif;">
+                        <div style="font-size: 2rem; margin-bottom: 16px;">⚠</div>
+                        <h1 style="letter-spacing: 3px; font-weight: 700; font-size: 1rem; margin-bottom: 16px;">ERRO DE SEGURANÇA</h1>
+                        <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
                             Esta chave está vinculada a outro dispositivo.<br>
                             Acesso simultâneo detectado e bloqueado.
                         </p>
-                        <div style="margin-top: 32px; padding: 16px; border: 1px solid #1e293b; border-radius: 12px; background: rgba(30, 30, 40, 0.5);">
-                            <p style="font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Suporte</p>
-                            <p style="font-size: 16px; font-weight: 700; color: #00b4a0; margin-top: 4px; letter-spacing: 1px;">FELIPE PRADO</p>
+                        <div style="margin-top: 32px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);">
+                            <p style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Suporte</p>
+                            <p style="font-size: 14px; font-weight: 700; color: var(--primary); margin-top: 4px;">FELIPE PRADO</p>
                         </div>
                     </div>`;
             }
 
-            checkSession() { const s = localStorage.getItem('evo_session'); if (s) { try { const d = JSON.parse(atob(s)); if (d.ts > Date.now() - 86400000) { this.currentUser = d.user; this.showMainPanel(); } } catch(e){} } }
+            checkSession() { 
+                const s = localStorage.getItem('evo_session'); 
+                if (s) { 
+                    try { 
+                        const d = JSON.parse(atob(s)); 
+                        if (d.ts > Date.now() - 86400000) { 
+                            this.currentUser = d.user; 
+                            this.showMainPanel(); 
+                        } 
+                    } catch(e){} 
+                } 
+            }
 
             showMainPanel() {
                 document.getElementById('loginScreen').classList.add('hidden');
@@ -1060,37 +1174,72 @@
             }
 
             forceCopy(text, msg) {
-                const ta = document.createElement("textarea"); ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.opacity = '0';
-                document.body.appendChild(ta); ta.focus(); ta.select(); 
-                try { document.execCommand('copy'); this.showToast(msg); } catch (e) { window.open("https://api.whatsapp.com/send?text=  " + encodeURIComponent(text), '_blank'); }
+                const ta = document.createElement("textarea"); 
+                ta.value = text; 
+                ta.style.position = 'fixed'; 
+                ta.style.left = '-9999px'; 
+                document.body.appendChild(ta); 
+                ta.focus(); 
+                ta.select(); 
+                try { 
+                    document.execCommand('copy'); 
+                    this.showToast(msg); 
+                } catch (e) { 
+                    window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank'); 
+                }
                 document.body.removeChild(ta);
             }
 
             showToast(m) {
                 const container = document.getElementById('toastContainer');
-                const e = document.createElement('div'); e.className = 'toast'; 
-                e.innerHTML = `<span style="font-size:16px; font-weight: 700;">✓</span> <span>${m}</span>`;
+                const e = document.createElement('div'); 
+                e.className = 'toast'; 
+                e.innerHTML = `<span style="color: var(--primary); font-weight: 700;">✓</span> <span>${m}</span>`;
                 container.appendChild(e);
-                setTimeout(() => { e.style.opacity = '0'; e.style.transform = 'translateY(-10px)'; setTimeout(() => e.remove(), 400); }, 3000);
+                setTimeout(() => { 
+                    e.style.opacity = '0'; 
+                    e.style.transform = 'translateY(-10px)'; 
+                    setTimeout(() => e.remove(), 400); 
+                }, 3000);
             }
 
             saveEntry() {
                 const n = document.getElementById('calcNavio').value.toUpperCase();
                 const d = document.getElementById('calcData').value;
-                if (!n || !d) return this.showToast('Incompleto!');
+                if (!n || !d) return this.showToast('Incompleto');
                 const t = document.getElementById('calcTurno').value;
                 const v = t === '15x23' ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value];
                 const r = this.calcularValores(document.getElementById('calcTipoDia').value, t, v, document.getElementById('calcQtdConf').value);
-                this.entries.unshift({ id: Date.now(), navio: n, data: d, dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), turno: t, bruto: r.b, liquido: r.l, pago: false });
-                this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Salvo com Sucesso!');
+                this.entries.unshift({ 
+                    id: Date.now(), 
+                    navio: n, 
+                    data: d, 
+                    dataF: new Date(d + 'T12:00:00').toLocaleDateString('pt-BR'), 
+                    turno: t, 
+                    bruto: r.b, 
+                    liquido: r.l, 
+                    pago: false 
+                });
+                this.saveData(); 
+                this.renderHistory(); 
+                this.updateDashboard(); 
+                this.showToast('Salvo com Sucesso');
             }
 
             calcularValores(tipo, turno, v, q) {
-                const TX = { '07x15': { normal: 5.73, feriado: 8.61 }, '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, '23x07': { normal: 6.88, feriado: 10.32 } };
-                let bN = 0; const nC = parseInt(q) || 1;
-                if (turno === '15x23') { const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; }
-                else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
-                const mb = (bN / nC); return { b: mb * 100, l: mb * 82 };
+                const TX = { 
+                    '07x15': { normal: 5.73, feriado: 8.61 }, 
+                    '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } }, 
+                    '23x07': { normal: 6.88, feriado: 10.32 } 
+                };
+                let bN = 0; 
+                const nC = parseInt(q) || 1;
+                if (turno === '15x23') { 
+                    const t = tipo === 'feriado' ? TX[turno].feriado : TX[turno].normal; 
+                    bN = (parseInt(v[0])||0)*t.p1 + (parseInt(v[1])||0)*t.p2; 
+                } else bN = (parseInt(v[0])||0)*TX[turno][tipo==='feriado'?'feriado':'normal'];
+                const mb = (bN / nC); 
+                return { b: mb * 100, l: mb * 82 };
             }
 
             renderHistory() {
@@ -1099,17 +1248,20 @@
                     <div class="hist-item">
                         <div class="hist-info">
                             <div class="hist-navio ${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
-                            <div class="hist-meta">${e.dataF} • ${e.turno}</div>
+                            <div class="hist-meta">${e.dataF}</div>
                             <button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">
-                                ${e.pago?'✓ PAGO':'◐ PENDENTE'}
+                                ${e.pago?'PAGO':'PENDENTE'}
                             </button>
                         </div>
                         <div class="hist-values">
                             <div class="hist-liquido">${new Money(e.liquido).format()}</div>
                             <div class="hist-bruto">Bruto: ${new Money(e.bruto).format()}</div>
                         </div>
-                        <button class="btn-delete" onclick="app.del(${e.id})" title="Excluir registro">
-                            🗑️
+                        <button class="btn-delete" onclick="app.del(${e.id})" title="Excluir">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
                         </button>
                     </div>
                 `).join('');
@@ -1117,7 +1269,17 @@
 
             updateDashboard() {
                 let b=0, l=0, pe=0, pa=0, cpe=0, cpa=0;
-                this.entries.forEach(e => { b+=e.bruto; l+=e.liquido; if(e.pago){pa+=e.liquido; cpa++;} else {pe+=e.liquido; cpe++;} });
+                this.entries.forEach(e => { 
+                    b+=e.bruto; 
+                    l+=e.liquido; 
+                    if(e.pago){
+                        pa+=e.liquido; 
+                        cpa++;
+                    } else {
+                        pe+=e.liquido; 
+                        cpe++;
+                    } 
+                });
                 document.getElementById('dashBruto').textContent = new Money(b).format();
                 document.getElementById('dashLiq').textContent = new Money(l).format();
                 document.getElementById('dashPend').textContent = new Money(pe).format();
@@ -1126,31 +1288,128 @@
                 document.getElementById('countPago').textContent = `${cpa} serviços`;
             }
 
-            loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
-            saveData() { localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); }
-            toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); this.updateThemeIcon(); this.showToast('Tema Alterado'); }
-            loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
-            toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
+            loadData() { 
+                const key = `evo_db_${btoa(this.currentUser)}`; 
+                try { 
+                    this.entries = JSON.parse(localStorage.getItem(key)) || []; 
+                } catch(e) { 
+                    this.entries = []; 
+                } 
+                this.renderHistory(); 
+                this.updateDashboard(); 
+            }
+            
+            saveData() { 
+                localStorage.setItem(`evo_db_${btoa(this.currentUser)}`, JSON.stringify(this.entries)); 
+            }
+            
+            toggleTheme() { 
+                document.body.classList.toggle('light-mode'); 
+                localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); 
+                this.updateThemeIcon(); 
+                this.showToast('Tema Alterado'); 
+            }
+            
+            loadTheme() { 
+                if (localStorage.getItem('evo_theme') === 'light') 
+                    document.body.classList.add('light-mode'); 
+            }
+            
+            toggleSection(id) { 
+                document.getElementById(id).classList.toggle('expanded'); 
+            }
+            
             openModal(id) { 
                 document.getElementById(id).classList.add('active'); 
                 if (id === 'configModal') {
-                    this.updatePixMessages();
+                    const apoioText = document.getElementById('apoioText');
+                    if (apoioText) apoioText.textContent = this.getRandomMessage(APOIO_MESSAGES);
                 } else if (id === 'pixModal') {
                     const modalMsg = document.getElementById('pixModalMessage');
                     if (modalMsg) modalMsg.textContent = this.getRandomMessage(PIX_MESSAGES);
                 }
             }
-            closeModal(id) { document.getElementById(id).classList.remove('active'); }
-            exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo_${new Date().toISOString().split('T')[0]}.json`; a.click(); this.showToast('Backup Exportado'); }
-            triggerImport() { document.getElementById('importInput').click(); }
-            importData(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { try { this.entries = JSON.parse(ev.target.result); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Backup Restaurado!'); this.closeModal('configModal'); } catch(err) { this.showToast('Arquivo inválido'); } }; r.readAsText(f); }
-            togglePago(id) { const e = this.entries.find(x => x.id === id); if(e){ e.pago = !e.pago; this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast(e.pago ? 'Marcado como Pago' : 'Marcado como Pendente'); } }
-            del(id) { if(confirm('Deseja realmente excluir este registro?')){ this.entries = this.entries.filter(x => x.id !== id); this.saveData(); this.renderHistory(); this.updateDashboard(); this.showToast('Registro Excluído'); } }
-            logout() { localStorage.removeItem('evo_session'); location.reload(); }
-            startAutoPix() { setInterval(() => { if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { this.openModal('pixModal'); } }, 480000); }
-            showPix() { this.closeModal('configModal'); setTimeout(() => this.openModal('pixModal'), 300); }
-            copyPix() { this.forceCopy('92994821868', 'Chave PIX Copiada!'); }
+            
+            closeModal(id) { 
+                document.getElementById(id).classList.remove('active'); 
+            }
+            
+            exportData() { 
+                const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); 
+                const url = URL.createObjectURL(b); 
+                const a = document.createElement('a'); 
+                a.href = url; 
+                a.download = `backup_evo_${new Date().toISOString().split('T')[0]}.json`; 
+                a.click(); 
+                this.showToast('Backup Exportado'); 
+            }
+            
+            triggerImport() { 
+                document.getElementById('importInput').click(); 
+            }
+            
+            importData(e) { 
+                const f = e.target.files[0]; 
+                const r = new FileReader(); 
+                r.onload = (ev) => { 
+                    try { 
+                        this.entries = JSON.parse(ev.target.result); 
+                        this.saveData(); 
+                        this.renderHistory(); 
+                        this.updateDashboard(); 
+                        this.showToast('Backup Restaurado'); 
+                        this.closeModal('configModal'); 
+                    } catch(err) { 
+                        this.showToast('Arquivo inválido'); 
+                    } 
+                }; 
+                r.readAsText(f); 
+            }
+            
+            togglePago(id) { 
+                const e = this.entries.find(x => x.id === id); 
+                if(e){ 
+                    e.pago = !e.pago; 
+                    this.saveData(); 
+                    this.renderHistory(); 
+                    this.updateDashboard(); 
+                    this.showToast(e.pago ? 'Marcado como Pago' : 'Marcado como Pendente'); 
+                } 
+            }
+            
+            del(id) { 
+                if(confirm('Deseja realmente excluir este registro?')){
+                    this.entries = this.entries.filter(x => x.id !== id); 
+                    this.saveData(); 
+                    this.renderHistory(); 
+                    this.updateDashboard(); 
+                    this.showToast('Registro Excluído'); 
+                } 
+            }
+            
+            logout() { 
+                localStorage.removeItem('evo_session'); 
+                location.reload(); 
+            }
+            
+            startAutoPix() { 
+                setInterval(() => { 
+                    if (!document.getElementById('mainPanel').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { 
+                        this.openModal('pixModal'); 
+                    } 
+                }, 480000); 
+            }
+            
+            showPix() { 
+                this.closeModal('configModal'); 
+                setTimeout(() => this.openModal('pixModal'), 300); 
+            }
+            
+            copyPix() { 
+                this.forceCopy('92994821868', 'Chave PIX Copiada'); 
+            }
         }
+        
         const app = new EvolutionApp();
     </script>
 </body>
