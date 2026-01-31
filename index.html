@@ -6,41 +6,47 @@
     <meta name="theme-color" content="#0a0a0e">
     <title>EVOLUTION V46 ULTRA PREMIUM</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         
         :root {
-            --primary: #00d1b2;
-            --primary-dark: #00b89c;
-            --accent: #ffd700;
-            --danger: #ff3860;
-            --success: #48c774;
-            --info: #209cee;
+            --primary: #00b4a0;
+            --primary-light: #00d1b2;
+            --primary-dark: #009e8c;
+            --accent: #fbbf24;
+            --danger: #f87171;
+            --success: #34d399;
+            --info: #60a5fa;
             --bg: #0a0a0e;
-            --bg-gradient: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0e 50%, #000000 100%);
-            --card: rgba(22, 22, 29, 0.75);
-            --card-solid: #16161d;
-            --input: rgba(32, 32, 38, 0.8);
-            --text: #ffffff;
-            --text-dim: #8e8e93;
-            --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(255, 255, 255, 0.03);
+            --bg-gradient: radial-gradient(ellipse at top, #1a1a2e 0%, #0f1117 50%, #000000 100%);
+            --card: rgba(30, 30, 40, 0.6);
+            --card-solid: #1e1e28;
+            --input: rgba(20, 20, 28, 0.8);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.02);
             --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
         body.light-mode {
-            --bg: #f0f2f5;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            --card: rgba(255, 255, 255, 0.85);
+            --bg: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --card: rgba(255, 255, 255, 0.7);
             --card-solid: #ffffff;
-            --input: rgba(240, 240, 240, 0.9);
-            --text: #1a1a1a;
-            --text-dim: #666666;
-            --border: rgba(0, 0, 0, 0.08);
-            --glass: rgba(0, 0, 0, 0.03);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            --input: rgba(241, 245, 249, 0.9);
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --border: rgba(0, 0, 0, 0.06);
+            --glass: rgba(0, 0, 0, 0.02);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -51,21 +57,30 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: all 0.5s ease;
-            font-size: 14px;
+            align-items: center;
+            transition: all 0.4s ease;
+            font-size: 12px;
+            font-weight: 400;
         }
 
-        .container { max-width: 480px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .container { 
+            max-width: 400px; 
+            width: 100%; 
+            margin: 0 auto; 
+            padding: 16px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
 
-        /* Login Screen Melhorado */
         .login-card {
             background: var(--card);
-            padding: 40px 30px;
-            border-radius: 28px;
+            padding: 32px 24px;
+            border-radius: 20px;
             width: 100%;
             text-align: center;
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
@@ -77,193 +92,222 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-            background-size: 200% 100%;
-            animation: gradientShift 3s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.6;
         }
 
         /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .dash-card { 
             background: var(--card); 
-            padding: 15px; 
-            border-radius: 18px; 
+            padding: 14px; 
+            border-radius: 14px; 
             border: 1px solid var(--border); 
             position: relative; 
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
-        .dash-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .dash-card:hover { 
+            transform: translateY(-2px); 
+            border-color: rgba(0, 180, 160, 0.3);
+        }
+        .dash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; opacity: 0.7; }
         .dash-bruto::before { background: var(--info); }
         .dash-liq::before { background: var(--accent); }
         .dash-pend::before { background: var(--danger); }
         .dash-pago::before { background: var(--success); }
-        .dash-val { font-size: 1.1rem; font-weight: 800; font-family: 'Space Mono', monospace; margin-top: 5px; }
-        .dash-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .dash-count { font-size: 10px; margin-top: 5px; font-weight: 700; }
+        .dash-val { 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            font-family: 'JetBrains Mono', monospace; 
+            margin-top: 4px;
+            letter-spacing: -0.5px;
+        }
+        .dash-label { 
+            font-size: 8px; 
+            color: var(--text-dim); 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+        .dash-count { 
+            font-size: 8px; 
+            margin-top: 4px; 
+            font-weight: 500;
+            opacity: 0.8;
+        }
 
         /* SEÇÕES */
         .section-card { 
             background: var(--card); 
-            border-radius: 20px; 
-            margin-bottom: 15px; 
+            border-radius: 14px; 
+            margin-bottom: 10px; 
             border: 1px solid var(--border); 
             overflow: hidden;
             backdrop-filter: blur(10px);
-            transition: box-shadow 0.3s;
+            transition: all 0.3s ease;
         }
-        .section-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .section-header { 
-            padding: 18px 20px; 
+            padding: 14px 16px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             cursor: pointer;
-            background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(0, 180, 160, 0.03) 0%, transparent 100%);
             border-bottom: 1px solid transparent;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
         .section-card.expanded .section-header {
             border-bottom-color: var(--border);
+            background: linear-gradient(90deg, rgba(0, 180, 160, 0.06) 0%, transparent 100%);
         }
-        .section-title { font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary); }
+        .section-title { 
+            font-size: 0.65rem; 
+            font-weight: 600; 
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
         .section-header span { 
-            transition: transform 0.3s; 
-            font-size: 12px;
-            opacity: 0.7;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            font-size: 9px;
+            opacity: 0.6;
+            color: var(--text-dim);
         }
-        .section-card.expanded .section-header span { transform: rotate(180deg); }
-        .section-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 0 20px; }
-        .section-card.expanded .section-content { max-height: 1500px; padding: 0 20px 20px; }
+        .section-card.expanded .section-header span { transform: rotate(180deg); opacity: 1; color: var(--primary); }
+        
+        .section-content { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease; 
+            padding: 0 16px;
+        }
+        .section-card.expanded .section-content { 
+            max-height: 1500px; 
+            padding: 0 16px 16px; 
+        }
 
         input, select { 
             width: 100%; 
-            padding: 12px; 
+            padding: 10px 12px; 
             background: var(--input); 
             border: 1px solid var(--border); 
-            border-radius: 12px; 
+            border-radius: 8px; 
             color: var(--text); 
-            font-size: 13px; 
+            font-size: 12px; 
             outline: none;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
+            font-weight: 400;
         }
         input:focus, select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 209, 178, 0.1);
+            box-shadow: 0 0 0 2px rgba(0, 180, 160, 0.1);
         }
-        .input-group { margin-bottom: 12px; width: 100%; }
+        .input-group { margin-bottom: 10px; width: 100%; }
         .input-label { 
             display: block; 
-            font-size: 10px; 
+            font-size: 8px; 
             color: var(--text-dim); 
             margin-bottom: 4px; 
-            font-weight: 700; 
+            font-weight: 500; 
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
         
         .input-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; width: 100% !important; }
 
         .btn { 
             width: 100%; 
-            padding: 15px; 
+            padding: 12px; 
             border: none; 
-            border-radius: 14px; 
-            font-weight: 800; 
-            font-size: 12px; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            font-size: 10px; 
             text-transform: uppercase; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 8px; 
-            transition: all 0.3s;
-            letter-spacing: 0.5px;
+            gap: 6px; 
+            transition: all 0.3s ease;
+            letter-spacing: 1.5px;
             position: relative;
             overflow: hidden;
+            font-family: 'Inter', sans-serif;
         }
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        .btn:hover::before { left: 100%; }
         .btn:active { transform: scale(0.98); }
         
         .btn-success { 
-            background: linear-gradient(135deg, var(--success) 0%, #3dad66 100%); 
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%); 
             color: #fff; 
-            box-shadow: 0 4px 15px rgba(72, 199, 116, 0.3);
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2);
         }
+        .btn-success:hover { box-shadow: 0 6px 16px rgba(52, 211, 153, 0.3); transform: translateY(-1px); }
+        
         .btn-primary { 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
-            color: #000; 
-            box-shadow: 0 4px 15px rgba(0, 209, 178, 0.3);
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(0, 180, 160, 0.25);
+        }
+        .btn-primary:hover { 
+            box-shadow: 0 6px 16px rgba(0, 180, 160, 0.35); 
+            transform: translateY(-1px);
         }
 
         .hist-item { 
             background: var(--glass); 
             border: 1px solid var(--border); 
-            border-radius: 16px; 
-            padding: 16px; 
+            border-radius: 12px; 
+            padding: 12px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 12px;
-            transition: all 0.2s;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
         .hist-item:hover {
-            transform: translateX(4px);
-            border-color: var(--primary);
-            background: rgba(0, 209, 178, 0.05);
+            transform: translateX(3px);
+            border-color: rgba(0, 180, 160, 0.2);
+            background: rgba(0, 180, 160, 0.03);
         }
         .navio-pendente { color: var(--danger) !important; }
         .navio-pago { color: var(--success) !important; }
         .status-badge { 
-            padding: 6px 12px; 
-            border-radius: 20px; 
-            font-size: 10px; 
-            font-weight: 800; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 8px; 
+            font-weight: 600; 
             border: 1px solid transparent; 
-            margin-top: 5px;
+            margin-top: 4px;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
+            letter-spacing: 0.5px;
         }
         .status-badge:hover { transform: scale(1.05); }
-        .status-badge.pago { background: rgba(72, 199, 116, 0.15); color: var(--success); border-color: rgba(72, 199, 116, 0.3); }
-        .status-badge.pendente { background: rgba(255, 56, 96, 0.15); color: var(--danger); border-color: rgba(255, 56, 96, 0.3); }
+        .status-badge.pago { background: rgba(52, 211, 153, 0.1); color: var(--success); border-color: rgba(52, 211, 153, 0.2); }
+        .status-badge.pendente { background: rgba(248, 113, 113, 0.1); color: var(--danger); border-color: rgba(248, 113, 113, 0.2); }
 
-        /* MODAL CONFIGURAÇÕES - MELHORADO */
+        /* MODAL CONFIGURAÇÕES */
         .modal-overlay { 
             position: fixed; 
             inset: 0; 
-            background: rgba(0,0,0,0.85); 
-            backdrop-filter: blur(12px); 
+            background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(16px); 
             z-index: 1000; 
             display: none; 
             align-items: center; 
             justify-content: center; 
-            padding: 25px;
+            padding: 20px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
         }
+        body.light-mode .modal-overlay { background: rgba(241, 245, 249, 0.9); }
         .modal-overlay.active { 
             display: flex; 
             opacity: 1;
@@ -271,66 +315,86 @@
         
         .modal-content { 
             background: var(--card-solid); 
-            border-radius: 24px; 
+            border-radius: 16px; 
             width: 100%; 
-            max-width: 380px; 
+            max-width: 340px; 
             padding: 0; 
             border: 1px solid var(--border); 
             position: relative; 
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: scale(0.9) translateY(20px);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             overflow: hidden;
         }
         .modal-overlay.active .modal-content {
             transform: scale(1) translateY(0);
+            opacity: 1;
         }
         
-        /* Header do Modal */
         .modal-header {
-            background: linear-gradient(135deg, rgba(0, 209, 178, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
-            padding: 25px 20px 15px;
+            background: linear-gradient(180deg, rgba(0, 180, 160, 0.08) 0%, transparent 100%);
+            padding: 24px 16px 16px;
             text-align: center;
             border-bottom: 1px solid var(--border);
             position: relative;
         }
         
         .modal-avatar {
-            width: 60px;
-            height: 60px;
+            width: 48px;
+            height: 48px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 20px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 24px;
-            color: #000;
-            box-shadow: 0 10px 20px rgba(0, 209, 178, 0.3);
+            margin: 0 auto 10px;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(0, 180, 160, 0.3);
         }
         
         .modal-title {
-            font-size: 0.9rem;
-            font-weight: 800;
-            letter-spacing: 2px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 3px;
             color: var(--text);
             margin: 0;
+            text-transform: uppercase;
         }
         
         .modal-subtitle {
-            font-size: 11px;
+            font-size: 9px;
             color: var(--text-dim);
-            margin-top: 5px;
-            font-weight: 600;
+            margin-top: 4px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .pix-message-box {
+            background: rgba(0, 180, 160, 0.05);
+            border: 1px solid rgba(0, 180, 160, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .pix-message {
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: 500;
+            font-style: italic;
+            line-height: 1.4;
         }
         
         .close-modal-btn { 
             position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            width: 36px; 
-            height: 36px; 
-            border-radius: 12px; 
+            top: 12px; 
+            right: 12px; 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 8px; 
             background: var(--glass); 
             border: 1px solid var(--border); 
             color: var(--text-dim); 
@@ -339,7 +403,7 @@
             justify-content: center; 
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 16px;
+            font-size: 12px;
             z-index: 10;
         }
         .close-modal-btn:hover { 
@@ -350,273 +414,240 @@
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 16px;
         }
 
-        /* Grid de Configurações */
         .config-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .config-btn {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px 10px;
+            border-radius: 12px;
+            padding: 16px 6px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             color: var(--text);
         }
         
         .config-btn:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             border-color: var(--primary);
-            background: rgba(0, 209, 178, 0.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            background: rgba(0, 180, 160, 0.05);
         }
         
-        .config-btn:active {
-            transform: translateY(0);
-        }
+        .config-btn:active { transform: translateY(0); }
         
         .config-icon {
-            font-size: 24px;
-            filter: grayscale(1);
-            transition: filter 0.3s;
+            font-size: 18px;
+            opacity: 0.9;
+            transition: all 0.3s;
+            filter: grayscale(0.2);
         }
         
         .config-btn:hover .config-icon {
-            filter: grayscale(0);
             transform: scale(1.1);
+            filter: grayscale(0) drop-shadow(0 0 6px rgba(0, 180, 160, 0.4));
         }
         
         .config-label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-dim);
-        }
-        
-        .config-btn:hover .config-label {
-            color: var(--primary);
-        }
-
-        /* Seção de Dados */
-        .config-section {
-            background: var(--glass);
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-        }
-        
-        .config-section-title {
-            font-size: 9px;
-            color: var(--text-dim);
+            font-size: 8px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: var(--text-dim);
         }
         
-        .config-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .config-btn-small {
-            background: var(--input);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        
-        .config-btn-small:hover {
-            border-color: var(--info);
-            color: var(--info);
-            background: rgba(32, 156, 238, 0.1);
-        }
+        .config-btn:hover .config-label { color: var(--primary); }
 
-        /* Botão de Apoio Especial */
         .btn-apoio {
             width: 100%;
-            background: linear-gradient(135deg, rgba(0, 209, 178, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
-            border: 1px solid var(--primary);
+            background: linear-gradient(135deg, rgba(0, 180, 160, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+            border: 1px solid rgba(0, 180, 160, 0.3);
             color: var(--primary);
-            padding: 16px;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 10px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
+            gap: 6px;
+            margin-bottom: 10px;
             transition: all 0.3s;
+            letter-spacing: 1.5px;
+            position: relative;
+        }
+
+        .btn-apoio-text {
+            position: relative;
+            z-index: 2;
         }
         
         .btn-apoio:hover {
-            background: linear-gradient(135deg, rgba(0, 209, 178, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(0, 180, 160, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 209, 178, 0.2);
-        }
-        
-        .btn-apoio::before {
-            content: '☕';
-            font-size: 16px;
+            box-shadow: 0 8px 16px rgba(0, 180, 160, 0.15);
+            border-color: var(--primary);
         }
 
-        /* Botão Sair */
         .btn-logout {
             width: 100%;
-            background: rgba(255, 56, 96, 0.1);
-            border: 1px solid rgba(255, 56, 96, 0.3);
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.2);
             color: var(--danger);
-            padding: 14px;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 10px;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s;
+            letter-spacing: 1.5px;
         }
         
         .btn-logout:hover {
             background: var(--danger);
             color: #fff;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 56, 96, 0.3);
+            box-shadow: 0 8px 16px rgba(248, 113, 113, 0.25);
         }
 
         .toast-container { 
             position: fixed; 
-            top: 20px; 
+            top: 16px; 
             left: 50%; 
             transform: translateX(-50%); 
             z-index: 9999; 
             width: 90%; 
-            max-width: 350px; 
+            max-width: 300px; 
             pointer-events: none; 
         }
         .toast { 
             background: var(--card-solid); 
             color: var(--primary); 
-            padding: 16px 20px; 
-            border-radius: 16px; 
-            border-left: 5px solid var(--primary); 
-            font-weight: 700; 
-            font-size: 12px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
-            margin-bottom: 10px; 
+            padding: 12px 16px; 
+            border-radius: 10px; 
+            border-left: 2px solid var(--primary); 
+            font-weight: 500; 
+            font-size: 11px; 
+            box-shadow: 0 16px 32px rgba(0,0,0,0.3); 
+            margin-bottom: 8px; 
             animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            letter-spacing: 0.3px;
         }
         @keyframes toastIn { 
-            from { transform: translateY(-30px) scale(0.9); opacity: 0; } 
+            from { transform: translateY(-20px) scale(0.95); opacity: 0; } 
             to { transform: translateY(0) scale(1); opacity: 1; } 
         }
 
         .footer-copyright { 
-            padding: 30px 0; 
+            padding: 24px 0; 
             text-align: center; 
             width: 100%; 
             margin-top: auto; 
         }
         .footer-line { 
-            width: 40px; 
-            height: 2px; 
+            width: 24px; 
+            height: 1px; 
             background: linear-gradient(90deg, transparent, var(--primary), transparent); 
             margin: 0 auto 10px; 
-            border-radius: 2px; 
+            opacity: 0.4;
         }
         .footer-text { 
-            font-size: 9px; 
+            font-size: 7px; 
             letter-spacing: 3px; 
             color: var(--text-dim); 
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 500;
         }
         .footer-author { 
-            font-size: 12px; 
-            font-weight: 900; 
+            font-size: 9px; 
+            font-weight: 600; 
             color: var(--primary); 
-            margin-top: 5px;
-            letter-spacing: 1px;
+            margin-top: 4px;
+            letter-spacing: 2px;
+            opacity: 0.9;
         }
 
         .hidden { display: none !important; }
         
         .user-avatar { 
-            width: 46px; 
-            height: 46px; 
-            border-radius: 14px; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 10px; 
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
-            color: #000; 
+            color: #fff; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-weight: 900;
-            font-size: 16px;
-            box-shadow: 0 8px 16px rgba(0, 209, 178, 0.3);
-        }
-        
-        /* Indicador de Status Online */
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 9px;
-            font-weight: 800;
-            color: var(--success);
-            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 4px 10px rgba(0, 180, 160, 0.25);
             letter-spacing: 0.5px;
         }
         
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 7px;
+            font-weight: 600;
+            color: var(--success);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(72, 199, 116, 0.3);
-            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(72, 199, 116, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(72, 199, 116, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(72, 199, 116, 0); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #senhaInput {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            letter-spacing: 8px;
+            height: 48px;
+            background: rgba(20, 20, 28, 0.6);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        #senhaInput:focus {
+            background: rgba(20, 20, 28, 0.8);
+        }
+
+        /* Centralização vertical no mobile */
+        @media (min-height: 700px) {
+            #loginScreen {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -625,13 +656,13 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <div class="container" id="loginScreen">
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60vh;">
             <div class="login-card">
-                <h1 style="font-size: 2.2rem; letter-spacing: 6px; font-weight: 900; color: var(--primary); margin-bottom: 5px; text-shadow: 0 0 20px rgba(0, 209, 178, 0.3);">EVOLUTION</h1>
-                <p style="font-size: 10px; color: var(--text-dim); letter-spacing: 3px; margin-bottom: 35px; font-weight: 600;">V46 ULTRA PREMIUM</p>
-                <input type="password" id="senhaInput" placeholder="••••••" maxlength="6" style="text-align: center; font-weight: 800; letter-spacing: 8px; margin-bottom: 25px; font-size: 18px; height: 56px;">
-                <button class="btn btn-primary" onclick="app.login()">ACESSAR SISTEMA</button>
-                <div style="margin-top: 20px; font-size: 9px; color: var(--text-dim); letter-spacing: 1px;">
+                <h1 style="font-size: 1.5rem; letter-spacing: 6px; font-weight: 600; color: var(--text); margin-bottom: 2px;">EVOLUTION</h1>
+                <p style="font-size: 8px; color: var(--primary); letter-spacing: 3px; margin-bottom: 28px; font-weight: 500;">V46 ULTRA PREMIUM</p>
+                <input type="password" id="senhaInput" placeholder="••••••" maxlength="6">
+                <button class="btn btn-primary" onclick="app.login()" style="margin-top: 6px;">Acessar</button>
+                <div style="margin-top: 20px; font-size: 8px; color: var(--text-dim); letter-spacing: 1px; font-weight: 400;">
                     Insira sua chave de acesso
                 </div>
             </div>
@@ -644,58 +675,58 @@
     </div>
 
     <div class="container hidden" id="mainPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;">
-            <div style="display:flex; align-items:center; gap:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; margin-top: 8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
                 <div id="userAvatar" class="user-avatar">FP</div>
                 <div>
                     <div class="status-indicator">
                         <div class="status-dot"></div>
-                        <span>ATIVO</span>
+                        <span>Online</span>
                     </div>
-                    <h2 id="userName" style="font-size:1.1rem; font-weight:800; margin-top:2px;">...</h2>
+                    <h2 id="userName" style="font-size:0.85rem; font-weight:600; margin-top:2px; letter-spacing: 0.3px;">...</h2>
                 </div>
             </div>
-            <button style="width:46px; height:46px; border-radius:14px; background:var(--card); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; font-size:18px;" onclick="app.openModal('configModal')" onmouseover="this.style.transform='rotate(30deg)'; this.style.borderColor='var(--primary)';" onmouseout="this.style.transform='rotate(0deg)'; this.style.borderColor='var(--border)';">⚙️</button>
+            <button style="width:36px; height:36px; border-radius:8px; background:var(--card); border:1px solid var(--border); color:var(--text-dim); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s; font-size:14px;" onclick="app.openModal('configModal')" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'; this.style.transform='rotate(30deg)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'; this.style.transform='rotate(0deg)';">⚙</button>
         </div>
 
         <div class="dash-grid">
-            <div class="dash-card dash-bruto"><span class="dash-label">Valor Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
-            <div class="dash-card dash-liq"><span class="dash-label">Valor Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
-            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" style="font-size:10px; color:var(--danger); margin-top:5px; font-weight:700;">0 serv.</div></div>
-            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" style="font-size:10px; color:var(--success); margin-top:5px; font-weight:700;">0 serv.</div></div>
+            <div class="dash-card dash-bruto"><span class="dash-label">Bruto</span><div class="dash-val" id="dashBruto" style="color:var(--info)">R$ 0,00</div></div>
+            <div class="dash-card dash-liq"><span class="dash-label">Líquido</span><div class="dash-val" id="dashLiq" style="color:var(--accent)">R$ 0,00</div></div>
+            <div class="dash-card dash-pend"><span class="dash-label">Pendente</span><div class="dash-val" id="dashPend" style="color:var(--danger)">R$ 0,00</div><div id="countPend" class="dash-count">0 serv.</div></div>
+            <div class="dash-card dash-pago"><span class="dash-label">Pago</span><div class="dash-val" id="dashPago" style="color:var(--success)">R$ 0,00</div><div id="countPago" class="dash-count">0 serv.</div></div>
         </div>
 
         <div class="section-card" id="secRel">
-            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">RELATÓRIO DE PRODUÇÃO</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secRel')"><div class="section-title">Relatório de Produção</div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;" placeholder="NOME DO NAVIO"></div>
+                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform:uppercase;" placeholder="Nome do navio"></div>
                 <div class="input-row">
                     <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
                     <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
                 </div>
-                <div class="input-group"><label class="input-label">Terno de Trabalho</label><select id="relTernoSelecao"><option value="1°">1° Terno</option><option value="2°">2° Terno</option><option value="3°">3° Terno</option><option value="4°">4° Terno</option></select></div>
+                <div class="input-group"><label class="input-label">Terno</label><select id="relTernoSelecao"><option value="1°">1° Terno</option><option value="2°">2° Terno</option><option value="3°">3° Terno</option><option value="4°">4° Terno</option></select></div>
                 <div id="relCamposProducao"></div>
-                <button class="btn btn-success" onclick="app.generateReport()">📋 COPIAR RELATÓRIO</button>
+                <button class="btn btn-success" onclick="app.generateReport()" style="margin-top:2px;">Copiar Relatório</button>
             </div>
         </div>
 
         <div class="section-card" id="secLan">
-            <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title">NOVA PRODUÇÃO</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secLan')"><div class="section-title">Nova Produção</div><span>▼</span></div>
             <div class="section-content">
-                <div class="input-group"><label class="input-label">Data do Serviço</label><input type="date" id="calcData"></div>
-                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;" placeholder="NOME DO NAVIO"></div>
+                <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
+                <div class="input-group"><label class="input-label">Navio</label><input type="text" id="calcNavio" style="text-transform:uppercase;" placeholder="Nome do navio"></div>
                 <div class="input-row">
-                    <div class="input-group"><label class="input-label">Tipo de Dia</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Domingo / Feriado</option></select></div>
+                    <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Dom/Feriado</option></select></div>
                     <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
                 </div>
-                <div class="input-group"><label class="input-label">Nº Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
+                <div class="input-group"><label class="input-label">Conferentes</label><input type="number" id="calcQtdConf" value="3" min="1"></div>
                 <div id="calcCampos"></div>
-                <button class="btn btn-primary" onclick="app.saveEntry()">💾 SALVAR REGISTRO</button>
+                <button class="btn btn-primary" onclick="app.saveEntry()" style="margin-top:2px;">Salvar Registro</button>
             </div>
         </div>
 
         <div class="section-card" id="secHis">
-            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">HISTÓRICO DE SERVIÇOS</div><span>▼</span></div>
+            <div class="section-header" onclick="app.toggleSection('secHis')"><div class="section-title">Histórico</div><span>▼</span></div>
             <div class="section-content"><div id="histList"></div></div>
         </div>
 
@@ -706,49 +737,49 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIGURAÇÕES REDESENHADO -->
     <div class="modal-overlay" id="configModal" onclick="if(event.target.id==='configModal')app.closeModal('configModal')">
         <div class="modal-content">
             <button class="close-modal-btn" onclick="app.closeModal('configModal')">✕</button>
             
             <div class="modal-header">
-                <div class="modal-avatar">⚙️</div>
-                <h3 class="modal-title">CONFIGURAÇÕES</h3>
-                <div class="modal-subtitle">Personalize sua experiência</div>
+                <div class="modal-avatar">⚙</div>
+                <h3 class="modal-title">Configurações</h3>
+                <div class="modal-subtitle">Gerencie suas preferências</div>
             </div>
             
             <div class="modal-body">
-                <!-- Grid Principal -->
+                <div class="pix-message-box" id="pixMessageBox" style="display: none;">
+                    <div class="pix-message" id="pixMessage"></div>
+                </div>
+
                 <div class="config-grid">
                     <button class="config-btn" onclick="app.toggleTheme()">
-                        <span class="config-icon" id="themeIcon">🌙</span>
+                        <span class="config-icon" id="themeIcon">◐</span>
                         <span class="config-label">Tema</span>
                     </button>
                     
                     <button class="config-btn" onclick="app.exportData()">
-                        <span class="config-icon">💾</span>
+                        <span class="config-icon">↓</span>
                         <span class="config-label">Exportar</span>
                     </button>
                     
                     <button class="config-btn" onclick="app.triggerImport()">
-                        <span class="config-icon">📂</span>
+                        <span class="config-icon">↑</span>
                         <span class="config-label">Importar</span>
                     </button>
                     
                     <button class="config-btn" onclick="app.showPix()">
-                        <span class="config-icon">☕</span>
+                        <span class="config-icon">◆</span>
                         <span class="config-label">Pix</span>
                     </button>
                 </div>
 
-                <!-- Botão de Apoio Destacado -->
                 <button class="btn-apoio" onclick="app.showPix()">
-                    APOIAR DESENVOLVEDOR
+                    <span class="btn-apoio-text" id="apoioText">☕ Apoiar Evolução</span>
                 </button>
 
-                <!-- Botão Sair -->
                 <button class="btn-logout" onclick="app.logout()">
-                    🚪 SAIR DO SISTEMA
+                    Sair do Sistema
                 </button>
             </div>
             
@@ -757,40 +788,52 @@
     </div>
 
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
-        <div class="modal-content" style="text-align:center; padding: 40px 20px; background: rgba(22, 22, 29, 0.98); backdrop-filter: blur(25px); border: 1px solid var(--primary);">
+        <div class="modal-content" style="text-align:center; padding: 28px 16px; background: var(--card-solid); border: 1px solid var(--border);">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
-            <div style="font-size:3.5rem; margin-bottom:20px; animation: float 3s ease-in-out infinite;">☕</div>
-            <h3 style="color: var(--primary); letter-spacing: 2px; margin-bottom: 10px; font-size: 1.1rem;">APOIO AO DESENVOLVEDOR</h3>
-            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 25px; padding: 0 20px;">
-                Sua contribuição mantém o sistema<br>sempre online e atualizado!
-            </p>
-            <div onclick="app.copyPix()" style="background: rgba(0, 209, 178, 0.05); color: var(--primary); padding: 25px 20px; border-radius: 20px; font-family: 'Space Mono', monospace; border: 2px dashed var(--primary); cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;">
-                <div style="font-size: 20px; font-weight: 800; margin-bottom: 5px; letter-spacing: 2px;">92994821868</div>
-                <div style="font-size: 10px; text-transform: uppercase; opacity: 0.8; font-weight: 600;">Favorecido: Felipe Prado</div>
-                <div style="position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(0,209,178,0.1), transparent); transform: translateX(-100%); transition: transform 0.6s;" class="shine"></div>
+            <div style="font-size:2rem; margin-bottom:16px; opacity:0.9;">☕</div>
+            <h3 style="color: var(--primary); letter-spacing: 2px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 600;">APOIO AO DESENVOLVEDOR</h3>
+            
+            <div class="pix-message-box" style="margin: 12px 0;">
+                <div class="pix-message" id="pixModalMessage"></div>
             </div>
-            <p style="font-size: 10px; color: var(--text-dim); margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Toque para copiar</p>
+
+            <div onclick="app.copyPix()" style="background: var(--input); color: var(--primary); padding: 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 500; letter-spacing: 1px;">
+                92994821868
+                <div style="font-size: 8px; text-transform: uppercase; opacity: 0.6; margin-top: 4px; font-family: 'Inter', sans-serif; letter-spacing: 1px; font-weight: 500;">CHAVE PIX: Felipe Prado</div>
+            </div>
+            <p style="font-size: 8px; color: var(--text-dim); margin-top: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500;">Toque na chave acima para copiar</p>
         </div>
     </div>
 
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        [onclick*="app.copyPix()"]:hover .shine {
-            transform: translateX(100%) !important;
-        }
-        [onclick*="app.copyPix()"]:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(0, 209, 178, 0.2);
-        }
-    </style>
-
     <script>
+        const PIX_MESSAGES = [
+            "☕ Um café mantém as atualizações fluindo!",
+            "🚀 Sua ajuda impulsiona melhorias no sistema!",
+            "⚡ Energia para otimizar suas ferramentas!",
+            "🎯 Contribuições mantêm o Evolution ativo!",
+            "💡 Cada apoio gera uma nova melhoria!",
+            "🔧 Manutenção do app com sua colaboração!",
+            "📱 O sistema agradece sua parceria!",
+            "⚓ Ajude a manter o código navegando!",
+            "💎 Apoie quem cuida da sua produção!",
+            "🎁 Presenteie o dev por essa ferramenta!"
+        ];
+
+        const APOIO_MESSAGES = [
+            "☕ Pagar um café ao dev",
+            "🍕 Patrocinar melhorias",
+            "⚡ Impulsionar o sistema",
+            "🎯 Valorizar o Evolution",
+            "🔧 Manter o app atualizado",
+            "📱 Investir em novas funções",
+            "⭐ Ser um apoiador VIP",
+            "⚓ Fortalecer o projeto",
+            "💡 Garantir estabilidade",
+            "🚀 Decolar com o sistema"
+        ];
+
         class Money { constructor(cents) { this._cents = Math.round(cents); } format() { return (this._cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } get cents() { return this._cents; } }
         const SECURE_USERS = { "002451": "FELIPE PRADO", "7806": "EdilsonJr", "1980": "ANDERSON PRADO", "2026": "FABRICIO DIAS", "302466": "RODRIGO COSTA", "3373": "RICARDO PRADO", "2912": "JOHNY", "0420": "FERNANDO SOARES" };
-        const FRASES_PIX = [ "O programador virou café! 😉", "A internet caiu, mas o PIX não!", "Mande um café pro dev ancorar o navio! 🚢" ];
 
         class EvolutionApp {
             constructor() { 
@@ -798,6 +841,24 @@
                 this.currentUser = null; 
                 this.deviceId = this.getOrCreateDeviceId();
                 this.init(); 
+            }
+
+            getRandomMessage(messages) {
+                return messages[Math.floor(Math.random() * messages.length)];
+            }
+
+            updatePixMessages() {
+                const configMessageBox = document.getElementById('pixMessageBox');
+                const configMessage = document.getElementById('pixMessage');
+                if (configMessageBox && configMessage) {
+                    configMessageBox.style.display = 'block';
+                    configMessage.textContent = this.getRandomMessage(PIX_MESSAGES);
+                }
+
+                const apoioText = document.getElementById('apoioText');
+                if (apoioText) {
+                    apoioText.textContent = this.getRandomMessage(APOIO_MESSAGES);
+                }
             }
 
             getOrCreateDeviceId() {
@@ -844,16 +905,16 @@
 
             breakSite() {
                 document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #ff3860; padding: 30px; text-align: center; font-family: 'Inter', sans-serif;">
-                        <div style="font-size: 5rem; margin-bottom: 20px;">⚠️</div>
-                        <h1 style="letter-spacing: 2px; font-weight: 900;">ERRO DE SEGURANÇA</h1>
-                        <p style="color: #8e8e93; margin-top: 20px; font-size: 14px; line-height: 1.6;">
-                            Esta chave de acesso já está vinculada a outro dispositivo.<br>
-                            O acesso simultâneo ou compartilhamento é proibido.
+                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0e; color: #f87171; padding: 30px; text-align: center; font-family: 'Inter', sans-serif;">
+                        <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.8;">⚠</div>
+                        <h1 style="letter-spacing: 3px; font-weight: 600; font-size: 1rem; margin-bottom: 16px;">ERRO DE SEGURANÇA</h1>
+                        <p style="color: #64748b; font-size: 12px; line-height: 1.6; font-weight: 400;">
+                            Esta chave está vinculada a outro dispositivo.<br>
+                            Acesso simultâneo detectado e bloqueado.
                         </p>
-                        <div style="margin-top: 40px; padding: 20px; border: 1px solid #333; border-radius: 15px;">
-                            <p style="font-size: 10px; color: #555; text-transform: uppercase;">Procure o desenvolvedor</p>
-                            <p style="font-size: 18px; font-weight: 800; color: #00d1b2; margin-top: 5px;">FELIPE PRADO</p>
+                        <div style="margin-top: 32px; padding: 16px; border: 1px solid #1e293b; border-radius: 10px; background: rgba(30, 30, 40, 0.5);">
+                            <p style="font-size: 8px; color: #475569; text-transform: uppercase; letter-spacing: 2px; font-weight: 500;">Suporte</p>
+                            <p style="font-size: 14px; font-weight: 600; color: #00b4a0; margin-top: 4px; letter-spacing: 1px;">FELIPE PRADO</p>
                         </div>
                     </div>`;
             }
@@ -872,7 +933,7 @@
 
             updateThemeIcon() {
                 const icon = document.getElementById('themeIcon');
-                if (icon) icon.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+                if (icon) icon.textContent = document.body.classList.contains('light-mode') ? '☀' : '◐';
             }
 
             adjustCalcFields() {
@@ -881,8 +942,8 @@
                 if (t === '15x23') {
                     c.innerHTML = `
                         <div class="input-row">
-                            <div class="input-group"><label class="input-label">Período 15h-19h</label><input type="number" id="calcP1" placeholder="0"></div>
-                            <div class="input-group"><label class="input-label">Período 19h-23h</label><input type="number" id="calcP2" placeholder="0"></div>
+                            <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0"></div>
+                            <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0"></div>
                         </div>`;
                 } else {
                     c.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT" placeholder="0"></div>`;
@@ -929,9 +990,9 @@
             showToast(m) {
                 const container = document.getElementById('toastContainer');
                 const e = document.createElement('div'); e.className = 'toast'; 
-                e.innerHTML = `<span style="font-size:16px;">✓</span> <span>${m}</span>`;
+                e.innerHTML = `<span style="font-size:12px; font-weight: 500;">✓</span> <span>${m}</span>`;
                 container.appendChild(e);
-                setTimeout(() => { e.style.opacity = '0'; e.style.transform = 'translateY(-20px)'; setTimeout(() => e.remove(), 400); }, 3000);
+                setTimeout(() => { e.style.opacity = '0'; e.style.transform = 'translateY(-10px)'; setTimeout(() => e.remove(), 400); }, 3000);
             }
 
             saveEntry() {
@@ -955,7 +1016,7 @@
 
             renderHistory() {
                 const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:800; font-size:14px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div><div style="font-size:10px; color:var(--text-dim); font-weight:600; margin-top:2px;">${e.dataF} • ${e.turno}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'🕒 PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:800; font-family:monospace; font-size:15px;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:9px; margin-top:2px;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:8px; font-size:14px; cursor:pointer; opacity:0.6; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</button></div></div>`).join('');
+                list.innerHTML = this.entries.map(e => `<div class="hist-item"><div style="flex:1;"><div style="font-weight:600; font-size:12px; letter-spacing: 0.3px;" class="${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div><div style="font-size:8px; color:var(--text-dim); font-weight: 500; margin-top:2px; letter-spacing: 0.5px;">${e.dataF} • ${e.turno}</div><button class="status-badge ${e.pago?'pago':'pendente'}" onclick="app.togglePago(${e.id})">${e.pago?'✓ PAGO':'◐ PENDENTE'}</button></div><div style="text-align:right;"><div style="color:var(--accent); font-weight:500; font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing: -0.5px;">${new Money(e.liquido).format()}</div><div style="color:var(--text-dim); font-size:7px; margin-top:2px; font-weight: 500;">Bruto: ${new Money(e.bruto).format()}</div><button onclick="app.del(${e.id})" style="background:none; border:none; margin-top:6px; font-size:10px; cursor:pointer; opacity:0.4; transition:all 0.2s; color: var(--text-dim);" onmouseover="this.style.opacity='1'; this.style.color='var(--danger)'" onmouseout="this.style.opacity='0.4'; this.style.color='var(--text-dim)'">✕</button></div></div>`).join('');
             }
 
             updateDashboard() {
@@ -965,8 +1026,8 @@
                 document.getElementById('dashLiq').textContent = new Money(l).format();
                 document.getElementById('dashPend').textContent = new Money(pe).format();
                 document.getElementById('dashPago').textContent = new Money(pa).format();
-                document.getElementById('countPend').textContent = `${cpe} serviços`;
-                document.getElementById('countPago').textContent = `${cpa} serviços`;
+                document.getElementById('countPend').textContent = `${cpe} serv.`;
+                document.getElementById('countPago').textContent = `${cpa} serv.`;
             }
 
             loadData() { const key = `evo_db_${btoa(this.currentUser)}`; try { this.entries = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { this.entries = []; } this.renderHistory(); this.updateDashboard(); }
@@ -974,7 +1035,15 @@
             toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('evo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); this.updateThemeIcon(); this.showToast('Tema Alterado'); }
             loadTheme() { if (localStorage.getItem('evo_theme') === 'light') document.body.classList.add('light-mode'); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
-            openModal(id) { document.getElementById(id).classList.add('active'); }
+            openModal(id) { 
+                document.getElementById(id).classList.add('active'); 
+                if (id === 'configModal') {
+                    this.updatePixMessages();
+                } else if (id === 'pixModal') {
+                    const modalMsg = document.getElementById('pixModalMessage');
+                    if (modalMsg) modalMsg.textContent = this.getRandomMessage(PIX_MESSAGES);
+                }
+            }
             closeModal(id) { document.getElementById(id).classList.remove('active'); }
             exportData() { const b = new Blob([JSON.stringify(this.entries)], { type: 'application/json' }); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = `backup_evo_${new Date().toISOString().split('T')[0]}.json`; a.click(); this.showToast('Backup Exportado'); }
             triggerImport() { document.getElementById('importInput').click(); }
