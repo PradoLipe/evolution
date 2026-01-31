@@ -216,8 +216,47 @@
         }
         
         .section-card.expanded .section-content { 
-            max-height: 1200px; 
+            max-height: 1500px; 
             padding: 0 16px 16px; 
+        }
+
+        /* FILTRO DO HISTÓRICO */
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding: 4px;
+            background: var(--input);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .filter-tab {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .filter-tab:hover {
+            color: var(--text);
+            background: var(--surface);
+        }
+        
+        .filter-tab.active {
+            background: var(--primary);
+            color: #0a0a0f;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 212, 170, 0.3);
         }
 
         /* INPUTS PREMIUM */
@@ -909,6 +948,12 @@
                 <span>▼</span>
             </div>
             <div class="section-content">
+                <!-- FILTRO DO HISTÓRICO -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="app.setFilter('all')" id="filter-all">Todos</button>
+                    <button class="filter-tab" onclick="app.setFilter('pending')" id="filter-pending">Pendentes</button>
+                    <button class="filter-tab" onclick="app.setFilter('paid')" id="filter-paid">Pagos</button>
+                </div>
                 <div id="histList"></div>
             </div>
         </div>
@@ -948,7 +993,7 @@
                     </button>
                     
                     <button class="config-btn" onclick="app.showPix()">
-                        <span class="config-icon">◆</span>
+                        <span class="config-icon" id="configPixIcon">◆</span>
                         <span class="config-label">Pix</span>
                     </button>
                 </div>
@@ -969,7 +1014,7 @@
     <div class="modal-overlay" id="pixModal" onclick="app.closeModal('pixModal')">
         <div class="modal-content" style="text-align:center; padding: 24px 16px;">
             <button class="close-modal-btn" onclick="app.closeModal('pixModal')">✕</button>
-            <div style="font-size:2rem; margin-bottom:16px;">♦</div>
+            <div id="pixRandomEmoji" style="font-size:2.5rem; margin-bottom:16px; transition: all 0.3s;">🚀</div>
             <h3 style="color: var(--primary); letter-spacing: 3px; margin-bottom: 8px; font-size: 12px; font-weight: 700;">APOIO AO DESENVOLVEDOR</h3>
             
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 16px 0;">
@@ -985,31 +1030,45 @@
     </div>
 
     <script>
+        // MENSAGENS PIX EM TOM CÔMICO (SEM EMPRESAS DE ENERGIA)
         const PIX_MESSAGES = [
-            "Um café mantém as atualizações fluindo.",
-            "Sua ajuda impulsiona melhorias no sistema.",
-            "Energia para otimizar suas ferramentas.",
-            "Contribuições mantêm o Evolution ativo.",
-            "Cada apoio gera uma nova melhoria.",
-            "Manutenção do app com sua colaboração.",
-            "O sistema agradece sua parceria.",
-            "Ajude a manter o código navegando.",
-            "Apoie quem cuida da sua produção.",
-            "Presenteie o dev por essa ferramenta."
+            "Ajude o dev a pagar o ar-condicionado nesse calor de Manaus.",
+            "Cerveja gelada pra quem programa nesse calor não se paga sozinha.",
+            "Colabore para manter o código funcionando melhor que trânsito na Constantino Nery.",
+            "Seu pix ajuda a manter o dev longe do sol das 12h.",
+            "Ajuda aí, o calor derreteu meu último real.",
+            "Contribuição para o fundo 'Fuga do Calor de 40°C'.",
+            "Seu apoio mantém o servidor vivo (e o dev hidratado).",
+            "Pix = café = código funcionando sem bugs.",
+            "Ajude quem trabalha enquanto você curte o rio Negro.",
+            "Manter app premium não paga sozinho, que nem estacionamento na ponta negra.",
+            "Seu dinheiro ajuda a comprar água mineral (ou cerveja, depende do dia).",
+            "Colaboração para evitar que o dev vire picanha no sol amazonense.",
+            "Apoie: fazemos código na frequência do calor de 38°C.",
+            "Seu pix é como ventilador num dia quente: salva vidas.",
+            "Ajude o criador a não virar estatística de insolação.",
+            "Mantemos o app rodando sem blackouts (nem os controlados).",
+            "Seu apoio mantém o código limpo e o dev arenoso.",
+            "Contribuição para o fundo de resistência ao calor úmido.",
+            "Pix aceito em troca de código sem erro e piadas ruins.",
+            "Ajuda aí, o ar no Centro tá caro e o calor tá de graça."
         ];
 
         const APOIO_MESSAGES = [
-            "Pagar um café ao dev",
-            "Patrocinar melhorias",
-            "Impulsionar o sistema",
-            "Valorizar o Evolution",
-            "Manter o app atualizado",
-            "Investir em novas funções",
-            "Ser um apoiador VIP",
-            "Fortalecer o projeto",
-            "Garantir estabilidade",
-            "Decolar com o sistema"
+            "Pagar um café (ou cerveja gelada)",
+            "Contribuir com o ar-condicionado",
+            "Ajuda contra o calor manauara",
+            "Investir no código limpo",
+            "Patrocinar o dev suado",
+            "Colaborar com a causa",
+            "Apoiar a evolução",
+            "Financiar o desenvolvimento",
+            "Recompensar o esforço",
+            "Valorizar o trabalho"
         ];
+
+        // EMOJIS ALEATÓRIOS PARA O MODAL PIX
+        const PIX_EMOJIS = ["🚀", "☕", "🍺", "🏖️", "🌴", "🦁", "💰", "🎯", "🔥", "⚡", "🛸", "🏆", "💎", "🎩", "🐊"];
 
         class Money { 
             constructor(cents) { this._cents = Math.round(cents); } 
@@ -1033,11 +1092,16 @@
                 this.entries = []; 
                 this.currentUser = null; 
                 this.deviceId = this.getOrCreateDeviceId();
+                this.currentFilter = 'all'; // all, pending, paid
                 this.init(); 
             }
 
             getRandomMessage(messages) {
                 return messages[Math.floor(Math.random() * messages.length)];
+            }
+
+            getRandomEmoji() {
+                return PIX_EMOJIS[Math.floor(Math.random() * PIX_EMOJIS.length)];
             }
 
             getOrCreateDeviceId() {
@@ -1242,9 +1306,37 @@
                 return { b: mb * 100, l: mb * 82 };
             }
 
+            setFilter(filter) {
+                this.currentFilter = filter;
+                
+                // Atualizar UI dos tabs
+                document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+                document.getElementById(`filter-${filter}`).classList.add('active');
+                
+                this.renderHistory();
+            }
+
             renderHistory() {
                 const list = document.getElementById('histList');
-                list.innerHTML = this.entries.map(e => `
+                
+                // Filtrar entradas baseado no filtro atual
+                let filteredEntries = this.entries;
+                if (this.currentFilter === 'pending') {
+                    filteredEntries = this.entries.filter(e => !e.pago);
+                } else if (this.currentFilter === 'paid') {
+                    filteredEntries = this.entries.filter(e => e.pago);
+                }
+                
+                if (filteredEntries.length === 0) {
+                    list.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px; font-style: italic; border: 1px dashed var(--border); border-radius: 10px; margin-top: 10px;">
+                        ${this.currentFilter === 'pending' ? 'Nenhum serviço pendente. Sindicato agradece.' : 
+                          this.currentFilter === 'paid' ? 'Nenhum serviço pago ainda. O calor espera.' : 
+                          'Nenhum registro encontrado.'}
+                    </div>`;
+                    return;
+                }
+                
+                list.innerHTML = filteredEntries.map(e => `
                     <div class="hist-item">
                         <div class="hist-info">
                             <div class="hist-navio ${e.pago ? 'navio-pago' : 'navio-pendente'}">${e.navio}</div>
@@ -1324,9 +1416,13 @@
                 if (id === 'configModal') {
                     const apoioText = document.getElementById('apoioText');
                     if (apoioText) apoioText.textContent = this.getRandomMessage(APOIO_MESSAGES);
+                    const configPixIcon = document.getElementById('configPixIcon');
+                    if (configPixIcon) configPixIcon.textContent = this.getRandomEmoji();
                 } else if (id === 'pixModal') {
                     const modalMsg = document.getElementById('pixModalMessage');
+                    const randomEmoji = document.getElementById('pixRandomEmoji');
                     if (modalMsg) modalMsg.textContent = this.getRandomMessage(PIX_MESSAGES);
+                    if (randomEmoji) randomEmoji.textContent = this.getRandomEmoji();
                 }
             }
             
