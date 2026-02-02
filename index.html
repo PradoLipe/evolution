@@ -873,7 +873,7 @@
 
         /* INPUTS */
         .input-group {
-            margin-bottom: 12px;
+            margin-bottom: 16px; /* Aumentado de 12px para 16px */
         }
 
         .input-label {
@@ -883,7 +883,7 @@
             letter-spacing: 1.5px;
             color: var(--text-secondary);
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 8px; /* Aumentado de 6px para 8px */
         }
 
         input, select {
@@ -909,13 +909,13 @@
         .input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px; /* Aumentado de 10px para 12px */
         }
 
         .input-row-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
+            gap: 10px; /* Aumentado de 8px para 10px */
         }
 
         /* BUTTONS */
@@ -1309,8 +1309,8 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-bottom: 12px;
+            padding: 20px; /* Aumentado de 16px */
+            margin-bottom: 16px; /* Aumentado de 12px */
         }
 
         .admin-toggle-btn {
@@ -1319,7 +1319,7 @@
             background: transparent;
             border: none;
             color: var(--primary);
-            font-size: 0.75rem;
+            font-size: 0.8rem; /* Aumentado de 0.75rem */
             font-weight: 700;
             cursor: pointer;
             padding: 0;
@@ -1332,8 +1332,8 @@
 
         .admin-toggle-content {
             display: none;
-            padding-top: 16px;
-            margin-top: 8px;
+            padding-top: 20px; /* Aumentado de 16px */
+            margin-top: 10px; /* Aumentado de 8px */
             border-top: 1px solid var(--border);
         }
 
@@ -1342,27 +1342,31 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px; /* Aumentado de 8px */
         }
 
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 12px; /* Aumentado de 10px */
             background: var(--glass);
             border-radius: 8px;
             border: 1px solid var(--border);
+            margin-bottom: 4px;
         }
 
         .user-item-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
         }
 
         .user-item-name {
             font-size: 0.85rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
         }
 
         .user-item-code {
@@ -1374,7 +1378,6 @@
         .user-last-seen {
             font-size: 0.55rem;
             color: var(--info);
-            margin-top: 2px;
             font-weight: 500;
         }
 
@@ -1400,8 +1403,8 @@
 
         .btn-icon {
             padding: 6px;
-            width: 28px;
-            height: 28px;
+            width: 32px; /* Aumentado de 28px */
+            height: 32px; /* Aumentado de 28px */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1409,7 +1412,7 @@
             border: 1px solid var(--border);
             background: var(--surface);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 1rem; /* Aumentado de 0.9rem */
         }
         
         .btn-icon.active {
@@ -2620,10 +2623,9 @@
                     })));
 
                     // Atualizar Firebase em background (sem await para não travar a UI)
-                    if (code !== ADMIN_ID) {
-                        // Não atualizar lastLogin do admin para evitar escritas desnecessárias se estiver debugando
-                        this.updateLastLoginBackground(code);
-                    }
+                    // *** CORREÇÃO: Removida a verificação if (code !== ADMIN_ID) ***
+                    // Agora o Admin também tem seu login registrado
+                    this.updateLastLoginBackground(code);
 
                     this.pinValue = ''; 
                     document.body.style.cursor = 'default';
