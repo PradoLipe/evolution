@@ -2530,6 +2530,12 @@
                         if (this.isAdmin) {
                             this.renderUserList();
                         }
+
+                        // NOVA FUNÇÃO: Logout forçado se o usuário atual for bloqueado
+                        if (this.currentUserId && this.users[this.currentUserId] && this.users[this.currentUserId].blocked && this.currentUserId !== ADMIN_ID) {
+                            this.showToast('Sua conta foi bloqueada pelo administrador.', 'error');
+                            setTimeout(() => this.logout(), 2500);
+                        }
                     }
                 }, (error) => {
                     console.log("Erro no listener:", error);
@@ -3477,14 +3483,19 @@
 
             updateMetaProgress() {
                 if (this.metaMensal <= 0) return;
-                const hoje = new Date();
+                
+                // CORREÇÃO: Comparar apenas MÊS e ANO como string (ISO YYYY-MM)
+                // Isso evita erros de timezone onde dia 01 vira dia 31 do mês anterior
+                const currentMonthStr = new Date().toISOString().slice(0, 7); // Ex: "2024-02"
                 let totalMes = 0;
+                
                 this.entries.forEach(e => {
-                    const dataEntry = new Date(e.data);
-                    if (dataEntry.getMonth() === hoje.getMonth() && dataEntry.getFullYear() === hoje.getFullYear()) {
+                    // e.data é "YYYY-MM-DD", slice(0,7) pega "YYYY-MM"
+                    if (e.data.startsWith(currentMonthStr)) {
                         totalMes += Number(e.bruto);
                     }
                 });
+                
                 const percentual = Math.min((totalMes / this.metaMensal) * 100, 100);
                 document.getElementById('metaProgress').style.width = percentual + '%';
                 document.getElementById('metaAtual').textContent = `${this.formatMoney(totalMes)} acumulado`;
