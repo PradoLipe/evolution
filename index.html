@@ -2879,13 +2879,18 @@
                     timestamp: new Date().toISOString()
                 };
 
+                // ATUALIZAÇÃO OTIMISTA: Salvar em memória e LocalStorage imediatamente
                 this.entries.unshift(entry);
-                await this.persistData();
+                localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                
+                // Atualizar UI imediatamente
                 this.updateDashboard();
                 this.renderHistory();
                 this.renderChart();
                 this.updateMetaProgress();
+                this.showToast('Registro salvo!', 'success');
                 
+                // Limpar campos
                 document.getElementById('calcNavio').value = '';
                 if (turno === '15x23') { 
                     document.getElementById('calcP1').value = ''; 
@@ -2894,7 +2899,11 @@
                     document.getElementById('calcPT').value = ''; 
                 }
                 
-                this.showToast('Registro salvo!', 'success');
+                // Sincronizar em background (sem await para não travar a UI)
+                const docId = entry.id.toString();
+                db.collection('artifacts').doc(appId).collection('public').doc('data').collection('entries_' + this.currentUserId).doc(docId).set(entry)
+                    .catch(err => console.error("Erro background sync:", err));
+                
                 if (!this.isAdmin && Math.random() < 0.3) this.showPix(); 
             }
 
@@ -3211,13 +3220,20 @@
             async togglePago(id) {
                 const entry = this.entries.find(e => e.id === id);
                 if (entry) {
+                    // ATUALIZAÇÃO OTIMISTA
                     entry.pago = !entry.pago;
-                    await this.persistData();
+                    localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                    
                     this.updateDashboard(); 
                     this.renderHistory(); 
                     this.updateMetaProgress(); 
                     this.renderChart();
                     this.showToast(entry.pago ? 'Marcado como pago' : 'Marcado como pendente', 'success');
+                    
+                    // Background Sync
+                    const docId = entry.id.toString();
+                    db.collection('artifacts').doc(appId).collection('public').doc('data').collection('entries_' + this.currentUserId).doc(docId).update({ pago: entry.pago })
+                        .catch(err => console.error("Erro background update:", err));
                 }
             }
 
@@ -3234,20 +3250,24 @@
                 // 1. Atualizar memória (Optimistic Update)
                 this.entries = this.entries.filter(e => e.id !== id);
                 
-                // 2. Fechar modal
+                // 2. Salvar Cache Local IMEDIATAMENTE (Correção do Bug)
+                localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                
+                // 3. Fechar modal e atualizar UI
                 this.closeModal('confirmModal');
                 this.pendingDeleteId = null;
-
-                // 3. Atualizar visual IMEDIATAMENTE
                 this.updateDashboard(); 
                 this.renderHistory(); 
                 this.renderChart(); 
                 this.updateMetaProgress();
                 this.showToast('Registro excluído', 'success');
 
-                // 4. Salvar no banco (Background)
-                // Não usamos await aqui para não travar a UI
-                this.persistData().catch(err => console.error("Erro ao salvar exclusão:", err));
+                // 4. Sincronizar com a nuvem (Background)
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('entries_' + this.currentUserId).doc(id.toString()).delete();
+                } catch (e) {
+                    console.error("Erro ao deletar da nuvem:", e);
+                }
             }
 
             copyEntryDetails(id) {
