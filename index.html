@@ -2349,6 +2349,16 @@
                         return; 
                     }
 
+                    // Verificar dispositivo (exceto admin)
+                    // Proteção contra compartilhamento de senha
+                    if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
+                        this.showToast('Acesso bloqueado. Dispositivo não reconhecido. Contate o Administrador.', 'error');
+                        this.pinValue = '';
+                        this.updatePinDisplay();
+                        document.body.style.cursor = 'default';
+                        return;
+                    }
+
                     if (userData.blocked) {
                         this.showToast('Usuário bloqueado.', 'error');
                         this.pinValue = '';
@@ -2623,20 +2633,15 @@
                 const spinner = el.querySelector('.sync-spinner');
                 const text = el.querySelector('span');
                 
-                el.classList.remove('hidden', 'syncing', 'synced', 'error');
-                el.classList.add(status);
-                
-                if (status === 'syncing') {
-                    spinner.style.display = 'block';
-                    text.textContent = 'Sincronizando...';
-                    el.classList.remove('hidden');
-                } else if (status === 'synced') {
-                    spinner.style.display = 'none';
-                    text.textContent = '✓ Sincronizado';
-                    setTimeout(() => el.classList.add('hidden'), 2000);
-                } else if (status === 'error') {
+                if (status === 'error') {
+                    // Mostrar apenas erro
                     spinner.style.display = 'none';
                     text.textContent = '✕ Offline';
+                    el.classList.remove('hidden', 'syncing', 'synced');
+                    el.classList.add('error');
+                } else {
+                    // Esconder loading e sucesso para limpar a tela
+                    el.classList.add('hidden');
                 }
             }
 
