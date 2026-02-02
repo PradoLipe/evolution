@@ -1639,19 +1639,19 @@
                 </div>
 
                 <div class="keypad">
-                    <!-- Added ontouchstart for faster mobile response -->
-                    <button class="key-btn" onclick="app.addDigit(1)" ontouchstart="app.addDigit(1)">1</button>
-                    <button class="key-btn" onclick="app.addDigit(2)" ontouchstart="app.addDigit(2)">2</button>
-                    <button class="key-btn" onclick="app.addDigit(3)" ontouchstart="app.addDigit(3)">3</button>
-                    <button class="key-btn" onclick="app.addDigit(4)" ontouchstart="app.addDigit(4)">4</button>
-                    <button class="key-btn" onclick="app.addDigit(5)" ontouchstart="app.addDigit(5)">5</button>
-                    <button class="key-btn" onclick="app.addDigit(6)" ontouchstart="app.addDigit(6)">6</button>
-                    <button class="key-btn" onclick="app.addDigit(7)" ontouchstart="app.addDigit(7)">7</button>
-                    <button class="key-btn" onclick="app.addDigit(8)" ontouchstart="app.addDigit(8)">8</button>
-                    <button class="key-btn" onclick="app.addDigit(9)" ontouchstart="app.addDigit(9)">9</button>
-                    <button class="key-btn delete" onclick="app.removeDigit()" ontouchstart="app.removeDigit()">⌫</button>
-                    <button class="key-btn" onclick="app.addDigit(0)" ontouchstart="app.addDigit(0)">0</button>
-                    <button class="key-btn action" onclick="app.login()" ontouchstart="app.login()">→</button>
+                    <!-- REMOVIDO ontouchstart PARA EVITAR CLIQUE DUPLO -->
+                    <button class="key-btn" onclick="app.addDigit(1)">1</button>
+                    <button class="key-btn" onclick="app.addDigit(2)">2</button>
+                    <button class="key-btn" onclick="app.addDigit(3)">3</button>
+                    <button class="key-btn" onclick="app.addDigit(4)">4</button>
+                    <button class="key-btn" onclick="app.addDigit(5)">5</button>
+                    <button class="key-btn" onclick="app.addDigit(6)">6</button>
+                    <button class="key-btn" onclick="app.addDigit(7)">7</button>
+                    <button class="key-btn" onclick="app.addDigit(8)">8</button>
+                    <button class="key-btn" onclick="app.addDigit(9)">9</button>
+                    <button class="key-btn delete" onclick="app.removeDigit()">⌫</button>
+                    <button class="key-btn" onclick="app.addDigit(0)">0</button>
+                    <button class="key-btn action" onclick="app.login()">→</button>
                 </div>
 
                 <div class="loading-indicator hidden" id="loadingIndicator">
@@ -2356,6 +2356,7 @@
                 this.unsubscribeUsers = null;
                 this.dataLoaded = false;
                 this.pendingDeleteId = null;
+                this.isLoggingIn = false; // Flag para evitar duplo login
                 
                 // Carregar usuários padrão IMEDIATAMENTE para evitar bloqueio
                 this.users = { ...DEFAULT_USERS }; 
@@ -2567,6 +2568,9 @@
             }
 
             async login() {
+                if (this.isLoggingIn) return; // Previne duplo clique
+                this.isLoggingIn = true;
+
                 try {
                     // Feedback visual imediato
                     document.body.style.cursor = 'wait';
@@ -2587,6 +2591,7 @@
                     if (!userData) { 
                         this.showPinError();
                         document.body.style.cursor = 'default';
+                        this.isLoggingIn = false;
                         return; 
                     }
 
@@ -2595,6 +2600,7 @@
                         this.pinValue = '';
                         this.updatePinDisplay();
                         document.body.style.cursor = 'default';
+                        this.isLoggingIn = false;
                         return;
                     }
 
@@ -2603,6 +2609,7 @@
                         this.pinValue = '';
                         this.updatePinDisplay();
                         document.body.style.cursor = 'default';
+                        this.isLoggingIn = false;
                         return;
                     }
 
@@ -2630,6 +2637,7 @@
                     document.body.style.cursor = 'default';
                     document.getElementById('loadingIndicator').classList.add('hidden');
                     alert("Erro ao entrar: " + err.message);
+                    this.isLoggingIn = false;
                 }
             }
 
@@ -2662,6 +2670,7 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 
                 this.showMainApp();
+                this.isLoggingIn = false;
                 
                 if (!synced) {
                     // Sync in background if we logged in optimistically
