@@ -86,6 +86,7 @@
             z-index: -1;
             overflow: hidden;
             pointer-events: none;
+            will-change: transform;
         }
         
         .ambient-bg::before {
@@ -122,7 +123,7 @@
             justify-content: center;
             z-index: 1000;
             background: radial-gradient(circle at center, #151b3d 0%, #0a0e27 100%);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease;
             padding: 16px;
         }
 
@@ -157,7 +158,7 @@
             background: var(--glass);
             border: 2px solid rgba(0, 212, 255, 0.2);
             border-radius: 24px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
             box-shadow: 
                 0 0 40px rgba(0, 212, 255, 0.15),
                 inset 0 0 40px rgba(0, 212, 255, 0.05);
@@ -209,7 +210,7 @@
         .login-card {
             width: 100%;
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 24px;
@@ -231,7 +232,7 @@
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.2);
             background: transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .pin-dot.active {
@@ -244,7 +245,7 @@
         .pin-dot.error {
             background: var(--danger);
             border-color: var(--danger);
-            animation: shake 0.5s ease;
+            animation: shake 0.4s ease;
         }
 
         @keyframes shake {
@@ -268,7 +269,7 @@
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background 0.1s ease;
             font-family: 'Inter', sans-serif;
             touch-action: manipulation;
             position: relative;
@@ -281,11 +282,11 @@
             inset: 0;
             background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
         }
 
         .key-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
             background: var(--primary);
             color: var(--bg);
         }
@@ -349,7 +350,7 @@
             z-index: 100;
             padding: 12px 16px;
             background: rgba(10, 14, 39, 0.85);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -558,7 +559,7 @@
             padding: 14px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .stat-card:active {
@@ -668,13 +669,13 @@
             font-weight: 600;
         }
 
-        /* SECTIONS */
+        /* SECTIONS - ACCORDION OPTIMIZATION */
         .section {
             background: var(--glass);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
         }
 
         .section-header {
@@ -684,7 +685,7 @@
             align-items: center;
             cursor: pointer;
             background: linear-gradient(90deg, rgba(0, 212, 255, 0.03) 0%, transparent 100%);
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
         }
 
         .section-title-group {
@@ -733,7 +734,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s ease;
             color: var(--text-secondary);
             font-size: 0.7rem;
         }
@@ -745,20 +746,28 @@
             border-color: var(--primary);
         }
 
+        /* GPU ACCELERATED ACCORDION ANIMATION */
         .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
         }
 
         .section.expanded .section-content {
-            max-height: 8000px;
-            padding-bottom: 16px;
+            grid-template-rows: 1fr;
         }
 
         .section-inner {
-            padding: 16px;
+            overflow: hidden;
+            padding: 0 16px; /* Horizontal padding always present */
         }
+        
+        .section.expanded .section-inner {
+             padding-bottom: 16px; /* Vertical padding only when expanded */
+             padding-top: 5px;
+             transition: padding 0.3s ease;
+        }
+
 
         /* CHART */
         .chart-toggle {
@@ -2299,6 +2308,8 @@
             "0420": { name: "FERNANDO SOARES", code: "0420", blocked: false }
         };
 
+        const ADMIN_ID = "002451";
+
         class EvolutionV50 {
             constructor() {
                 this.entries = [];
@@ -2325,7 +2336,7 @@
                     try {
                         const parsed = JSON.parse(localUsers);
                         // Garantir que o admin nunca se perca
-                        this.users = { ...this.users, ...parsed, "002451": DEFAULT_USERS["002451"] };
+                        this.users = { ...this.users, ...parsed, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                     } catch(e) {}
                 }
 
@@ -2414,10 +2425,10 @@
                         });
                         
                         // Mesclar: Firebase tem prioridade, mas mantemos o Admin local se necessário
-                        this.users = { ...this.users, ...firebaseUsers, "002451": DEFAULT_USERS["002451"] };
+                        this.users = { ...this.users, ...firebaseUsers, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                         // Se o admin vier do Firebase, usar os dados de lá (mas garantindo que exista)
-                        if (firebaseUsers["002451"]) {
-                             this.users["002451"] = { ...DEFAULT_USERS["002451"], ...firebaseUsers["002451"] };
+                        if (firebaseUsers[ADMIN_ID]) {
+                             this.users[ADMIN_ID] = { ...DEFAULT_USERS[ADMIN_ID], ...firebaseUsers[ADMIN_ID] };
                         }
                         
                         this.saveUsersToCache();
@@ -2463,7 +2474,7 @@
                     
                     if (hasChanges) {
                         // Garantia de Admin
-                        if (!this.users["002451"]) this.users["002451"] = DEFAULT_USERS["002451"];
+                        if (!this.users[ADMIN_ID]) this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
                         
                         this.saveUsersToCache();
                         if (this.isAdmin) {
@@ -2533,8 +2544,8 @@
                     }
 
                     // Garantia específica para o Admin
-                    if (code === "002451" && !this.users["002451"]) {
-                        this.users["002451"] = DEFAULT_USERS["002451"];
+                    if (code === ADMIN_ID && !this.users[ADMIN_ID]) {
+                        this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
                     }
 
                     const userData = this.users[code];
@@ -2547,7 +2558,7 @@
 
                     // Verificar dispositivo (exceto admin)
                     // Proteção contra compartilhamento de senha
-                    if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
+                    if (code !== ADMIN_ID && userData.deviceId && userData.deviceId !== this.deviceId) {
                         this.showToast('Acesso bloqueado. Dispositivo não reconhecido. Contate o Administrador.', 'error');
                         this.pinValue = '';
                         this.updatePinDisplay();
@@ -2566,7 +2577,7 @@
                     // Lógica de Login bem sucedida
                     this.currentUser = userData.name;
                     this.currentUserId = code;
-                    this.isAdmin = (code === "002451");
+                    this.isAdmin = (code === ADMIN_ID);
 
                     // CHECK VIP TRIAL LOGIC
                     let showVipTrialModal = false;
@@ -2600,7 +2611,7 @@
                     })));
 
                     // Atualizar Firebase em background (sem await para não travar a UI)
-                    if (code !== "002451") {
+                    if (code !== ADMIN_ID) {
                         // Não atualizar lastLogin do admin para evitar escritas desnecessárias se estiver debugando
                         this.updateLastLoginBackground(code);
                     }
@@ -2652,7 +2663,7 @@
                             if (userData && !userData.blocked) {
                                 this.currentUser = d.user;
                                 this.currentUserId = d.code;
-                                this.isAdmin = (d.code === "002451");
+                                this.isAdmin = (d.code === ADMIN_ID);
                                 this.showMainApp();
                             }
                         } 
@@ -2733,7 +2744,8 @@
                         const cloudEntries = [];
                         snapshot.forEach(doc => cloudEntries.push(doc.data()));
                         
-                        // BUG FIX: Forçar conversão de tipos ao carregar da nuvem
+                        // BUG FIX: Forçar conversão de tipos ao carregar da nuvem (Number)
+                        // Isso previne que valores antigos como string causem concatenação
                         const sanitizedEntries = cloudEntries.map(e => ({
                             ...e,
                             bruto: Number(e.bruto),
@@ -3811,7 +3823,14 @@
             }
             
             toggleSection(id) { 
-                document.getElementById(id).classList.toggle('expanded'); 
+                const section = document.getElementById(id);
+                const isExpanded = section.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    section.classList.remove('expanded');
+                } else {
+                    section.classList.add('expanded');
+                }
             }
 
             installPWA() {
