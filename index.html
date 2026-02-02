@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -569,9 +570,7 @@
         .stat-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 2px;
             background: var(--gradient-primary);
             opacity: 0;
@@ -768,7 +767,7 @@
              padding-bottom: 16px; /* Vertical padding only when expanded */
              padding-top: 5px;
              transition: padding 0.3s ease;
-         }
+        }
 
 
         /* CHART */
@@ -873,7 +872,7 @@
 
         /* INPUTS */
         .input-group {
-            margin-bottom: 16px; /* Aumentado de 12px para 16px */
+            margin-bottom: 12px;
         }
 
         .input-label {
@@ -883,7 +882,7 @@
             letter-spacing: 1.5px;
             color: var(--text-secondary);
             font-weight: 700;
-            margin-bottom: 8px; /* Aumentado de 6px para 8px */
+            margin-bottom: 6px;
         }
 
         input, select {
@@ -909,13 +908,13 @@
         .input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px; /* Aumentado de 10px para 12px */
+            gap: 10px;
         }
 
         .input-row-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px; /* Aumentado de 8px para 10px */
+            gap: 8px;
         }
 
         /* BUTTONS */
@@ -1309,8 +1308,8 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 20px; /* Aumentado de 16px */
-            margin-bottom: 16px; /* Aumentado de 12px */
+            padding: 16px;
+            margin-bottom: 12px;
         }
 
         .admin-toggle-btn {
@@ -1319,7 +1318,7 @@
             background: transparent;
             border: none;
             color: var(--primary);
-            font-size: 0.8rem; /* Aumentado de 0.75rem */
+            font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
             padding: 0;
@@ -1332,8 +1331,8 @@
 
         .admin-toggle-content {
             display: none;
-            padding-top: 20px; /* Aumentado de 16px */
-            margin-top: 10px; /* Aumentado de 8px */
+            padding-top: 16px;
+            margin-top: 8px;
             border-top: 1px solid var(--border);
         }
 
@@ -1342,43 +1341,33 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px; /* Aumentado de 8px */
+            gap: 8px;
         }
 
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px; /* Aumentado de 10px */
+            padding: 10px;
             background: var(--glass);
             border-radius: 8px;
             border: 1px solid var(--border);
-            margin-bottom: 4px;
         }
 
         .user-item-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
         }
 
         .user-item-name {
             font-size: 0.85rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
         }
 
         .user-item-code {
             font-size: 0.65rem;
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
-        }
-
-        .user-last-seen {
-            font-size: 0.55rem;
-            color: var(--info);
-            font-weight: 500;
         }
 
         .user-item-status {
@@ -1403,8 +1392,8 @@
 
         .btn-icon {
             padding: 6px;
-            width: 32px; /* Aumentado de 28px */
-            height: 32px; /* Aumentado de 28px */
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1412,7 +1401,7 @@
             border: 1px solid var(--border);
             background: var(--surface);
             cursor: pointer;
-            font-size: 1rem; /* Aumentado de 0.9rem */
+            font-size: 0.9rem;
         }
         
         .btn-icon.active {
@@ -2623,9 +2612,10 @@
                     })));
 
                     // Atualizar Firebase em background (sem await para não travar a UI)
-                    // *** CORREÇÃO: Removida a verificação if (code !== ADMIN_ID) ***
-                    // Agora o Admin também tem seu login registrado
-                    this.updateLastLoginBackground(code);
+                    if (code !== ADMIN_ID) {
+                        // Não atualizar lastLogin do admin para evitar escritas desnecessárias se estiver debugando
+                        this.updateLastLoginBackground(code);
+                    }
 
                     this.pinValue = ''; 
                     document.body.style.cursor = 'default';
@@ -3037,16 +3027,6 @@
                 }
             }
 
-            formatLastSeen(timestamp) {
-                if (!timestamp) return 'Nunca acessou';
-                try {
-                    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-                    return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-                } catch (e) {
-                    return 'Data inválida';
-                }
-            }
-
             renderUserList() {
                 const container = document.getElementById('userList');
                 if (!container) return;
@@ -3060,9 +3040,8 @@
                 container.innerHTML = userArray.map(u => `
                     <div class="user-item">
                         <div class="user-item-info">
-                            <span class="user-item-name">${u.name} ${u.name === 'FELIPE PRADO' ? '<span style="font-size: 0.65rem; color: var(--accent); background: rgba(255, 215, 0, 0.15); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(255,215,0,0.3); margin-left: 4px;">ADMIN</span>' : ''}</span>
+                            <span class="user-item-name">${u.name}</span>
                             <span class="user-item-code">PIN: ${u.code}</span>
-                            <span class="user-last-seen">Último acesso: ${this.formatLastSeen(u.lastLogin)}</span>
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
@@ -3075,7 +3054,7 @@
                                         ${u.blocked ? 'Liberar' : 'Bloquear'}
                                     </button>
                                 </div>
-                            ` : ''}
+                            ` : '<span style="font-size: 0.65rem; color: var(--accent);">ADMIN</span>'}
                         </div>
                     </div>
                 `).join('');
@@ -3894,10 +3873,9 @@
             e.preventDefault();
             // Stash the event so it can be triggered later.
             app.deferredPrompt = e;
-            
-            // Check if user has already installed (flag stored in localStorage)
-            // AND ensure not standalone
-            if (!localStorage.getItem('evo_app_installed') && !window.matchMedia('(display-mode: standalone)').matches) {
+            // Update UI notify the user they can install the PWA
+            // Only show if not standalone
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
                  document.getElementById('installBanner').classList.remove('hidden');
             }
         });
@@ -3906,8 +3884,6 @@
         window.addEventListener('appinstalled', () => {
             document.getElementById('installBanner').classList.add('hidden');
             app.deferredPrompt = null;
-            // Mark as installed so we don't annoy them again even in browser
-            localStorage.setItem('evo_app_installed', 'true');
         });
 
         document.addEventListener('change', (e) => { 
