@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>EVOLUTION V50 | Felipe Prado Systems</title>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Compat Version 10.14.1 for stability) -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -156,6 +156,11 @@
             animation: float 6s ease-in-out infinite;
         }
 
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
         .sindicato-emblem::before {
             content: '';
             position: absolute;
@@ -234,6 +239,12 @@
             animation: shake 0.5s ease;
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -256,10 +267,23 @@
             overflow: hidden;
         }
 
+        .key-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
         .key-btn:active {
             transform: scale(0.95);
             background: var(--primary);
             color: var(--bg);
+        }
+
+        .key-btn:active::before {
+            opacity: 1;
         }
 
         .key-btn.action {
@@ -1268,6 +1292,25 @@
             font-size: 0.65rem;
         }
 
+        .btn-icon {
+            padding: 6px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-icon.active {
+            background: rgba(0, 217, 166, 0.2);
+            border-color: var(--success);
+        }
+
         /* FOOTER */
         .app-footer {
             margin-top: auto;
@@ -2110,7 +2153,7 @@
 
         // USUÁRIOS PADRÃO (Fallback inicial)
         const DEFAULT_USERS = {
-            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true },
+            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true, vip: true },
             "7806": { name: "EDILSON JR", code: "7806", blocked: false },
             "1980": { name: "ANDERSON PRADO", code: "1980", blocked: false },
             "2026": { name: "FABRICIO DIAS", code: "2026", blocked: false },
@@ -2753,6 +2796,33 @@
                 }
             }
 
+            async toggleUserVip(code) {
+                const user = this.users[code];
+                if (!user) return;
+                const newStatus = !user.vip;
+
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        vip: newStatus
+                    });
+                    this.showToast(newStatus ? 'Anúncios removidos!' : 'Anúncios ativados!', 'success');
+                } catch (error) {
+                    this.showToast('Erro ao atualizar (offline?)', 'error');
+                }
+            }
+
+            async resetUserDevice(code) {
+                if (!confirm(`Resetar dispositivo de ${this.users[code].name}?`)) return;
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        deviceId: null
+                    });
+                    this.showToast('Dispositivo resetado!', 'success');
+                } catch (error) {
+                    this.showToast('Erro ao resetar (offline?)', 'error');
+                }
+            }
+
             renderUserList() {
                 const container = document.getElementById('userList');
                 if (!container) return;
@@ -2772,10 +2842,14 @@
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
                             ${u.name !== 'FELIPE PRADO' ? `
-                                <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" 
-                                        onclick="app.toggleUserBlock('${u.code}')">
-                                    ${u.blocked ? 'Liberar' : 'Bloquear'}
-                                </button>
+                                <div style="display:flex; gap:4px;">
+                                    <button class="btn-icon ${u.vip ? 'active' : ''}" onclick="app.toggleUserVip('${u.code}')" title="VIP (Sem Anúncios)">💎</button>
+                                    <button class="btn-icon" onclick="app.resetUserDevice('${u.code}')" title="Resetar Dispositivo">📱</button>
+                                    <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" 
+                                            onclick="app.toggleUserBlock('${u.code}')">
+                                        ${u.blocked ? 'Liberar' : 'Bloquear'}
+                                    </button>
+                                </div>
                             ` : '<span style="font-size: 0.65rem; color: var(--accent);">ADMIN</span>'}
                         </div>
                     </div>
@@ -3499,7 +3573,11 @@
             }
 
             startAutoPix() {
-                if (this.isAdmin) return;
+                // If user is VIP or Admin, do not show ads
+                if (this.isAdmin || (this.users[this.currentUserId] && this.users[this.currentUserId].vip)) {
+                    return;
+                }
+
                 setInterval(() => {
                     if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
                         if (Math.random() < 0.4) {
