@@ -1301,6 +1301,30 @@
             font-size: 0.65rem;
         }
 
+        /* ADMIN MESSAGE */
+        .admin-toggle-content {
+            display: none;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .admin-toggle-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+        }
+
         /* FOOTER */
         .app-footer {
             margin-top: auto;
@@ -1875,66 +1899,116 @@
                 
                 <!-- GERENCIAMENTO DE USUÁRIOS -->
                 <div class="admin-section">
-                    <h4>👥 Usuários</h4>
-                    
-                    <div class="input-group" style="margin-bottom: 12px;">
-                        <label class="input-label">Adicionar Novo Usuário</label>
-                        <div class="input-row" style="margin-bottom: 8px;">
-                            <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
-                            <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admUsers')">
+                        <span>👥 Usuários</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="admUsers" class="admin-toggle-content">
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label class="input-label">Adicionar Novo Usuário</label>
+                            <div class="input-row" style="margin-bottom: 8px;">
+                                <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
+                                <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6">
+                            </div>
+                            <button class="btn btn-primary" onclick="app.addNewUser()">
+                                ➕ Adicionar
+                            </button>
                         </div>
-                        <button class="btn btn-primary" onclick="app.addNewUser()">
-                            ➕ Adicionar
-                        </button>
-                    </div>
 
-                    <div class="input-group">
-                        <label class="input-label">Lista de Usuários</label>
-                        <div class="user-list" id="userList">
-                            <!-- Lista dinâmica -->
+                        <div class="input-group">
+                            <label class="input-label">Lista de Usuários</label>
+                            <div class="user-list" id="userList">
+                                <!-- Lista dinâmica -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- EDITOR DE TAXAS -->
                 <div class="admin-section">
-                    <h4>💲 Editar Taxas</h4>
-                    
-                    <div class="input-group">
-                        <label class="input-label">07x15</label>
-                        <div class="input-row">
-                            <input type="number" id="rate_07x15_normal" step="0.01" placeholder="Normal">
-                            <input type="number" id="rate_07x15_feriado" step="0.01" placeholder="Feriado">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admRates')">
+                        <span>💲 Editar Taxas</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="admRates" class="admin-toggle-content">
+                        <div class="input-group">
+                            <label class="input-label">07x15</label>
+                            <div class="input-row">
+                                <input type="number" id="rate_07x15_normal" step="0.01" placeholder="Normal">
+                                <input type="number" id="rate_07x15_feriado" step="0.01" placeholder="Feriado">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="input-group">
-                        <label class="input-label">15x23 (15h-19h)</label>
-                        <div class="input-row">
-                            <input type="number" id="rate_15x23_p1_normal" step="0.01" placeholder="Normal">
-                            <input type="number" id="rate_15x23_p1_feriado" step="0.01" placeholder="Feriado">
+                        <div class="input-group">
+                            <label class="input-label">15x23 (15h-19h)</label>
+                            <div class="input-row">
+                                <input type="number" id="rate_15x23_p1_normal" step="0.01" placeholder="Normal">
+                                <input type="number" id="rate_15x23_p1_feriado" step="0.01" placeholder="Feriado">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="input-group">
-                        <label class="input-label">15x23 (19h-23h)</label>
-                        <div class="input-row">
-                            <input type="number" id="rate_15x23_p2_normal" step="0.01" placeholder="Normal">
-                            <input type="number" id="rate_15x23_p2_feriado" step="0.01" placeholder="Feriado">
+                        <div class="input-group">
+                            <label class="input-label">15x23 (19h-23h)</label>
+                            <div class="input-row">
+                                <input type="number" id="rate_15x23_p2_normal" step="0.01" placeholder="Normal">
+                                <input type="number" id="rate_15x23_p2_feriado" step="0.01" placeholder="Feriado">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="input-group">
-                        <label class="input-label">23x07</label>
-                        <div class="input-row">
-                            <input type="number" id="rate_23x07_normal" step="0.01" placeholder="Normal">
-                            <input type="number" id="rate_23x07_feriado" step="0.01" placeholder="Feriado">
+                        <div class="input-group">
+                            <label class="input-label">23x07</label>
+                            <div class="input-row">
+                                <input type="number" id="rate_23x07_normal" step="0.01" placeholder="Normal">
+                                <input type="number" id="rate_23x07_feriado" step="0.01" placeholder="Feriado">
+                            </div>
                         </div>
-                    </div>
 
-                    <button class="btn btn-success" onclick="app.saveRates()">Salvar Taxas</button>
+                        <button class="btn btn-success" onclick="app.saveRates()">Salvar Taxas</button>
+                    </div>
                 </div>
 
+                <!-- MENSAGENS -->
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admMessages')">
+                        <span>📢 Mensagens do Sistema</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="admMessages" class="admin-toggle-content">
+                        <div class="input-group">
+                            <label class="input-label">Texto do Aviso</label>
+                            <textarea id="msgContent" rows="3" style="width: 100%; padding: 10px; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); resize: none;"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Tipo de Exibição</label>
+                            <select id="msgType" onchange="app.toggleMsgDates()">
+                                <option value="once">Uma vez (Ao logar)</option>
+                                <option value="always">Sempre (Todo login)</option>
+                                <option value="period">Por Período</option>
+                            </select>
+                        </div>
+                        <div id="msgDates" class="input-row" style="display: none;">
+                            <input type="date" id="msgStart">
+                            <input type="date" id="msgEnd">
+                        </div>
+                        <button class="btn btn-primary" style="margin-bottom: 8px;" onclick="app.publishMessage()">Publicar Aviso</button>
+                        <button class="btn btn-danger" onclick="app.deleteMessage()">Remover Aviso Atual</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SYSTEM MESSAGE MODAL -->
+    <div class="modal-overlay" id="messageModal">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 class="modal-title" style="color: var(--primary);">Aviso do Sistema</h3>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 2.5rem; margin-bottom: 16px;">📢</div>
+                <p id="sysMsgContent" style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text); white-space: pre-wrap;"></p>
+                <button class="btn btn-glass" onclick="app.closeModal('messageModal')">Entendido</button>
             </div>
         </div>
     </div>
@@ -2456,6 +2530,7 @@
                 this.renderChart();
                 this.loadMeta(); // Load meta from local
                 this.updateMetaProgress();
+                this.checkSystemMessage(); // Check for messages
 
                 // Iniciar sincronização em segundo plano (sem await)
                 this.migrateAndLoadData();
@@ -2647,6 +2722,15 @@
 
             // ==================== ADMINistração DE USUÁRIOS & TAXAS ====================
 
+            toggleAdminSection(id) {
+                const el = document.getElementById(id);
+                if (el.style.display === 'block') {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = 'block';
+                }
+            }
+
             async addNewUser() {
                 const name = document.getElementById('newUserName').value.toUpperCase().trim();
                 const code = document.getElementById('newUserCode').value.trim();
@@ -2779,16 +2863,84 @@
                     this.taxas = newRates;
                     localStorage.setItem('evo_rates_v50', JSON.stringify(newRates));
                     this.showToast('Taxas atualizadas com sucesso!', 'success');
-                    this.closeModal('adminModal');
                 } catch (error) {
                     console.error("Erro ao salvar taxas:", error);
                     // Salvar localmente
                     this.taxas = newRates;
                     localStorage.setItem('evo_rates_v50', JSON.stringify(newRates));
                     this.showToast('Taxas salvas (modo offline)', 'success');
-                    this.closeModal('adminModal');
                 }
             }
+
+            // ==================== ADMIN MESSAGES ====================
+
+            toggleMsgDates() {
+                const type = document.getElementById('msgType').value;
+                document.getElementById('msgDates').style.display = type === 'period' ? 'grid' : 'none';
+            }
+
+            async publishMessage() {
+                const content = document.getElementById('msgContent').value.trim();
+                const type = document.getElementById('msgType').value;
+                const start = document.getElementById('msgStart').value;
+                const end = document.getElementById('msgEnd').value;
+
+                if (!content) { this.showToast('Digite a mensagem', 'error'); return; }
+                if (type === 'period' && (!start || !end)) { this.showToast('Defina as datas', 'error'); return; }
+
+                const msgData = {
+                    content: content,
+                    type: type,
+                    start: start,
+                    end: end,
+                    id: Date.now().toString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_config').doc('message').set(msgData);
+                    this.showToast('Aviso publicado!', 'success');
+                } catch (e) {
+                    this.showToast('Erro ao publicar', 'error');
+                }
+            }
+
+            async deleteMessage() {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_config').doc('message').delete();
+                    this.showToast('Aviso removido!', 'success');
+                    document.getElementById('msgContent').value = '';
+                } catch (e) {
+                    this.showToast('Erro ao remover', 'error');
+                }
+            }
+
+            async checkSystemMessage() {
+                try {
+                    const doc = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_config').doc('message').get();
+                    if (doc.exists) {
+                        const msg = doc.data();
+                        
+                        // Logic check
+                        let show = false;
+                        if (msg.type === 'always') show = true;
+                        else if (msg.type === 'once') {
+                            if (!localStorage.getItem(`evo_msg_seen_${msg.id}`)) show = true;
+                        }
+                        else if (msg.type === 'period') {
+                            const now = new Date().toISOString().split('T')[0];
+                            if (now >= msg.start && now <= msg.end) show = true;
+                        }
+
+                        if (show) {
+                            document.getElementById('sysMsgContent').textContent = msg.content;
+                            this.openModal('messageModal');
+                            if (msg.type === 'once') localStorage.setItem(`evo_msg_seen_${msg.id}`, 'true');
+                        }
+                    }
+                } catch(e) {}
+            }
+
 
             // ==================== FUNCIONALIDADES EXISTENTES ====================
 
@@ -2932,10 +3084,20 @@
             updateDashboard() {
                 let totalBruto = 0, totalLiq = 0, pendente = 0, pago = 0, countPend = 0, countPago = 0;
                 this.entries.forEach(e => {
-                    totalBruto += e.bruto; 
-                    totalLiq += e.liquido;
-                    if (e.pago) { pago += e.liquido; countPago++; } 
-                    else { pendente += e.liquido; countPend++; }
+                    // BUG FIX: Ensure numbers are summed, not strings
+                    const bruto = Number(e.bruto);
+                    const liquido = Number(e.liquido);
+                    
+                    totalBruto += bruto; 
+                    totalLiq += liquido;
+                    
+                    if (e.pago) { 
+                        pago += liquido; 
+                        countPago++; 
+                    } else { 
+                        pendente += liquido; 
+                        countPend++; 
+                    }
                 });
                 document.getElementById('dashBruto').textContent = this.formatMoney(totalBruto);
                 document.getElementById('dashLiq').textContent = this.formatMoney(totalLiq);
@@ -3014,7 +3176,7 @@
                 this.entries.forEach(e => {
                     const dataEntry = new Date(e.data);
                     if (dataEntry.getMonth() === hoje.getMonth() && dataEntry.getFullYear() === hoje.getFullYear()) {
-                        totalMes += e.bruto;
+                        totalMes += Number(e.bruto);
                     }
                 });
                 const percentual = Math.min((totalMes / this.metaMensal) * 100, 100);
@@ -3064,7 +3226,7 @@
                     const d = new Date(today);
                     d.setDate(today.getDate() - i);
                     const dateStr = d.toISOString().split('T')[0];
-                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + e.bruto, 0);
+                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + Number(e.bruto), 0);
                     currentTotal += val;
                     currentPoints.push({ val: val / 100, x: 0, y: 0 });
                 }
@@ -3075,7 +3237,7 @@
                     const d = new Date(today);
                     d.setDate(today.getDate() - (i + days));
                     const dateStr = d.toISOString().split('T')[0];
-                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + e.bruto, 0);
+                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + Number(e.bruto), 0);
                     prevTotal += val;
                     prevPoints.push({ val: val / 100, x: 0, y: 0 });
                 }
@@ -3256,13 +3418,15 @@
                 // 3. Fechar modal e atualizar UI
                 this.closeModal('confirmModal');
                 this.pendingDeleteId = null;
+
+                // 4. Atualizar visual IMEDIATAMENTE
                 this.updateDashboard(); 
                 this.renderHistory(); 
                 this.renderChart(); 
                 this.updateMetaProgress();
                 this.showToast('Registro excluído', 'success');
 
-                // 4. Sincronizar com a nuvem (Background)
+                // 5. Sincronizar com a nuvem (Background)
                 try {
                     await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('entries_' + this.currentUserId).doc(id.toString()).delete();
                 } catch (e) {
