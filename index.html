@@ -2439,14 +2439,18 @@
                     document.getElementById('btnAdmin').classList.add('hidden');
                 }
 
-                // MIGRAÇÃO E CARREGAMENTO DE DADOS
-                await this.migrateAndLoadData();
-                
-                this.loadMeta();
-                this.checkNewMonth();
+                // Carregar cache local imediatamente para feedback instantâneo
+                this.loadFromLocalStorageOnly();
                 this.updateDashboard();
                 this.renderHistory();
                 this.renderChart();
+                this.loadMeta(); // Load meta from local
+                this.updateMetaProgress();
+
+                // Iniciar sincronização em segundo plano (sem await)
+                this.migrateAndLoadData();
+                
+                this.checkNewMonth();
                 
                 if (!this.isAdmin) {
                     this.startAutoPix();
@@ -2459,33 +2463,37 @@
                 this.showSyncStatus('syncing');
                 
                 try {
-                    // 1. Verificar dados no Firebase primeiro
+                    // Verificar nuvem
                     const snapshot = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('entries_' + this.currentUserId)
                         .orderBy('timestamp', 'desc').get();
                     
                     if (!snapshot.empty) {
-                        // Dados existem no Firebase
-                        this.entries = [];
-                        snapshot.forEach(doc => {
-                            this.entries.push(doc.data());
-                        });
-                        console.log("Dados carregados do Firebase:", this.entries.length);
+                        const cloudEntries = [];
+                        snapshot.forEach(doc => cloudEntries.push(doc.data()));
                         
-                        // Salvar no localStorage como backup
-                        localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        // Atualizar apenas se houver diferença
+                        if (JSON.stringify(cloudEntries) !== JSON.stringify(this.entries)) {
+                            this.entries = cloudEntries;
+                            localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                            this.updateDashboard();
+                            this.renderHistory();
+                            this.renderChart();
+                            this.updateMetaProgress();
+                        }
                     } else {
-                        // 2. Tentar migrar do localStorage antigo
-                        const migrated = await this.migrateFromLocalStorage();
-                        if (!migrated) {
-                            this.entries = [];
+                        // Nuvem vazia: tentar migração de legado ou subir dados locais atuais
+                        if (this.entries.length > 0) {
+                            // Temos dados locais (do loadFromLocalStorageOnly), subir para nuvem
+                            await this.persistData();
+                        } else {
+                            // Tentar migrar de chaves antigas
+                            await this.migrateFromLocalStorage();
                         }
                     }
                     
                     this.showSyncStatus('synced');
                 } catch (error) {
-                    console.error("Erro ao carregar dados:", error);
-                    // Fallback para localStorage
-                    this.loadFromLocalStorageOnly();
+                    console.error("Erro sync:", error);
                     this.showSyncStatus('error');
                 }
                 
