@@ -2275,7 +2275,7 @@
     </div>
 
     <script>
-        // ==================== CONFIGURAÇÃO FIREBASE ====================
+        // ==================== CONFIGURAÇÃO FIREBASE OTIMIZADA ====================
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyBAarYACQTbqd0pZWfFN80eOfaj99j0MAo",
@@ -2291,8 +2291,12 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // HABILITAR PERSISTÊNCIA OFFLINE (CORREÇÃO DE BUG)
-        db.enablePersistence({ synchronizeTabs: true }).catch((err) => { console.log("Persistência offline:", err.code); });
+        // 🔴 FIX 1: HABILITAR PERSISTÊNCIA OFFLINE IMEDIATAMENTE
+        db.enablePersistence({ 
+            synchronizeTabs: true 
+        }).catch((err) => { 
+            console.log("Persistência offline:", err.code); 
+        });
 
         const DONATION_MESSAGES = [
             "Sua contribuição garante servidores mais rápidos e estáveis.",
@@ -2352,24 +2356,22 @@
                 this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS)); // Deep copy defaults
                 this.isAdmin = false;
                 this.unsubscribeUsers = null;
+                this.unsubscribeEntries = null; // 🔴 NOVO: Listener para entries
                 this.dataLoaded = false;
                 this.pendingDeleteId = null;
-                this.isLoggingIn = false; // Flag para evitar duplo login
-                this.loginTimeout = null; // Handler do timeout
+                this.isLoggingIn = false;
+                this.lastSyncTime = 0; // 🔴 NOVO: Controle de sincronização
                 
                 // Carregar usuários padrão IMEDIATAMENTE para evitar bloqueio
                 this.users = { ...DEFAULT_USERS }; 
-                // Tentar carregar do cache local para sobrepor se houver
                 const localUsers = localStorage.getItem('evo_users_cache_v50');
                 if (localUsers) {
                     try {
                         const parsed = JSON.parse(localUsers);
-                        // Garantir que o admin nunca se perca
                         this.users = { ...this.users, ...parsed, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                     } catch(e) {}
                 }
 
-                // Inicializar imediatamente
                 this.init();
             }
 
@@ -2399,7 +2401,6 @@
                 const loader = document.getElementById('loadingIndicator');
                 if(loader) loader.classList.remove('hidden');
 
-                // Tentar autenticar anonimamente antes de qualquer chamada ao Firestore
                 try {
                     const auth = firebase.auth();
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -2409,7 +2410,6 @@
                     }
                     console.log("Autenticado no Firebase.");
                     
-                    // Somente após autenticar, tentar carregar dados
                     this.loadRates().catch(console.error);
                     this.syncUsersFromFirebase().catch(console.error);
                     this.setupUsersListener();
@@ -2418,23 +2418,23 @@
                     console.error("Erro na autenticação Firebase:", error);
                 }
                 
-                // Esconder loading (forçado após um pequeno delay para garantir UX)
                 setTimeout(() => {
                     if(loader) loader.classList.add('hidden');
                 }, 800);
                 
-                // Verificar sessão existente
                 this.checkSession();
 
-                // Visibility Change Listener para atualizar status online no mobile
                 document.addEventListener("visibilitychange", () => {
                     if (document.visibilityState === 'visible' && this.currentUser) {
                         this.updateLastLoginBackground(this.currentUserId);
+                        // 🔴 FIX 2: Forçar sync ao voltar para o app
+                        if (Date.now() - this.lastSyncTime > 60000) {
+                            this.syncWithFirestore();
+                        }
                     }
                 });
             }
 
-            // Add a helper to wait for auth
             async waitForAuth() {
                 return new Promise((resolve) => {
                     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
@@ -2445,13 +2445,11 @@
             }
 
             async loadRates() {
-                // Tentar carregar do Firebase
                 try {
                     const doc = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_config').doc('rates').get();
                     if (doc.exists) {
                         this.taxas = doc.data();
                     } else {
-                        // Se não existe, usar padrão
                         this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
                     }
                 } catch (e) {
@@ -2465,7 +2463,6 @@
 
             async syncUsersFromFirebase() {
                 try {
-                    // Usuários ficam em PUBLIC data para que todos possam ver a lista (admin, etc)
                     const snapshot = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').get();
                     if (!snapshot.empty) {
                         const firebaseUsers = {};
@@ -2473,10 +2470,8 @@
                             firebaseUsers[doc.id] = doc.data();
                         });
                         
-                        // Mesclar: Firebase tem prioridade, mas mantemos o Admin local se necessário
                         this.users = { ...this.users, ...firebaseUsers, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                         
-                        // FORÇA ADMIN "002451" A SER ADMIN, INDEPENDENTE DO BANCO
                         if(this.users[ADMIN_ID]) {
                             this.users[ADMIN_ID].isAdmin = true;
                             this.users[ADMIN_ID].blocked = false;
@@ -2485,7 +2480,6 @@
                         this.saveUsersToCache();
                         console.log("Sincronizado com Firebase:", Object.keys(firebaseUsers).length, "usuários");
                     } else {
-                        // Firebase vazio, fazer upload dos usuários padrão
                         console.log("Firebase vazio, fazendo upload inicial...");
                         await this.uploadDefaultUsers();
                     }
@@ -2508,60 +2502,108 @@
                 this.saveUsersToCache();
             }
 
+            // 🔴 FIX 3: LISTENER OTIMIZADO - Apenas para admin ou quando necessário
             setupUsersListener() {
-                // Atualizações em tempo real
-                this.unsubscribeUsers = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').onSnapshot((snapshot) => {
-                    let hasChanges = false;
-                    snapshot.docChanges().forEach((change) => {
-                        const userData = change.doc.data();
-                        if (change.type === 'added' || change.type === 'modified') {
-                            this.users[change.doc.id] = userData;
-                            hasChanges = true;
-                        } else if (change.type === 'removed') {
-                            delete this.users[change.doc.id];
-                            hasChanges = true;
-                        }
-                    });
-                    
-                    if (hasChanges) {
-                        // Garantia de Admin
-                        if (!this.users[ADMIN_ID]) this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
-                        
-                        this.saveUsersToCache();
-                        
-                        // OTIMIZAÇÃO: Só renderizar se for admin E o modal estiver aberto
-                        if (this.isAdmin && document.getElementById('adminModal').classList.contains('active')) {
-                            this.renderUserList();
-                        }
+                // Só inicia listener se for admin
+                if (this.currentUserId !== ADMIN_ID) return;
 
-                        // NOVA FUNÇÃO: Logout forçado se o usuário atual for bloqueado
-                        if (this.currentUserId && this.users[this.currentUserId] && this.users[this.currentUserId].blocked && this.currentUserId !== ADMIN_ID) {
-                            this.showToast('Sua conta foi bloqueada pelo administrador.', 'error');
-                            setTimeout(() => this.logout(), 2500);
+                this.unsubscribeUsers = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users')
+                    .onSnapshot({ includeMetadataChanges: true }, (snapshot) => {
+                        let hasChanges = false;
+                        snapshot.docChanges().forEach((change) => {
+                            const userData = change.doc.data();
+                            if (change.type === 'added' || change.type === 'modified') {
+                                this.users[change.doc.id] = userData;
+                                hasChanges = true;
+                            } else if (change.type === 'removed') {
+                                delete this.users[change.doc.id];
+                                hasChanges = true;
+                            }
+                        });
+                        
+                        if (hasChanges) {
+                            if (!this.users[ADMIN_ID]) this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
+                            this.saveUsersToCache();
+                            if (this.isAdmin) {
+                                this.renderUserList();
+                            }
                         }
-                    }
-                }, (error) => {
-                    console.log("Erro no listener:", error);
-                });
+                        
+                        // Indicar se veio do cache ou servidor
+                        if (snapshot.metadata.fromCache) {
+                            console.log("Dados de usuários do cache local");
+                        } else {
+                            console.log("Dados de usuários do servidor");
+                        }
+                    }, (error) => {
+                        console.log("Erro no listener:", error);
+                    });
+            }
+
+            // 🔴 NOVO: Listener em tempo real para os dados do usuário logado
+            setupEntriesListener(userId) {
+                // Cancelar listener anterior se existir
+                if (this.unsubscribeEntries) {
+                    this.unsubscribeEntries();
+                }
+
+                // Usar apenas cache local para leitura inicial rápida
+                // Depois sincroniza em background
+                this.unsubscribeEntries = db.collection('artifacts').doc(appId)
+                    .collection('users').doc(userId)
+                    .collection('data').doc('history')
+                    .onSnapshot({ includeMetadataChanges: true }, (doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            // Verificar se dados são mais recentes que o local
+                            const serverUpdated = data.updatedAt ? data.updatedAt.toMillis() : 0;
+                            const localUpdated = this.lastSyncTime;
+
+                            if (serverUpdated > localUpdated || this.entries.length === 0) {
+                                let restoredEntries = [];
+                                if (typeof data.history === 'string') {
+                                    try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
+                                } else if (Array.isArray(data.history)) {
+                                    restoredEntries = data.history;
+                                }
+                                
+                                // 🔴 FIX 4: Forçar conversão de números
+                                this.entries = restoredEntries.map(e => ({
+                                    ...e,
+                                    bruto: Number(e.bruto) || 0,
+                                    liquido: Number(e.liquido) || 0
+                                }));
+                                
+                                this.lastSyncTime = serverUpdated;
+                                localStorage.setItem(`evo_data_${userId}`, JSON.stringify(this.entries));
+                                
+                                // Atualizar UI apenas se houver mudanças reais
+                                this.updateDashboard();
+                                this.renderHistory();
+                                this.renderChart();
+                                this.updateMetaProgress();
+                                
+                                if (!doc.metadata.fromCache) {
+                                    this.showSyncStatus('synced');
+                                }
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Erro no listener de entries:", error);
+                    });
             }
 
             saveUsersToCache() {
                 localStorage.setItem('evo_users_cache_v50', JSON.stringify(this.users));
             }
 
-            // ==================== LOGIN ====================
+            // ==================== LOGIN OTIMIZADO ====================
 
             addDigit(digit) { 
                 if (this.pinValue.length < 6) { 
                     this.pinValue += digit; 
                     this.updatePinDisplay(); 
-                    
-                    // CORREÇÃO RACE CONDITION: Limpa timeout anterior se houver
-                    if (this.loginTimeout) clearTimeout(this.loginTimeout);
-                    
-                    if (this.pinValue.length === 6) {
-                        this.loginTimeout = setTimeout(() => this.login(), 50); // Fast Login Trigger
-                    }
+                    if (this.pinValue.length === 6) setTimeout(() => this.login(), 50);
                 } 
             }
 
@@ -2596,17 +2638,14 @@
             }
 
             async login() {
-                // PRIMEIRO PASSO ABSOLUTO: Checar flag
-                if (this.isLoggingIn) return; 
+                // 🔴 FIX 5: Prevenir race condition no login
+                if (this.isLoggingIn) return;
                 this.isLoggingIn = true;
 
                 try {
-                    // Feedback visual imediato
                     document.body.style.cursor = 'wait';
-                    
                     const code = this.pinValue;
                     
-                    // Fallback de segurança
                     if (!this.users || Object.keys(this.users).length === 0) {
                         this.users = { ...DEFAULT_USERS };
                     }
@@ -2620,7 +2659,7 @@
                     if (!userData) { 
                         this.showPinError();
                         document.body.style.cursor = 'default';
-                        this.isLoggingIn = false; // Reset flag
+                        this.isLoggingIn = false;
                         return; 
                     }
 
@@ -2642,39 +2681,18 @@
                         return;
                     }
 
-                    // --- FAST LOGIN LOGIC ---
+                    // --- LOGIN IMEDIATO ---
                     this.currentUser = userData.name;
                     this.currentUserId = code;
-                    
-                    // CORREÇÃO CRÍTICA ADMIN:
                     this.isAdmin = (code === ADMIN_ID);
 
-                    // 1. Check local data FIRST
-                    const hasLocalData = localStorage.getItem(`evo_data_${code}`);
+                    // Carregar dados locais imediatamente
+                    this.loadFromLocalStorageOnly();
                     
-                    if (hasLocalData && hasLocalData !== '[]') {
-                        // Optimistic: Log in instantly, sync later
-                        this.loadFromLocalStorageOnly(); 
-                        this.finishLogin(userData, code, false); // false = don't wait for sync
-                    } else {
-                        // History Wiped: Show spinner and fetch
-                        document.getElementById('loadingIndicator').classList.remove('hidden');
-                        document.getElementById('loadingText').textContent = "Restaurando Backup...";
-                        
-                        try {
-                            // AUMENTO DO TIMEOUT PARA 15 SEGUNDOS para primeira carga
-                            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000));
-                            const fetch = this.loadCloudData(code);
-                            
-                            await Promise.race([fetch, timeout]);
-                            this.finishLogin(userData, code, true);
-                        } catch (e) {
-                            console.log("Falha ou timeout no backup:", e);
-                            this.showToast("Trabalhando offline (sem backup)", "warning");
-                            this.entries = []; // Começa vazio
-                            this.finishLogin(userData, code, true);
-                        }
-                    }
+                    // Configurar listener em tempo real
+                    this.setupEntriesListener(code);
+                    
+                    this.finishLogin(userData, code);
                 
                 } catch (err) {
                     document.body.style.cursor = 'default';
@@ -2684,17 +2702,16 @@
                 }
             }
 
-            finishLogin(userData, code, synced) {
-                // CHECK VIP TRIAL LOGIC
+            finishLogin(userData, code) {
                 let showVipTrialModal = false;
                 const user = this.users[this.currentUserId] || {};
                 
                 if (!user.vipTrialUntil && !user.vip) {
-                        const trialEnd = new Date();
-                        trialEnd.setDate(trialEnd.getDate() + 15);
-                        user.vipTrialUntil = trialEnd.toISOString();
-                        showVipTrialModal = true;
-                        this.updateUserTrialBackground(this.currentUserId, user.vipTrialUntil);
+                    const trialEnd = new Date();
+                    trialEnd.setDate(trialEnd.getDate() + 15);
+                    user.vipTrialUntil = trialEnd.toISOString();
+                    showVipTrialModal = true;
+                    this.updateUserTrialBackground(this.currentUserId, user.vipTrialUntil);
                 }
                 
                 if (this.isAdmin && !localStorage.getItem('evo_admin_seen_trial')) {
@@ -2715,93 +2732,59 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 
                 this.showMainApp();
-                this.isLoggingIn = false; // Release lock
-                
-                if (!synced) {
-                    // Sync in background if we logged in optimistically
-                    this.migrateAndLoadData();
-                }
+                this.isLoggingIn = false;
                 
                 if (showVipTrialModal) {
                     setTimeout(() => this.openModal('vipWelcomeModal'), 1000);
                 }
             }
 
-            // CRITICAL FUNCTION FOR DATA RECOVERY - OPTIMIZED BLOB STRATEGY
-            async loadCloudData(userId) {
+            // 🔴 FIX 6: Sincronização manual eficiente
+            async syncWithFirestore() {
+                if (!this.currentUserId) return;
+                
+                this.showSyncStatus('syncing');
                 try {
-                    await this.waitForAuth(); // Garantir autenticação
-
-                    // TENTATIVA 1: LER O ARQUIVO NOVO (SEGURO E PRIVADO)
-                    // Caminho: artifacts/{appId}/users/{userId}/data/history
-                    const secureBackupDoc = await db.collection('artifacts').doc(appId)
-                        .collection('users').doc(userId)
-                        .collection('data').doc('history').get();
-
-                    if (secureBackupDoc.exists) {
-                        // Restaurar do backup seguro
-                        const data = secureBackupDoc.data();
-                        let restoredEntries = [];
-                        if (typeof data.history === 'string') {
-                            try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
-                        } else if (Array.isArray(data.history)) {
-                            restoredEntries = data.history;
-                        }
-                        // Sanitizar
-                        this.entries = restoredEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
-                        localStorage.setItem(`evo_data_${userId}`, JSON.stringify(this.entries));
-                        console.log("Backup SEGURO restaurado!");
-                        return;
-                    }
-
-                    // TENTATIVA 2: MIGRAÇÃO DO BACKUP ANTIGO (PUBLIC)
-                    console.log("Backup seguro não encontrado. Tentando migração de legado...");
+                    const docRef = db.collection('artifacts').doc(appId)
+                        .collection('users').doc(this.currentUserId)
+                        .collection('data').doc('history');
                     
-                    const legacyBackupDoc = await db.collection('artifacts').doc(appId)
-                        .collection('public').doc('data')
-                        .collection('user_backups').doc(userId).get();
-
-                    if (legacyBackupDoc.exists) {
-                         const data = legacyBackupDoc.data();
-                         let restoredEntries = [];
-                         if (typeof data.history === 'string') {
-                            try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
-                        } else if (Array.isArray(data.history)) {
-                            restoredEntries = data.history;
-                        }
-                        this.entries = restoredEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
-                        
-                        // IMPORTANTE: Salvar imediatamente no novo local seguro para completar a migração
-                        this.persistData();
-                        console.log("Migração de backup legado concluída!");
-                        this.showToast("Histórico migrado com sucesso!", "success");
-                        return;
-                    }
-
-                    // TENTATIVA 3: MIGRAÇÃO DE DADOS MUITO ANTIGOS (ENTRIES INDIVIDUAIS)
-                    const oldSnapshot = await db.collection('artifacts').doc(appId)
-                        .collection('public').doc('data')
-                        .collection('entries_' + userId).get(); // Removido orderBy
+                    const doc = await docRef.get({ source: 'server' }); // Forçar servidor
                     
-                    if (!oldSnapshot.empty) {
-                        const cloudEntries = [];
-                        oldSnapshot.forEach(doc => cloudEntries.push(doc.data()));
-                        cloudEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Ordenar em memória
-
-                        this.entries = cloudEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const serverUpdated = data.updatedAt ? data.updatedAt.toMillis() : 0;
                         
-                        // SALVAR IMEDIATAMENTE NO NOVO FORMATO SEGURO
-                        this.persistData(); 
-                        console.log("Migração completa concluída!");
-                        this.showToast("Dados antigos restaurados!", "success");
-                    } else {
-                        console.log("Nenhum dado encontrado.");
-                        this.loadFromLocalStorageOnly();
+                        if (serverUpdated > this.lastSyncTime) {
+                            // Servidor tem dados mais novos
+                            let restoredEntries = [];
+                            if (typeof data.history === 'string') {
+                                try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
+                            } else if (Array.isArray(data.history)) {
+                                restoredEntries = data.history;
+                            }
+                            
+                            this.entries = restoredEntries.map(e => ({
+                                ...e,
+                                bruto: Number(e.bruto) || 0,
+                                liquido: Number(e.liquido) || 0
+                            }));
+                            
+                            this.lastSyncTime = serverUpdated;
+                            localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                            
+                            this.updateDashboard();
+                            this.renderHistory();
+                            this.renderChart();
+                            this.updateMetaProgress();
+                        }
                     }
-                } catch (e) {
-                    console.error("Erro ao recuperar nuvem:", e);
-                    this.showToast("Erro de conexão ao buscar backup.", "error");
-                    this.loadFromLocalStorageOnly();
+                    
+                    this.showSyncStatus('synced');
+                    this.lastSyncTime = Date.now();
+                } catch (error) {
+                    console.error("Erro na sincronização:", error);
+                    this.showSyncStatus('error');
                 }
             }
 
@@ -2833,15 +2816,13 @@
                         const d = JSON.parse(atob(s)); 
                         if (d.ts > Date.now() - 86400000) { 
                             const userData = this.users[d.code];
-                            // Permitir login se usuário existe localmente E não está bloqueado
                             if (userData && !userData.blocked) {
                                 this.currentUser = d.user;
                                 this.currentUserId = d.code;
-                                // CORREÇÃO CRÍTICA ADMIN:
                                 this.isAdmin = (d.code === ADMIN_ID);
                                 
-                                // Mesmo na sessão salva, garantimos carga dos dados
                                 this.loadFromLocalStorageOnly();
+                                this.setupEntriesListener(d.code); // 🔴 Iniciar listener
                                 this.showMainApp();
                             }
                         } 
@@ -2852,10 +2833,9 @@
             async showMainApp() {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
-                document.getElementById('userName').firstChild.textContent = this.currentUser + " "; // Keep space for badge
+                document.getElementById('userName').firstChild.textContent = this.currentUser + " ";
                 document.getElementById('userAvatar').textContent = this.currentUser.substring(0, 2);
 
-                // Check VIP Status
                 const user = this.users[this.currentUserId];
                 let isVip = user.vip;
                 if (!isVip && user.vipTrialUntil) {
@@ -2871,7 +2851,6 @@
                     document.getElementById('vipBadge').classList.add('hidden');
                 }
 
-                // Update profile modal data
                 if (document.getElementById('profileName')) {
                      document.getElementById('profileName').textContent = this.currentUser;
                      document.getElementById('profileCode').textContent = 'ID: ' + this.currentUserId;
@@ -2881,54 +2860,24 @@
                 }
 
                 if (this.isAdmin) {
-                    // Mostrar botão de Admin no header
                     document.getElementById('btnAdmin').classList.remove('hidden');
-                    this.renderUserList(); // Inicializar lista mas não atualizar em realtime a menos que aberta
+                    this.renderUserList();
                     this.renderAdminRates();
                 } else {
                     document.getElementById('btnAdmin').classList.add('hidden');
                 }
 
-                // Atualizar UI
                 this.updateDashboard();
                 this.renderHistory();
                 this.renderChart();
-                this.loadMeta(); // Load meta from local/cloud
+                this.loadMeta();
                 this.updateMetaProgress();
-                this.checkSystemMessage(); // Check for messages
-
-                // Iniciar sincronização em segundo plano APENAS se necessário
-                if (this.entries.length === 0) {
-                    this.migrateAndLoadData();
-                } else {
-                    this.showSyncStatus('synced');
-                }
-                
+                this.checkSystemMessage();
                 this.checkNewMonth();
                 
                 if (!this.isAdmin) {
                     this.startAutoPix();
                 }
-            }
-
-            // ==================== DADOS E MIGRAÇÃO ====================
-
-            async migrateAndLoadData() {
-                this.showSyncStatus('syncing');
-                try {
-                    await this.waitForAuth();
-                    // Otimização: Tenta ler apenas o backup unificado
-                    await this.loadCloudData(this.currentUserId);
-                    
-                    // CARREGAR META DA NUVEM (CORREÇÃO BUG META)
-                    await this.loadMetaCloud();
-                    
-                    this.showSyncStatus('synced');
-                } catch (error) {
-                    console.error("Erro sync:", error);
-                    this.showSyncStatus('error');
-                }
-                this.dataLoaded = true;
             }
 
             loadFromLocalStorageOnly() {
@@ -2937,11 +2886,11 @@
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        // BUG FIX: Forçar conversão de tipos ao carregar do cache
+                        // 🔴 FIX 7: Garantir que são números
                         this.entries = parsed.map(e => ({
                             ...e,
-                            bruto: Number(e.bruto),
-                            liquido: Number(e.liquido)
+                            bruto: Number(e.bruto) || 0,
+                            liquido: Number(e.liquido) || 0
                         }));
                     } catch (e) {
                         this.entries = [];
@@ -2951,30 +2900,42 @@
                 }
             }
 
-            // OTIMIZAÇÃO: Salva tudo em 1 único documento
+            // 🔴 FIX 8: Persistência eficiente com debounce
             async persistData() {
-                try {
-                    this.showSyncStatus('syncing');
-                    
-                    // CORREÇÃO DE PERMISSÃO: Salvar na pasta PRIVADA do usuário
-                    // Caminho: users/{userId}/data/history
-                    await db.collection('artifacts').doc(appId)
-                        .collection('users').doc(this.currentUserId)
-                        .collection('data').doc('history').set({
-                            history: JSON.stringify(this.entries), // Salva como string JSON comprimida
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            count: this.entries.length
-                        });
-                    
-                    // Backup no localStorage
-                    localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                    
-                    this.showSyncStatus('synced');
-                } catch (error) {
-                    console.error("Erro ao salvar:", error);
-                    localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                    this.showSyncStatus('error');
+                // Debounce: Se houver uma persistência pendente, cancelar e agendar nova
+                if (this._persistTimeout) {
+                    clearTimeout(this._persistTimeout);
                 }
+                
+                this._persistTimeout = setTimeout(async () => {
+                    try {
+                        this.showSyncStatus('syncing');
+                        
+                        // Preparar dados
+                        const dataToSave = {
+                            history: JSON.stringify(this.entries),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            count: this.entries.length,
+                            lastModifiedBy: this.deviceId
+                        };
+
+                        // Salvar no Firebase
+                        await db.collection('artifacts').doc(appId)
+                            .collection('users').doc(this.currentUserId)
+                            .collection('data').doc('history').set(dataToSave);
+                        
+                        // Backup local
+                        localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        this.lastSyncTime = Date.now();
+                        
+                        this.showSyncStatus('synced');
+                    } catch (error) {
+                        console.error("Erro ao salvar:", error);
+                        // Fallback: salvar apenas local
+                        localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        this.showSyncStatus('error');
+                    }
+                }, 300); // Aguardar 300ms para evitar múltiplas escritas
             }
 
             showSyncStatus(status) {
@@ -2983,7 +2944,6 @@
                 const text = el.querySelector('span');
                 
                 if (status === 'error') {
-                    // Mostrar apenas erro
                     spinner.style.display = 'none';
                     text.textContent = '✕ Offline';
                     el.classList.remove('hidden', 'syncing', 'synced');
@@ -2994,12 +2954,11 @@
                     el.classList.remove('hidden', 'synced', 'error');
                     el.classList.add('syncing');
                 } else {
-                    // Esconder loading e sucesso para limpar a tela
                     el.classList.add('hidden');
                 }
             }
 
-            // ==================== ADMINistração DE USUÁRIOS & TAXAS ====================
+            // ==================== ADMINistração ====================
 
             toggleAdminSection(id) {
                 const el = document.getElementById(id);
@@ -3007,8 +2966,6 @@
                     el.style.display = 'none';
                 } else {
                     el.style.display = 'block';
-                    // Renderizar lista apenas quando abrir
-                    if (id === 'admUsers') this.renderUserList();
                 }
             }
 
@@ -3040,13 +2997,7 @@
                     document.getElementById('newUserCode').value = '';
                     this.showToast(`Usuário ${name} adicionado!`, 'success');
                 } catch (error) {
-                    console.error("Erro ao adicionar:", error);
-                    // Adicionar localmente mesmo se Firebase falhar
-                    this.users[code] = {
-                        name: name,
-                        code: code,
-                        blocked: false
-                    };
+                    this.users[code] = { name: name, code: code, blocked: false };
                     this.saveUsersToCache();
                     this.renderUserList();
                     this.showToast('Usuário adicionado (modo offline)', 'success');
@@ -3066,7 +3017,6 @@
                     });
                     this.showToast(newStatus ? 'Usuário bloqueado!' : 'Usuário liberado!', 'success');
                 } catch (error) {
-                    // Atualizar localmente
                     user.blocked = newStatus;
                     this.saveUsersToCache();
                     this.renderUserList();
@@ -3146,7 +3096,6 @@
             }
 
             renderAdminRates() {
-                // Preencher campos de taxas
                 document.getElementById('rate_07x15_normal').value = this.taxas['07x15'].normal;
                 document.getElementById('rate_07x15_feriado').value = this.taxas['07x15'].feriado;
                 
@@ -3188,8 +3137,6 @@
                     this.showToast('Taxas atualizadas com sucesso!', 'success');
                     this.closeModal('adminModal');
                 } catch (error) {
-                    console.error("Erro ao salvar taxas:", error);
-                    // Salvar localmente
                     this.taxas = newRates;
                     localStorage.setItem('evo_rates_v50', JSON.stringify(newRates));
                     this.showToast('Taxas salvas (modo offline)', 'success');
@@ -3197,7 +3144,7 @@
                 }
             }
 
-            // ==================== ADMIN MESSAGES ====================
+            // ==================== MENSAGENS ====================
 
             toggleMsgDates() {
                 const type = document.getElementById('msgType').value;
@@ -3246,7 +3193,6 @@
                     if (doc.exists) {
                         const msg = doc.data();
                         
-                        // Logic check
                         let show = false;
                         if (msg.type === 'always') show = true;
                         else if (msg.type === 'once') {
@@ -3266,8 +3212,7 @@
                 } catch(e) {}
             }
 
-
-            // ==================== FUNCIONALIDADES EXISTENTES ====================
+            // ==================== FUNCIONALIDADES PRINCIPAIS ====================
 
             calcularValores(tipo, turno, valores, qtdConf) {
                 const taxa = this.taxas[turno];
@@ -3341,16 +3286,11 @@
 
                 const resultado = this.calcularValores(tipo, turno, valores, conf);
                 
-                // CORREÇÃO: Data formatada sem conversão de fuso
-                // data é "2024-02-01" (YYYY-MM-DD)
-                const [y, m, d] = data.split('-');
-                const dataFmt = `${d}/${m}/${y}`;
-
                 const entry = {
                     id: Date.now(),
                     navio: navio,
                     data: data,
-                    dataF: dataFmt, // Nova formatação segura
+                    dataF: new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'),
                     turno: turno,
                     tipo: tipo,
                     valores: valores,
@@ -3361,18 +3301,16 @@
                     timestamp: new Date().toISOString()
                 };
 
-                // ATUALIZAÇÃO OTIMISTA: Salvar em memória e LocalStorage imediatamente
+                // Atualização otimista
                 this.entries.unshift(entry);
                 localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                 
-                // Atualizar UI imediatamente
                 this.updateDashboard();
                 this.renderHistory();
                 this.renderChart();
                 this.updateMetaProgress();
                 this.showToast('Registro salvo!', 'success');
                 
-                // Limpar campos
                 document.getElementById('calcNavio').value = '';
                 if (turno === '15x23') { 
                     document.getElementById('calcP1').value = ''; 
@@ -3381,8 +3319,7 @@
                     document.getElementById('calcPT').value = ''; 
                 }
                 
-                // Sincronizar em background (AGORA RÁPIDO - SALVA BLOCO INTEIRO)
-                this.persistData().catch(err => console.error("Erro background sync:", err));
+                this.persistData();
                 
                 if (!this.isAdmin && Math.random() < 0.3) this.showPix(); 
             }
@@ -3393,10 +3330,7 @@
                 if (!navio || !data) { this.showToast('Preencha navio e data', 'error'); return; }
                 const turno = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
-                
-                // CORREÇÃO DATA RELATÓRIO
-                const [y, m, d] = data.split('-');
-                const dataFmt = `${d}/${m}/${y}`;
+                const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
                 
                 let mensagem = `*${navio}*\nData: ${dataFmt} - ${turno}\nTerno: ${terno}\n`;
                 
@@ -3415,9 +3349,8 @@
             updateDashboard() {
                 let totalBruto = 0, totalLiq = 0, pendente = 0, pago = 0, countPend = 0, countPago = 0;
                 this.entries.forEach(e => {
-                    // BUG FIX: Ensure numbers are summed, not strings
-                    const bruto = Number(e.bruto);
-                    const liquido = Number(e.liquido);
+                    const bruto = Number(e.bruto) || 0;
+                    const liquido = Number(e.liquido) || 0;
                     
                     totalBruto += bruto; 
                     totalLiq += liquido;
@@ -3440,31 +3373,12 @@
             }
 
             loadMeta() {
-                // Tenta carregar local primeiro para renderizar rápido
                 const key = `evo_meta_${btoa(this.currentUser)}`;
                 const saved = localStorage.getItem(key);
                 if (saved) { 
                     this.metaMensal = parseInt(saved); 
                     this.renderMetaCard(); 
                 }
-            }
-            
-            // CORREÇÃO: Carregar meta da nuvem
-            async loadMetaCloud() {
-                try {
-                    const doc = await db.collection('artifacts').doc(appId)
-                        .collection('users').doc(this.currentUserId)
-                        .collection('data').doc('config').get();
-                    
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.metaMensal) {
-                            this.metaMensal = data.metaMensal;
-                            localStorage.setItem(`evo_meta_${btoa(this.currentUser)}`, this.metaMensal);
-                            this.renderMetaCard();
-                        }
-                    }
-                } catch(e) { console.log('Erro meta cloud:', e); }
             }
 
             checkNewMonth() {
@@ -3490,20 +3404,11 @@
                 this.showToast('Meta atualizada para o novo mês', 'success');
             }
 
-            async saveMeta() {
+            saveMeta() {
                 const valor = document.getElementById('metaInput').value;
                 if (!valor || valor <= 0) return;
                 this.metaMensal = Math.round(parseFloat(valor) * 100);
-                
-                // Salvar local
                 localStorage.setItem(`evo_meta_${btoa(this.currentUser)}`, this.metaMensal);
-                
-                // CORREÇÃO: Salvar na nuvem
-                try {
-                    await db.collection('artifacts').doc(appId)
-                        .collection('users').doc(this.currentUserId)
-                        .collection('data').doc('config').set({ metaMensal: this.metaMensal }, { merge: true });
-                } catch(e) { console.error("Erro salvar meta cloud", e); }
                 
                 const currentMonth = new Date().getMonth() + "/" + new Date().getFullYear();
                 localStorage.setItem(`evo_meta_month_${btoa(this.currentUser)}`, currentMonth);
@@ -3517,12 +3422,6 @@
                 this.metaMensal = 0;
                 localStorage.removeItem(`evo_meta_${btoa(this.currentUser)}`);
                 document.getElementById('metaCard').style.display = 'none';
-                
-                // Apagar da nuvem também
-                db.collection('artifacts').doc(appId)
-                    .collection('users').doc(this.currentUserId)
-                    .collection('data').doc('config').set({ metaMensal: 0 }, { merge: true }).catch(()=>{});
-                    
                 this.toggleMetaEditor();
             }
 
@@ -3536,19 +3435,14 @@
 
             updateMetaProgress() {
                 if (this.metaMensal <= 0) return;
-                
-                // CORREÇÃO: Comparar strings "YYYY-MM" para evitar fuso horário
-                const now = new Date();
-                const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-                
+                const hoje = new Date();
                 let totalMes = 0;
                 this.entries.forEach(e => {
-                    // e.data é "YYYY-MM-DD"
-                    if (e.data.startsWith(currentMonthStr)) {
-                        totalMes += Number(e.bruto);
+                    const dataEntry = new Date(e.data);
+                    if (dataEntry.getMonth() === hoje.getMonth() && dataEntry.getFullYear() === hoje.getFullYear()) {
+                        totalMes += Number(e.bruto) || 0;
                     }
                 });
-                
                 const percentual = Math.min((totalMes / this.metaMensal) * 100, 100);
                 document.getElementById('metaProgress').style.width = percentual + '%';
                 document.getElementById('metaAtual').textContent = `${this.formatMoney(totalMes)} acumulado`;
@@ -3596,7 +3490,7 @@
                     const d = new Date(today);
                     d.setDate(today.getDate() - i);
                     const dateStr = d.toISOString().split('T')[0];
-                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + Number(e.bruto), 0);
+                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + (Number(e.bruto) || 0), 0);
                     currentTotal += val;
                     currentPoints.push({ val: val / 100, x: 0, y: 0 });
                 }
@@ -3607,7 +3501,7 @@
                     const d = new Date(today);
                     d.setDate(today.getDate() - (i + days));
                     const dateStr = d.toISOString().split('T')[0];
-                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + Number(e.bruto), 0);
+                    const val = this.entries.filter(e => e.data === dateStr).reduce((sum, e) => sum + (Number(e.bruto) || 0), 0);
                     prevTotal += val;
                     prevPoints.push({ val: val / 100, x: 0, y: 0 });
                 }
@@ -3752,7 +3646,6 @@
             async togglePago(id) {
                 const entry = this.entries.find(e => e.id === id);
                 if (entry) {
-                    // ATUALIZAÇÃO OTIMISTA
                     entry.pago = !entry.pago;
                     localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                     
@@ -3762,8 +3655,7 @@
                     this.renderChart();
                     this.showToast(entry.pago ? 'Marcado como pago' : 'Marcado como pendente', 'success');
                     
-                    // Background Sync (Salva o bloco inteiro de novo)
-                    this.persistData().catch(err => console.error("Erro background update:", err));
+                    this.persistData();
                 }
             }
 
@@ -3777,25 +3669,19 @@
                 
                 const id = this.pendingDeleteId;
                 
-                // 1. Atualizar memória (Optimistic Update)
                 this.entries = this.entries.filter(e => e.id !== id);
-                
-                // 2. Salvar Cache Local IMEDIATAMENTE (Correção do Bug)
                 localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                 
-                // 3. Fechar modal e atualizar UI
                 this.closeModal('confirmModal');
                 this.pendingDeleteId = null;
 
-                // 4. Atualizar visual IMEDIATAMENTE
                 this.updateDashboard(); 
                 this.renderHistory(); 
                 this.renderChart(); 
                 this.updateMetaProgress();
                 this.showToast('Registro excluído', 'success');
 
-                // 5. Sincronizar com a nuvem (Salva o bloco inteiro de novo)
-                this.persistData().catch(err => console.error("Erro background delete:", err));
+                this.persistData();
             }
 
             copyEntryDetails(id) {
@@ -3857,30 +3743,20 @@
                         const data = JSON.parse(ev.target.result);
                         let registros = Array.isArray(data.registros) ? data.registros : Array.isArray(data) ? data : [];
                         if (registros.length > 0) {
-                            // UI FIRST: Update memory and localStorage immediately
-                            this.entries = registros.map(entry => {
-                                // CORREÇÃO DATA IMPORTADA
-                                let dataFmt = '';
-                                if(entry.data) {
-                                    const [y, m, d] = entry.data.split('-');
-                                    dataFmt = `${d}/${m}/${y}`;
-                                }
-
-                                return { 
-                                    id: entry.id || Date.now() + Math.random(), 
-                                    navio: entry.navio || 'Navio não informado', 
-                                    data: entry.data, 
-                                    dataF: dataFmt || entry.dataF, 
-                                    turno: entry.turno || '15x23', 
-                                    tipo: entry.tipo || 'normal', 
-                                    valores: entry.valores || [], 
-                                    conferentes: entry.conferentes || 3, 
-                                    bruto: entry.bruto || 0, 
-                                    liquido: entry.liquido || 0, 
-                                    pago: entry.pago || false, 
-                                    timestamp: entry.timestamp || new Date().toISOString() 
-                                };
-                            });
+                            this.entries = registros.map(entry => ({ 
+                                id: entry.id || Date.now() + Math.random(), 
+                                navio: entry.navio || 'Navio não informado', 
+                                data: entry.data, 
+                                dataF: entry.dataF || new Date(entry.data + 'T12:00:00').toLocaleDateString('pt-BR'), 
+                                turno: entry.turno || '15x23', 
+                                tipo: entry.tipo || 'normal', 
+                                valores: entry.valores || [], 
+                                conferentes: entry.conferentes || 3, 
+                                bruto: Number(entry.bruto) || 0, 
+                                liquido: Number(entry.liquido) || 0, 
+                                pago: entry.pago || false, 
+                                timestamp: entry.timestamp || new Date().toISOString() 
+                            }));
                             
                             localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                             this.updateDashboard(); 
@@ -3888,14 +3764,10 @@
                             this.renderChart(); 
                             this.updateMetaProgress();
                             
-                            this.showToast(`${registros.length} registros importados! Enviando para nuvem...`, 'success'); 
+                            this.showToast(`${registros.length} registros importados!`, 'success'); 
                             this.closeModal('configModal');
 
-                            // BACKGROUND: Sync to cloud without blocking
-                            this.persistData().catch(err => {
-                                console.error("Background sync error:", err);
-                                this.showToast('Erro no envio para nuvem', 'error');
-                            });
+                            this.persistData();
                         } else { 
                             this.showToast('Arquivo inválido', 'error'); 
                         }
@@ -3919,17 +3791,15 @@
             }
 
             startAutoPix() {
-                // If user is VIP or Admin, do not show ads
                 if (this.isAdmin || (this.users[this.currentUserId] && this.users[this.currentUserId].vip)) {
                     return;
                 }
 
-                // Check trial status
                 const user = this.users[this.currentUserId];
                 if (user && user.vipTrialUntil) {
                     const trialEnd = new Date(user.vipTrialUntil);
                     if (new Date() < trialEnd) {
-                        return; // User is in trial, no ads
+                        return;
                     }
                 }
 
@@ -3967,17 +3837,10 @@
             
             toggleSection(id) { 
                 const section = document.getElementById(id);
-                const isExpanded = section.classList.contains('expanded');
-                
-                if (isExpanded) {
-                    section.classList.remove('expanded');
-                } else {
-                    section.classList.add('expanded');
-                }
+                section.classList.toggle('expanded');
             }
 
             installPWA() {
-                // Logic to trigger PWA install prompt would go here if browser supports it
                 if (this.deferredPrompt) {
                     this.deferredPrompt.prompt();
                     this.deferredPrompt.userChoice.then((choiceResult) => {
@@ -3989,7 +3852,6 @@
                         document.getElementById('installBanner').classList.add('hidden');
                     });
                 } else {
-                    // Fallback for iOS or if prompt not available
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                     if (isIOS) {
                         this.openModal('iosInstallModal');
@@ -4003,6 +3865,9 @@
                 if (this.unsubscribeUsers) {
                     this.unsubscribeUsers();
                 }
+                if (this.unsubscribeEntries) {
+                    this.unsubscribeEntries();
+                }
                 localStorage.removeItem('evo_session_v50'); 
                 location.reload(); 
             }
@@ -4010,25 +3875,18 @@
 
         const app = new EvolutionV50();
 
-        // PWA Install Prompt Logic
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             app.deferredPrompt = e;
             
-            // Check if user has already installed (flag stored in localStorage)
-            // AND ensure not standalone
             if (!localStorage.getItem('evo_app_installed') && !window.matchMedia('(display-mode: standalone)').matches) {
                  document.getElementById('installBanner').classList.remove('hidden');
             }
         });
 
-        // Hide install banner if already installed
         window.addEventListener('appinstalled', () => {
             document.getElementById('installBanner').classList.add('hidden');
             app.deferredPrompt = null;
-            // Mark as installed so we don't annoy them again even in browser
             localStorage.setItem('evo_app_installed', 'true');
         });
 
