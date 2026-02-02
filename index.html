@@ -569,7 +569,9 @@
         .stat-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 2px;
             background: var(--gradient-primary);
             opacity: 0;
@@ -766,7 +768,7 @@
              padding-bottom: 16px; /* Vertical padding only when expanded */
              padding-top: 5px;
              transition: padding 0.3s ease;
-        }
+         }
 
 
         /* CHART */
@@ -1367,6 +1369,13 @@
             font-size: 0.65rem;
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
+        }
+
+        .user-last-seen {
+            font-size: 0.55rem;
+            color: var(--info);
+            margin-top: 2px;
+            font-weight: 500;
         }
 
         .user-item-status {
@@ -3026,6 +3035,16 @@
                 }
             }
 
+            formatLastSeen(timestamp) {
+                if (!timestamp) return 'Nunca acessou';
+                try {
+                    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+                    return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                } catch (e) {
+                    return 'Data inválida';
+                }
+            }
+
             renderUserList() {
                 const container = document.getElementById('userList');
                 if (!container) return;
@@ -3039,8 +3058,9 @@
                 container.innerHTML = userArray.map(u => `
                     <div class="user-item">
                         <div class="user-item-info">
-                            <span class="user-item-name">${u.name}</span>
+                            <span class="user-item-name">${u.name} ${u.name === 'FELIPE PRADO' ? '<span style="font-size: 0.65rem; color: var(--accent); background: rgba(255, 215, 0, 0.15); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(255,215,0,0.3); margin-left: 4px;">ADMIN</span>' : ''}</span>
                             <span class="user-item-code">PIN: ${u.code}</span>
+                            <span class="user-last-seen">Último acesso: ${this.formatLastSeen(u.lastLogin)}</span>
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
@@ -3053,7 +3073,7 @@
                                         ${u.blocked ? 'Liberar' : 'Bloquear'}
                                     </button>
                                 </div>
-                            ` : '<span style="font-size: 0.65rem; color: var(--accent);">ADMIN</span>'}
+                            ` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -3872,9 +3892,10 @@
             e.preventDefault();
             // Stash the event so it can be triggered later.
             app.deferredPrompt = e;
-            // Update UI notify the user they can install the PWA
-            // Only show if not standalone
-            if (!window.matchMedia('(display-mode: standalone)').matches) {
+            
+            // Check if user has already installed (flag stored in localStorage)
+            // AND ensure not standalone
+            if (!localStorage.getItem('evo_app_installed') && !window.matchMedia('(display-mode: standalone)').matches) {
                  document.getElementById('installBanner').classList.remove('hidden');
             }
         });
@@ -3883,6 +3904,8 @@
         window.addEventListener('appinstalled', () => {
             document.getElementById('installBanner').classList.add('hidden');
             app.deferredPrompt = null;
+            // Mark as installed so we don't annoy them again even in browser
+            localStorage.setItem('evo_app_installed', 'true');
         });
 
         document.addEventListener('change', (e) => { 
