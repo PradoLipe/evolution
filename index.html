@@ -2324,53 +2324,60 @@
             }
 
             async login() {
-                const code = this.pinValue;
-                const userData = this.users[code];
-
-                console.log("Tentando login com:", code); // Debug
-                console.log("Usuários disponíveis:", Object.keys(this.users)); // Debug
-
-                if (!userData) { 
-                    this.showPinError(); 
-                    return; 
-                }
-
-                if (userData.blocked) {
-                    this.showToast('Usuário bloqueado. Contate o administrador.', 'error');
-                    this.pinValue = '';
-                    this.updatePinDisplay();
-                    return;
-                }
-
-                // Verificar dispositivo (exceto admin)
-                if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
-                    this.showToast('Dispositivo não autorizado para este usuário', 'error');
-                    this.pinValue = '';
-                    this.updatePinDisplay();
-                    return;
-                }
-
-                // Atualizar no Firebase
                 try {
-                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                        deviceId: this.deviceId
-                    });
-                } catch (error) {
-                    console.log("Não foi possível atualizar Firebase, mas login permitido");
+                    const code = this.pinValue;
+                    const userData = this.users[code];
+
+                    console.log("Tentando login com:", code); // Debug
+                    
+                    if (!userData) { 
+                        this.showPinError(); 
+                        return; 
+                    }
+
+                    if (userData.blocked) {
+                        this.showToast('Usuário bloqueado. Contate o administrador.', 'error');
+                        this.pinValue = '';
+                        this.updatePinDisplay();
+                        return;
+                    }
+
+                    // Verificar dispositivo (exceto admin)
+                    if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
+                        this.showToast('Dispositivo não autorizado para este usuário', 'error');
+                        this.pinValue = '';
+                        this.updatePinDisplay();
+                        return;
+                    }
+
+                    // Tentar atualizar no Firebase, mas não bloquear se falhar
+                    try {
+                        const timestamp = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date();
+                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                            lastLogin: timestamp,
+                            deviceId: this.deviceId
+                        });
+                    } catch (error) {
+                        console.log("Não foi possível atualizar Firebase, mas login permitido");
+                    }
+
+                    this.currentUser = userData.name;
+                    this.currentUserId = code;
+                    this.isAdmin = (code === "002451");
+
+                    localStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
+                        user: this.currentUser, 
+                        code: code, 
+                        ts: Date.now() 
+                    })));
+
+                    this.pinValue = ''; // Limpar PIN para evitar clique duplo
+                    this.showMainApp();
+                
+                } catch (err) {
+                    alert("Erro crítico no login: " + err.message);
+                    console.error(err);
                 }
-
-                this.currentUser = userData.name;
-                this.currentUserId = code;
-                this.isAdmin = (code === "002451");
-
-                localStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
-                    user: this.currentUser, 
-                    code: code, 
-                    ts: Date.now() 
-                })));
-
-                this.showMainApp();
             }
 
             checkSession() { 
@@ -2380,6 +2387,7 @@
                         const d = JSON.parse(atob(s)); 
                         if (d.ts > Date.now() - 86400000) { 
                             const userData = this.users[d.code];
+                            // Permitir login se usuário existe localmente E não está bloqueado
                             if (userData && !userData.blocked) {
                                 this.currentUser = d.user;
                                 this.currentUserId = d.code;
