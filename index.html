@@ -2121,6 +2121,18 @@
                 this.dataLoaded = false;
                 this.pendingDeleteId = null;
                 
+                // Carregar usuários padrão IMEDIATAMENTE para evitar bloqueio
+                this.users = { ...DEFAULT_USERS }; 
+                // Tentar carregar do cache local para sobrepor se houver
+                const localUsers = localStorage.getItem('evo_users_cache_v50');
+                if (localUsers) {
+                    try {
+                        const parsed = JSON.parse(localUsers);
+                        // Garantir que o admin nunca se perca
+                        this.users = { ...this.users, ...parsed, "002451": DEFAULT_USERS["002451"] };
+                    } catch(e) {}
+                }
+
                 // Inicializar imediatamente
                 this.init();
             }
@@ -2161,14 +2173,17 @@
                     console.error("Erro na autenticação Firebase:", error);
                 }
                 
-                // Carregar taxas
-                await this.loadRates();
-
-                // Carregar usuários com prioridade: Firebase -> localStorage -> Padrão
-                await this.initializeUsers();
+                // Tentar carregar taxas e sincronizar usuários em background para não bloquear UI
+                this.loadRates().catch(console.error);
+                this.syncUsersFromFirebase().catch(console.error);
                 
-                // Esconder loading
-                document.getElementById('loadingIndicator').classList.add('hidden');
+                // Configurar listener para atualizações em tempo real
+                this.setupUsersListener();
+                
+                // Esconder loading (forçado após um pequeno delay para garantir UX)
+                setTimeout(() => {
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                }, 800);
                 
                 // Verificar sessão existente
                 this.checkSession();
@@ -2193,38 +2208,6 @@
                 }
             }
 
-            // ==================== INICIALIZAÇÃO DE USUÁRIOS ====================
-
-            async initializeUsers() {
-                // 1. Tentar carregar do localStorage primeiro (mais rápido)
-                const localUsers = localStorage.getItem('evo_users_cache_v50');
-                if (localUsers) {
-                    try {
-                        this.users = JSON.parse(localUsers);
-                        console.log("Usuários carregados do cache local");
-                    } catch(e) {
-                        this.users = {};
-                    }
-                }
-
-                // 2. Garantir que o Admin e usuários padrão existam se a lista estiver vazia ou sem Admin
-                // Isso corrige o erro de "chave incorreta" se o cache estiver vazio ou corrompido
-                if (Object.keys(this.users).length === 0 || !this.users["002451"]) {
-                    this.users = { ...this.users, ...DEFAULT_USERS };
-                    this.saveUsersToCache();
-                }
-
-                // 3. Tentar sincronizar com Firebase em background
-                try {
-                    await this.syncUsersFromFirebase();
-                } catch (error) {
-                    console.log("Firebase não disponível, usando cache local");
-                }
-
-                // 4. Configurar listener para atualizações em tempo real
-                this.setupUsersListener();
-            }
-
             async syncUsersFromFirebase() {
                 try {
                     const snapshot = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').get();
@@ -2234,8 +2217,13 @@
                             firebaseUsers[doc.id] = doc.data();
                         });
                         
-                        // Mesclar: Firebase tem prioridade
-                        this.users = { ...this.users, ...firebaseUsers };
+                        // Mesclar: Firebase tem prioridade, mas mantemos o Admin local se necessário
+                        this.users = { ...this.users, ...firebaseUsers, "002451": DEFAULT_USERS["002451"] };
+                        // Se o admin vier do Firebase, usar os dados de lá (mas garantindo que exista)
+                        if (firebaseUsers["002451"]) {
+                             this.users["002451"] = { ...DEFAULT_USERS["002451"], ...firebaseUsers["002451"] };
+                        }
+                        
                         this.saveUsersToCache();
                         console.log("Sincronizado com Firebase:", Object.keys(firebaseUsers).length, "usuários");
                     } else {
@@ -2278,6 +2266,9 @@
                     });
                     
                     if (hasChanges) {
+                        // Garantia de Admin
+                        if (!this.users["002451"]) this.users["002451"] = DEFAULT_USERS["002451"];
+                        
                         this.saveUsersToCache();
                         if (this.isAdmin) {
                             this.renderUserList();
@@ -2335,6 +2326,9 @@
             async login() {
                 const code = this.pinValue;
                 const userData = this.users[code];
+
+                console.log("Tentando login com:", code); // Debug
+                console.log("Usuários disponíveis:", Object.keys(this.users)); // Debug
 
                 if (!userData) { 
                     this.showPinError(); 
