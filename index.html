@@ -3230,17 +3230,24 @@
                 if (!this.pendingDeleteId) return;
                 
                 const id = this.pendingDeleteId;
+                
+                // 1. Atualizar memória (Optimistic Update)
                 this.entries = this.entries.filter(e => e.id !== id);
                 
+                // 2. Fechar modal
                 this.closeModal('confirmModal');
                 this.pendingDeleteId = null;
 
-                await this.persistData();
+                // 3. Atualizar visual IMEDIATAMENTE
                 this.updateDashboard(); 
                 this.renderHistory(); 
                 this.renderChart(); 
                 this.updateMetaProgress();
                 this.showToast('Registro excluído', 'success');
+
+                // 4. Salvar no banco (Background)
+                // Não usamos await aqui para não travar a UI
+                this.persistData().catch(err => console.error("Erro ao salvar exclusão:", err));
             }
 
             copyEntryDetails(id) {
