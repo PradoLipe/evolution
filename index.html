@@ -3777,6 +3777,7 @@
                         const data = JSON.parse(ev.target.result);
                         let registros = Array.isArray(data.registros) ? data.registros : Array.isArray(data) ? data : [];
                         if (registros.length > 0) {
+                            // UI FIRST: Update memory and localStorage immediately
                             this.entries = registros.map(entry => ({ 
                                 id: entry.id || Date.now() + Math.random(), 
                                 navio: entry.navio || 'Navio não informado', 
@@ -3791,13 +3792,21 @@
                                 pago: entry.pago || false, 
                                 timestamp: entry.timestamp || new Date().toISOString() 
                             }));
-                            await this.persistData();
+                            
+                            localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                             this.updateDashboard(); 
                             this.renderHistory(); 
                             this.renderChart(); 
                             this.updateMetaProgress();
-                            this.showToast(`${registros.length} registros importados!`, 'success'); 
+                            
+                            this.showToast(`${registros.length} registros importados! Enviando para nuvem...`, 'success'); 
                             this.closeModal('configModal');
+
+                            // BACKGROUND: Sync to cloud without blocking
+                            this.persistData().catch(err => {
+                                console.error("Background sync error:", err);
+                                this.showToast('Erro no envio para nuvem', 'error');
+                            });
                         } else { 
                             this.showToast('Arquivo inválido', 'error'); 
                         }
@@ -3885,6 +3894,7 @@
                     this.deferredPrompt.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
                             console.log('User accepted the install prompt');
+                            localStorage.setItem('evo_app_installed', 'true');
                         }
                         this.deferredPrompt = null;
                         document.getElementById('installBanner').classList.add('hidden');
