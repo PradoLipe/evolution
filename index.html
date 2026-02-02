@@ -2407,16 +2407,15 @@
                         await auth.signInAnonymously();
                     }
                     console.log("Autenticado no Firebase.");
+                    
+                    // Somente após autenticar, tentar carregar dados
+                    this.loadRates().catch(console.error);
+                    this.syncUsersFromFirebase().catch(console.error);
+                    this.setupUsersListener();
+
                 } catch (error) {
                     console.error("Erro na autenticação Firebase:", error);
                 }
-                
-                // Tentar carregar taxas e sincronizar usuários em background para não bloquear UI
-                this.loadRates().catch(console.error);
-                this.syncUsersFromFirebase().catch(console.error);
-                
-                // Configurar listener para atualizações em tempo real
-                this.setupUsersListener();
                 
                 // Esconder loading (forçado após um pequeno delay para garantir UX)
                 setTimeout(() => {
@@ -2465,6 +2464,7 @@
 
             async syncUsersFromFirebase() {
                 try {
+                    // Usuários ficam em PUBLIC data para que todos possam ver a lista (admin, etc)
                     const snapshot = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').get();
                     if (!snapshot.empty) {
                         const firebaseUsers = {};
@@ -2716,63 +2716,71 @@
                 try {
                     await this.waitForAuth(); // Garantir autenticação
 
-                    // 1. Tentar ler o arquivo ÚNICO de backup (Super Rápido)
-                    // Caminho: artifacts/{appId}/public/data/user_backups/{userId}
-                    const backupDoc = await db.collection('artifacts').doc(appId)
-                        .collection('public').doc('data')
-                        .collection('user_backups').doc(userId).get();
+                    // TENTATIVA 1: LER O ARQUIVO NOVO (SEGURO E PRIVADO)
+                    // Caminho: artifacts/{appId}/users/{userId}/data/history
+                    // Este é o caminho correto para dados privados do usuário.
+                    const secureBackupDoc = await db.collection('artifacts').doc(appId)
+                        .collection('users').doc(userId)
+                        .collection('data').doc('history').get();
 
-                    if (backupDoc.exists) {
-                        // Restaurar do backup rápido
-                        const data = backupDoc.data();
-                        // Parse se for string, ou usa direto se for objeto
+                    if (secureBackupDoc.exists) {
+                        // Restaurar do backup seguro
+                        const data = secureBackupDoc.data();
                         let restoredEntries = [];
                         if (typeof data.history === 'string') {
                             try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
                         } else if (Array.isArray(data.history)) {
                             restoredEntries = data.history;
                         }
-
-                        // Sanitizar tipos
-                        this.entries = restoredEntries.map(e => ({
-                            ...e,
-                            bruto: Number(e.bruto),
-                            liquido: Number(e.liquido)
-                        }));
-                        
+                        // Sanitizar
+                        this.entries = restoredEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
                         localStorage.setItem(`evo_data_${userId}`, JSON.stringify(this.entries));
-                        console.log("Backup rápido restaurado!");
+                        console.log("Backup SEGURO restaurado!");
                         return;
                     }
 
-                    // 2. FALLBACK DE MIGRAÇÃO (SEM ORDERBY - CORREÇÃO CRÍTICA)
-                    console.log("Backup rápido não encontrado. Tentando migração...");
-                    this.showToast("Buscando dados antigos...", "info");
+                    // TENTATIVA 2: MIGRAÇÃO DO BACKUP ANTIGO (PUBLIC)
+                    // Se não achou no local seguro, tenta ler do local antigo (public/data/user_backups)
+                    // para migrar os dados e não perder nada.
+                    console.log("Backup seguro não encontrado. Tentando migração de legado...");
                     
-                    // IMPORTANTE: REMOVIDO orderBy PARA EVITAR ERRO DE ÍNDICE
+                    const legacyBackupDoc = await db.collection('artifacts').doc(appId)
+                        .collection('public').doc('data')
+                        .collection('user_backups').doc(userId).get();
+
+                    if (legacyBackupDoc.exists) {
+                         const data = legacyBackupDoc.data();
+                         let restoredEntries = [];
+                         if (typeof data.history === 'string') {
+                            try { restoredEntries = JSON.parse(data.history); } catch(e) { restoredEntries = []; }
+                        } else if (Array.isArray(data.history)) {
+                            restoredEntries = data.history;
+                        }
+                        this.entries = restoredEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
+                        
+                        // IMPORTANTE: Salvar imediatamente no novo local seguro para completar a migração
+                        this.persistData();
+                        console.log("Migração de backup legado concluída!");
+                        this.showToast("Histórico migrado com sucesso!", "success");
+                        return;
+                    }
+
+                    // TENTATIVA 3: MIGRAÇÃO DE DADOS MUITO ANTIGOS (ENTRIES INDIVIDUAIS)
                     const oldSnapshot = await db.collection('artifacts').doc(appId)
                         .collection('public').doc('data')
-                        .collection('entries_' + userId).get();
+                        .collection('entries_' + userId).get(); // Removido orderBy
                     
                     if (!oldSnapshot.empty) {
                         const cloudEntries = [];
                         oldSnapshot.forEach(doc => cloudEntries.push(doc.data()));
-                        
-                        // Ordenar no JS
-                        cloudEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        cloudEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Ordenar em memória
 
-                        this.entries = cloudEntries.map(e => ({
-                            ...e,
-                            bruto: Number(e.bruto),
-                            liquido: Number(e.liquido)
-                        }));
+                        this.entries = cloudEntries.map(e => ({...e, bruto: Number(e.bruto), liquido: Number(e.liquido)}));
                         
-                        localStorage.setItem(`evo_data_${userId}`, JSON.stringify(this.entries));
-                        
-                        // SALVAR IMEDIATAMENTE NO NOVO FORMATO RÁPIDO
+                        // SALVAR IMEDIATAMENTE NO NOVO FORMATO SEGURO
                         this.persistData(); 
-                        console.log("Migração concluída!");
-                        this.showToast("Dados migrados com sucesso!", "success");
+                        console.log("Migração completa concluída!");
+                        this.showToast("Dados antigos restaurados!", "success");
                     } else {
                         console.log("Nenhum dado encontrado.");
                         this.loadFromLocalStorageOnly();
@@ -2932,11 +2940,12 @@
                 try {
                     this.showSyncStatus('syncing');
                     
-                    // Salvar backup unificado
-                    // Caminho: artifacts/{appId}/public/data/user_backups/{userId}
+                    // CORREÇÃO DE PERMISSÃO: Salvar na pasta PRIVADA do usuário
+                    // Caminho antigo (erro): public/data/user_backups
+                    // Novo caminho (seguro): users/{userId}/data/history
                     await db.collection('artifacts').doc(appId)
-                        .collection('public').doc('data')
-                        .collection('user_backups').doc(this.currentUserId).set({
+                        .collection('users').doc(this.currentUserId)
+                        .collection('data').doc('history').set({
                             history: JSON.stringify(this.entries), // Salva como string JSON comprimida
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             count: this.entries.length
