@@ -6,8 +6,16 @@
     <meta name="theme-color" content="#0a0e27">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Evolution V50">
     <title>EVOLUTION V50 | Felipe Prado Systems</title>
     
+    <!-- ÍCONE AUTOMÁTICO (SVG Base64) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' ry='100' fill='%230a0e27'/%3E%3Cpath d='M256 60 L450 160 L450 340 Q256 500 62 340 L62 160 Z' stroke='%2300d4ff' stroke-width='20' fill='rgba(0, 212, 255, 0.1)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='url(%23g)' font-size='280' font-family='sans-serif' font-weight='800'%3EE%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237000ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230a0e27'/%3E%3Cpath d='M256 60 L450 160 L450 340 Q256 500 62 340 L62 160 Z' stroke='%2300d4ff' stroke-width='20' fill='rgba(0, 212, 255, 0.1)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='url(%23g)' font-size='280' font-family='sans-serif' font-weight='800'%3EE%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237000ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+
+    <!-- MANIFESTO PWA (Base64) -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkV2b2x1dGlvbiBWNTAiLAogICJzaG9ydF9uYW1lIjogIkV2b2x1dGlvbiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwZTI3IiwKICAidGhlbWVfY29sb3IiOiAiIzBhMGUyNyIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCxiYXNlNjQsUEhOMmR5QjRiV3h1Y3owaU1EQWdNSGg0YkdsdFpXNXZjbWwwSUhScGJXVWdZV2RoYVc1bE1TSWdZbUZ1ZEd4bElHWnBiR3c5SWpVeE1pQjFNVElpUGp4eVpXTjBJRmRwWkdkMGFBbzlOVEV5TGlCb1pXbG5hSFFvOU5URXlJSEo1UFNJd01HRXdaVEkzSUNKdlpYTjBaVDhsT0M1bEoyMWhaSE05TlRBa0lHMHhOQ0J3TkRVeExURTJNQ0JzTkRVd0lETTBVQ0J4TWpVMklEVXdNQ0IyTWlBek5EQWdMRFl5SURFMk1DQmFJaUJ6ZEhKdmEyVWdQU0l5TTBBe1pHUm1aaWRKZEhKdmEyVWdQU0l5MUMweUxURWdKbTVwYkd3OUlISnBZbUVmTUMweU1USXNKalUxT1Mwd0xqRWlMMjQ4ZEdWNGRCQjRNVHBsSlM1bUpTQjVQU1UxTlNVbUpIZGtZbTlyWlhKallYUmxaR1Z5UFNJdGJHbGtaR3hsS2lCamIyNTBhVzVuUFNKeU1EQWlJR1oxYm1ScFkyaDNQU0p6WVc1ekxYTmxjbWxtSWlCbWIyNTBYM2RsYVdkb2RDMDVNRGM1TVdRd0p6VkZQQzl6Wld4bEwzUjRlVDBrUENoc2FXNWxZWEpIY21Ga2FXVnVkQ0JwWkRzbm1GeWJEY3dKeklpSUhnMUpTMXpNSGNnZVRsZUp6QWlJSGc5TVRBd0pTVS9QZ3c4YzNSdmNDQnZabXp6WlhRcU1UQXdKcVVsSUhOMGIzQXRZMjlzYjNJOUp5TXpCemRETTBabkpta2dkM0I4TDJ4cGJtVmhja2R5WVdScFpXNTBQaTlzWldac2NuMGlPaUJ3YVc1a1pYSWdhVzFuhnB2UHp4bGMzUWdlV3hoWjJWa2N5OXpkV2RsRzNoaGJHNDZJSFpwYm1GblpTOXpkV2RsRzNodGJGOXNibThpUGtNcFpITXZPZz09IiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+
     <!-- Firebase SDK (Compat Version 10.14.1 for stability) -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -78,6 +86,7 @@
             z-index: -1;
             overflow: hidden;
             pointer-events: none;
+            will-change: transform;
         }
         
         .ambient-bg::before {
@@ -114,7 +123,7 @@
             justify-content: center;
             z-index: 1000;
             background: radial-gradient(circle at center, #151b3d 0%, #0a0e27 100%);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease;
             padding: 16px;
         }
 
@@ -149,7 +158,7 @@
             background: var(--glass);
             border: 2px solid rgba(0, 212, 255, 0.2);
             border-radius: 24px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
             box-shadow: 
                 0 0 40px rgba(0, 212, 255, 0.15),
                 inset 0 0 40px rgba(0, 212, 255, 0.05);
@@ -201,7 +210,7 @@
         .login-card {
             width: 100%;
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 24px;
@@ -223,7 +232,7 @@
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.2);
             background: transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .pin-dot.active {
@@ -236,7 +245,7 @@
         .pin-dot.error {
             background: var(--danger);
             border-color: var(--danger);
-            animation: shake 0.5s ease;
+            animation: shake 0.4s ease;
         }
 
         @keyframes shake {
@@ -260,7 +269,7 @@
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background 0.1s ease;
             font-family: 'Inter', sans-serif;
             touch-action: manipulation;
             position: relative;
@@ -273,11 +282,11 @@
             inset: 0;
             background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
         }
 
         .key-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
             background: var(--primary);
             color: var(--bg);
         }
@@ -341,7 +350,7 @@
             z-index: 100;
             padding: 12px 16px;
             background: rgba(10, 14, 39, 0.85);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -382,13 +391,38 @@
             color: white;
         }
 
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .user-info h3 {
             font-size: 0.8rem;
             font-weight: 700;
-            margin-bottom: 1px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .user-info span {
+        .vip-badge {
+            font-size: 0.55rem;
+            background: var(--gradient-gold);
+            color: #0a0e27;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .user-info span.status-text {
             font-size: 0.6rem;
             color: var(--success);
             text-transform: uppercase;
@@ -445,6 +479,61 @@
             color: var(--accent);
         }
 
+        /* INSTALL BANNER */
+        .install-banner {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.5s ease;
+        }
+        
+        .install-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .install-icon {
+            font-size: 1.2rem;
+        }
+        
+        .install-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .install-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .install-subtitle {
+            font-size: 0.6rem;
+            opacity: 0.9;
+        }
+
+        .install-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
         /* CONTENT */
         .app-content {
             flex: 1;
@@ -470,7 +559,7 @@
             padding: 14px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .stat-card:active {
@@ -480,7 +569,9 @@
         .stat-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 2px;
             background: var(--gradient-primary);
             opacity: 0;
@@ -580,13 +671,13 @@
             font-weight: 600;
         }
 
-        /* SECTIONS */
+        /* SECTIONS - ACCORDION OPTIMIZATION */
         .section {
             background: var(--glass);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
         }
 
         .section-header {
@@ -596,7 +687,7 @@
             align-items: center;
             cursor: pointer;
             background: linear-gradient(90deg, rgba(0, 212, 255, 0.03) 0%, transparent 100%);
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
         }
 
         .section-title-group {
@@ -645,7 +736,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s ease;
             color: var(--text-secondary);
             font-size: 0.7rem;
         }
@@ -657,20 +748,28 @@
             border-color: var(--primary);
         }
 
+        /* GPU ACCELERATED ACCORDION ANIMATION */
         .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
         }
 
         .section.expanded .section-content {
-            max-height: 8000px;
-            padding-bottom: 16px;
+            grid-template-rows: 1fr;
         }
 
         .section-inner {
-            padding: 16px;
+            overflow: hidden;
+            padding: 0 16px; /* Horizontal padding always present */
         }
+        
+        .section.expanded .section-inner {
+             padding-bottom: 16px; /* Vertical padding only when expanded */
+             padding-top: 5px;
+             transition: padding 0.3s ease;
+         }
+
 
         /* CHART */
         .chart-toggle {
@@ -774,7 +873,7 @@
 
         /* INPUTS */
         .input-group {
-            margin-bottom: 12px;
+            margin-bottom: 16px; /* Aumentado de 12px para 16px */
         }
 
         .input-label {
@@ -784,7 +883,7 @@
             letter-spacing: 1.5px;
             color: var(--text-secondary);
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 8px; /* Aumentado de 6px para 8px */
         }
 
         input, select {
@@ -810,13 +909,13 @@
         .input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px; /* Aumentado de 10px para 12px */
         }
 
         .input-row-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
+            gap: 10px; /* Aumentado de 8px para 10px */
         }
 
         /* BUTTONS */
@@ -1205,80 +1304,90 @@
             padding: 20px;
         }
 
-        /* META EDITOR */
-        .meta-editor {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .meta-editor label {
-            display: block;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .meta-editor input {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            text-align: center;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        /* ADMIN PANEL */
+        /* ADMIN SECTION */
         .admin-section {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-bottom: 16px;
+            padding: 24px; /* Increased padding */
+            margin-bottom: 20px; /* Increased margin */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); /* Added depth */
         }
 
-        .admin-section h4 {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
+        .admin-toggle-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 0.9rem; /* Larger font */
+            font-weight: 800;
+            cursor: pointer;
+            padding: 4px 0;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-toggle-content {
+            display: none;
+            padding-top: 24px; /* More space */
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
         }
 
         .user-list {
-            max-height: 200px;
+            max-height: 300px; /* Taller list */
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
+            padding-right: 4px;
         }
 
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background: var(--glass);
-            border-radius: 8px;
+            padding: 16px; /* More padding */
+            background: var(--surface-elevated); /* Slightly lighter bg */
+            border-radius: 12px;
             border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+        
+        .user-item:active {
+            transform: scale(0.99);
         }
 
         .user-item-info {
             display: flex;
             flex-direction: column;
+            gap: 4px; /* Spacing between name and details */
         }
 
         .user-item-name {
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
         }
 
         .user-item-code {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .user-last-seen {
+            font-size: 0.65rem;
+            color: var(--info);
+            font-weight: 600;
+            margin-top: 2px;
         }
 
         .user-item-status {
@@ -1301,28 +1410,23 @@
             font-size: 0.65rem;
         }
 
-        /* ADMIN MESSAGE */
-        .admin-toggle-content {
-            display: none;
-            padding-top: 10px;
-            margin-top: 10px;
-            border-top: 1px solid var(--border);
+        .btn-icon {
+            padding: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            font-size: 1rem;
         }
         
-        .admin-toggle-btn {
-            width: 100%;
-            text-align: left;
-            background: transparent;
-            border: none;
-            color: var(--primary);
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
+        .btn-icon.active {
+            background: rgba(0, 217, 166, 0.2);
+            border-color: var(--success);
         }
 
         /* FOOTER */
@@ -1460,6 +1564,34 @@
 </head>
 <body>
 
+    <!-- INSTALL APP BANNER (HIDDEN BY DEFAULT) -->
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-content">
+            <div class="install-icon">📲</div>
+            <div class="install-text">
+                <span class="install-title">Instalar App</span>
+                <span class="install-subtitle">Adicione à tela inicial</span>
+            </div>
+        </div>
+        <button class="install-btn" onclick="app.installPWA()">Instalar</button>
+    </div>
+
+    <!-- IOS INSTALL MODAL -->
+    <div class="modal-overlay" id="iosInstallModal">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 class="modal-title" style="color: var(--primary);">Instalar no iPhone</h3>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+                    Para instalar o aplicativo, toque no botão <strong>Compartilhar</strong> <span style="font-size: 1.2rem;">⎋</span> abaixo e selecione <strong>"Adicionar à Tela de Início"</strong> <span style="font-size: 1.2rem;">➕</span>.
+                </p>
+                <div style="font-size: 3rem; margin-bottom: 20px; animation: bounce 2s infinite;">⬇️</div>
+                <button class="btn btn-glass" onclick="app.closeModal('iosInstallModal')">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <div class="ambient-bg"></div>
     <div class="toast-container" id="toastContainer"></div>
     <div class="sync-status hidden" id="syncStatus">
@@ -1533,11 +1665,8 @@
             <div class="user-pill" onclick="app.openModal('profileModal')">
                 <div class="avatar" id="userAvatar">FP</div>
                 <div class="user-info">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <span class="status-dot"></span>
-                        <span>Online</span>
-                    </div>
-                    <h3 id="userName">Felipe Prado</h3>
+                    <h3 id="userName">Felipe Prado <span id="vipBadge" class="vip-badge hidden">VIP</span></h3>
+                    <span class="status-text"><span class="status-dot"></span>Online</span>
                 </div>
             </div>
             
@@ -1555,7 +1684,7 @@
                 <div class="stat-card bruto">
                     <div class="stat-label">Total Bruto</div>
                     <div class="stat-value" id="dashBruto">R$ 0,00</div>
-                    <div class="stat-meta">Produção total</div>
+                    <div class="stat-meta">Acumulado Geral</div>
                 </div>
                 
                 <div class="stat-card liquido">
@@ -2012,6 +2141,29 @@
             </div>
         </div>
     </div>
+    
+    <!-- VIP WELCOME MODAL -->
+    <div class="modal-overlay" id="vipWelcomeModal">
+        <div class="modal-content" style="text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);">
+            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(255, 215, 0, 0.3);">
+                <h3 class="modal-title" style="color: var(--accent); letter-spacing: 3px;">Presente Exclusivo! 💎</h3>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 3.5rem; margin-bottom: 16px; animation: pulse 2s infinite;">🎉</div>
+                <p style="margin-bottom: 12px; font-size: 0.95rem; color: var(--text); line-height: 1.6;">
+                    Para você aproveitar o máximo do <strong>Evolution V50</strong>, liberamos:
+                </p>
+                <div style="background: rgba(255, 215, 0, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 215, 0, 0.3);">
+                    <h2 style="color: var(--accent); font-size: 1.4rem; margin-bottom: 4px;">15 DIAS VIP</h2>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Acesso Totalmente Gratuito</span>
+                </div>
+                <p style="margin-bottom: 24px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Neste período, você utilizará o sistema sem interrupções de avisos de contribuição. Aproveite para focar na sua produtividade!
+                </p>
+                <button class="btn btn-primary" style="background: var(--gradient-gold); color: #0a0e27;" onclick="app.closeModal('vipWelcomeModal')">Resgatar Presente</button>
+            </div>
+        </div>
+    </div>
 
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="configModal" onclick="app.closeModalOnOverlay(event, 'configModal')">
@@ -2167,7 +2319,7 @@
 
         // USUÁRIOS PADRÃO (Fallback inicial)
         const DEFAULT_USERS = {
-            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true },
+            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true, vip: true },
             "7806": { name: "EDILSON JR", code: "7806", blocked: false },
             "1980": { name: "ANDERSON PRADO", code: "1980", blocked: false },
             "2026": { name: "FABRICIO DIAS", code: "2026", blocked: false },
@@ -2176,6 +2328,8 @@
             "2912": { name: "JOHNY", code: "2912", blocked: false },
             "0420": { name: "FERNANDO SOARES", code: "0420", blocked: false }
         };
+
+        const ADMIN_ID = "002451";
 
         class EvolutionV50 {
             constructor() {
@@ -2203,7 +2357,7 @@
                     try {
                         const parsed = JSON.parse(localUsers);
                         // Garantir que o admin nunca se perca
-                        this.users = { ...this.users, ...parsed, "002451": DEFAULT_USERS["002451"] };
+                        this.users = { ...this.users, ...parsed, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                     } catch(e) {}
                 }
 
@@ -2292,10 +2446,10 @@
                         });
                         
                         // Mesclar: Firebase tem prioridade, mas mantemos o Admin local se necessário
-                        this.users = { ...this.users, ...firebaseUsers, "002451": DEFAULT_USERS["002451"] };
+                        this.users = { ...this.users, ...firebaseUsers, [ADMIN_ID]: DEFAULT_USERS[ADMIN_ID] };
                         // Se o admin vier do Firebase, usar os dados de lá (mas garantindo que exista)
-                        if (firebaseUsers["002451"]) {
-                             this.users["002451"] = { ...DEFAULT_USERS["002451"], ...firebaseUsers["002451"] };
+                        if (firebaseUsers[ADMIN_ID]) {
+                             this.users[ADMIN_ID] = { ...DEFAULT_USERS[ADMIN_ID], ...firebaseUsers[ADMIN_ID] };
                         }
                         
                         this.saveUsersToCache();
@@ -2341,7 +2495,7 @@
                     
                     if (hasChanges) {
                         // Garantia de Admin
-                        if (!this.users["002451"]) this.users["002451"] = DEFAULT_USERS["002451"];
+                        if (!this.users[ADMIN_ID]) this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
                         
                         this.saveUsersToCache();
                         if (this.isAdmin) {
@@ -2411,8 +2565,8 @@
                     }
 
                     // Garantia específica para o Admin
-                    if (code === "002451" && !this.users["002451"]) {
-                        this.users["002451"] = DEFAULT_USERS["002451"];
+                    if (code === ADMIN_ID && !this.users[ADMIN_ID]) {
+                        this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
                     }
 
                     const userData = this.users[code];
@@ -2425,7 +2579,7 @@
 
                     // Verificar dispositivo (exceto admin)
                     // Proteção contra compartilhamento de senha
-                    if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
+                    if (code !== ADMIN_ID && userData.deviceId && userData.deviceId !== this.deviceId) {
                         this.showToast('Acesso bloqueado. Dispositivo não reconhecido. Contate o Administrador.', 'error');
                         this.pinValue = '';
                         this.updatePinDisplay();
@@ -2444,7 +2598,31 @@
                     // Lógica de Login bem sucedida
                     this.currentUser = userData.name;
                     this.currentUserId = code;
-                    this.isAdmin = (code === "002451");
+                    this.isAdmin = (code === ADMIN_ID);
+
+                    // CHECK VIP TRIAL LOGIC
+                    let showVipTrialModal = false;
+                    const now = new Date();
+                    
+                    // Se não tiver data de trial e não for VIP permanente
+                    if (!userData.vipTrialUntil && !userData.vip) {
+                         // Ativar trial
+                         const trialEnd = new Date();
+                         trialEnd.setDate(trialEnd.getDate() + 15);
+                         userData.vipTrialUntil = trialEnd.toISOString();
+                         
+                         // Salvar flag para mostrar modal
+                         showVipTrialModal = true;
+                         
+                         // Atualizar no Firebase em background
+                         this.updateUserTrialBackground(code, userData.vipTrialUntil);
+                    }
+                    
+                    // Se o admin quiser ver o modal para teste, podemos forçar se ele não tiver visto
+                    if (this.isAdmin && !localStorage.getItem('evo_admin_seen_trial')) {
+                        showVipTrialModal = true;
+                        localStorage.setItem('evo_admin_seen_trial', 'true');
+                    }
 
                     // Salvar sessão
                     localStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
@@ -2454,14 +2632,18 @@
                     })));
 
                     // Atualizar Firebase em background (sem await para não travar a UI)
-                    if (code !== "002451") {
-                        // Não atualizar lastLogin do admin para evitar escritas desnecessárias se estiver debugando
-                        this.updateLastLoginBackground(code);
-                    }
+                    // ATUALIZAÇÃO: REMOVIDA A TRAVA DO ADMIN
+                    // Agora atualiza o último acesso para TODOS, inclusive Felipe Prado
+                    this.updateLastLoginBackground(code);
 
                     this.pinValue = ''; 
                     document.body.style.cursor = 'default';
-                    this.showMainApp();
+                    
+                    await this.showMainApp();
+                    
+                    if (showVipTrialModal) {
+                        setTimeout(() => this.openModal('vipWelcomeModal'), 1000);
+                    }
                 
                 } catch (err) {
                     document.body.style.cursor = 'default';
@@ -2479,6 +2661,16 @@
                     console.log("Erro atualização background ignorado:", e);
                 }
             }
+            
+            async updateUserTrialBackground(code, dateStr) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        vipTrialUntil: dateStr
+                    });
+                } catch (e) {
+                     console.log("Erro atualização trial background ignorado:", e);
+                }
+            }
 
             checkSession() { 
                 const s = localStorage.getItem('evo_session_v50'); 
@@ -2491,7 +2683,7 @@
                             if (userData && !userData.blocked) {
                                 this.currentUser = d.user;
                                 this.currentUserId = d.code;
-                                this.isAdmin = (d.code === "002451");
+                                this.isAdmin = (d.code === ADMIN_ID);
                                 this.showMainApp();
                             }
                         } 
@@ -2502,8 +2694,24 @@
             async showMainApp() {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
-                document.getElementById('userName').textContent = this.currentUser;
+                document.getElementById('userName').firstChild.textContent = this.currentUser + " "; // Keep space for badge
                 document.getElementById('userAvatar').textContent = this.currentUser.substring(0, 2);
+
+                // Check VIP Status
+                const user = this.users[this.currentUserId];
+                let isVip = user.vip;
+                if (!isVip && user.vipTrialUntil) {
+                    const trialEnd = new Date(user.vipTrialUntil);
+                    if (new Date() < trialEnd) {
+                        isVip = true;
+                    }
+                }
+                
+                if (isVip) {
+                    document.getElementById('vipBadge').classList.remove('hidden');
+                } else {
+                    document.getElementById('vipBadge').classList.add('hidden');
+                }
 
                 // Update profile modal data
                 if (document.getElementById('profileName')) {
@@ -2556,9 +2764,17 @@
                         const cloudEntries = [];
                         snapshot.forEach(doc => cloudEntries.push(doc.data()));
                         
+                        // BUG FIX: Forçar conversão de tipos ao carregar da nuvem (Number)
+                        // Isso previne que valores antigos como string causem concatenação
+                        const sanitizedEntries = cloudEntries.map(e => ({
+                            ...e,
+                            bruto: Number(e.bruto),
+                            liquido: Number(e.liquido)
+                        }));
+
                         // Atualizar apenas se houver diferença
-                        if (JSON.stringify(cloudEntries) !== JSON.stringify(this.entries)) {
-                            this.entries = cloudEntries;
+                        if (JSON.stringify(sanitizedEntries) !== JSON.stringify(this.entries)) {
+                            this.entries = sanitizedEntries;
                             localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                             this.updateDashboard();
                             this.renderHistory();
@@ -2664,7 +2880,17 @@
                 const key = `evo_data_${this.currentUserId}`;
                 const saved = localStorage.getItem(key);
                 if (saved) {
-                    this.entries = JSON.parse(saved);
+                    try {
+                        const parsed = JSON.parse(saved);
+                        // BUG FIX: Forçar conversão de tipos ao carregar do cache
+                        this.entries = parsed.map(e => ({
+                            ...e,
+                            bruto: Number(e.bruto),
+                            liquido: Number(e.liquido)
+                        }));
+                    } catch (e) {
+                        this.entries = [];
+                    }
                 } else {
                     this.entries = [];
                 }
@@ -2793,6 +3019,43 @@
                 }
             }
 
+            async toggleUserVip(code) {
+                const user = this.users[code];
+                if (!user) return;
+                const newStatus = !user.vip;
+
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        vip: newStatus
+                    });
+                    this.showToast(newStatus ? 'Anúncios removidos!' : 'Anúncios ativados!', 'success');
+                } catch (error) {
+                    this.showToast('Erro ao atualizar (offline?)', 'error');
+                }
+            }
+
+            async resetUserDevice(code) {
+                if (!confirm(`Resetar dispositivo de ${this.users[code].name}?`)) return;
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        deviceId: null
+                    });
+                    this.showToast('Dispositivo resetado!', 'success');
+                } catch (error) {
+                    this.showToast('Erro ao resetar (offline?)', 'error');
+                }
+            }
+
+            formatLastSeen(timestamp) {
+                if (!timestamp) return 'Nunca acessou';
+                try {
+                    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+                    return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                } catch (e) {
+                    return 'Data inválida';
+                }
+            }
+
             renderUserList() {
                 const container = document.getElementById('userList');
                 if (!container) return;
@@ -2806,17 +3069,22 @@
                 container.innerHTML = userArray.map(u => `
                     <div class="user-item">
                         <div class="user-item-info">
-                            <span class="user-item-name">${u.name}</span>
+                            <span class="user-item-name">${u.name} ${u.name === 'FELIPE PRADO' ? '<span style="font-size: 0.65rem; color: var(--accent); background: rgba(255, 215, 0, 0.15); padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(255,215,0,0.3); margin-left: 4px;">ADMIN</span>' : ''}</span>
                             <span class="user-item-code">PIN: ${u.code}</span>
+                            <span class="user-last-seen">Último acesso: ${this.formatLastSeen(u.lastLogin)}</span>
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
                             ${u.name !== 'FELIPE PRADO' ? `
-                                <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" 
-                                        onclick="app.toggleUserBlock('${u.code}')">
-                                    ${u.blocked ? 'Liberar' : 'Bloquear'}
-                                </button>
-                            ` : '<span style="font-size: 0.65rem; color: var(--accent);">ADMIN</span>'}
+                                <div style="display:flex; gap:4px;">
+                                    <button class="btn-icon ${u.vip ? 'active' : ''}" onclick="app.toggleUserVip('${u.code}')" title="VIP (Sem Anúncios)">💎</button>
+                                    <button class="btn-icon" onclick="app.resetUserDevice('${u.code}')" title="Resetar Dispositivo">📱</button>
+                                    <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" 
+                                            onclick="app.toggleUserBlock('${u.code}')">
+                                        ${u.blocked ? 'Liberar' : 'Bloquear'}
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -2863,12 +3131,14 @@
                     this.taxas = newRates;
                     localStorage.setItem('evo_rates_v50', JSON.stringify(newRates));
                     this.showToast('Taxas atualizadas com sucesso!', 'success');
+                    this.closeModal('adminModal');
                 } catch (error) {
                     console.error("Erro ao salvar taxas:", error);
                     // Salvar localmente
                     this.taxas = newRates;
                     localStorage.setItem('evo_rates_v50', JSON.stringify(newRates));
                     this.showToast('Taxas salvas (modo offline)', 'success');
+                    this.closeModal('adminModal');
                 }
             }
 
@@ -3537,7 +3807,20 @@
             }
 
             startAutoPix() {
-                if (this.isAdmin) return;
+                // If user is VIP or Admin, do not show ads
+                if (this.isAdmin || (this.users[this.currentUserId] && this.users[this.currentUserId].vip)) {
+                    return;
+                }
+
+                // Check trial status
+                const user = this.users[this.currentUserId];
+                if (user && user.vipTrialUntil) {
+                    const trialEnd = new Date(user.vipTrialUntil);
+                    if (new Date() < trialEnd) {
+                        return; // User is in trial, no ads
+                    }
+                }
+
                 setInterval(() => {
                     if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
                         if (Math.random() < 0.4) {
@@ -3571,7 +3854,36 @@
             }
             
             toggleSection(id) { 
-                document.getElementById(id).classList.toggle('expanded'); 
+                const section = document.getElementById(id);
+                const isExpanded = section.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    section.classList.remove('expanded');
+                } else {
+                    section.classList.add('expanded');
+                }
+            }
+
+            installPWA() {
+                // Logic to trigger PWA install prompt would go here if browser supports it
+                if (this.deferredPrompt) {
+                    this.deferredPrompt.prompt();
+                    this.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        this.deferredPrompt = null;
+                        document.getElementById('installBanner').classList.add('hidden');
+                    });
+                } else {
+                    // Fallback for iOS or if prompt not available
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOS) {
+                        this.openModal('iosInstallModal');
+                    } else {
+                         this.showToast('Use o menu do navegador para instalar', 'info');
+                    }
+                }
             }
 
             logout() { 
@@ -3584,6 +3896,28 @@
         }
 
         const app = new EvolutionV50();
+
+        // PWA Install Prompt Logic
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            app.deferredPrompt = e;
+            
+            // Check if user has already installed (flag stored in localStorage)
+            // AND ensure not standalone
+            if (!localStorage.getItem('evo_app_installed') && !window.matchMedia('(display-mode: standalone)').matches) {
+                 document.getElementById('installBanner').classList.remove('hidden');
+            }
+        });
+
+        // Hide install banner if already installed
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('installBanner').classList.add('hidden');
+            app.deferredPrompt = null;
+            // Mark as installed so we don't annoy them again even in browser
+            localStorage.setItem('evo_app_installed', 'true');
+        });
 
         document.addEventListener('change', (e) => { 
             if (e.target.id === 'simTipo') app.updateSimFields(); 
