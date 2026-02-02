@@ -623,6 +623,7 @@
             border-color: var(--primary);
         }
 
+        /* CORREÇÃO DO SCROLL HISTORICO */
         .section-content {
             max-height: 0;
             overflow: hidden;
@@ -630,7 +631,8 @@
         }
 
         .section.expanded .section-content {
-            max-height: 800px;
+            max-height: 8000px; /* Aumentado para exibir lista longa */
+            padding-bottom: 16px;
         }
 
         .section-inner {
