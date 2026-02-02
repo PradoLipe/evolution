@@ -2291,8 +2291,8 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // Configurar persistência offline - DESABILITADO PARA OTIMIZAR
-        // db.enablePersistence({ synchronizeTabs: true }).catch((err) => { console.log("Persistência offline:", err.code); });
+        // HABILITAR PERSISTÊNCIA OFFLINE (CORREÇÃO DE BUG)
+        db.enablePersistence({ synchronizeTabs: true }).catch((err) => { console.log("Persistência offline:", err.code); });
 
         const DONATION_MESSAGES = [
             "Sua contribuição garante servidores mais rápidos e estáveis.",
@@ -2355,6 +2355,7 @@
                 this.dataLoaded = false;
                 this.pendingDeleteId = null;
                 this.isLoggingIn = false; // Flag para evitar duplo login
+                this.loginTimeout = null; // Handler do timeout
                 
                 // Carregar usuários padrão IMEDIATAMENTE para evitar bloqueio
                 this.users = { ...DEFAULT_USERS }; 
@@ -2527,7 +2528,9 @@
                         if (!this.users[ADMIN_ID]) this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
                         
                         this.saveUsersToCache();
-                        if (this.isAdmin) {
+                        
+                        // OTIMIZAÇÃO: Só renderizar se for admin E o modal estiver aberto
+                        if (this.isAdmin && document.getElementById('adminModal').classList.contains('active')) {
                             this.renderUserList();
                         }
 
@@ -2552,7 +2555,13 @@
                 if (this.pinValue.length < 6) { 
                     this.pinValue += digit; 
                     this.updatePinDisplay(); 
-                    if (this.pinValue.length === 6) setTimeout(() => this.login(), 50); // Fast Login Trigger
+                    
+                    // CORREÇÃO RACE CONDITION: Limpa timeout anterior se houver
+                    if (this.loginTimeout) clearTimeout(this.loginTimeout);
+                    
+                    if (this.pinValue.length === 6) {
+                        this.loginTimeout = setTimeout(() => this.login(), 50); // Fast Login Trigger
+                    }
                 } 
             }
 
@@ -2587,7 +2596,8 @@
             }
 
             async login() {
-                if (this.isLoggingIn) return; // Previne duplo clique
+                // PRIMEIRO PASSO ABSOLUTO: Checar flag
+                if (this.isLoggingIn) return; 
                 this.isLoggingIn = true;
 
                 try {
@@ -2610,7 +2620,7 @@
                     if (!userData) { 
                         this.showPinError();
                         document.body.style.cursor = 'default';
-                        this.isLoggingIn = false;
+                        this.isLoggingIn = false; // Reset flag
                         return; 
                     }
 
@@ -2705,7 +2715,7 @@
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 
                 this.showMainApp();
-                this.isLoggingIn = false;
+                this.isLoggingIn = false; // Release lock
                 
                 if (!synced) {
                     // Sync in background if we logged in optimistically
@@ -2724,7 +2734,6 @@
 
                     // TENTATIVA 1: LER O ARQUIVO NOVO (SEGURO E PRIVADO)
                     // Caminho: artifacts/{appId}/users/{userId}/data/history
-                    // Este é o caminho correto para dados privados do usuário.
                     const secureBackupDoc = await db.collection('artifacts').doc(appId)
                         .collection('users').doc(userId)
                         .collection('data').doc('history').get();
@@ -2746,8 +2755,6 @@
                     }
 
                     // TENTATIVA 2: MIGRAÇÃO DO BACKUP ANTIGO (PUBLIC)
-                    // Se não achou no local seguro, tenta ler do local antigo (public/data/user_backups)
-                    // para migrar os dados e não perder nada.
                     console.log("Backup seguro não encontrado. Tentando migração de legado...");
                     
                     const legacyBackupDoc = await db.collection('artifacts').doc(appId)
@@ -2876,7 +2883,7 @@
                 if (this.isAdmin) {
                     // Mostrar botão de Admin no header
                     document.getElementById('btnAdmin').classList.remove('hidden');
-                    this.renderUserList();
+                    this.renderUserList(); // Inicializar lista mas não atualizar em realtime a menos que aberta
                     this.renderAdminRates();
                 } else {
                     document.getElementById('btnAdmin').classList.add('hidden');
@@ -2886,12 +2893,11 @@
                 this.updateDashboard();
                 this.renderHistory();
                 this.renderChart();
-                this.loadMeta(); // Load meta from local
+                this.loadMeta(); // Load meta from local/cloud
                 this.updateMetaProgress();
                 this.checkSystemMessage(); // Check for messages
 
                 // Iniciar sincronização em segundo plano APENAS se necessário
-                // OTIMIZAÇÃO: Não baixar tudo de novo se já temos dados locais
                 if (this.entries.length === 0) {
                     this.migrateAndLoadData();
                 } else {
@@ -2913,6 +2919,10 @@
                     await this.waitForAuth();
                     // Otimização: Tenta ler apenas o backup unificado
                     await this.loadCloudData(this.currentUserId);
+                    
+                    // CARREGAR META DA NUVEM (CORREÇÃO BUG META)
+                    await this.loadMetaCloud();
+                    
                     this.showSyncStatus('synced');
                 } catch (error) {
                     console.error("Erro sync:", error);
@@ -2947,8 +2957,7 @@
                     this.showSyncStatus('syncing');
                     
                     // CORREÇÃO DE PERMISSÃO: Salvar na pasta PRIVADA do usuário
-                    // Caminho antigo (erro): public/data/user_backups
-                    // Novo caminho (seguro): users/{userId}/data/history
+                    // Caminho: users/{userId}/data/history
                     await db.collection('artifacts').doc(appId)
                         .collection('users').doc(this.currentUserId)
                         .collection('data').doc('history').set({
@@ -2998,6 +3007,8 @@
                     el.style.display = 'none';
                 } else {
                     el.style.display = 'block';
+                    // Renderizar lista apenas quando abrir
+                    if (id === 'admUsers') this.renderUserList();
                 }
             }
 
@@ -3330,11 +3341,16 @@
 
                 const resultado = this.calcularValores(tipo, turno, valores, conf);
                 
+                // CORREÇÃO: Data formatada sem conversão de fuso
+                // data é "2024-02-01" (YYYY-MM-DD)
+                const [y, m, d] = data.split('-');
+                const dataFmt = `${d}/${m}/${y}`;
+
                 const entry = {
                     id: Date.now(),
                     navio: navio,
                     data: data,
-                    dataF: new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'),
+                    dataF: dataFmt, // Nova formatação segura
                     turno: turno,
                     tipo: tipo,
                     valores: valores,
@@ -3377,7 +3393,10 @@
                 if (!navio || !data) { this.showToast('Preencha navio e data', 'error'); return; }
                 const turno = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
-                const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
+                
+                // CORREÇÃO DATA RELATÓRIO
+                const [y, m, d] = data.split('-');
+                const dataFmt = `${d}/${m}/${y}`;
                 
                 let mensagem = `*${navio}*\nData: ${dataFmt} - ${turno}\nTerno: ${terno}\n`;
                 
@@ -3421,12 +3440,31 @@
             }
 
             loadMeta() {
+                // Tenta carregar local primeiro para renderizar rápido
                 const key = `evo_meta_${btoa(this.currentUser)}`;
                 const saved = localStorage.getItem(key);
                 if (saved) { 
                     this.metaMensal = parseInt(saved); 
                     this.renderMetaCard(); 
                 }
+            }
+            
+            // CORREÇÃO: Carregar meta da nuvem
+            async loadMetaCloud() {
+                try {
+                    const doc = await db.collection('artifacts').doc(appId)
+                        .collection('users').doc(this.currentUserId)
+                        .collection('data').doc('config').get();
+                    
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.metaMensal) {
+                            this.metaMensal = data.metaMensal;
+                            localStorage.setItem(`evo_meta_${btoa(this.currentUser)}`, this.metaMensal);
+                            this.renderMetaCard();
+                        }
+                    }
+                } catch(e) { console.log('Erro meta cloud:', e); }
             }
 
             checkNewMonth() {
@@ -3452,11 +3490,20 @@
                 this.showToast('Meta atualizada para o novo mês', 'success');
             }
 
-            saveMeta() {
+            async saveMeta() {
                 const valor = document.getElementById('metaInput').value;
                 if (!valor || valor <= 0) return;
                 this.metaMensal = Math.round(parseFloat(valor) * 100);
+                
+                // Salvar local
                 localStorage.setItem(`evo_meta_${btoa(this.currentUser)}`, this.metaMensal);
+                
+                // CORREÇÃO: Salvar na nuvem
+                try {
+                    await db.collection('artifacts').doc(appId)
+                        .collection('users').doc(this.currentUserId)
+                        .collection('data').doc('config').set({ metaMensal: this.metaMensal }, { merge: true });
+                } catch(e) { console.error("Erro salvar meta cloud", e); }
                 
                 const currentMonth = new Date().getMonth() + "/" + new Date().getFullYear();
                 localStorage.setItem(`evo_meta_month_${btoa(this.currentUser)}`, currentMonth);
@@ -3470,6 +3517,12 @@
                 this.metaMensal = 0;
                 localStorage.removeItem(`evo_meta_${btoa(this.currentUser)}`);
                 document.getElementById('metaCard').style.display = 'none';
+                
+                // Apagar da nuvem também
+                db.collection('artifacts').doc(appId)
+                    .collection('users').doc(this.currentUserId)
+                    .collection('data').doc('config').set({ metaMensal: 0 }, { merge: true }).catch(()=>{});
+                    
                 this.toggleMetaEditor();
             }
 
@@ -3484,13 +3537,13 @@
             updateMetaProgress() {
                 if (this.metaMensal <= 0) return;
                 
-                // CORREÇÃO: Comparar apenas MÊS e ANO como string (ISO YYYY-MM)
-                // Isso evita erros de timezone onde dia 01 vira dia 31 do mês anterior
-                const currentMonthStr = new Date().toISOString().slice(0, 7); // Ex: "2024-02"
-                let totalMes = 0;
+                // CORREÇÃO: Comparar strings "YYYY-MM" para evitar fuso horário
+                const now = new Date();
+                const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
                 
+                let totalMes = 0;
                 this.entries.forEach(e => {
-                    // e.data é "YYYY-MM-DD", slice(0,7) pega "YYYY-MM"
+                    // e.data é "YYYY-MM-DD"
                     if (e.data.startsWith(currentMonthStr)) {
                         totalMes += Number(e.bruto);
                     }
@@ -3805,20 +3858,29 @@
                         let registros = Array.isArray(data.registros) ? data.registros : Array.isArray(data) ? data : [];
                         if (registros.length > 0) {
                             // UI FIRST: Update memory and localStorage immediately
-                            this.entries = registros.map(entry => ({ 
-                                id: entry.id || Date.now() + Math.random(), 
-                                navio: entry.navio || 'Navio não informado', 
-                                data: entry.data, 
-                                dataF: entry.dataF || new Date(entry.data + 'T12:00:00').toLocaleDateString('pt-BR'), 
-                                turno: entry.turno || '15x23', 
-                                tipo: entry.tipo || 'normal', 
-                                valores: entry.valores || [], 
-                                conferentes: entry.conferentes || 3, 
-                                bruto: entry.bruto || 0, 
-                                liquido: entry.liquido || 0, 
-                                pago: entry.pago || false, 
-                                timestamp: entry.timestamp || new Date().toISOString() 
-                            }));
+                            this.entries = registros.map(entry => {
+                                // CORREÇÃO DATA IMPORTADA
+                                let dataFmt = '';
+                                if(entry.data) {
+                                    const [y, m, d] = entry.data.split('-');
+                                    dataFmt = `${d}/${m}/${y}`;
+                                }
+
+                                return { 
+                                    id: entry.id || Date.now() + Math.random(), 
+                                    navio: entry.navio || 'Navio não informado', 
+                                    data: entry.data, 
+                                    dataF: dataFmt || entry.dataF, 
+                                    turno: entry.turno || '15x23', 
+                                    tipo: entry.tipo || 'normal', 
+                                    valores: entry.valores || [], 
+                                    conferentes: entry.conferentes || 3, 
+                                    bruto: entry.bruto || 0, 
+                                    liquido: entry.liquido || 0, 
+                                    pago: entry.pago || false, 
+                                    timestamp: entry.timestamp || new Date().toISOString() 
+                                };
+                            });
                             
                             localStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                             this.updateDashboard(); 
