@@ -390,13 +390,38 @@
             color: white;
         }
 
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .user-info h3 {
             font-size: 0.8rem;
             font-weight: 700;
-            margin-bottom: 1px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .user-info span {
+        .vip-badge {
+            font-size: 0.55rem;
+            background: var(--gradient-gold);
+            color: #0a0e27;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .user-info span.status-text {
             font-size: 0.6rem;
             color: var(--success);
             text-transform: uppercase;
@@ -1610,11 +1635,8 @@
             <div class="user-pill" onclick="app.openModal('profileModal')">
                 <div class="avatar" id="userAvatar">FP</div>
                 <div class="user-info">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <span class="status-dot"></span>
-                        <span>Online</span>
-                    </div>
-                    <h3 id="userName">Felipe Prado</h3>
+                    <h3 id="userName">Felipe Prado <span id="vipBadge" class="vip-badge hidden">VIP</span></h3>
+                    <span class="status-text"><span class="status-dot"></span>Online</span>
                 </div>
             </div>
             
@@ -2089,6 +2111,29 @@
             </div>
         </div>
     </div>
+    
+    <!-- VIP WELCOME MODAL -->
+    <div class="modal-overlay" id="vipWelcomeModal">
+        <div class="modal-content" style="text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);">
+            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(255, 215, 0, 0.3);">
+                <h3 class="modal-title" style="color: var(--accent); letter-spacing: 3px;">Presente Exclusivo! 💎</h3>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 3.5rem; margin-bottom: 16px; animation: pulse 2s infinite;">🎉</div>
+                <p style="margin-bottom: 12px; font-size: 0.95rem; color: var(--text); line-height: 1.6;">
+                    Para você aproveitar o máximo do <strong>Evolution V50</strong>, liberamos:
+                </p>
+                <div style="background: rgba(255, 215, 0, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 215, 0, 0.3);">
+                    <h2 style="color: var(--accent); font-size: 1.4rem; margin-bottom: 4px;">15 DIAS VIP</h2>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Acesso Totalmente Gratuito</span>
+                </div>
+                <p style="margin-bottom: 24px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Neste período, você utilizará o sistema sem interrupções de avisos de contribuição. Aproveite para focar na sua produtividade!
+                </p>
+                <button class="btn btn-primary" style="background: var(--gradient-gold); color: #0a0e27;" onclick="app.closeModal('vipWelcomeModal')">Resgatar Presente</button>
+            </div>
+        </div>
+    </div>
 
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="configModal" onclick="app.closeModalOnOverlay(event, 'configModal')">
@@ -2523,6 +2568,30 @@
                     this.currentUserId = code;
                     this.isAdmin = (code === "002451");
 
+                    // CHECK VIP TRIAL LOGIC
+                    let showVipTrialModal = false;
+                    const now = new Date();
+                    
+                    // Se não tiver data de trial e não for VIP permanente
+                    if (!userData.vipTrialUntil && !userData.vip) {
+                         // Ativar trial
+                         const trialEnd = new Date();
+                         trialEnd.setDate(trialEnd.getDate() + 15);
+                         userData.vipTrialUntil = trialEnd.toISOString();
+                         
+                         // Salvar flag para mostrar modal
+                         showVipTrialModal = true;
+                         
+                         // Atualizar no Firebase em background
+                         this.updateUserTrialBackground(code, userData.vipTrialUntil);
+                    }
+                    
+                    // Se o admin quiser ver o modal para teste, podemos forçar se ele não tiver visto
+                    if (this.isAdmin && !localStorage.getItem('evo_admin_seen_trial')) {
+                        showVipTrialModal = true;
+                        localStorage.setItem('evo_admin_seen_trial', 'true');
+                    }
+
                     // Salvar sessão
                     localStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
                         user: this.currentUser, 
@@ -2538,7 +2607,12 @@
 
                     this.pinValue = ''; 
                     document.body.style.cursor = 'default';
-                    this.showMainApp();
+                    
+                    await this.showMainApp();
+                    
+                    if (showVipTrialModal) {
+                        setTimeout(() => this.openModal('vipWelcomeModal'), 1000);
+                    }
                 
                 } catch (err) {
                     document.body.style.cursor = 'default';
@@ -2554,6 +2628,16 @@
                     });
                 } catch (e) {
                     console.log("Erro atualização background ignorado:", e);
+                }
+            }
+            
+            async updateUserTrialBackground(code, dateStr) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        vipTrialUntil: dateStr
+                    });
+                } catch (e) {
+                     console.log("Erro atualização trial background ignorado:", e);
                 }
             }
 
@@ -2579,8 +2663,24 @@
             async showMainApp() {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
-                document.getElementById('userName').textContent = this.currentUser;
+                document.getElementById('userName').firstChild.textContent = this.currentUser + " "; // Keep space for badge
                 document.getElementById('userAvatar').textContent = this.currentUser.substring(0, 2);
+
+                // Check VIP Status
+                const user = this.users[this.currentUserId];
+                let isVip = user.vip;
+                if (!isVip && user.vipTrialUntil) {
+                    const trialEnd = new Date(user.vipTrialUntil);
+                    if (new Date() < trialEnd) {
+                        isVip = true;
+                    }
+                }
+                
+                if (isVip) {
+                    document.getElementById('vipBadge').classList.remove('hidden');
+                } else {
+                    document.getElementById('vipBadge').classList.add('hidden');
+                }
 
                 // Update profile modal data
                 if (document.getElementById('profileName')) {
@@ -3664,7 +3764,20 @@
             }
 
             startAutoPix() {
-                if (this.isAdmin) return;
+                // If user is VIP or Admin, do not show ads
+                if (this.isAdmin || (this.users[this.currentUserId] && this.users[this.currentUserId].vip)) {
+                    return;
+                }
+
+                // Check trial status
+                const user = this.users[this.currentUserId];
+                if (user && user.vipTrialUntil) {
+                    const trialEnd = new Date(user.vipTrialUntil);
+                    if (new Date() < trialEnd) {
+                        return; // User is in trial, no ads
+                    }
+                }
+
                 setInterval(() => {
                     if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
                         if (Math.random() < 0.4) {
@@ -3701,6 +3814,28 @@
                 document.getElementById(id).classList.toggle('expanded'); 
             }
 
+            installPWA() {
+                // Logic to trigger PWA install prompt would go here if browser supports it
+                if (this.deferredPrompt) {
+                    this.deferredPrompt.prompt();
+                    this.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        this.deferredPrompt = null;
+                        document.getElementById('installBanner').classList.add('hidden');
+                    });
+                } else {
+                    // Fallback for iOS or if prompt not available
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOS) {
+                        this.openModal('iosInstallModal');
+                    } else {
+                         this.showToast('Use o menu do navegador para instalar', 'info');
+                    }
+                }
+            }
+
             logout() { 
                 if (this.unsubscribeUsers) {
                     this.unsubscribeUsers();
@@ -3711,6 +3846,25 @@
         }
 
         const app = new EvolutionV50();
+
+        // PWA Install Prompt Logic
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            app.deferredPrompt = e;
+            // Update UI notify the user they can install the PWA
+            // Only show if not standalone
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                 document.getElementById('installBanner').classList.remove('hidden');
+            }
+        });
+
+        // Hide install banner if already installed
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('installBanner').classList.add('hidden');
+            app.deferredPrompt = null;
+        });
 
         document.addEventListener('change', (e) => { 
             if (e.target.id === 'simTipo') app.updateSimFields(); 
