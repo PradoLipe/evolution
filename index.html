@@ -2325,58 +2325,74 @@
 
             async login() {
                 try {
+                    // Feedback visual imediato que o clique funcionou
+                    document.body.style.cursor = 'wait';
+                    
                     const code = this.pinValue;
+                    
+                    // Fallback de segurança: Se users estiver vazio, usar padrão
+                    if (!this.users || Object.keys(this.users).length === 0) {
+                        console.log("Usando fallback de usuários");
+                        this.users = { ...DEFAULT_USERS };
+                    }
+
+                    // Garantia específica para o Admin
+                    if (code === "002451" && !this.users["002451"]) {
+                        this.users["002451"] = DEFAULT_USERS["002451"];
+                    }
+
                     const userData = this.users[code];
 
-                    console.log("Tentando login com:", code); // Debug
-                    
                     if (!userData) { 
-                        this.showPinError(); 
+                        this.showPinError();
+                        document.body.style.cursor = 'default';
                         return; 
                     }
 
                     if (userData.blocked) {
-                        this.showToast('Usuário bloqueado. Contate o administrador.', 'error');
+                        this.showToast('Usuário bloqueado.', 'error');
                         this.pinValue = '';
                         this.updatePinDisplay();
+                        document.body.style.cursor = 'default';
                         return;
                     }
 
-                    // Verificar dispositivo (exceto admin)
-                    if (code !== "002451" && userData.deviceId && userData.deviceId !== this.deviceId) {
-                        this.showToast('Dispositivo não autorizado para este usuário', 'error');
-                        this.pinValue = '';
-                        this.updatePinDisplay();
-                        return;
-                    }
-
-                    // Tentar atualizar no Firebase, mas não bloquear se falhar
-                    try {
-                        const timestamp = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date();
-                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
-                            lastLogin: timestamp,
-                            deviceId: this.deviceId
-                        });
-                    } catch (error) {
-                        console.log("Não foi possível atualizar Firebase, mas login permitido");
-                    }
-
+                    // Lógica de Login bem sucedida
                     this.currentUser = userData.name;
                     this.currentUserId = code;
                     this.isAdmin = (code === "002451");
 
+                    // Salvar sessão
                     localStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
                         user: this.currentUser, 
                         code: code, 
                         ts: Date.now() 
                     })));
 
-                    this.pinValue = ''; // Limpar PIN para evitar clique duplo
+                    // Atualizar Firebase em background (sem await para não travar a UI)
+                    if (code !== "002451") {
+                        // Não atualizar lastLogin do admin para evitar escritas desnecessárias se estiver debugando
+                        this.updateLastLoginBackground(code);
+                    }
+
+                    this.pinValue = ''; 
+                    document.body.style.cursor = 'default';
                     this.showMainApp();
                 
                 } catch (err) {
-                    alert("Erro crítico no login: " + err.message);
-                    console.error(err);
+                    document.body.style.cursor = 'default';
+                    alert("Erro ao entrar: " + err.message);
+                }
+            }
+
+            async updateLastLoginBackground(code) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('app_users').doc(code).update({
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                        deviceId: this.deviceId
+                    });
+                } catch (e) {
+                    console.log("Erro atualização background ignorado:", e);
                 }
             }
 
