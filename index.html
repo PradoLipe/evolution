@@ -1434,7 +1434,7 @@
             </div>
 
             <!-- GRÁFICO (CURVA DE VITÓRIA) -->
-            <div class="section fade-in expanded" id="secChart">
+            <div class="section fade-in" id="secChart">
                 <div class="section-header" onclick="app.toggleSection('secChart')">
                     <div class="section-title-group">
                         <div class="section-icon">🚀</div>
@@ -1784,6 +1784,10 @@
                 </div>
                 <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px;">Toque na chave para copiar</p>
 
+                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 16px; font-style: italic;">
+                    * Realize uma contribuição para remover estes avisos automáticos e manter o app atualizado.
+                </p>
+
                 <button class="btn btn-glass" onclick="app.closeModal('pixModal')" style="margin-top: 20px;">
                     Agora não
                 </button>
@@ -2026,14 +2030,19 @@
                 const turno = document.getElementById('relTurno').value;
                 const terno = document.getElementById('relTernoSelecao').value;
                 const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
-                let mensagem = `*${navio}*\nData: ${dataFmt} - Turno: ${turno}\nTerno: ${terno}\n`;
+                
+                // Alterado: Removido "Turno:"
+                let mensagem = `*${navio}*\nData: ${dataFmt} - ${turno}\nTerno: ${terno}\n`;
+                
                 if (turno === '15x23') {
                     const p1 = document.getElementById('relP1').value || 0;
                     const p2 = document.getElementById('relP2').value || 0;
-                    mensagem += `15×19: ${p1}\n19×23: ${p2}\n*TOTAL: ${parseInt(p1) + parseInt(p2)}*\n`;
+                    // Alterado: Removido destaque (asteriscos) do TOTAL
+                    mensagem += `15×19: ${p1}\n19×23: ${p2}\nTOTAL: ${parseInt(p1) + parseInt(p2)}\n`;
                 } else {
                     const total = document.getElementById('relPT').value || 0;
-                    mensagem += `*TOTAL: ${total}*\n`;
+                    // Alterado: Removido destaque (asteriscos) do TOTAL
+                    mensagem += `TOTAL: ${total}\n`;
                 }
                 mensagem += `\n${this.currentUser}`;
                 this.copyToClipboard(mensagem, 'Relatório copiado!');
@@ -2463,9 +2472,7 @@
 
             // SISTEMA DE APOIO (Mensagens Persuasivas e Lógica de 40%)
             showPix() {
-                // TRAVA DE SEGURANCA USUARIO DEV
-                if (this.currentUser === "FELIPE PRADO") return;
-
+                // TRAVA REMOVIDA PARA O CLIQUE MANUAL - AGORA FELIPE PRADO PODE MONITORAR
                 this.closeModal('configModal');
                 const randomMsg = DONATION_MESSAGES[Math.floor(Math.random() * DONATION_MESSAGES.length)];
                 document.getElementById('pixMessage').textContent = randomMsg;
@@ -2475,7 +2482,7 @@
             copyPix() { this.copyToClipboard('92994821868', 'Chave PIX copiada!'); }
 
             startAutoPix() {
-                // TRAVA DE SEGURANCA USUARIO DEV
+                // TRAVA DE SEGURANCA MANTIDA PARA O AUTOMATICO - APENAS USUARIOS COMUNS RECEBEM
                 if (this.currentUser === "FELIPE PRADO") return;
 
                 setInterval(() => {
