@@ -85,6 +85,45 @@
             padding-bottom: var(--safe-bottom);
         }
 
+        /* Classes para animação de dinheiro */
+        .money-particle {
+            position: fixed;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flyAndFade 1s ease-out forwards;
+        }
+
+        @keyframes flyAndFade {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+            10% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot)); opacity: 0; }
+        }
+
+        .avatar-edit-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .avatar-container:hover .avatar-edit-overlay {
+            opacity: 1;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .install-banner {
             position: fixed;
             top: 0;
@@ -610,6 +649,8 @@
             font-weight: 700;
             font-size: 0.75rem;
             color: white;
+            position: relative;
+            overflow: hidden;
         }
 
         .user-info {
@@ -2072,7 +2113,10 @@
         
         <header class="app-header">
             <div class="user-pill" onclick="app.openModal('profileModal')">
-                <div class="avatar" id="userAvatar">FP</div>
+                <div class="avatar" id="userAvatarContainer">
+                    <span id="userAvatarInitials">FP</span>
+                    <img id="userAvatarImg" src="" class="hidden" alt="Avatar">
+                </div>
                 <div class="user-info">
                     <h3 id="userName">Felipe Prado <span id="vipBadge" class="vip-badge hidden">VIP</span></h3>
                     <span class="status-text"><span class="status-dot"></span>Online</span>
@@ -2403,7 +2447,17 @@
                 <button class="modal-close" onclick="app.closeModal('profileModal')">✕</button>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 16px;">FP</div>
+                <div class="avatar-container" onclick="app.uploadAvatar()" style="width: 80px; height: 80px; margin: 0 auto 16px; position: relative; border-radius: 50%; overflow: hidden;">
+                    <div class="avatar" id="profileAvatarModal" style="width: 100%; height: 100%; font-size: 2rem;">
+                        <span id="profileAvatarInitials">FP</span>
+                        <img id="profileAvatarImg" src="" class="hidden" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="avatar-edit-overlay">
+                        <span style="font-size: 1.5rem;">📷</span>
+                    </div>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="app.handleAvatarChange(event)">
+                
                 <h3 id="profileName" style="font-size: 1.2rem; margin-bottom: 20px;">Nome do Usuário</h3>
                 <button class="btn btn-danger" onclick="app.logout()">Sair da Conta</button>
             </div>
@@ -3356,8 +3410,33 @@
                 
                 const userNameEl = document.getElementById('userName');
                 if (userNameEl) userNameEl.firstChild.textContent = this.currentUser + " ";
-                const avatarEl = document.getElementById('userAvatar');
-                if (avatarEl) avatarEl.textContent = this.currentUser.substring(0, 2);
+                
+                // AVATAR LOGIC
+                const user = this.users[this.currentUserId];
+                const avatarImg = document.getElementById('userAvatarImg');
+                const avatarInitials = document.getElementById('userAvatarInitials');
+                const profileAvatarImg = document.getElementById('profileAvatarImg');
+                const profileAvatarInitials = document.getElementById('profileAvatarInitials');
+                
+                if (user && user.avatar) {
+                    avatarImg.src = user.avatar;
+                    avatarImg.classList.remove('hidden');
+                    avatarInitials.classList.add('hidden');
+                    if (profileAvatarImg) {
+                        profileAvatarImg.src = user.avatar;
+                        profileAvatarImg.classList.remove('hidden');
+                        profileAvatarInitials.classList.add('hidden');
+                    }
+                } else {
+                    avatarInitials.textContent = this.currentUser.substring(0, 2);
+                    avatarImg.classList.add('hidden');
+                    avatarInitials.classList.remove('hidden');
+                    if (profileAvatarInitials) {
+                        profileAvatarInitials.textContent = this.currentUser.substring(0, 2);
+                        profileAvatarImg.classList.add('hidden');
+                        profileAvatarInitials.classList.remove('hidden');
+                    }
+                }
                 
                 // BADGE LOGIC
                 const vipBadge = document.getElementById('vipBadge');
@@ -3686,6 +3765,91 @@
                 else container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT" placeholder="0"></div>`; 
             }
 
+            uploadAvatar() {
+                document.getElementById('avatarInput').click();
+            }
+
+            handleAvatarChange(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        // Compress Image to max 150x150
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_SIZE = 150;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_SIZE) {
+                                height *= MAX_SIZE / width;
+                                width = MAX_SIZE;
+                            }
+                        } else {
+                            if (height > MAX_SIZE) {
+                                width *= MAX_SIZE / height;
+                                height = MAX_SIZE;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        // Save to User
+                        const user = this.users[this.currentUserId];
+                        user.avatar = dataUrl;
+                        this.saveUsersToCache();
+                        this.showMainApp(); // Refresh UI
+                        
+                        if (this.firebaseReady && db) {
+                            db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl }).catch(err => console.error(err));
+                        }
+                        
+                        this.showToast('Foto atualizada!', 'success');
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+
+            triggerMoneyAnimation() {
+                const emojis = ['💸', '💰', '💵', '🤑', '💎'];
+                const particleCount = 20;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'money-particle';
+                    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    // Random start position (center-ish)
+                    const startX = window.innerWidth / 2;
+                    const startY = window.innerHeight / 2;
+                    particle.style.left = startX + 'px';
+                    particle.style.top = startY + 'px';
+                    
+                    // Random destination
+                    const tx = (Math.random() - 0.5) * window.innerWidth * 1.5;
+                    const ty = (Math.random() - 0.5) * window.innerHeight * 1.5;
+                    const rot = (Math.random() - 0.5) * 720; // Rotate up to 360deg both ways
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    particle.style.setProperty('--rot', `${rot}deg`);
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Clean up
+                    setTimeout(() => particle.remove(), 1000);
+                }
+            }
+
             async saveEntry() {
                 const navio = document.getElementById('calcNavio').value.toUpperCase().trim();
                 const data = document.getElementById('calcData').value;
@@ -3701,6 +3865,10 @@
                 this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress();
                 this.showToast('Salvo!', 'success');
                 document.getElementById('calcNavio').value = '';
+                
+                // Trigger Money Animation
+                this.triggerMoneyAnimation();
+                
                 this.persistData();
                 if (!this.isAdmin && !this.isVip && !this.isStandalone && Math.random() < 0.3) this.showPix(); 
             }
