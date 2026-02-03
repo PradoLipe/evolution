@@ -6,13 +6,13 @@
     <meta name="theme-color" content="#0a0e27">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Evolution V50">
-    <title>EVOLUTION V50 | Felipe Prado Systems</title>
+    <meta name="apple-mobile-web-app-title" content="Evolution V5.1">
+    <title>EVOLUTION V5.1 | Felipe Prado Systems</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' ry='100' fill='%230a0e27'/%3E%3Cpath d='M256 60 L450 160 L450 340 Q256 500 62 340 L62 160 Z' stroke='%2300d4ff' stroke-width='20' fill='rgba(0, 212, 255, 0.1)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='url(%23g)' font-size='280' font-family='sans-serif' font-weight='800'%3EE%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237000ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230a0e27'/%3E%3Cpath d='M256 60 L450 160 L450 340 Q256 500 62 340 L62 160 Z' stroke='%2300d4ff' stroke-width='20' fill='rgba(0, 212, 255, 0.1)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='url(%23g)' font-size='280' font-family='sans-serif' font-weight='800'%3EE%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300d4ff'/%3E%3Cstop offset='100%25' stop-color='%237000ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK com crossorigin para melhor debug -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" crossorigin="anonymous"></script>
@@ -770,6 +770,28 @@
          }
 
         /* CHART */
+        .chart-toggle {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .chart-toggle button {
+            padding: 4px 8px;
+            font-size: 0.6rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-toggle button.active {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
         .chart-svg {
             width: 100%;
             height: 160px;
@@ -1774,28 +1796,6 @@
                             </defs>
                         </svg>
                         
-                        <!-- NOVA ÁREA DE CONSULTA MENSAL -->
-                        <div class="monthly-query-container">
-                             <div class="input-row" style="align-items: center;">
-                                 <input type="month" id="searchMonth" class="input-modern" style="background: var(--surface); color: var(--text);">
-                                 <button class="btn btn-glass" onclick="app.consultarMes()" style="height: 44px; margin-bottom: 2px;">🔍 Buscar</button>
-                             </div>
-                             <div id="monthlyResult" class="hidden" style="background: var(--surface); padding: 12px; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border);">
-                                 <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Resultado do Mês</div>
-                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-                                     <div>
-                                         <div style="font-size: 0.6rem; color: var(--info);">BRUTO</div>
-                                         <div id="monthBruto" style="font-weight: 700;">R$ 0,00</div>
-                                     </div>
-                                     <div>
-                                         <div style="font-size: 0.6rem; color: var(--accent);">LÍQUIDO</div>
-                                         <div id="monthLiq" style="font-weight: 700;">R$ 0,00</div>
-                                     </div>
-                                 </div>
-                                 <div id="monthCount" style="margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);">0 serviços encontrados</div>
-                             </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -2019,7 +2019,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V50</div>
+            <div class="footer-brand">EVOLUTION V5.1</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -2176,7 +2176,7 @@
             <div class="modal-body">
                 <div style="font-size: 3.5rem; margin-bottom: 16px; animation: pulse 2s infinite;">🎉</div>
                 <p style="margin-bottom: 12px; font-size: 0.95rem; color: var(--text); line-height: 1.6;">
-                    Para você aproveitar o máximo do <strong>Evolution V50</strong>, liberamos:
+                    Para você aproveitar o máximo do <strong>Evolution V5.1</strong>, liberamos:
                 </p>
                 <div style="background: rgba(255, 215, 0, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 215, 0, 0.3);">
                     <h2 style="color: var(--accent); font-size: 1.4rem; margin-bottom: 4px;">15 DIAS VIP</h2>
@@ -2213,6 +2213,28 @@
                     <button class="btn btn-glass" onclick="app.showPix()" style="color: var(--accent); border-color: rgba(255, 215, 0, 0.3);">
                         💎 Apoiar
                     </button>
+                </div>
+
+                <!-- ÁREA DE CONSULTA MENSAL MOVIDA PARA CÁ -->
+                <div class="monthly-query-container">
+                     <div class="input-row" style="align-items: center;">
+                         <input type="month" id="searchMonth" class="input-modern" style="background: var(--surface); color: var(--text);">
+                         <button class="btn btn-glass" onclick="app.consultarMes()" style="height: 44px; margin-bottom: 2px;">🔍 Buscar</button>
+                     </div>
+                     <div id="monthlyResult" class="hidden" style="background: var(--surface); padding: 12px; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border);">
+                         <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Resultado do Mês</div>
+                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+                             <div>
+                                 <div style="font-size: 0.6rem; color: var(--info);">BRUTO</div>
+                                 <div id="monthBruto" style="font-weight: 700;">R$ 0,00</div>
+                             </div>
+                             <div>
+                                 <div style="font-size: 0.6rem; color: var(--accent);">LÍQUIDO</div>
+                                 <div id="monthLiq" style="font-weight: 700;">R$ 0,00</div>
+                             </div>
+                         </div>
+                         <div id="monthCount" style="margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);">0 serviços encontrados</div>
+                     </div>
                 </div>
 
                 <button class="btn btn-danger" onclick="app.logout()" style="margin-top: 10px;">
@@ -2290,6 +2312,9 @@
 
     <!-- Script movido para o final do body para garantir carregamento correto -->
     <script>
+        // Declarar app globalmente
+        var app;
+
         // ==================== CONFIGURAÇÃO FIREBASE OTIMIZADA ====================
         const firebaseConfig = {
             apiKey: "AIzaSyBEIQTvTguTmvq_I3DdyO0XsWGu5lYb6gw",
@@ -2375,7 +2400,7 @@
         const ADMIN_ID = "002451";
 
         // ==================== CLASSE PRINCIPAL OTIMIZADA ====================
-        class EvolutionV50 {
+        class EvolutionV51 {
             constructor() {
                 this.entries = [];
                 this.currentUser = null;
@@ -2395,10 +2420,13 @@
                 this.lastSyncTime = 0;
                 this.firebaseReady = false;
                 this.syncQueue = [];
+                this.connectionAttempts = 0;
                 this.deferredPrompt = null;
                 
                 // Carregar usuários do cache imediatamente
                 this.loadUsersFromCache();
+                
+                // Iniciar imediatamente (não esperar onload)
                 this.init();
             }
 
@@ -2448,35 +2476,54 @@
                 const syncIndicator = document.getElementById('syncIndicator');
                 const syncText = document.getElementById('syncText');
                 
-                try {
-                    if (syncIndicator) {
-                        syncIndicator.classList.add('visible');
-                        syncText.textContent = 'Conectando...';
+                const attemptConnection = async () => {
+                    try {
+                        if (syncIndicator) {
+                            syncIndicator.classList.add('visible');
+                            syncText.textContent = 'Conectando...';
+                        }
+                        
+                        // Timeout para evitar travamento na autenticação
+                        const authPromise = auth.signInAnonymously();
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), 10000)
+                        );
+                        
+                        await Promise.race([authPromise, timeoutPromise]);
+                        
+                        this.loadRates().catch(() => {});
+                        await this.syncUsersFromFirebase();
+                        
+                        this.firebaseReady = true;
+                        this.connectionAttempts = 0;
+                        
+                        if (syncIndicator) {
+                            syncText.textContent = 'Sincronizado';
+                            setTimeout(() => {
+                                syncIndicator.classList.remove('visible');
+                            }, 1000);
+                        }
+                        this.processSyncQueue();
+                        
+                    } catch (error) {
+                        console.log('Firebase indisponível, modo offline');
+                        this.connectionAttempts++;
+                        
+                        if (syncIndicator) {
+                            syncText.textContent = 'Modo Offline';
+                            setTimeout(() => {
+                                syncIndicator.classList.remove('visible');
+                            }, 2000);
+                        }
+                        
+                        // Tentar reconectar (backoff exponencial)
+                        if (this.connectionAttempts < 5) {
+                            setTimeout(attemptConnection, Math.min(30000, 2000 * Math.pow(2, this.connectionAttempts)));
+                        }
                     }
-                    
-                    await auth.signInAnonymously();
-                    this.loadRates().catch(() => {});
-                    await this.syncUsersFromFirebase();
-                    
-                    this.firebaseReady = true;
-                    
-                    if (syncIndicator) {
-                        syncText.textContent = 'Sincronizado';
-                        setTimeout(() => {
-                            syncIndicator.classList.remove('visible');
-                        }, 1000);
-                    }
-                    this.processSyncQueue();
-                    
-                } catch (error) {
-                    console.log('Firebase indisponível, modo offline');
-                    if (syncIndicator) {
-                        syncText.textContent = 'Modo Offline';
-                        setTimeout(() => {
-                            syncIndicator.classList.remove('visible');
-                        }, 2000);
-                    }
-                }
+                };
+                
+                attemptConnection();
             }
 
             async loadRates() {
@@ -2590,6 +2637,7 @@
                 const code = this.pinValue;
                 let userData = this.users[code];
                 
+                // Tentar buscar do Firebase se não tiver local
                 if (!userData && this.firebaseReady && db) {
                     try {
                         const doc = await db.collection('users').doc(code).get();
@@ -2606,10 +2654,6 @@
                     this.isLoggingIn = false;
                     return; 
                 }
-
-                // REMOVIDO: Verificação rígida de ID de dispositivo
-                // MOTIVO: Permitir que o usuário limpe o histórico e continue acessando
-                // SEGURANÇA: Mantida através da flag 'blocked' no banco de dados
 
                 if (userData.blocked && code !== ADMIN_ID) {
                     this.showToast('Usuário bloqueado.', 'error');
@@ -2629,6 +2673,8 @@
                 setTimeout(() => {
                     this.setupEntriesListener(code);
                     if (this.isAdmin) this.setupUsersListener();
+                    
+                    // ATUALIZA O DISPOSITIVO NO BANCO (Permite acesso após limpar histórico)
                     this.updateLastLogin(code);
                     this.checkSystemMessage();
                 }, 100);
@@ -3436,12 +3482,17 @@
             }
         }
 
-        // Inicialização global da aplicação
-        window.app = new EvolutionV50();
+        // Inicialização global segura da aplicação
+        try {
+            window.app = new EvolutionV51();
+        } catch (error) {
+            console.error("Falha fatal na inicialização do app:", error);
+            // Fallback mínimo se necessário
+        }
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            window.app.deferredPrompt = e;
+            if (window.app) window.app.deferredPrompt = e;
             if (!safeStorage.getItem('evo_app_installed') && !window.matchMedia('(display-mode: standalone)').matches) {
                  const b = document.getElementById('installBanner');
                  if (b) b.classList.remove('hidden');
@@ -3451,12 +3502,12 @@
         window.addEventListener('appinstalled', () => {
             const b = document.getElementById('installBanner');
             if (b) b.classList.add('hidden');
-            window.app.deferredPrompt = null;
+            if (window.app) window.app.deferredPrompt = null;
             safeStorage.setItem('evo_app_installed', 'true');
         });
 
-        document.addEventListener('change', (e) => { if (e.target.id === 'simTipo') window.app.updateSimFields(); });
-        document.getElementById('importInput')?.addEventListener('change', (e) => window.app.importData(e));
+        document.addEventListener('change', (e) => { if (e.target.id === 'simTipo' && window.app) window.app.updateSimFields(); });
+        document.getElementById('importInput')?.addEventListener('change', (e) => { if(window.app) window.app.importData(e); });
     </script>
 </body>
 </html>
