@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -774,28 +773,6 @@
          }
 
         /* CHART */
-        .chart-toggle {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .chart-toggle button {
-            padding: 4px 8px;
-            font-size: 0.6rem;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .chart-toggle button.active {
-            background: var(--primary);
-            color: var(--bg);
-        }
-
         .chart-svg {
             width: 100%;
             height: 160px;
@@ -1582,6 +1559,74 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
+        /* ==================== RESPONSIVE CONFIG MODAL ==================== */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 380px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== MONTHLY REPORT MODAL ==================== */
+        .month-report-result {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .month-report-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .month-report-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .month-report-bruto {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--info);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .month-report-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .month-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 380px) {
+            .month-selector {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1743,10 +1788,7 @@
                         <div class="section-icon">🚀</div>
                         <div class="section-titles">
                             <h3>Performance</h3>
-                            <div class="chart-toggle">
-                                <button class="active" onclick="event.stopPropagation(); app.setChartPeriod('week')" id="btnWeek">7D</button>
-                                <button onclick="event.stopPropagation(); app.setChartPeriod('month')" id="btnMonth">30D</button>
-                            </div>
+                            <p>Últimos 7 dias</p>
                         </div>
                     </div>
                     <div class="section-arrow">▼</div>
@@ -2183,11 +2225,14 @@
                     <div id="cancelMetaContainer"></div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                <div class="config-grid">
                     <button class="btn btn-glass" onclick="app.exportData()">↓ Exportar</button>
                     <button class="btn btn-glass" onclick="app.triggerImport()">↑ Importar</button>
                     <button class="btn btn-glass" onclick="app.toggleMetaEditor()">🎯 Meta</button>
-                    <button class="btn btn-glass" onclick="app.showPix()" style="color: var(--accent); border-color: rgba(255, 215, 0, 0.3);">
+                    <button class="btn btn-glass" onclick="app.openModal('monthReportModal')" style="color: var(--primary); border-color: rgba(0, 212, 255, 0.3);">
+                        📅 Mensal
+                    </button>
+                    <button class="btn btn-glass" onclick="app.showPix()" style="color: var(--accent); border-color: rgba(255, 215, 0, 0.3); grid-column: span 2;">
                         💎 Apoiar
                     </button>
                 </div>
@@ -2197,6 +2242,52 @@
                 </button>
             </div>
             <input type="file" id="importInput" style="display: none;" accept=".json">
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="monthReportModal" onclick="app.closeModalOnOverlay(event, 'monthReportModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color: var(--primary);">Relatório Mensal</h3>
+                <button class="modal-close" onclick="app.closeModal('monthReportModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="month-selector">
+                    <div class="input-group">
+                        <label class="input-label">Mês</label>
+                        <select id="reportMonth">
+                            <option value="0">Janeiro</option>
+                            <option value="1">Fevereiro</option>
+                            <option value="2">Março</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Maio</option>
+                            <option value="5">Junho</option>
+                            <option value="6">Julho</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Setembro</option>
+                            <option value="9">Outubro</option>
+                            <option value="10">Novembro</option>
+                            <option value="11">Dezembro</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Ano</label>
+                        <select id="reportYear">
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="app.generateMonthReport()">
+                    Gerar Relatório
+                </button>
+
+                <div id="monthReportResult" class="month-report-result hidden">
+                    <div class="month-report-title" id="reportMonthTitle">Produção de Janeiro/2026</div>
+                    <div class="month-report-value" id="reportLiquido">R$ 0,00</div>
+                    <div class="month-report-bruto" id="reportBruto">Bruto: R$ 0,00</div>
+                    <div class="month-report-count" id="reportCount">0 serviços realizados</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2265,6 +2356,26 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="confirmDeleteUserModal" onclick="app.closeModalOnOverlay(event, 'confirmDeleteUserModal')">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 class="modal-title" style="color: var(--danger);">Confirmar Exclusão</h3>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 2.5rem; margin-bottom: 16px;">⚠️</div>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+                    Tem certeza que deseja excluir o usuário <strong id="deleteUserName" style="color: var(--text);"></strong>?
+                    <br><br>
+                    <span style="color: var(--danger); font-size: 0.8rem;">Esta ação não pode ser desfeita!</span>
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-glass" onclick="app.closeModal('confirmDeleteUserModal')">Cancelar</button>
+                    <button class="btn btn-danger" onclick="app.executeDeleteUser()">Excluir Usuário</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==================== CONFIGURAÇÃO FIREBASE OTIMIZADA ====================
         const firebaseConfig = {
@@ -2284,8 +2395,16 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // Habilitar persistência offline
-        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+        // Habilitar persistência offline com configurações otimizadas
+        db.enablePersistence({ 
+            synchronizeTabs: true 
+        }).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.log('Persistência falhou - múltiplas abas abertas');
+            } else if (err.code === 'unimplemented') {
+                console.log('Persistência não suportada neste navegador');
+            }
+        });
 
         const DONATION_MESSAGES = [
             "Sua contribuição garante servidores mais rápidos e estáveis.",
@@ -2347,10 +2466,13 @@
                 this.unsubscribeUsers = null;
                 this.unsubscribeEntries = null;
                 this.pendingDeleteId = null;
+                this.pendingDeleteUserId = null;
                 this.isLoggingIn = false;
                 this.lastSyncTime = 0;
                 this.firebaseReady = false;
                 this.syncQueue = [];
+                this.connectionAttempts = 0;
+                this.maxConnectionAttempts = 5;
                 
                 // Carregar usuários do cache imediatamente
                 this.loadUsersFromCache();
@@ -2392,6 +2514,9 @@
                 if (calcData) calcData.value = hoje;
                 if (relData) relData.value = hoje;
                 
+                // Configurar seletor de ano para relatório mensal
+                this.setupYearSelector();
+                
                 this.updateSimFields();
                 this.adjustCalcFields();
                 this.toggleRelatorioCampos();
@@ -2406,53 +2531,95 @@
                 this.initFirebaseBackground();
             }
 
+            setupYearSelector() {
+                const yearSelect = document.getElementById('reportYear');
+                if (!yearSelect) return;
+                
+                const currentYear = new Date().getFullYear();
+                let options = '';
+                for (let y = currentYear; y >= currentYear - 3; y--) {
+                    options += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+                }
+                yearSelect.innerHTML = options;
+                
+                // Selecionar mês atual
+                const monthSelect = document.getElementById('reportMonth');
+                if (monthSelect) {
+                    monthSelect.value = new Date().getMonth();
+                }
+            }
+
             async initFirebaseBackground() {
                 const syncIndicator = document.getElementById('syncIndicator');
                 const syncText = document.getElementById('syncText');
                 
-                try {
-                    // Mostrar indicador sutil
-                    if (syncIndicator) {
-                        syncIndicator.classList.add('visible');
-                        syncText.textContent = 'Conectando...';
+                const attemptConnection = async () => {
+                    try {
+                        // Mostrar indicador sutil
+                        if (syncIndicator) {
+                            syncIndicator.classList.add('visible');
+                            syncText.textContent = 'Conectando...';
+                        }
+                        
+                        // Autenticar anônimamente com timeout
+                        const authPromise = auth.signInAnonymously();
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), 10000)
+                        );
+                        
+                        await Promise.race([authPromise, timeoutPromise]);
+                        
+                        // Carregar taxas em background
+                        this.loadRates().catch(() => {});
+                        
+                        // Sincronizar usuários em background com retry
+                        await this.syncUsersFromFirebase();
+                        
+                        this.firebaseReady = true;
+                        this.connectionAttempts = 0;
+                        
+                        // Atualizar indicador
+                        if (syncIndicator) {
+                            syncText.textContent = 'Sincronizado';
+                            setTimeout(() => {
+                                syncIndicator.classList.remove('visible');
+                            }, 1000);
+                        }
+                        
+                        // Processar fila de operações pendentes
+                        this.processSyncQueue();
+                        
+                        // Configurar listeners em tempo real
+                        if (this.currentUserId) {
+                            this.setupEntriesListener(this.currentUserId);
+                            if (this.isAdmin) this.setupUsersListener();
+                        }
+                        
+                    } catch (error) {
+                        this.connectionAttempts++;
+                        console.log(`Firebase indisponível (tentativa ${this.connectionAttempts}):`, error.message);
+                        
+                        if (syncIndicator) {
+                            syncText.textContent = 'Modo Offline';
+                            setTimeout(() => {
+                                syncIndicator.classList.remove('visible');
+                            }, 2000);
+                        }
+                        
+                        // Tentar reconectar após delay exponencial
+                        if (this.connectionAttempts < this.maxConnectionAttempts) {
+                            const delay = Math.min(1000 * Math.pow(2, this.connectionAttempts), 30000);
+                            setTimeout(() => attemptConnection(), delay);
+                        }
                     }
-                    
-                    // Autenticar anônimamente
-                    await auth.signInAnonymously();
-                    
-                    // Carregar taxas em background
-                    this.loadRates().catch(() => {});
-                    
-                    // Sincronizar usuários em background
-                    await this.syncUsersFromFirebase();
-                    
-                    this.firebaseReady = true;
-                    
-                    // Atualizar indicador
-                    if (syncIndicator) {
-                        syncText.textContent = 'Sincronizado';
-                        setTimeout(() => {
-                            syncIndicator.classList.remove('visible');
-                        }, 1000);
-                    }
-                    
-                    // Processar fila de operações pendentes
-                    this.processSyncQueue();
-                    
-                } catch (error) {
-                    console.log('Firebase indisponível, usando modo offline');
-                    if (syncIndicator) {
-                        syncText.textContent = 'Modo Offline';
-                        setTimeout(() => {
-                            syncIndicator.classList.remove('visible');
-                        }, 2000);
-                    }
-                }
+                };
+                
+                attemptConnection();
             }
 
             async loadRates() {
                 try {
-                    const doc = await db.collection('config').doc('rates').get();
+                    const doc = await db.collection('config').doc('rates').get({ source: 'server' });
                     if (doc.exists) {
                         this.taxas = doc.data();
                         localStorage.setItem('evo_rates_v50', JSON.stringify(this.taxas));
@@ -2465,7 +2632,7 @@
 
             async syncUsersFromFirebase() {
                 try {
-                    const snapshot = await db.collection('users').get();
+                    const snapshot = await db.collection('users').get({ source: 'server' });
                     
                     if (!snapshot.empty) {
                         const firebaseUsers = {};
@@ -2495,7 +2662,11 @@
                     const batch = db.batch();
                     Object.values(DEFAULT_USERS).forEach(user => {
                         const ref = db.collection('users').doc(user.code);
-                        batch.set(ref, { ...user, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        batch.set(ref, { 
+                            ...user, 
+                            deviceId: user.code === ADMIN_ID ? this.deviceId : null,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                        });
                     });
                     await batch.commit();
                 } catch (e) {
@@ -2579,7 +2750,7 @@
                 // Se não encontrou e Firebase está pronto, tenta recarregar
                 if (!userData && this.firebaseReady) {
                     try {
-                        const doc = await db.collection('users').doc(code).get();
+                        const doc = await db.collection('users').doc(code).get({ source: 'server' });
                         if (doc.exists) {
                             userData = doc.data();
                             this.users[code] = userData;
@@ -2594,7 +2765,7 @@
                     return; 
                 }
 
-                // Verificações de segurança
+                // Verificações de segurança - deviceId agora vem do Firebase
                 if (code !== ADMIN_ID && userData.deviceId && userData.deviceId !== this.deviceId) {
                     this.showToast('Acesso bloqueado. Dispositivo não reconhecido.', 'error');
                     this.pinValue = '';
@@ -2661,6 +2832,7 @@
                 if (!this.firebaseReady) return;
                 
                 try {
+                    // Salvar deviceId no Firebase para segurança
                     await db.collection('users').doc(code).set({
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                         deviceId: this.deviceId,
@@ -2681,18 +2853,22 @@
                     this.unsubscribeEntries();
                 }
 
+                // Usar onSnapshot para atualizações em tempo real
                 this.unsubscribeEntries = db.collection('users').doc(userId)
                     .collection('data').doc('history')
                     .onSnapshot({ includeMetadataChanges: true }, (doc) => {
-                        if (doc.exists && !doc.metadata.fromCache) {
+                        if (doc.exists) {
                             const data = doc.data();
                             const serverUpdated = data.updatedAt?.toMillis() || 0;
                             
+                            // Só atualizar se os dados do servidor são mais recentes
                             if (serverUpdated > this.lastSyncTime) {
                                 this.loadFromFirebase(data);
                             }
                         }
-                    }, () => {});
+                    }, (error) => {
+                        console.warn('Erro no listener de entries:', error);
+                    });
             }
 
             setupUsersListener() {
@@ -2712,13 +2888,21 @@
                                     changed = true;
                                 }
                             }
+                            if (change.type === 'removed') {
+                                if (change.doc.id !== ADMIN_ID) {
+                                    delete this.users[change.doc.id];
+                                    changed = true;
+                                }
+                            }
                         });
                         
                         if (changed) {
                             this.saveUsersToCache();
                             this.renderUserList();
                         }
-                    }, () => {});
+                    }, (error) => {
+                        console.warn('Erro no listener de users:', error);
+                    });
             }
 
             loadFromLocalStorage() {
@@ -2869,6 +3053,7 @@
                     name: name,
                     code: code,
                     blocked: false,
+                    deviceId: null,
                     createdAt: new Date().toISOString(),
                     createdBy: this.currentUserId
                 };
@@ -2892,12 +3077,52 @@
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     } catch (error) {
-                        // Marcar para sync posterior
                         this.queueSyncOperation(() => {
                             db.collection('users').doc(code).set({
                                 ...newUser,
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
+                        });
+                    }
+                }
+            }
+
+            // NOVA FUNÇÃO: Excluir usuário
+            deleteUser(code) {
+                const user = this.users[code];
+                if (!user || code === ADMIN_ID) {
+                    this.showToast('Não é possível excluir este usuário', 'error');
+                    return;
+                }
+                
+                this.pendingDeleteUserId = code;
+                document.getElementById('deleteUserName').textContent = user.name;
+                this.openModal('confirmDeleteUserModal');
+            }
+
+            async executeDeleteUser() {
+                if (!this.pendingDeleteUserId) return;
+                
+                const code = this.pendingDeleteUserId;
+                const userName = this.users[code]?.name || 'Usuário';
+                
+                // Remover da memória
+                delete this.users[code];
+                this.saveUsersToCache();
+                this.renderUserList();
+                
+                this.closeModal('confirmDeleteUserModal');
+                this.pendingDeleteUserId = null;
+                
+                this.showToast(`Usuário ${userName} excluído!`, 'success');
+
+                // Sincronização em background
+                if (this.firebaseReady) {
+                    try {
+                        await db.collection('users').doc(code).delete();
+                    } catch (error) {
+                        this.queueSyncOperation(() => {
+                            db.collection('users').doc(code).delete();
                         });
                     }
                 }
@@ -3054,6 +3279,7 @@
                                 <div style="display:flex; gap:4px;">
                                     <button class="btn-icon ${isVipActive ? 'active' : ''}" onclick="app.toggleUserVip('${u.code}')" title="VIP (Sem Anúncios)">💎</button>
                                     <button class="btn-icon" onclick="app.resetUserDevice('${u.code}')" title="Resetar Dispositivo">📱</button>
+                                    <button class="btn-icon" onclick="app.deleteUser('${u.code}')" title="Excluir Usuário" style="color: var(--danger);">🗑️</button>
                                     <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" 
                                             onclick="app.toggleUserBlock('${u.code}')">
                                         ${u.blocked ? 'Liberar' : 'Bloquear'}
@@ -3315,7 +3541,6 @@
 
             async persistData() {
                 if (!this.firebaseReady) {
-                    // Marca para sincronizar quando voltar online
                     this.pendingSync = true;
                     return;
                 }
@@ -3358,6 +3583,38 @@
                 }
                 mensagem += `\n${this.currentUser}`;
                 this.copyToClipboard(mensagem, 'Relatório copiado!');
+            }
+
+            // NOVA FUNÇÃO: Gerar relatório mensal
+            generateMonthReport() {
+                const month = parseInt(document.getElementById('reportMonth').value);
+                const year = parseInt(document.getElementById('reportYear').value);
+                
+                let totalBruto = 0;
+                let totalLiquido = 0;
+                let count = 0;
+                
+                this.entries.forEach(e => {
+                    const entryDate = new Date(e.data);
+                    if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
+                        totalBruto += Number(e.bruto) || 0;
+                        totalLiquido += Number(e.liquido) || 0;
+                        count++;
+                    }
+                });
+                
+                const resultDiv = document.getElementById('monthReportResult');
+                const titleEl = document.getElementById('reportMonthTitle');
+                const liquidoEl = document.getElementById('reportLiquido');
+                const brutoEl = document.getElementById('reportBruto');
+                const countEl = document.getElementById('reportCount');
+                
+                titleEl.textContent = `Produção de ${MONTH_NAMES[month]}/${year}`;
+                liquidoEl.textContent = this.formatMoney(totalLiquido);
+                brutoEl.textContent = `Bruto: ${this.formatMoney(totalBruto)}`;
+                countEl.textContent = `${count} serviço${count !== 1 ? 's' : ''} realizado${count !== 1 ? 's' : ''}`;
+                
+                resultDiv.classList.remove('hidden');
             }
 
             updateDashboard() {
@@ -3505,28 +3762,12 @@
                 }
             }
 
-            setChartPeriod(period) {
-                this.chartPeriod = period;
-                const btnWeek = document.getElementById('btnWeek');
-                const btnMonth = document.getElementById('btnMonth');
-                if (btnWeek && btnMonth) {
-                    if (period === 'week') {
-                        btnWeek.classList.add('active');
-                        btnMonth.classList.remove('active');
-                    } else {
-                        btnMonth.classList.add('active');
-                        btnWeek.classList.remove('active');
-                    }
-                }
-                this.renderChart();
-            }
-
             renderChart() {
                 const svg = document.getElementById('evolutionChart');
                 if (!svg) return;
                 
-                const isWeek = this.chartPeriod === 'week';
-                const days = isWeek ? 7 : 30;
+                // Sempre usar período de 7 dias (semanal)
+                const days = 7;
                 const today = new Date();
                 
                 let currentPoints = [];
@@ -3843,6 +4084,7 @@
 
             showPix() {
                 this.closeModal('configModal');
+                this.closeModal('monthReportModal');
                 const randomMsg = DONATION_MESSAGES[Math.floor(Math.random() * DONATION_MESSAGES.length)];
                 const pixMessage = document.getElementById('pixMessage');
                 if (pixMessage) pixMessage.textContent = randomMsg;
