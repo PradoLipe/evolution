@@ -2190,6 +2190,35 @@
         </div>
     </div>
 
+    <!-- NOVO MODAL DE RELATÓRIO MENSAL -->
+    <div class="modal-overlay" id="reportModal" onclick="app.closeModalOnOverlay(event, 'reportModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Relatório Mensal</h3>
+                <button class="modal-close" onclick="app.closeModal('reportModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-row" style="align-items: center; margin-bottom: 16px;">
+                     <input type="month" id="searchMonth" class="input-modern" style="background: var(--surface-elevated); color: var(--text); border-color: var(--primary);">
+                     <button class="btn btn-primary" onclick="app.consultarMes()" style="height: 44px; margin-bottom: 2px;">Buscar</button>
+                 </div>
+                 <div id="monthlyResult" class="hidden">
+                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                         <div style="background: rgba(0, 180, 216, 0.1); border: 1px solid rgba(0, 180, 216, 0.3); border-radius: 12px; padding: 12px; text-align: center;">
+                             <div style="font-size: 0.65rem; color: var(--info); font-weight: 700; text-transform: uppercase;">Total Bruto</div>
+                             <div id="monthBruto" style="font-size: 1rem; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono'; margin-top: 4px;">R$ 0,00</div>
+                         </div>
+                         <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 12px; text-align: center;">
+                             <div style="font-size: 0.65rem; color: var(--accent); font-weight: 700; text-transform: uppercase;">Total Líquido</div>
+                             <div id="monthLiq" style="font-size: 1rem; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono'; margin-top: 4px;">R$ 0,00</div>
+                         </div>
+                     </div>
+                     <div id="monthCount" style="margin-top: 16px; font-size: 0.75rem; color: var(--text-secondary); text-align: center; font-weight: 500;">0 serviços encontrados no período</div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="configModal" onclick="app.closeModalOnOverlay(event, 'configModal')">
         <div class="modal-content">
             <div class="modal-header">
@@ -2210,34 +2239,13 @@
                     <button class="btn btn-glass" onclick="app.exportData()">↓ Exportar</button>
                     <button class="btn btn-glass" onclick="app.triggerImport()">↑ Importar</button>
                     <button class="btn btn-glass" onclick="app.toggleMetaEditor()">🎯 Meta</button>
+                    <button class="btn btn-glass" onclick="app.openReportModal()">📅 Relatório</button>
                     <button class="btn btn-glass" onclick="app.showPix()" style="color: var(--accent); border-color: rgba(255, 215, 0, 0.3);">
                         💎 Apoiar
                     </button>
                 </div>
 
-                <!-- ÁREA DE CONSULTA MENSAL MOVIDA PARA CÁ -->
-                <div class="monthly-query-container">
-                     <div class="input-row" style="align-items: center;">
-                         <input type="month" id="searchMonth" class="input-modern" style="background: var(--surface); color: var(--text);">
-                         <button class="btn btn-glass" onclick="app.consultarMes()" style="height: 44px; margin-bottom: 2px;">🔍 Buscar</button>
-                     </div>
-                     <div id="monthlyResult" class="hidden" style="background: var(--surface); padding: 12px; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border);">
-                         <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Resultado do Mês</div>
-                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-                             <div>
-                                 <div style="font-size: 0.6rem; color: var(--info);">BRUTO</div>
-                                 <div id="monthBruto" style="font-weight: 700;">R$ 0,00</div>
-                             </div>
-                             <div>
-                                 <div style="font-size: 0.6rem; color: var(--accent);">LÍQUIDO</div>
-                                 <div id="monthLiq" style="font-weight: 700;">R$ 0,00</div>
-                             </div>
-                         </div>
-                         <div id="monthCount" style="margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);">0 serviços encontrados</div>
-                     </div>
-                </div>
-
-                <button class="btn btn-danger" onclick="app.logout()" style="margin-top: 10px;">
+                <button class="btn btn-danger" onclick="app.logout()" style="margin-top: 20px;">
                     Sair do Sistema
                 </button>
             </div>
@@ -3262,6 +3270,19 @@
                 }
             }
 
+            // New function for toggling monthly report
+            openReportModal() {
+                this.closeModal('configModal'); // Close config first for better UX on mobile
+                this.openModal('reportModal');
+                
+                // Set default month to current if not set
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const picker = document.getElementById('searchMonth');
+                if(picker && !picker.value) picker.value = `${yyyy}-${mm}`;
+            }
+
             consultarMes() {
                 const s = document.getElementById('searchMonth').value;
                 if (!s) { this.showToast('Selecione mês', 'error'); return; }
@@ -3269,11 +3290,14 @@
                 let b = 0, l = 0, c = 0;
                 this.entries.forEach(e => {
                     const d = new Date(e.data);
-                    if ((d.getMonth()+1).toString().padStart(2,'0') === m && d.getFullYear().toString() === a) { b+=Number(e.bruto)||0; l+=Number(e.liquido)||0; c++; }
+                    // fix month index
+                    const eMes = (d.getMonth()+1).toString().padStart(2,'0');
+                    const eAno = d.getFullYear().toString();
+                    if (eMes === m && eAno === a) { b+=Number(e.bruto)||0; l+=Number(e.liquido)||0; c++; }
                 });
                 document.getElementById('monthBruto').textContent = this.formatMoney(b);
                 document.getElementById('monthLiq').textContent = this.formatMoney(l);
-                document.getElementById('monthCount').textContent = `${c} serviços`;
+                document.getElementById('monthCount').textContent = `${c} serviços encontrados`;
                 document.getElementById('monthlyResult').classList.remove('hidden');
             }
 
