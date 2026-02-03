@@ -638,7 +638,24 @@
             animation: pulse-gold 2s infinite;
         }
 
+        .adm-badge {
+            font-size: 0.55rem;
+            background: var(--gradient-orange);
+            color: white;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(255, 56, 96, 0.4);
+            animation: pulse-adm 2s infinite;
+        }
+
         @keyframes pulse-gold {
+            0%, 100% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @keyframes pulse-adm {
             0%, 100% { opacity: 0.8; transform: scale(0.95); }
             50% { opacity: 1; transform: scale(1.05); }
         }
@@ -2387,14 +2404,7 @@
             </div>
             <div class="modal-body" style="text-align: center;">
                 <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 16px;">FP</div>
-                <h3 id="profileName" style="font-size: 1.2rem; margin-bottom: 4px;">Nome do Usuário</h3>
-                <p id="profileCode" style="color: var(--text-secondary); font-family: 'JetBrains Mono'; margin-bottom: 20px;">ID: 000000</p>
-                
-                <div style="background: var(--surface); padding: 12px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Dispositivo</div>
-                    <div id="profileDevice" style="font-size: 0.8rem; font-family: 'JetBrains Mono';">Unknown</div>
-                </div>
-
+                <h3 id="profileName" style="font-size: 1.2rem; margin-bottom: 20px;">Nome do Usuário</h3>
                 <button class="btn btn-danger" onclick="app.logout()">Sair da Conta</button>
             </div>
         </div>
@@ -2787,14 +2797,14 @@
         const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
         const DEFAULT_USERS = {
-            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true, vip: true },
-            "7806": { name: "EDILSON JR", code: "7806", blocked: false },
-            "1980": { name: "ANDERSON PRADO", code: "1980", blocked: false },
-            "2026": { name: "FABRICIO DIAS", code: "2026", blocked: false },
-            "302466": { name: "RODRIGO COSTA", code: "302466", blocked: false },
-            "3373": { name: "RICARDO PRADO", code: "3373", blocked: false },
-            "2912": { name: "JOHNY", code: "2912", blocked: false },
-            "0420": { name: "FERNANDO SOARES", code: "0420", blocked: false }
+            "002451": { name: "FELIPE PRADO", code: "002451", blocked: false, isAdmin: true, vip: true, docId: "002451" },
+            "7806": { name: "EDILSON JR", code: "7806", blocked: false, docId: "7806" },
+            "1980": { name: "ANDERSON PRADO", code: "1980", blocked: false, docId: "1980" },
+            "2026": { name: "FABRICIO DIAS", code: "2026", blocked: false, docId: "2026" },
+            "302466": { name: "RODRIGO COSTA", code: "302466", blocked: false, docId: "302466" },
+            "3373": { name: "RICARDO PRADO", code: "3373", blocked: false, docId: "3373" },
+            "2912": { name: "JOHNY", code: "2912", blocked: false, docId: "2912" },
+            "0420": { name: "FERNANDO SOARES", code: "0420", blocked: false, docId: "0420" }
         };
 
         const ADMIN_ID = "002451";
@@ -2804,6 +2814,7 @@
                 this.entries = [];
                 this.currentUser = null;
                 this.currentUserId = null;
+                this.currentUserCode = null; // PIN is kept separate from ID
                 this.currentFilter = 'all';
                 this.pinValue = '';
                 this.deviceId = this.getOrCreateDeviceId();
@@ -2828,110 +2839,49 @@
                 this.isStandalone = false;
                 this.isIOS = false;
                 this.isAndroid = false;
-                this.deferredPrompt = null; // Variável para armazenar o evento de instalação
+                this.deferredPrompt = null;
                 
                 this.detectPlatform();
                 this.loadUsersFromCache();
                 this.init();
             }
 
-            // DETECÇÃO DE PLATAFORMA E STANDALONE
             detectPlatform() {
-                // Detectar se está rodando em tela cheia (standalone)
-                this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                                   window.navigator.standalone === true;
-                
-                // Detectar iOS
+                this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
                 this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                
-                // Detectar Android
                 this.isAndroid = /Android/.test(navigator.userAgent);
-                
-                // Esconder banner de instalação se já estiver em standalone
-                if (this.isStandalone) {
-                    document.body.classList.add('standalone-mode');
-                }
+                if (this.isStandalone) document.body.classList.add('standalone-mode');
             }
 
-            // ADICIONAR À TELA INICIAL (NOVO MÉTODO AUTOMÁTICO PARA ANDROID)
             addToHomeScreen() {
-                if (this.isStandalone) {
-                    this.showToast('App já está instalado!', 'success');
-                    return;
-                }
-
+                if (this.isStandalone) { this.showToast('App já está instalado!', 'success'); return; }
                 if (this.deferredPrompt) {
-                    // ANDROID: Mostra o prompt nativo (automático)
                     this.deferredPrompt.prompt();
                     this.deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            this.showToast('Instalação iniciada!', 'success');
-                        }
-                        this.deferredPrompt = null;
-                        this.hideInstallBanner();
+                        if (choiceResult.outcome === 'accepted') this.showToast('Instalação iniciada!', 'success');
+                        this.deferredPrompt = null; this.hideInstallBanner();
                     });
-                } else if (this.isIOS) {
-                    // IOS: Apple não permite automático, mostra instruções
-                    this.openModal('iosInstallModal');
-                    this.hideInstallBanner();
-                } else {
-                    // Fallback (Desktop ou Android antigo sem suporte)
-                    this.showToast('Pressione Opções > Adicionar à Tela Inicial', 'info');
-                    // Se estiver no Android mas sem prompt capturado, tenta mostrar modal de instrução (opcional)
-                }
+                } else if (this.isIOS) { this.openModal('iosInstallModal'); this.hideInstallBanner(); } 
+                else { this.showToast('Pressione Opções > Adicionar à Tela Inicial', 'info'); }
             }
 
             setupPWA() {
-                // Só mostrar banner se não estiver em standalone
                 if (this.isStandalone) {
                     this.hideInstallBanner();
-                    const btn = document.getElementById('btnAddHome');
-                    if (btn) btn.style.display = 'none';
+                    const btn = document.getElementById('btnAddHome'); if (btn) btn.style.display = 'none';
                     return;
                 }
-
-                // Capturar evento beforeinstallprompt (Android/Chrome)
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    // Previne o Chrome de mostrar o banner nativo automaticamente (queremos controlar)
-                    e.preventDefault();
-                    // Guarda o evento para usar no botão depois
-                    this.deferredPrompt = e;
-                    
-                    // COMENTADO PARA NÃO MOSTRAR AUTOMATICAMENTE (EVITAR FLOOD)
-                    /*
-                    setTimeout(() => {
-                        if (!this.isStandalone) {
-                            this.showInstallBanner();
-                        }
-                    }, 3000);
-                    */
-                });
-
-                // Detectar quando foi adicionado
+                window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.deferredPrompt = e; });
                 window.addEventListener('appinstalled', () => {
-                    this.isStandalone = true;
-                    this.hideInstallBanner();
-                    this.deferredPrompt = null;
+                    this.isStandalone = true; this.hideInstallBanner(); this.deferredPrompt = null;
                     safeStorage.setItem('evo_added_to_home_v51', 'true');
                     this.showToast('Evolution adicionado à sua tela inicial!', 'success');
-                    
-                    // Esconder botão nas configurações
-                    const btn = document.getElementById('btnAddHome');
-                    if (btn) btn.style.display = 'none';
+                    const btn = document.getElementById('btnAddHome'); if (btn) btn.style.display = 'none';
                 });
             }
 
-            showInstallBanner() {
-                const banner = document.getElementById('installBanner');
-                if (banner && !this.isStandalone) {
-                    banner.classList.add('visible');
-                }
-            }
-
-            hideInstallBanner() {
-                const banner = document.getElementById('installBanner');
-                if (banner) banner.classList.remove('visible');
-            }
+            showInstallBanner() { const banner = document.getElementById('installBanner'); if (banner && !this.isStandalone) banner.classList.add('visible'); }
+            hideInstallBanner() { const banner = document.getElementById('installBanner'); if (banner) banner.classList.remove('visible'); }
 
             setLoginMode(mode) {
                 this.currentMode = mode;
@@ -2939,10 +2889,8 @@
                 document.getElementById('btnModeRegister').classList.toggle('active', mode === 'register');
                 document.getElementById('loginSection').classList.toggle('hidden', mode !== 'login');
                 document.getElementById('registerSection').classList.toggle('active', mode === 'register');
-                if (mode === 'login') {
-                    this.pinValue = '';
-                    this.updatePinDisplay();
-                } else {
+                if (mode === 'login') { this.pinValue = ''; this.updatePinDisplay(); } 
+                else {
                     document.getElementById('regName').value = '';
                     document.getElementById('regCode').value = '';
                     document.getElementById('regCodeConfirm').value = '';
@@ -2951,9 +2899,7 @@
                 }
             }
 
-            backToLogin() {
-                this.setLoginMode('login');
-            }
+            backToLogin() { this.setLoginMode('login'); }
 
             async submitRegistration() {
                 const name = document.getElementById('regName').value.toUpperCase().trim();
@@ -2965,16 +2911,24 @@
                 if (!code || code.length !== 6) { this.showToast('A senha deve ter exatamente 6 dígitos', 'error'); return; }
                 if (!/^\d{6}$/.test(code)) { this.showToast('A senha deve conter apenas números', 'error'); return; }
                 if (code !== codeConfirm) { this.showToast('As senhas não coincidem', 'error'); return; }
-                if (await this.checkUserExists(code)) { this.showToast('Este PIN já está em uso', 'error'); return; }
+                
+                // Check local existence first for fast feedback
+                if (this.users[code] || Object.values(this.users).find(u => u.code === code)) {
+                     this.showToast('Este PIN já está em uso', 'error'); return;
+                }
+
+                // Generates a unique ID based on Name + PIN to prevent ghosting
+                const uniqueId = `${code}-${name.replace(/\s+/g, '_')}`;
 
                 const registration = {
                     name: name, code: code, requestedAt: new Date().toISOString(),
                     deviceId: this.deviceId, status: 'pending',
-                    userAgent: navigator.userAgent.substring(0, 100)
+                    userAgent: navigator.userAgent.substring(0, 100),
+                    docId: uniqueId // Request creation with this specific ID
                 };
 
                 try {
-                    if (db) await db.collection('pendingUsers').doc(code).set(registration);
+                    if (db) await db.collection('pendingUsers').doc(uniqueId).set(registration);
                     this.savePendingUserLocally(registration);
                     document.getElementById('registerForm').classList.add('hidden');
                     document.getElementById('registerStatus').classList.remove('hidden');
@@ -2987,20 +2941,8 @@
             }
 
             async checkUserExists(code) {
-                try {
-                    if (db) {
-                        const doc = await db.collection('users').doc(code).get();
-                        if (doc.exists) return true;
-                        const pending = await db.collection('pendingUsers').doc(code).get();
-                        if (pending.exists) return true;
-                    }
-                } catch (e) {}
-                const localUsers = safeStorage.getItem('evo_users_cache_v51');
-                if (localUsers) {
-                    const users = JSON.parse(localUsers);
-                    if (users[code]) return true;
-                }
-                return false;
+                // This is now just a helper, primary check is done in submitRegistration
+                return false; 
             }
 
             savePendingUserLocally(registration) {
@@ -3015,11 +2957,11 @@
                 try {
                     const pendingSnap = await db.collection('pendingUsers').get();
                     this.pendingUsers = [];
-                    pendingSnap.forEach(doc => this.pendingUsers.push(doc.data()));
+                    pendingSnap.forEach(doc => this.pendingUsers.push({ ...doc.data(), docId: doc.id }));
                     if (this.isAdmin) this.renderPendingUsers();
                     this.unsubscribePending = db.collection('pendingUsers').onSnapshot((snapshot) => {
                         this.pendingUsers = [];
-                        snapshot.forEach(doc => this.pendingUsers.push(doc.data()));
+                        snapshot.forEach(doc => this.pendingUsers.push({ ...doc.data(), docId: doc.id }));
                         if (this.isAdmin) this.renderPendingUsers();
                     });
                 } catch (e) {}
@@ -3038,39 +2980,48 @@
                                 <span class="pending-date">PIN: ${p.code} • ${new Date(p.requestedAt).toLocaleDateString('pt-BR')}</span>
                             </div>
                             <div class="pending-actions">
-                                <button class="btn-tiny btn-approve" onclick="app.approveUser('${p.code}')">✓</button>
-                                <button class="btn-tiny btn-reject" onclick="app.rejectUser('${p.code}')">✕</button>
+                                <button class="btn-tiny btn-approve" onclick="app.approveUser('${p.docId}')">✓</button>
+                                <button class="btn-tiny btn-reject" onclick="app.rejectUser('${p.docId}')">✕</button>
                             </div>
                         </div>
                     `).join('');
                 }
             }
 
-            async approveUser(code) {
-                const pending = this.pendingUsers.find(p => p.code === code);
+            async approveUser(docId) {
+                const pending = this.pendingUsers.find(p => p.docId === docId);
                 if (!pending) return;
+                
+                // Double check if PIN is free before approving
+                const existingUser = Object.values(this.users).find(u => u.code === pending.code);
+                if (existingUser) { this.showToast(`PIN ${pending.code} já em uso por ${existingUser.name}`, 'error'); return; }
+
                 const userData = {
                     name: pending.name, code: pending.code, blocked: false, isAdmin: false,
-                    approvedAt: new Date().toISOString(), approvedBy: this.currentUserId, deviceId: pending.deviceId
+                    approvedAt: new Date().toISOString(), approvedBy: this.currentUserId, deviceId: pending.deviceId,
+                    docId: docId // Store docId inside user object too
                 };
+                
                 try {
                     if (db) {
-                        await db.collection('users').doc(code).set(userData);
-                        await db.collection('pendingUsers').doc(code).delete();
+                        // Ensure clean slate - Delete potential orphans (Safe Delete Logic)
+                        await db.collection('users').doc(docId).collection('data').doc('history').delete();
+                        await db.collection('users').doc(docId).set(userData);
+                        await db.collection('pendingUsers').doc(docId).delete();
                     }
-                    this.users[code] = userData;
-                    this.pendingUsers = this.pendingUsers.filter(p => p.code !== code);
-                    safeStorage.setItem('evo_users_cache_v51', JSON.stringify(this.users));
+                    this.users[docId] = userData; // Use docId as key in local cache
+                    this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
+                    this.saveUsersToCache();
                     this.renderPendingUsers(); this.renderUserList();
                     this.showToast(`Usuário ${pending.name} aprovado!`, 'success');
                 } catch (error) { this.showToast('Erro ao aprovar usuário', 'error'); }
             }
 
-            async rejectUser(code) {
+            async rejectUser(docId) {
                 if (!confirm('Rejeitar este cadastro?')) return;
                 try {
-                    if (db) await db.collection('pendingUsers').doc(code).delete();
-                    this.pendingUsers = this.pendingUsers.filter(p => p.code !== code);
+                    if (db) await db.collection('pendingUsers').doc(docId).delete();
+                    this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
                     this.renderPendingUsers();
                     this.showToast('Cadastro rejeitado', 'info');
                 } catch (error) {}
@@ -3091,23 +3042,26 @@
                 if (localUsers) {
                     try {
                         const parsed = JSON.parse(localUsers);
-                        Object.keys(parsed).forEach(key => {
-                            if (key !== ADMIN_ID) this.users[key] = { ...this.users[key], ...parsed[key] };
+                        // Merge parsed users into this.users
+                        // Handle legacy cache where key was PIN, and new cache where key is DocID
+                        Object.entries(parsed).forEach(([key, val]) => {
+                             if(key !== ADMIN_ID) {
+                                 // Ensure val has docId, if not, assume key is docId
+                                 if(!val.docId) val.docId = key;
+                                 this.users[key] = val;
+                             }
                         });
                     } catch(e) {}
                 }
             }
 
             async init() {
-                // Setup PWA primeiro
                 this.setupPWA();
-                
                 const hoje = new Date().toISOString().split('T')[0];
                 const calcData = document.getElementById('calcData');
                 const relData = document.getElementById('relData');
                 if (calcData) calcData.value = hoje;
                 if (relData) relData.value = hoje;
-                
                 this.updateSimFields();
                 this.adjustCalcFields();
                 this.toggleRelatorioCampos();
@@ -3162,8 +3116,18 @@
                     const snapshot = await db.collection('users').get();
                     if (!snapshot.empty) {
                         const firebaseUsers = {};
-                        snapshot.forEach(doc => firebaseUsers[doc.id] = doc.data());
-                        this.users = { ...this.users, ...firebaseUsers, [ADMIN_ID]: { ...DEFAULT_USERS[ADMIN_ID], ...firebaseUsers[ADMIN_ID] }};
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            // Ensure docId property is present
+                            data.docId = doc.id;
+                            firebaseUsers[doc.id] = data;
+                        });
+                        // Merge ensuring ADMIN ID persists properly
+                        this.users = { ...this.users, ...firebaseUsers };
+                        // Ensure Admin is always correct
+                        if(this.users[ADMIN_ID]) this.users[ADMIN_ID] = { ...DEFAULT_USERS[ADMIN_ID], ...this.users[ADMIN_ID] };
+                        else this.users[ADMIN_ID] = DEFAULT_USERS[ADMIN_ID];
+                        
                         this.saveUsersToCache();
                     } else await this.uploadDefaultUsers();
                 } catch (e) {}
@@ -3174,7 +3138,7 @@
                 try {
                     const batch = db.batch();
                     Object.values(DEFAULT_USERS).forEach(user => {
-                        const ref = db.collection('users').doc(user.code);
+                        const ref = db.collection('users').doc(user.code); // Legacy default users use code as ID
                         batch.set(ref, { ...user, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                     });
                     await batch.commit();
@@ -3209,68 +3173,97 @@
             async login() {
                 if (this.isLoggingIn) return;
                 this.isLoggingIn = true;
-                const code = this.pinValue;
-                let userData = this.users[code];
-                if (!userData && this.firebaseReady && db) {
+                const enteredPin = this.pinValue;
+                
+                // Find user by PIN in local cache (support both old PIN-key and new DocID-key)
+                let foundUser = null;
+                
+                // 1. Try direct lookup (Legacy: ID == PIN)
+                if (this.users[enteredPin]) {
+                    foundUser = this.users[enteredPin];
+                } 
+                // 2. Try lookup by searching values (New: ID == Name-PIN)
+                else {
+                    foundUser = Object.values(this.users).find(u => u.code === enteredPin);
+                }
+
+                // If not found locally, try fetching from Firebase (Fallback)
+                if (!foundUser && this.firebaseReady && db) {
                     try {
-                        const doc = await db.collection('users').doc(code).get();
-                        if (doc.exists) { userData = doc.data(); this.users[code] = userData; this.saveUsersToCache(); }
+                        // Query by field 'code' to find DocID
+                        const q = await db.collection('users').where('code', '==', enteredPin).limit(1).get();
+                        if (!q.empty) {
+                            const doc = q.docs[0];
+                            foundUser = { ...doc.data(), docId: doc.id };
+                            this.users[doc.id] = foundUser;
+                            this.saveUsersToCache();
+                        }
                     } catch (e) {}
                 }
-                if (!userData) { 
-                    const pending = this.pendingUsers.find(p => p.code === code);
+
+                if (!foundUser) { 
+                    // Check pending
+                    const pending = this.pendingUsers.find(p => p.code === enteredPin);
                     if (pending) this.showToast('Seu cadastro está aguardando aprovação', 'warning');
                     else this.showPinError();
                     this.isLoggingIn = false;
                     return; 
                 }
-                if (userData.blocked && code !== ADMIN_ID) { this.showToast('Usuário bloqueado.', 'error'); this.pinValue = ''; this.updatePinDisplay(); this.isLoggingIn = false; return; }
 
-                this.currentUser = userData.name;
-                this.currentUserId = code;
-                this.isAdmin = (code === ADMIN_ID);
-                const user = this.users[this.currentUserId];
+                if (foundUser.blocked && foundUser.code !== ADMIN_ID) { this.showToast('Usuário bloqueado.', 'error'); this.pinValue = ''; this.updatePinDisplay(); this.isLoggingIn = false; return; }
+
+                this.currentUser = foundUser.name;
+                this.currentUserCode = foundUser.code;
+                this.currentUserId = foundUser.docId || enteredPin; // Use DocID for DB operations
+                
+                this.isAdmin = (foundUser.code === ADMIN_ID);
                 const now = new Date();
-                const trialActive = user.vipTrialUntil && new Date(user.vipTrialUntil) > now;
-                const paidActive = user.vipUntil && new Date(user.vipUntil) > now;
-                this.isVip = user.vip || trialActive || paidActive || this.isAdmin;
+                const trialActive = foundUser.vipTrialUntil && new Date(foundUser.vipTrialUntil) > now;
+                const paidActive = foundUser.vipUntil && new Date(foundUser.vipUntil) > now;
+                this.isVip = foundUser.vip || trialActive || paidActive || this.isAdmin;
 
                 this.loadFromLocalStorage();
                 this.showMainApp();
                 setTimeout(() => {
-                    this.setupEntriesListener(code);
+                    this.setupEntriesListener(this.currentUserId); // Listen to specific DocID
                     if (this.isAdmin) { this.setupUsersListener(); this.loadPendingUsers(); }
-                    this.updateLastLogin(code);
+                    this.updateLastLogin(this.currentUserId);
                     this.checkSystemMessage();
                 }, 100);
                 
                 let showVipTrial = false;
-                if (!user.vipTrialUntil && !this.isVip && !this.isAdmin) {
+                if (!foundUser.vipTrialUntil && !this.isVip && !this.isAdmin) {
                     const trialEnd = new Date(); trialEnd.setDate(trialEnd.getDate() + 15);
-                    user.vipTrialUntil = trialEnd.toISOString();
+                    foundUser.vipTrialUntil = trialEnd.toISOString();
                     showVipTrial = true;
-                    this.updateUserTrial(code, user.vipTrialUntil);
+                    this.updateUserTrial(this.currentUserId, foundUser.vipTrialUntil);
                 }
                 if (showVipTrial) setTimeout(() => this.openModal('vipWelcomeModal'), 800);
 
-                safeStorage.setItem('evo_session_v50', btoa(JSON.stringify({ user: this.currentUser, code: this.currentUserId, ts: Date.now() })));
+                safeStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
+                    user: this.currentUser, 
+                    code: this.currentUserCode, 
+                    docId: this.currentUserId, 
+                    ts: Date.now() 
+                })));
                 this.pinValue = ''; this.isLoggingIn = false;
             }
 
-            async updateLastLogin(code) {
+            async updateLastLogin(docId) {
                 if (!this.firebaseReady || !db) return;
-                try { await db.collection('users').doc(code).set({ lastLogin: firebase.firestore.FieldValue.serverTimestamp(), deviceId: this.deviceId }, { merge: true }); } catch (e) {}
+                try { await db.collection('users').doc(docId).set({ lastLogin: firebase.firestore.FieldValue.serverTimestamp(), deviceId: this.deviceId }, { merge: true }); } catch (e) {}
             }
 
-            async updateUserTrial(code, dateStr) {
+            async updateUserTrial(docId, dateStr) {
                 if (!this.firebaseReady || !db) return;
-                try { await db.collection('users').doc(code).update({ vipTrialUntil: dateStr }); } catch (e) {}
+                try { await db.collection('users').doc(docId).update({ vipTrialUntil: dateStr }); } catch (e) {}
             }
 
-            setupEntriesListener(userId) {
+            setupEntriesListener(docId) {
                 if (!db) return;
                 if (this.unsubscribeEntries) this.unsubscribeEntries();
-                this.unsubscribeEntries = db.collection('users').doc(userId).collection('data').doc('history')
+                // Binds strictly to the document ID found during login
+                this.unsubscribeEntries = db.collection('users').doc(docId).collection('data').doc('history')
                     .onSnapshot({ includeMetadataChanges: true }, (doc) => {
                         if (doc.exists && !doc.metadata.fromCache) {
                             const data = doc.data();
@@ -3281,15 +3274,17 @@
             }
 
             setupUsersListener() {
-                if (this.currentUserId !== ADMIN_ID || !db) return;
+                if (this.currentUserCode !== ADMIN_ID || !db) return;
                 if (this.unsubscribeUsers) this.unsubscribeUsers();
                 this.unsubscribeUsers = db.collection('users').onSnapshot({ includeMetadataChanges: true }, (snapshot) => {
                     let changed = false;
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === 'added' || change.type === 'modified' || change.type === 'removed') {
-                            if (change.doc.id !== ADMIN_ID) {
+                            const data = change.doc.data();
+                            data.docId = change.doc.id;
+                            if (data.code !== ADMIN_ID) {
                                 if (change.type === 'removed') delete this.users[change.doc.id];
-                                else this.users[change.doc.id] = change.doc.data();
+                                else this.users[change.doc.id] = data;
                                 changed = true;
                             }
                         }
@@ -3299,6 +3294,7 @@
             }
 
             loadFromLocalStorage() {
+                // Key uses DocID to prevent collision between users with same PIN but different IDs
                 const key = `evo_data_${this.currentUserId}`;
                 const saved = safeStorage.getItem(key);
                 if (saved) {
@@ -3327,9 +3323,16 @@
                     try { 
                         const d = JSON.parse(atob(s)); 
                         if (d.ts > Date.now() - 86400000) { 
-                            const userData = this.users[d.code];
+                            // Support legacy sessions (where code was the ID)
+                            const docId = d.docId || d.code;
+                            const userData = this.users[docId] || Object.values(this.users).find(u => u.code === d.code);
+                            
                             if (userData && !userData.blocked) {
-                                this.currentUser = d.user; this.currentUserId = d.code; this.isAdmin = (d.code === ADMIN_ID);
+                                this.currentUser = d.user; 
+                                this.currentUserCode = d.code; 
+                                this.currentUserId = userData.docId || docId; // Ensure we use the correct DocID
+                                
+                                this.isAdmin = (d.code === ADMIN_ID);
                                 const now = new Date();
                                 const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
                                 const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
@@ -3337,9 +3340,9 @@
                                 this.loadFromLocalStorage();
                                 this.showMainApp();
                                 setTimeout(() => {
-                                    this.setupEntriesListener(d.code);
+                                    this.setupEntriesListener(this.currentUserId);
                                     if (this.isAdmin) { this.setupUsersListener(); this.loadPendingUsers(); }
-                                    this.updateLastLogin(d.code);
+                                    this.updateLastLogin(this.currentUserId);
                                 }, 100);
                             }
                         } 
@@ -3355,14 +3358,25 @@
                 if (userNameEl) userNameEl.firstChild.textContent = this.currentUser + " ";
                 const avatarEl = document.getElementById('userAvatar');
                 if (avatarEl) avatarEl.textContent = this.currentUser.substring(0, 2);
+                
+                // BADGE LOGIC
                 const vipBadge = document.getElementById('vipBadge');
-                if (vipBadge) vipBadge.classList.toggle('hidden', !this.isVip);
+                if (vipBadge) {
+                    if (this.isAdmin) {
+                        vipBadge.textContent = "ADM";
+                        vipBadge.className = "adm-badge"; // New ADM style
+                        vipBadge.classList.remove('hidden');
+                    } else if (this.isVip) {
+                        vipBadge.textContent = "VIP";
+                        vipBadge.className = "vip-badge";
+                        vipBadge.classList.remove('hidden');
+                    } else {
+                        vipBadge.classList.add('hidden');
+                    }
+                }
+                
                 const profileName = document.getElementById('profileName');
-                const profileCode = document.getElementById('profileCode');
-                const profileDevice = document.getElementById('profileDevice');
                 if (profileName) profileName.textContent = this.currentUser;
-                if (profileCode) profileCode.textContent = 'ID: ' + this.currentUserId;
-                if (profileDevice) profileDevice.textContent = this.deviceId;
 
                 if (this.isAdmin) {
                     const btnAdmin = document.getElementById('btnAdmin');
@@ -3373,7 +3387,6 @@
                 this.updateDashboard(); this.renderHistory(); this.renderChart(); this.loadMeta(); this.updateMetaProgress(); this.checkNewMonth();
                 if (!this.isAdmin && !this.isVip && !this.isStandalone) this.startAutoPix();
                 
-                // Verificar se deve mostrar botão de adicionar à home
                 if (this.isStandalone) {
                     const btn = document.getElementById('btnAddHome');
                     if (btn) btn.style.display = 'none';
@@ -3385,12 +3398,25 @@
                 el.style.display = el.style.display === 'block' ? 'none' : 'block';
             }
             
-            async deleteUser(code) {
-                if (code === ADMIN_ID) return;
-                if (confirm(`Excluir usuário ${this.users[code].name}?`)) {
-                    delete this.users[code]; this.saveUsersToCache(); this.renderUserList();
+            async deleteUser(docId) {
+                // Prevent deleting self if admin using same ID flow (Admin is separate though)
+                const user = this.users[docId];
+                if (!user) return;
+                if (user.code === ADMIN_ID) return;
+
+                if (confirm(`ATENÇÃO: Excluir ${user.name} apagará TODO o histórico vinculado a este registro. Confirmar?`)) {
+                    delete this.users[docId]; 
+                    this.saveUsersToCache(); 
+                    this.renderUserList();
+                    
                     if (this.firebaseReady && db) {
-                        try { await db.collection('users').doc(code).delete(); this.showToast('Usuário excluído', 'success'); } 
+                        try { 
+                            // CRITICAL FIX: Delete the history sub-document first!
+                            await db.collection('users').doc(docId).collection('data').doc('history').delete();
+                            // Then delete the user document
+                            await db.collection('users').doc(docId).delete(); 
+                            this.showToast('Usuário e dados excluídos com sucesso', 'success'); 
+                        } 
                         catch (e) { this.showToast('Erro servidor', 'error'); }
                     }
                 }
@@ -3402,33 +3428,46 @@
                 const name = nameInput?.value.toUpperCase().trim();
                 const code = codeInput?.value.trim();
                 if (!name || !code || code.length !== 6) { this.showToast('Preencha nome e PIN', 'error'); return; }
-                if (this.users[code]) { this.showToast('PIN já existe', 'error'); return; }
+                
+                // Check PIN uniqueness locally
+                if (Object.values(this.users).some(u => u.code === code)) { this.showToast('PIN já existe', 'error'); return; }
 
-                const newUser = { name: name, code: code, blocked: false, createdAt: new Date().toISOString(), createdBy: this.currentUserId };
-                this.users[code] = newUser; this.saveUsersToCache(); this.renderUserList();
+                // Create Unique Doc ID
+                const docId = `${code}-${name.replace(/\s+/g, '_')}`;
+
+                const newUser = { name: name, code: code, blocked: false, createdAt: new Date().toISOString(), createdBy: this.currentUserId, docId: docId };
+                this.users[docId] = newUser; 
+                this.saveUsersToCache(); 
+                this.renderUserList();
+                
                 if (nameInput) nameInput.value = ''; if (codeInput) codeInput.value = '';
                 this.showToast(`Usuário ${name} adicionado!`, 'success');
+                
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).set({ ...newUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); } 
-                    catch (error) { this.queueSyncOperation(() => db.collection('users').doc(code).set({ ...newUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() })); }
+                    try { 
+                        // Safety: Clear orphaned data if it exists for this new ID
+                        await db.collection('users').doc(docId).collection('data').doc('history').delete();
+                        await db.collection('users').doc(docId).set({ ...newUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); 
+                    } 
+                    catch (error) { this.queueSyncOperation(() => db.collection('users').doc(docId).set({ ...newUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() })); }
                 }
             }
 
-            async toggleUserBlock(code) {
-                const user = this.users[code];
-                if (!user || user.name === 'FELIPE PRADO') return;
+            async toggleUserBlock(docId) {
+                const user = this.users[docId];
+                if (!user || user.code === ADMIN_ID) return;
                 const newStatus = !user.blocked;
                 user.blocked = newStatus; user.updatedAt = new Date().toISOString();
                 this.saveUsersToCache(); this.renderUserList(); this.showToast(newStatus ? 'Bloqueado!' : 'Liberado!', 'success');
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).update({ blocked: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (error) {}
+                    try { await db.collection('users').doc(docId).update({ blocked: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (error) {}
                 }
             }
 
-            openVipManager(code) {
-                const user = this.users[code];
+            openVipManager(docId) {
+                const user = this.users[docId];
                 if (!user) return;
-                this.managingVipUser = code;
+                this.managingVipUser = docId;
                 document.getElementById('vipManagerUser').textContent = user.name;
                 let statusText = "Sem VIP";
                 const now = new Date();
@@ -3440,8 +3479,8 @@
             }
 
             async addVipMonths(months) {
-                const code = this.managingVipUser;
-                const user = this.users[code];
+                const docId = this.managingVipUser;
+                const user = this.users[docId];
                 if (!user) return;
                 const now = new Date();
                 let baseDate = now;
@@ -3449,41 +3488,41 @@
                 baseDate.setMonth(baseDate.getMonth() + months);
                 const newDateStr = baseDate.toISOString();
                 user.vipUntil = newDateStr; user.vip = false;
-                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(code); this.showToast(`Adicionado ${months} mês(es)!`, 'success');
+                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(docId); this.showToast(`Adicionado ${months} mês(es)!`, 'success');
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).update({ vipUntil: newDateStr, vip: false, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
+                    try { await db.collection('users').doc(docId).update({ vipUntil: newDateStr, vip: false, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
                 }
             }
 
             async setVipPermanent() {
-                const code = this.managingVipUser;
-                const user = this.users[code];
+                const docId = this.managingVipUser;
+                const user = this.users[docId];
                 if (!user) return;
                 user.vip = true; user.vipUntil = null;
-                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(code); this.showToast('Definido como Permanente!', 'success');
+                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(docId); this.showToast('Definido como Permanente!', 'success');
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).update({ vip: true, vipUntil: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
+                    try { await db.collection('users').doc(docId).update({ vip: true, vipUntil: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
                 }
             }
 
             async removeVip() {
-                const code = this.managingVipUser;
-                const user = this.users[code];
+                const docId = this.managingVipUser;
+                const user = this.users[docId];
                 if (!user) return;
                 user.vip = false; user.vipUntil = null; user.vipTrialUntil = null;
-                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(code); this.showToast('VIP removido completamente!', 'success');
+                this.saveUsersToCache(); this.renderUserList(); this.openVipManager(docId); this.showToast('VIP removido completamente!', 'success');
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).update({ vip: false, vipUntil: null, vipTrialUntil: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
+                    try { await db.collection('users').doc(docId).update({ vip: false, vipUntil: null, vipTrialUntil: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
                 }
             }
 
-            async resetUserDevice(code) {
-                const user = this.users[code];
+            async resetUserDevice(docId) {
+                const user = this.users[docId];
                 if (!user) return;
                 if (!confirm(`Resetar ${user.name}?`)) return;
                 user.deviceId = null; this.saveUsersToCache(); this.renderUserList(); this.showToast('Resetado!', 'success');
                 if (this.firebaseReady && db) {
-                    try { await db.collection('users').doc(code).update({ deviceId: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (error) {}
+                    try { await db.collection('users').doc(docId).update({ deviceId: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (error) {}
                 }
             }
 
@@ -3509,6 +3548,9 @@
                 container.innerHTML = userArray.map(u => {
                     const now = new Date();
                     const isVip = u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now);
+                    // u.docId might be missing in legacy local cache, fallback to key iteration if needed, but updated loadUsersFromCache handles it
+                    const uid = u.docId || u.code; 
+                    
                     return `
                     <div class="user-item">
                         <div class="user-item-info">
@@ -3520,10 +3562,10 @@
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
                             ${u.code !== ADMIN_ID ? `
                                 <div style="display:flex;gap:4px;">
-                                    <button class="btn-icon ${isVip ? 'active' : ''}" onclick="app.openVipManager('${u.code}')">💎</button>
-                                    <button class="btn-icon" onclick="app.resetUserDevice('${u.code}')">📱</button>
-                                    <button class="btn-icon delete-action" onclick="app.deleteUser('${u.code}')">🗑️</button>
-                                    <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="app.toggleUserBlock('${u.code}')">${u.blocked ? 'Liberar' : 'Bloq'}</button>
+                                    <button class="btn-icon ${isVip ? 'active' : ''}" onclick="app.openVipManager('${uid}')">💎</button>
+                                    <button class="btn-icon" onclick="app.resetUserDevice('${uid}')">📱</button>
+                                    <button class="btn-icon delete-action" onclick="app.deleteUser('${uid}')">🗑️</button>
+                                    <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="app.toggleUserBlock('${uid}')">${u.blocked ? 'Liberar' : 'Bloq'}</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -3667,6 +3709,7 @@
                 if (!this.firebaseReady || !db) return;
                 if (this._persistTimeout) clearTimeout(this._persistTimeout);
                 this._persistTimeout = setTimeout(async () => {
+                    // Use this.currentUserId (which is DocID) to save history
                     try { await db.collection('users').doc(this.currentUserId).collection('data').doc('history').set({ history: JSON.stringify(this.entries), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), count: this.entries.length }); this.lastSyncTime = Date.now(); } catch (error) {}
                 }, 500);
             }
