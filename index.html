@@ -1557,7 +1557,18 @@
 </head>
 <body>
 
-    <div id="iosInstallModal" class="modal-overlay">
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-content">
+            <div class="install-icon">📲</div>
+            <div class="install-text">
+                <span class="install-title">Instalar App</span>
+                <span class="install-subtitle">Adicione à tela inicial</span>
+            </div>
+        </div>
+        <button class="install-btn" onclick="app.installPWA()">Instalar</button>
+    </div>
+
+    <div class="modal-overlay" id="iosInstallModal">
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;">
                 <h3 class="modal-title" style="color: var(--primary);">Instalar no iPhone</h3>
@@ -2169,6 +2180,15 @@
                     <button class="btn btn-primary" onclick="app.saveMeta()">Salvar Meta</button>
                     <div id="cancelMetaContainer"></div>
                 </div>
+                
+                <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: center;">
+                    <h4 style="color: var(--accent); margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">💎 Seja VIP</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;">
+                        <li>✨ Acesso Multi-plataforma (PC/Celular)</li>
+                        <li>🚫 Zero Anúncios de Doação</li>
+                        <li>🚀 Suporte Prioritário</li>
+                    </ul>
+                </div>
 
                 <!-- Correção Layout Configurações -->
                 <div class="config-buttons-grid">
@@ -2364,6 +2384,7 @@
                 this.users = {}; 
                 this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
                 this.isAdmin = false;
+                this.isVip = false;
                 this.unsubscribeUsers = null;
                 this.unsubscribeEntries = null;
                 this.pendingDeleteId = null;
@@ -2618,6 +2639,10 @@
                 this.currentUserId = code;
                 this.isAdmin = (code === ADMIN_ID);
 
+                // Check VIP status
+                const user = this.users[this.currentUserId];
+                this.isVip = user.vip || (user.vipTrialUntil && new Date(user.vipTrialUntil) > new Date()) || this.isAdmin;
+
                 this.loadFromLocalStorage();
                 this.showMainApp();
                 
@@ -2630,7 +2655,6 @@
                     this.checkSystemMessage();
                 }, 100);
                 
-                const user = this.users[this.currentUserId];
                 let showVipTrial = false;
                 
                 if (!user.vipTrialUntil && !user.vip && !this.isAdmin) {
@@ -2764,6 +2788,10 @@
                                 this.currentUser = d.user;
                                 this.currentUserId = d.code;
                                 this.isAdmin = (d.code === ADMIN_ID);
+                                
+                                // Check VIP status on session restore
+                                this.isVip = userData.vip || (userData.vipTrialUntil && new Date(userData.vipTrialUntil) > new Date()) || this.isAdmin;
+
                                 this.loadFromLocalStorage();
                                 this.showMainApp();
                                 setTimeout(() => {
@@ -2787,14 +2815,8 @@
                 const avatarEl = document.getElementById('userAvatar');
                 if (avatarEl) avatarEl.textContent = this.currentUser.substring(0, 2);
 
-                const user = this.users[this.currentUserId];
-                let isVip = user?.vip || false;
-                if (!isVip && user?.vipTrialUntil) {
-                    isVip = new Date() < new Date(user.vipTrialUntil);
-                }
-                
                 const vipBadge = document.getElementById('vipBadge');
-                if (vipBadge) vipBadge.classList.toggle('hidden', !isVip);
+                if (vipBadge) vipBadge.classList.toggle('hidden', !this.isVip);
 
                 const profileName = document.getElementById('profileName');
                 const profileCode = document.getElementById('profileCode');
@@ -2818,7 +2840,7 @@
                 this.updateMetaProgress();
                 this.checkNewMonth();
                 
-                if (!this.isAdmin && !isVip) this.startAutoPix();
+                if (!this.isAdmin && !this.isVip) this.startAutoPix();
             }
 
             toggleAdminSection(id) {
@@ -3103,7 +3125,7 @@
                 this.showToast('Salvo!', 'success');
                 document.getElementById('calcNavio').value = '';
                 this.persistData();
-                if (!this.isAdmin && Math.random() < 0.3) this.showPix(); 
+                if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix(); 
             }
 
             async persistData() {
