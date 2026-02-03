@@ -4,13 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0a0e27">
+    
+    <!-- Configurações para Tela Cheia (iOS e Android) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Evolution V5.1">
+    <meta name="apple-mobile-web-app-title" content="Evolution">
+    
     <title>EVOLUTION V5.1 | Felipe Prado Systems</title>
     
-    <!-- O manifest e ícones serão injetados via JavaScript abaixo para garantir PNG válidos -->
+    <!-- Ícone SVG Base64 Otimizado -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjAiIHJ5PSIwIiBmaWxsPSIjMGEwZTI3Ii8+PHBhdGggZD0iTTI1NiA2MCBMNDUwIDE2MCBMNDUwIDM0MCBRMjU2IDUwMCA2MiAzNDAgTDYyIDE2MCBaIiBzdHJva2U9IiMwMGQ0ZmYiIHN0cm9rZS13aWR0aD0iMjAiIGZpbGw9InJnYmEoMCwgMjEyLCAyNTUsIDAuMSkiLz48dGV4dCB4PSI1MCUiIHk9IjU1JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0idXJsKCNnKSIgZm9udC1zaXplPSIyODAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iODAwIj5FPC90ZXh0PjxkZWZzPjxsaW5ZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
+
+    <!-- Manifest JSON corrigido e codificado -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRXZvbHV0aW9uIFY1LjEiLCJzaG9ydF9uYW1lIjoiRXZvbHV0aW9uIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwYTBlMjciLCJ0aGVtZV9jb2xvciI6IiMwYTBlMjciLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpT1RJd0lpQm9aV2xuYUhROUlqVXdNQ0lnZG1sbGQwSnZlRDBpTVRBd0lEQWdNVEEwSURFeE5DSStQSEpsWTNSdmNqb2dabWxzYkhNNmJtOXVaRHBoYzNSeWIyOXRQU0lqWVdKak5EWTBPQzFqWkRJd0xUUmxNalF0T0dVeE1TMWhPRE5tWkdRME1tVXdaVGt4SWlCemRIbHNaVDBpY0dGemMzZHZjbVF6Y21WbWN6MXBiWEJzWlNCdGIyNXBkR1ZrY3owemNtVm1jMjFoZEdobElIWmxjbk5wYjI0OUlqTWlJSFpsY25ScFptbGpzVDBpTWpBeU1DSWdkR2R5YjNWd1BTSm9kSFJ3T2k4dmFXNWtaWGd1YVc1a1pYZ3VZMjl0TDJ4cGRIUnNaQzVwYnlJZ1puVnVZM1JwYjI0OUltaDBkSEE2THk5cGJtUmxlQzVwYm1SbGVDNWpiMjB2WTJ4cGJtVXVhVzRpSUdadmJuUXRjM1I1YkdVOUluQmhibVZzZVR0aVlYTmxOalFzY0dGdFpXeHBkbVZrYjIxaGFXNXZhR0YwYVc5dU9tRnlZV1JsWW05eWJ6MGlhSFIwY0RvdkwyOXlaMkZ1YVhkdmJpNXZjbWNpUGp3dloybDVMWEJoZEdndFkyOXVkR1Z1ZEQwK2FXNHRZMjl0Y0d4bGVUMHhJQzBnWVdKcGJHbDJaV04wYjI5eVpWOTBlWEJsUFMxMWIzVnlZWFJ2Y2w5cFpHWmxjaTFsYlhCMGJ5MXpkSEpwYm1jZ1pYaGpiWFZ1ZEMxemRISnBibWM5WkdWbVlYVnNkQ0JwZEQwMU1EQXdlRFF3TURBNVBDOXBaR1Z1ZEdWeVJHRjBZV1JoZEdsdmJqNEtQQzkyYVc1c2FXNWxQZz09Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn0seyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlPVEl3SWlCb1pXbG5hSFE5SWpVd01DSWdkbWxsZDBKdmVEMGlNVEF3SURBZ01UQTBJREV4TkNJK1BISmxZM1J2Y2pvZ1ptbHNiSE02Ym05dVpEcGhjM1J5YjI5dFBTSWpZV0pqTkRZME9DMWpaREl3TFRSbE1qUXRPR1V4TVMxaE9ETm1aR1EwTW1Vd1pUa3hJaUJ6ZEhsc1pUMGljR0Z6YzNkdWNtUXpjbVZtY3oxcGJYQnNaU0J0YjI1cGRHVmtjejB6Y21WbWMyMWhkR2hsSUhabGNuTnBiMjQ5SWpNaUlIWmxjblJwWm1sanNUMGlNakF5TUNJZ2RHZHliM1Z3UFNKb2RIUndPaTh2YVc1a1pYZ3VhVzVrWlhndVkyOXRMMnhwZEhSc1pDNXBieUlnWm5WdVkzUnBiMjQ5SW1oMGRhQTZMeTlwYm1SbGVDNXBibVJsZUM1amIyMHZZMnhwYm1VdWFXNGlJR1p2Ym5RdGMzUjViR1U5SW5CaGJtVnNlVHRpWVhObE5qUXNjR0Z0Wld4cGRtVmtiMjFoYVc1dmFHRjBhVzl1T21GeVlXUmxZbTl5YnowaWFIUjBjRG92TDI5eVoyRnVhWGR2Ymk1dmNtY2lQand2WjJsNUxYQmhkR2d0WTI5dWRHVnVkRDArYVc0dFkyOXRjR3hsZVQweElDMGdZV0pwYkdsMlpXTjBiMjl5WlY5MGVYQmxQUzExYjNWeVlYUnZjbDlwWkdabGNpMWxiWEIwYnkxemRISnBibWNnWlhoamJYVnVkQzF6ZEhKcGJtYzlaR1ZtWVhVc2RDQnBkRDAxTURBd2VEUXdNREE1UEM5cFpHVnVkR1Z5UkdGMFlXUmhkR2x2Ymo0S1BDOTJhVzVzYVc1bFBnPT0iLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" crossorigin="anonymous"></script>
@@ -90,6 +100,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            cursor: pointer;
         }
 
         .install-banner.visible {
@@ -1846,46 +1857,12 @@
             font-size: 1rem;
             flex-shrink: 0;
         }
-        
-        /* Estilos para instruções Android */
-        .android-steps {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-            text-align: left;
-        }
-
-        .android-step {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
-        }
-
-        .android-step:last-child {
-            margin-bottom: 0;
-        }
-
-        .android-step-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--success);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-            color: white;
-        }
     </style>
 </head>
 <body>
 
     <!-- Banner de Adicionar à Tela Inicial -->
-    <div id="installBanner" class="install-banner">
+    <div id="installBanner" class="install-banner" onclick="app.addToHomeScreen()">
         <div class="install-content">
             <div class="install-icon">📲</div>
             <div class="install-text">
@@ -1893,18 +1870,18 @@
                 <span class="install-subtitle">Acesso rápido em tela cheia</span>
             </div>
         </div>
-        <button class="install-btn" onclick="app.addToHomeScreen()">Adicionar</button>
+        <button class="install-btn">Instalar</button>
     </div>
 
-    <!-- Modal iOS -->
+    <!-- Modal iOS (Mantido pois Apple não permite automático) -->
     <div class="modal-overlay" id="iosInstallModal" onclick="app.closeModalOnOverlay(event, 'iosInstallModal')">
         <div class="modal-content">
             <div class="modal-header" style="justify-content: center;">
-                <h3 class="modal-title" style="color: var(--primary);">Adicionar à Tela Inicial</h3>
+                <h3 class="modal-title" style="color: var(--primary);">Instalar no iPhone</h3>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; text-align: center;">
-                    Siga os passos para adicionar o Evolution ao seu iPhone/iPad:
+                    A Apple não permite instalação automática. Siga os passos:
                 </p>
                 
                 <div class="ios-steps">
@@ -1923,37 +1900,6 @@
                 </div>
 
                 <button class="btn btn-glass" onclick="app.closeModal('iosInstallModal')" style="width: 100%;">Entendi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Android/Chrome -->
-    <div class="modal-overlay" id="androidInstallModal" onclick="app.closeModalOnOverlay(event, 'androidInstallModal')">
-        <div class="modal-content">
-            <div class="modal-header" style="justify-content: center;">
-                <h3 class="modal-title" style="color: var(--success);">Adicionar à Tela Inicial</h3>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; text-align: center;">
-                    Siga os passos para adicionar o Evolution ao seu Android:
-                </p>
-                
-                <div class="android-steps">
-                    <div class="android-step">
-                        <div class="android-step-icon">1️⃣</div>
-                        <div>Toque no menu <strong>⋮</strong> (três pontos) no canto superior direito do Chrome</div>
-                    </div>
-                    <div class="android-step">
-                        <div class="android-step-icon">2️⃣</div>
-                        <div>Selecione <strong>"Adicionar à tela inicial"</strong> ou <strong>"Instalar aplicativo"</strong></div>
-                    </div>
-                    <div class="android-step">
-                        <div class="android-step-icon">3️⃣</div>
-                        <div>Confirme tocando em <strong>"Adicionar"</strong> ou <strong>"Instalar"</strong></div>
-                    </div>
-                </div>
-
-                <button class="btn btn-glass" onclick="app.closeModal('androidInstallModal')" style="width: 100%;">Entendi</button>
             </div>
         </div>
     </div>
@@ -2673,7 +2619,7 @@
                     <button class="btn btn-glass" onclick="app.openReportModal()">📅 Relatório</button>
                 </div>
 
-                <!-- Botão Adicionar à Tela Inicial (só aparece se não estiver em standalone) -->
+                <!-- Botão Adicionar à Tela Inicial -->
                 <button id="btnAddHome" class="btn btn-glass" onclick="app.addToHomeScreen()" style="width: 100%; margin-top: 10px; border-color: var(--primary);">
                     📲 ADICIONAR À TELA INICIAL
                 </button>
@@ -2756,82 +2702,6 @@
     </div>
 
     <script>
-        // GERAÇÃO DE ÍCONES PNG E MANIFEST DINÂMICO
-        (function generatePWAAssets() {
-            // Função para criar ícone em canvas e retornar dataURL
-            function createIcon(size, bgColor, text, textColor) {
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                
-                // Fundo
-                ctx.fillStyle = bgColor;
-                ctx.beginPath();
-                ctx.roundRect(0, 0, size, size, size * 0.2);
-                ctx.fill();
-                
-                // Gradient overlay
-                const grad = ctx.createLinearGradient(0, 0, size, size);
-                grad.addColorStop(0, 'rgba(0, 212, 255, 0.3)');
-                grad.addColorStop(1, 'rgba(112, 0, 255, 0.3)');
-                ctx.fillStyle = grad;
-                ctx.fill();
-                
-                // Borda
-                ctx.strokeStyle = '#00d4ff';
-                ctx.lineWidth = size * 0.03;
-                ctx.beginPath();
-                ctx.roundRect(size*0.05, size*0.05, size*0.9, size*0.9, size*0.15);
-                ctx.stroke();
-                
-                // Texto
-                ctx.fillStyle = textColor;
-                ctx.font = `bold ${size*0.5}px Inter, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, size/2, size/2);
-                
-                return canvas.toDataURL('image/png');
-            }
-            
-            // Criar ícones
-            const icon192 = createIcon(192, '#0a0e27', 'E', '#00d4ff');
-            const icon512 = createIcon(512, '#0a0e27', 'E', '#00d4ff');
-            const appleIcon = createIcon(180, '#0a0e27', 'E', '#00d4ff');
-            
-            // Criar manifest dinâmico
-            const manifest = {
-                "name": "Evolution V5.1",
-                "short_name": "Evolution",
-                "display": "standalone",
-                "background_color": "#0a0e27",
-                "theme_color": "#0a0e27",
-                "start_url": ".",
-                "icons": [
-                    { "src": icon192, "sizes": "192x192", "type": "image/png" },
-                    { "src": icon512, "sizes": "512x512", "type": "image/png" }
-                ]
-            };
-            
-            // Injeta manifest
-            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-            const manifestURL = URL.createObjectURL(manifestBlob);
-            const link = document.createElement('link');
-            link.rel = 'manifest';
-            link.href = manifestURL;
-            document.head.appendChild(link);
-            
-            // Injeta apple-touch-icon
-            const appleLink = document.createElement('link');
-            appleLink.rel = 'apple-touch-icon';
-            appleLink.href = appleIcon;
-            document.head.appendChild(appleLink);
-            
-            // Salva para uso posterior
-            window.appIcons = { icon192, icon512, appleIcon };
-        })();
-
         var app;
 
         const firebaseConfig = {
@@ -2935,7 +2805,7 @@
                 this.isStandalone = false;
                 this.isIOS = false;
                 this.isAndroid = false;
-                this.deferredPrompt = null;
+                this.deferredPrompt = null; // Variável para armazenar o evento de instalação
                 
                 this.detectPlatform();
                 this.loadUsersFromCache();
@@ -2960,40 +2830,31 @@
                 }
             }
 
-            // ADICIONAR À TELA INICIAL (MÉTODO UNIFICADO APRIMORADO)
-            async addToHomeScreen() {
+            // ADICIONAR À TELA INICIAL (NOVO MÉTODO AUTOMÁTICO PARA ANDROID)
+            addToHomeScreen() {
                 if (this.isStandalone) {
                     this.showToast('App já está instalado!', 'success');
                     return;
                 }
 
-                // Tenta instalação nativa primeiro (Android/Chrome)
                 if (this.deferredPrompt) {
-                    try {
-                        this.deferredPrompt.prompt();
-                        const { outcome } = await this.deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            this.showToast('Instalando app...', 'success');
-                            this.hideInstallBanner();
+                    // ANDROID: Mostra o prompt nativo (automático)
+                    this.deferredPrompt.prompt();
+                    this.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            this.showToast('Instalação iniciada!', 'success');
                         }
                         this.deferredPrompt = null;
-                        return;
-                    } catch (e) {
-                        console.log('Erro no prompt nativo:', e);
-                    }
-                }
-
-                // Se não tiver prompt nativo ou falhar, mostra instruções manuais
-                if (this.isIOS) {
+                        this.hideInstallBanner();
+                    });
+                } else if (this.isIOS) {
+                    // IOS: Apple não permite automático, mostra instruções
                     this.openModal('iosInstallModal');
                     this.hideInstallBanner();
-                } else if (this.isAndroid) {
-                    // Android mas sem prompt nativo (Firefox, Samsung, etc)
-                    this.openModal('androidInstallModal');
-                    this.hideInstallBanner();
                 } else {
-                    // Desktop
-                    this.showToast('Use Ctrl+D para favoritar ou instale pelo menu do navegador', 'info');
+                    // Fallback (Desktop ou Android antigo sem suporte)
+                    this.showToast('Pressione Opções > Adicionar à Tela Inicial', 'info');
+                    // Se estiver no Android mas sem prompt capturado, tenta mostrar modal de instrução (opcional)
                 }
             }
 
@@ -3001,7 +2862,6 @@
                 // Só mostrar banner se não estiver em standalone
                 if (this.isStandalone) {
                     this.hideInstallBanner();
-                    // Esconder botão de adicionar à home nas configurações
                     const btn = document.getElementById('btnAddHome');
                     if (btn) btn.style.display = 'none';
                     return;
@@ -3009,11 +2869,12 @@
 
                 // Capturar evento beforeinstallprompt (Android/Chrome)
                 window.addEventListener('beforeinstallprompt', (e) => {
-                    // Previne o mini-infobar padrão
+                    // Previne o Chrome de mostrar o banner nativo automaticamente (queremos controlar)
                     e.preventDefault();
+                    // Guarda o evento para usar no botão depois
                     this.deferredPrompt = e;
                     
-                    // Mostra nosso banner customizado após 3 segundos
+                    // Mostrar nosso banner customizado
                     setTimeout(() => {
                         if (!this.isStandalone) {
                             this.showInstallBanner();
@@ -3027,17 +2888,12 @@
                     this.hideInstallBanner();
                     this.deferredPrompt = null;
                     safeStorage.setItem('evo_added_to_home_v51', 'true');
-                    this.showToast('Evolution instalado com sucesso!', 'success');
+                    this.showToast('Evolution adicionado à sua tela inicial!', 'success');
                     
                     // Esconder botão nas configurações
                     const btn = document.getElementById('btnAddHome');
                     if (btn) btn.style.display = 'none';
                 });
-
-                // Se já adicionou anteriormente (mas não está em standalone agora), ainda mostra o banner
-                if (!safeStorage.getItem('evo_added_to_home_v51')) {
-                    setTimeout(() => this.showInstallBanner(), 5000);
-                }
             }
 
             showInstallBanner() {
@@ -3052,8 +2908,6 @@
                 if (banner) banner.classList.remove('visible');
             }
 
-            // MÉTODOS ORIGINAIS MANTIDOS...
-            
             setLoginMode(mode) {
                 this.currentMode = mode;
                 document.getElementById('btnModeLogin').classList.toggle('active', mode === 'login');
@@ -3492,7 +3346,7 @@
                 }
 
                 this.updateDashboard(); this.renderHistory(); this.renderChart(); this.loadMeta(); this.updateMetaProgress(); this.checkNewMonth();
-                if (!this.isAdmin && !this.isVip) this.startAutoPix();
+                if (!this.isAdmin && !this.isVip && !this.isStandalone) this.startAutoPix();
                 
                 // Verificar se deve mostrar botão de adicionar à home
                 if (this.isStandalone) {
@@ -3782,7 +3636,7 @@
                 this.showToast('Salvo!', 'success');
                 document.getElementById('calcNavio').value = '';
                 this.persistData();
-                if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix(); 
+                if (!this.isAdmin && !this.isVip && !this.isStandalone && Math.random() < 0.3) this.showPix(); 
             }
 
             async persistData() {
