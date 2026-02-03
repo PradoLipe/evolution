@@ -2874,12 +2874,14 @@
                     // Guarda o evento para usar no botão depois
                     this.deferredPrompt = e;
                     
-                    // Mostrar nosso banner customizado
+                    // COMENTADO PARA NÃO MOSTRAR AUTOMATICAMENTE (EVITAR FLOOD)
+                    /*
                     setTimeout(() => {
                         if (!this.isStandalone) {
                             this.showInstallBanner();
                         }
                     }, 3000);
+                    */
                 });
 
                 // Detectar quando foi adicionado
@@ -3970,7 +3972,20 @@
                 if (this.unsubscribeEntries) this.unsubscribeEntries();
                 if (this.unsubscribePending) this.unsubscribePending();
                 safeStorage.removeItem('evo_session_v50'); 
-                location.reload(); 
+                
+                // Tenta fechar a janela
+                window.close();
+                
+                // Se o navegador bloquear o fechamento (comum em navegadores desktop não-popup), 
+                // mostra uma tela de "Sessão Finalizada" em vez de recarregar para o login.
+                document.body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">👋</div>
+                        <h2 style="margin-bottom: 10px; font-family: 'Inter', sans-serif;">Sessão Finalizada</h2>
+                        <p style="color: #8b92b4; font-family: 'Inter', sans-serif;">Você pode fechar o aplicativo agora.</p>
+                        <button onclick="location.reload()" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Entrar Novamente</button>
+                    </div>
+                `;
             }
         }
 
