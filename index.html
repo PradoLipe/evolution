@@ -2102,6 +2102,34 @@
         </div>
     </div>
 
+    <!-- VIP MANAGER MODAL -->
+    <div class="modal-overlay" id="vipManagerModal" onclick="app.closeModalOnOverlay(event, 'vipManagerModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Gerenciar VIP</h3>
+                <button class="modal-close" onclick="app.closeModal('vipManagerModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h4 id="vipManagerUser" style="text-align: center; margin-bottom: 16px; color: var(--text);">Usuário</h4>
+                <div style="background: var(--surface); padding: 12px; border-radius: 12px; margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 0.7rem; color: var(--text-secondary);">Status Atual</div>
+                    <div id="vipManagerStatus" style="font-weight: 700; color: var(--primary); margin-top: 4px;">Carregando...</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <button class="btn btn-glass" onclick="app.addVipMonths(1)">+1 Mês</button>
+                    <button class="btn btn-glass" onclick="app.addVipMonths(3)">+3 Meses</button>
+                    <button class="btn btn-glass" onclick="app.addVipMonths(6)">+6 Meses</button>
+                    <button class="btn btn-glass" onclick="app.setVipPermanent()" style="color: var(--accent);">👑 Permanente</button>
+                </div>
+                
+                <button class="btn btn-danger" onclick="app.removeVip()" style="margin-top: 10px;">
+                    ❌ Remover VIP & Trial
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="messageModal">
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;">
@@ -2394,6 +2422,7 @@
                 this.syncQueue = [];
                 this.connectionAttempts = 0;
                 this.deferredPrompt = null;
+                this.managingVipUser = null;
                 
                 // Carregar usuários do cache imediatamente
                 this.loadUsersFromCache();
@@ -2641,7 +2670,11 @@
 
                 // Check VIP status
                 const user = this.users[this.currentUserId];
-                this.isVip = user.vip || (user.vipTrialUntil && new Date(user.vipTrialUntil) > new Date()) || this.isAdmin;
+                const now = new Date();
+                const trialActive = user.vipTrialUntil && new Date(user.vipTrialUntil) > now;
+                const paidActive = user.vipUntil && new Date(user.vipUntil) > now;
+                
+                this.isVip = user.vip || trialActive || paidActive || this.isAdmin;
 
                 this.loadFromLocalStorage();
                 this.showMainApp();
@@ -2657,7 +2690,7 @@
                 
                 let showVipTrial = false;
                 
-                if (!user.vipTrialUntil && !user.vip && !this.isAdmin) {
+                if (!user.vipTrialUntil && !this.isVip && !this.isAdmin) {
                     const trialEnd = new Date();
                     trialEnd.setDate(trialEnd.getDate() + 15);
                     user.vipTrialUntil = trialEnd.toISOString();
@@ -2789,8 +2822,10 @@
                                 this.currentUserId = d.code;
                                 this.isAdmin = (d.code === ADMIN_ID);
                                 
-                                // Check VIP status on session restore
-                                this.isVip = userData.vip || (userData.vipTrialUntil && new Date(userData.vipTrialUntil) > new Date()) || this.isAdmin;
+                                const now = new Date();
+                                const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
+                                const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
+                                this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
 
                                 this.loadFromLocalStorage();
                                 this.showMainApp();
@@ -2917,20 +2952,116 @@
                 }
             }
 
-            async toggleUserVip(code) {
+            // Abertura do Modal de Gerenciamento VIP
+            openVipManager(code) {
                 const user = this.users[code];
                 if (!user) return;
-                const newStatus = !user.vip;
-                user.vip = newStatus;
-                user.updatedAt = new Date().toISOString();
-                this.saveUsersToCache();
-                this.renderUserList();
-                this.showToast(newStatus ? 'VIP!' : 'VIP Removido!', 'success');
+                
+                this.managingVipUser = code;
+                document.getElementById('vipManagerUser').textContent = user.name;
+                
+                let statusText = "Sem VIP";
+                const now = new Date();
+                
+                if (user.vip) {
+                    statusText = "👑 VIP Permanente";
+                } else if (user.vipUntil && new Date(user.vipUntil) > now) {
+                    const date = new Date(user.vipUntil);
+                    statusText = `💎 Pago até ${date.toLocaleDateString('pt-BR')}`;
+                } else if (user.vipTrialUntil && new Date(user.vipTrialUntil) > now) {
+                    const date = new Date(user.vipTrialUntil);
+                    statusText = `🎁 Teste até ${date.toLocaleDateString('pt-BR')}`;
+                }
+                
+                document.getElementById('vipManagerStatus').textContent = statusText;
+                this.openModal('vipManagerModal');
+            }
 
+            async addVipMonths(months) {
+                const code = this.managingVipUser;
+                const user = this.users[code];
+                if (!user) return;
+                
+                const now = new Date();
+                // Base date is either current expiry or now
+                let baseDate = now;
+                if (user.vipUntil && new Date(user.vipUntil) > now) {
+                    baseDate = new Date(user.vipUntil);
+                }
+                
+                // Add months
+                baseDate.setMonth(baseDate.getMonth() + months);
+                const newDateStr = baseDate.toISOString();
+                
+                // Update local
+                user.vipUntil = newDateStr;
+                user.vip = false; // Remove permanent flag if adding time
+                
+                this.saveUsersToCache();
+                this.renderUserList(); // Update main list icons
+                this.openVipManager(code); // Update modal text
+                this.showToast(`Adicionado ${months} mês(es)!`, 'success');
+                
+                // Update Firebase
                 if (this.firebaseReady && db) {
                     try {
-                        await db.collection('users').doc(code).update({ vip: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                    } catch (error) {}
+                        await db.collection('users').doc(code).update({ 
+                            vipUntil: newDateStr,
+                            vip: false,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            async setVipPermanent() {
+                const code = this.managingVipUser;
+                const user = this.users[code];
+                if (!user) return;
+                
+                user.vip = true;
+                user.vipUntil = null; // Clear date since it's permanent
+                
+                this.saveUsersToCache();
+                this.renderUserList();
+                this.openVipManager(code);
+                this.showToast('Definido como Permanente!', 'success');
+                
+                if (this.firebaseReady && db) {
+                    try {
+                        await db.collection('users').doc(code).update({ 
+                            vip: true, 
+                            vipUntil: null,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            async removeVip() {
+                const code = this.managingVipUser;
+                const user = this.users[code];
+                if (!user) return;
+                
+                // Clear ALL VIP flags
+                user.vip = false;
+                user.vipUntil = null;
+                user.vipTrialUntil = null; // Kill the trial too
+                
+                this.saveUsersToCache();
+                this.renderUserList();
+                this.openVipManager(code);
+                this.showToast('VIP removido completamente!', 'success');
+                
+                if (this.firebaseReady && db) {
+                    try {
+                        await db.collection('users').doc(code).update({ 
+                            vip: false,
+                            vipUntil: null,
+                            vipTrialUntil: null,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                        });
+                    } catch (e) {}
                 }
             }
 
@@ -2971,7 +3102,8 @@
                     return a.name.localeCompare(b.name);
                 });
                 container.innerHTML = userArray.map(u => {
-                    const isVip = u.vip || (u.vipTrialUntil && new Date(u.vipTrialUntil) > new Date());
+                    const now = new Date();
+                    const isVip = u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now);
                     return `
                     <div class="user-item">
                         <div class="user-item-info">
@@ -2983,7 +3115,7 @@
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
                             ${u.code !== ADMIN_ID ? `
                                 <div style="display:flex;gap:4px;">
-                                    <button class="btn-icon ${isVip ? 'active' : ''}" onclick="app.toggleUserVip('${u.code}')">💎</button>
+                                    <button class="btn-icon ${isVip ? 'active' : ''}" onclick="app.openVipManager('${u.code}')">💎</button>
                                     <button class="btn-icon" onclick="app.resetUserDevice('${u.code}')">📱</button>
                                     <button class="btn-icon delete-action" onclick="app.deleteUser('${u.code}')">🗑️</button>
                                     <button class="btn btn-small ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="app.toggleUserBlock('${u.code}')">${u.blocked ? 'Liberar' : 'Bloq'}</button>
