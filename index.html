@@ -642,20 +642,6 @@
             font-weight: 500;
         }
 
-        .sync-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .sync-indicator.visible { opacity: 1; }
-
         .sync-spinner {
             width: 16px;
             height: 16px;
@@ -2309,11 +2295,6 @@
                         <button class="key-btn" onclick="app.addDigit(0)">0</button>
                         <button class="key-btn action" onclick="app.login()">→</button>
                     </div>
-
-                    <div class="sync-indicator" id="syncIndicator">
-                        <div class="sync-spinner"></div>
-                        <span id="syncText">Sincronizando...</span>
-                    </div>
                 </div>
 
                 <div class="register-section" id="registerSection">
@@ -3534,12 +3515,11 @@
 
             async initFirebaseBackground() {
                 if (!auth) return;
-                const syncIndicator = document.getElementById('syncIndicator');
-                const syncText = document.getElementById('syncText');
+                
+                // Removed visible sync indicators as requested
 
                 const attemptConnection = async () => {
                     try {
-                        if (syncIndicator) { syncIndicator.classList.add('visible'); syncText.textContent = 'Conectando...'; }
                         const authPromise = auth.signInAnonymously();
                         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000));
                         await Promise.race([authPromise, timeoutPromise]);
@@ -3547,11 +3527,9 @@
                         await this.syncUsersFromFirebase();
                         await this.loadPendingUsers();
                         this.firebaseReady = true; this.connectionAttempts = 0;
-                        if (syncIndicator) { syncText.textContent = 'Sincronizado'; setTimeout(() => syncIndicator.classList.remove('visible'), 1000); }
                         this.processSyncQueue();
                     } catch (error) {
                         this.connectionAttempts++;
-                        if (syncIndicator) { syncText.textContent = 'Modo Offline'; setTimeout(() => syncIndicator.classList.remove('visible'), 2000); }
                         if (this.connectionAttempts < 5) setTimeout(attemptConnection, Math.min(30000, 2000 * Math.pow(2, this.connectionAttempts)));
                     }
                 };
