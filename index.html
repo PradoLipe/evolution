@@ -3726,14 +3726,17 @@
                     this.checkSystemMessage();
 
                     if (this.isVip && !this.isAdmin) {
-                        // FIXED: Don't show generic VIP reminder for 'gift' type. 
-                        // Gifts are handled via database read/unread status in checkSystemMessage.
-                        if (foundUser.vipType !== 'gift') {
+                        // BLOQUEIO PARA TRIAL: Usuários em teste não veem aviso de VIP Ativo
+                        if (foundUser.vipType === 'trial') {
+                            // Silêncio total para usuários trial
+                        } 
+                        // Gifts são tratados via DB em checkSystemMessage
+                        else if (foundUser.vipType !== 'gift') {
                             const vipKey = foundUser.vipUntil || foundUser.vipTrialUntil || 'permanent';
                             const hasSeenVip = safeStorage.getItem('evo_vip_seen_' + vipKey);
 
                             if (!hasSeenVip) {
-                                const type = 'Assinatura Paga 💎'; // Trial handled below, Gift handled by DB
+                                const type = 'Assinatura Paga 💎';
                                 let dateStr = 'Permanente';
                                 if(foundUser.vipUntil) dateStr = new Date(foundUser.vipUntil).toLocaleDateString('pt-BR');
                                 
@@ -4482,27 +4485,38 @@
                         }
                     }
 
-                    // NOTIFICAÇÃO DE PRESENTE VIP (ADMIN) - VIA DB DIRECT (Persistent)
-                    const notifDoc = await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').get();
-                    if (notifDoc.exists && !notifDoc.data().read) {
-                        // Gift is unread in DB. Show modal to accept.
-                        const msg = notifDoc.data().message || 'Você recebeu um VIP de presente do Administrador! 🎁';
-                        
-                        document.getElementById('vipNotifType').textContent = 'Presente do Admin 🎁';
-                        document.getElementById('vipNotifDate').textContent = 'Vencimento: Verifique no Perfil';
-                        document.getElementById('vipGiftMessageContainer').innerHTML = `<p>${msg}</p>`;
-                        document.getElementById('vipGiftMessageContainer').classList.remove('hidden');
-                        
-                        // Set button to acknowledge gift in DB
-                        const btn = document.getElementById('btnVipAction');
-                        btn.textContent = 'Aceitar Presente';
-                        btn.onclick = async () => {
-                            await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').update({ read: true });
-                            app.closeModal('vipNotificationModal');
-                            app.showToast('Presente aceito!', 'success');
-                        };
-                        
-                        this.openModal('vipNotificationModal');
+                    // NOTIFICAÇÃO DE PRESENTE VIP (ADMIN) - DUPLA CHECAGEM (DB + LOCAL)
+                    const localGiftRead = safeStorage.getItem(`evo_gift_read_${this.currentUserId}`);
+                    
+                    // Só verifica no banco se não tiver marcado como lido localmente
+                    if (!localGiftRead) {
+                        const notifDoc = await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').get();
+                        if (notifDoc.exists && !notifDoc.data().read) {
+                            // Gift is unread in DB. Show modal to accept.
+                            const msg = notifDoc.data().message || 'Você recebeu um VIP de presente do Administrador! 🎁';
+                            
+                            document.getElementById('vipNotifType').textContent = 'Presente do Admin 🎁';
+                            document.getElementById('vipNotifDate').textContent = 'Vencimento: Verifique no Perfil';
+                            document.getElementById('vipGiftMessageContainer').innerHTML = `<p>${msg}</p>`;
+                            document.getElementById('vipGiftMessageContainer').classList.remove('hidden');
+                            
+                            // Set button to acknowledge gift in DB AND LocalStorage
+                            const btn = document.getElementById('btnVipAction');
+                            btn.textContent = 'Aceitar Presente';
+                            btn.onclick = async () => {
+                                // 1. Marca como lido LOCALMENTE IMEDIATAMENTE (Trava visual)
+                                safeStorage.setItem(`evo_gift_read_${this.currentUserId}`, 'true');
+                                
+                                // 2. Fecha Modal
+                                app.closeModal('vipNotificationModal');
+                                app.showToast('Presente aceito!', 'success');
+                                
+                                // 3. Atualiza banco em background (se falhar, o local storage segura)
+                                await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').update({ read: true });
+                            };
+                            
+                            this.openModal('vipNotificationModal');
+                        }
                     }
                 } catch(e) {}
             }
