@@ -125,21 +125,43 @@
             100% { transform: translate(-50%, -150px) scale(1); opacity: 0; }
         }
 
-        .avatar-edit-overlay {
+        /* Botões Redondos para Avatar */
+        .avatar-controls {
             position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .btn-icon-round {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            border-radius: 50%;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            font-size: 1rem;
         }
-        
-        .avatar-container:hover .avatar-edit-overlay {
-            opacity: 1;
+
+        .btn-icon-round:active {
+            transform: scale(0.9);
+        }
+
+        .btn-icon-round.edit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-icon-round.delete {
+            background: var(--danger);
+            color: white;
         }
 
         .avatar img {
@@ -2472,13 +2494,15 @@
                 <button class="modal-close" onclick="app.closeModal('profileModal')">✕</button>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <div class="avatar-container" onclick="app.uploadAvatar()" style="width: 80px; height: 80px; margin: 0 auto 16px; position: relative; border-radius: 50%; overflow: hidden;">
+                <div class="avatar-wrapper" style="position: relative; width: 100px; height: 100px; margin: 0 auto 16px;">
                     <div class="avatar" id="profileAvatarModal" style="width: 100%; height: 100%; font-size: 2rem;">
                         <span id="profileAvatarInitials">FP</span>
                         <img id="profileAvatarImg" src="" class="hidden" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <div class="avatar-edit-overlay">
-                        <span style="font-size: 1.5rem;">📷</span>
+                    
+                    <div class="avatar-controls">
+                        <button class="btn-icon-round edit" onclick="app.uploadAvatar()">📷</button>
+                        <button class="btn-icon-round delete hidden" id="btnDeleteAvatar" onclick="app.deleteAvatar()">🗑️</button>
                     </div>
                 </div>
                 <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="app.handleAvatarChange(event)">
@@ -3487,6 +3511,7 @@
                 const avatarInitials = document.getElementById('userAvatarInitials');
                 const profileAvatarImg = document.getElementById('profileAvatarImg');
                 const profileAvatarInitials = document.getElementById('profileAvatarInitials');
+                const btnDeleteAvatar = document.getElementById('btnDeleteAvatar');
                 
                 if (user && user.avatar) {
                     avatarImg.src = user.avatar;
@@ -3496,6 +3521,7 @@
                         profileAvatarImg.src = user.avatar;
                         profileAvatarImg.classList.remove('hidden');
                         profileAvatarInitials.classList.add('hidden');
+                        if(btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
                     }
                 } else {
                     avatarInitials.textContent = this.currentUser.substring(0, 2);
@@ -3505,6 +3531,7 @@
                         profileAvatarInitials.textContent = this.currentUser.substring(0, 2);
                         profileAvatarImg.classList.add('hidden');
                         profileAvatarInitials.classList.remove('hidden');
+                        if(btnDeleteAvatar) btnDeleteAvatar.classList.add('hidden');
                     }
                 }
                 
@@ -3534,7 +3561,7 @@
                 }
 
                 this.updateDashboard(); this.renderHistory(); this.renderChart(); this.loadMeta(); this.updateMetaProgress(); this.checkNewMonth();
-                if (!this.isAdmin && !this.isVip && !this.isStandalone) this.startAutoPix();
+                if (!this.isAdmin && !this.isVip) this.startAutoPix();
                 
                 if (this.isStandalone) {
                     const btn = document.getElementById('btnAddHome');
@@ -3889,6 +3916,28 @@
                 };
                 reader.readAsDataURL(file);
             }
+            
+            async deleteAvatar() {
+                if(!confirm("Remover foto de perfil?")) return;
+                
+                const user = this.users[this.currentUserId];
+                if(user) {
+                    user.avatar = null;
+                    this.saveUsersToCache();
+                    this.showMainApp();
+                    
+                    if (this.firebaseReady && db) {
+                        try {
+                            await db.collection('users').doc(this.currentUserId).update({
+                                avatar: firebase.firestore.FieldValue.delete()
+                            });
+                        } catch(e) {
+                            console.error(e);
+                        }
+                    }
+                    this.showToast("Foto removida", "success");
+                }
+            }
 
             triggerMoneyAnimation() {
                 const emojis = ['💸', '💰', '💵', '🤑', '💎'];
@@ -3981,7 +4030,7 @@
                 this.triggerMoneyAnimation();
                 
                 this.persistData();
-                if (!this.isAdmin && !this.isVip && !this.isStandalone && Math.random() < 0.3) this.showPix(); 
+                if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix(); 
             }
 
             async persistData() {
@@ -4307,7 +4356,8 @@
             startAutoPix() {
                 setInterval(() => {
                     if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) {
-                        if (Math.random() < 0.4) this.showPix();
+                        // Confirmado: Mensagens de doação continuam se não for VIP e não for Admin
+                        if (!this.isAdmin && !this.isVip && Math.random() < 0.4) this.showPix();
                     }
                 }, 180000); 
             }
