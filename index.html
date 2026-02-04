@@ -100,6 +100,31 @@
             100% { transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot)); opacity: 0; }
         }
 
+        /* Animação de Pagamento Recebido (Dopamina) */
+        .payment-float-value {
+            position: fixed;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            color: var(--success);
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 10000;
+            text-shadow: 0 2px 20px rgba(0, 217, 166, 0.5);
+            animation: floatUpFade 1.5s ease-out forwards;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--success);
+            backdrop-filter: blur(4px);
+        }
+
+        @keyframes floatUpFade {
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+            20% { transform: translate(-50%, -40px) scale(1.1); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translate(-50%, -150px) scale(1); opacity: 0; }
+        }
+
         .avatar-edit-overlay {
             position: absolute;
             inset: 0;
@@ -3850,6 +3875,46 @@
                 }
             }
 
+            triggerPaymentAnimation(amount) {
+                // 1. Chuva de Partículas
+                const emojis = ['💰', '🤑', '💵', '💲', '🪙'];
+                const particleCount = 30; // Mais partículas para pagamento
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'money-particle';
+                    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    const startX = window.innerWidth / 2;
+                    const startY = window.innerHeight / 2;
+                    particle.style.left = startX + 'px';
+                    particle.style.top = startY + 'px';
+                    
+                    // Fazer voar principalmente para cima
+                    const tx = (Math.random() - 0.5) * window.innerWidth * 1.2;
+                    const ty = (Math.random() - 1) * window.innerHeight * 0.8; 
+                    const rot = (Math.random() - 0.5) * 720;
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    particle.style.setProperty('--rot', `${rot}deg`);
+                    
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), 1000);
+                }
+
+                // 2. Valor Flutuante (Texto Pop-up)
+                const floatEl = document.createElement('div');
+                floatEl.className = 'payment-float-value';
+                floatEl.textContent = `+ ${this.formatMoney(amount)}`;
+                floatEl.style.left = '50%';
+                floatEl.style.top = '50%';
+                document.body.appendChild(floatEl);
+                
+                // Remover elemento após a animação
+                setTimeout(() => floatEl.remove(), 1500);
+            }
+
             async saveEntry() {
                 const navio = document.getElementById('calcNavio').value.toUpperCase().trim();
                 const data = document.getElementById('calcData').value;
@@ -4110,7 +4175,20 @@
             
             async togglePago(id) {
                 const e = this.entries.find(x => x.id === id);
-                if (e) { e.pago = !e.pago; safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.updateMetaProgress(); this.persistData(); }
+                if (e) {
+                    e.pago = !e.pago;
+                    
+                    // Disparar animação de pagamento SE estiver marcando como pago
+                    if (e.pago) {
+                        this.triggerPaymentAnimation(e.liquido);
+                    }
+
+                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                    this.updateDashboard();
+                    this.renderHistory();
+                    this.updateMetaProgress();
+                    this.persistData();
+                }
             }
 
             deleteEntry(id) { this.pendingDeleteId = id; this.openModal('confirmModal'); }
