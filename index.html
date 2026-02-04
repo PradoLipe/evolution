@@ -1542,6 +1542,7 @@
                 this.currentUserCode = null; 
                 this.currentFilter = 'all';
                 this.dashboardMode = 'all'; // 'all' or 'month'
+                this.selectedMonth = null; // NOVO: Armazena o mês selecionado
                 this.pinValue = '';
                 this.deviceId = this.getOrCreateDeviceId();
                 this.metaMensal = 0;
@@ -1781,11 +1782,21 @@
                 if (calcData) calcData.value = hoje;
                 if (relData) relData.value = hoje;
 
+                // CORREÇÃO: Carregar o mês salvo ou usar o atual como fallback
+                const savedMonth = safeStorage.getItem('evo_dashboard_month');
                 const now = new Date();
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const currentMonth = `${yyyy}-${mm}`;
+                
+                // Se tem mês salvo, usa ele, senão usa o atual
+                this.selectedMonth = savedMonth || currentMonth;
+                
                 const monthInput = document.getElementById('dashboardMonthInput');
-                if (monthInput) monthInput.value = `${yyyy}-${mm}`;
+                // Só seta o valor se o elemento existir e estiver vazio ou não tiver valor salvo
+                if (monthInput && !monthInput.value) {
+                    monthInput.value = this.selectedMonth;
+                }
 
                 const savedDashboardMode = safeStorage.getItem('evo_dashboard_mode');
                 if (savedDashboardMode) {
@@ -2277,7 +2288,9 @@
                     this.renderAdminRates();
                 }
 
-                this.updateDashboard(); 
+                // CORREÇÃO: Aplica o modo e mês corretos ao mostrar a app
+                this.setDashboardMode(this.dashboardMode, false);
+
                 this.renderHistory(); 
                 this.renderChart(); 
                 this.loadMeta(); 
@@ -2446,19 +2459,25 @@
                 const btnMonth = document.getElementById('btnFilterMonth');
                 const monthSelectorInline = document.getElementById('monthSelectorInline');
                 const periodIndicator = document.getElementById('periodIndicator');
+                const monthInput = document.getElementById('dashboardMonthInput');
 
                 if(pillSwitch) pillSwitch.setAttribute('data-state', mode);
 
                 if (mode === 'all') {
                     btnAll.classList.add('active');
                     btnMonth.classList.remove('active');
-                    monthSelectorInline.classList.remove('visible');
+                    if(monthSelectorInline) monthSelectorInline.classList.remove('visible');
                     if(periodIndicator) periodIndicator.classList.remove('visible');
                 } else {
                     btnAll.classList.remove('active');
                     btnMonth.classList.add('active');
-                    monthSelectorInline.classList.add('visible');
+                    if(monthSelectorInline) monthSelectorInline.classList.add('visible');
                     if(periodIndicator) periodIndicator.classList.add('visible');
+                    
+                    // CORREÇÃO: Garante que o input de mês tem o valor correto ao mudar para modo mensal
+                    if(monthInput && this.selectedMonth) {
+                        monthInput.value = this.selectedMonth;
+                    }
                 }
 
                 this.updateDashboard();
@@ -2469,6 +2488,12 @@
                 const monthInput = document.getElementById('dashboardMonthInput');
                 const monthVal = monthInput ? monthInput.value : ''; 
                 const periodIndicator = document.getElementById('periodIndicator');
+
+                // CORREÇÃO: Salva o mês atual sempre que o dashboard é atualizado no modo mensal
+                if (mode === 'month' && monthVal) {
+                    this.selectedMonth = monthVal;
+                    safeStorage.setItem('evo_dashboard_month', monthVal);
+                }
 
                 if(periodIndicator) {
                     if(mode === 'month' && monthVal) {
