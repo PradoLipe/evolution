@@ -3003,7 +3003,8 @@
                     name: name, code: code, requestedAt: new Date().toISOString(),
                     deviceId: this.deviceId, status: 'pending',
                     userAgent: navigator.userAgent.substring(0, 100),
-                    docId: uniqueId // Request creation with this specific ID
+                    docId: uniqueId, // Request creation with this specific ID
+                    trialUsed: false // Init trialUsed as false
                 };
 
                 try {
@@ -3078,7 +3079,8 @@
                 const userData = {
                     name: pending.name, code: pending.code, blocked: false, isAdmin: false,
                     approvedAt: new Date().toISOString(), approvedBy: this.currentUserId, deviceId: pending.deviceId,
-                    docId: docId // Store docId inside user object too
+                    docId: docId, // Store docId inside user object too
+                    trialUsed: false // Ensure new approved users start with trial unused
                 };
                 
                 try {
@@ -3301,6 +3303,29 @@
                 const paidActive = foundUser.vipUntil && new Date(foundUser.vipUntil) > now;
                 this.isVip = foundUser.vip || trialActive || paidActive || this.isAdmin;
 
+                // --- LOGICA DE BLOQUEIO DE DISPOSITIVO (NON-VIP) ---
+                if (!this.isVip && !this.isAdmin) {
+                    // Se o usuário já tem um dispositivo registrado e é diferente do atual
+                    if (foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
+                        this.showToast('Acesso negado: Dispositivo não autorizado.', 'error');
+                        setTimeout(() => alert("🚫 BLOQUEADO\n\nSeu plano permite acesso apenas no dispositivo registrado anteriormente.\n\nPara acessar em múltiplos dispositivos, torne-se VIP."), 300);
+                        this.pinValue = ''; 
+                        this.updatePinDisplay();
+                        this.isLoggingIn = false;
+                        return; // Impede o login
+                    }
+                    
+                    // Se não tem dispositivo registrado (primeiro acesso ou resetado), registra este
+                    if (!foundUser.deviceId) {
+                        this.updateUserDevice(this.currentUserId, this.deviceId);
+                    }
+                } else {
+                    // VIPs atualizam o dispositivo atual para manter o registro de "último acesso"
+                    // Isso garante que se o VIP acabar, eles ficam presos ao último usado
+                    this.updateUserDevice(this.currentUserId, this.deviceId); 
+                }
+                // --- FIM LOGICA DISPOSITIVO ---
+
                 this.loadFromLocalStorage();
                 this.showMainApp();
                 setTimeout(() => {
@@ -3310,14 +3335,18 @@
                     this.checkSystemMessage();
                 }, 100);
                 
+                // --- LOGICA DE TRIAL ÚNICO ---
                 let showVipTrial = false;
-                if (!foundUser.vipTrialUntil && !this.isVip && !this.isAdmin) {
+                // Adicionada verificação !foundUser.trialUsed
+                if (!foundUser.vipTrialUntil && !this.isVip && !this.isAdmin && !foundUser.trialUsed) {
                     const trialEnd = new Date(); trialEnd.setDate(trialEnd.getDate() + 15);
                     foundUser.vipTrialUntil = trialEnd.toISOString();
                     showVipTrial = true;
-                    this.updateUserTrial(this.currentUserId, foundUser.vipTrialUntil);
+                    // Marca como usado imediatamente
+                    this.updateUserTrial(this.currentUserId, foundUser.vipTrialUntil, true);
                 }
                 if (showVipTrial) setTimeout(() => this.openModal('vipWelcomeModal'), 800);
+                // --- FIM LOGICA TRIAL ---
 
                 safeStorage.setItem('evo_session_v50', btoa(JSON.stringify({ 
                     user: this.currentUser, 
@@ -3333,9 +3362,16 @@
                 try { await db.collection('users').doc(docId).set({ lastLogin: firebase.firestore.FieldValue.serverTimestamp(), deviceId: this.deviceId }, { merge: true }); } catch (e) {}
             }
 
-            async updateUserTrial(docId, dateStr) {
+            async updateUserDevice(docId, deviceId) {
                 if (!this.firebaseReady || !db) return;
-                try { await db.collection('users').doc(docId).update({ vipTrialUntil: dateStr }); } catch (e) {}
+                try { await db.collection('users').doc(docId).update({ deviceId: deviceId }); } catch (e) {}
+            }
+
+            async updateUserTrial(docId, dateStr, markUsed = false) {
+                if (!this.firebaseReady || !db) return;
+                const updateData = { vipTrialUntil: dateStr };
+                if (markUsed) updateData.trialUsed = true;
+                try { await db.collection('users').doc(docId).update(updateData); } catch (e) {}
             }
 
             setupEntriesListener(docId) {
@@ -3416,6 +3452,15 @@
                                 const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
                                 const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
                                 this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
+                                
+                                // --- CHECK DISPOSITIVO NA SESSAO ---
+                                if (!this.isVip && !this.isAdmin && userData.deviceId && userData.deviceId !== this.deviceId) {
+                                    // Se a sessão é válida mas o dispositivo mudou e não é VIP, logout forçado
+                                    this.logout();
+                                    return;
+                                }
+                                // -----------------------------------
+
                                 this.loadFromLocalStorage();
                                 this.showMainApp();
                                 setTimeout(() => {
@@ -3614,6 +3659,7 @@
                 const user = this.users[docId];
                 if (!user) return;
                 user.vip = false; user.vipUntil = null; user.vipTrialUntil = null;
+                // Mantém trialUsed como true para não ganhar de novo
                 this.saveUsersToCache(); this.renderUserList(); this.openVipManager(docId); this.showToast('VIP removido completamente!', 'success');
                 if (this.firebaseReady && db) {
                     try { await db.collection('users').doc(docId).update({ vip: false, vipUntil: null, vipTrialUntil: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
@@ -3623,8 +3669,8 @@
             async resetUserDevice(docId) {
                 const user = this.users[docId];
                 if (!user) return;
-                if (!confirm(`Resetar ${user.name}?`)) return;
-                user.deviceId = null; this.saveUsersToCache(); this.renderUserList(); this.showToast('Resetado!', 'success');
+                if (!confirm(`Resetar dispositivo de ${user.name}? O próximo celular que logar será o novo padrão.`)) return;
+                user.deviceId = null; this.saveUsersToCache(); this.renderUserList(); this.showToast('Dispositivo Resetado!', 'success');
                 if (this.firebaseReady && db) {
                     try { await db.collection('users').doc(docId).update({ deviceId: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (error) {}
                 }
