@@ -3150,9 +3150,13 @@
                         // Merge parsed users into this.users
                         // Handle legacy cache where key was PIN, and new cache where key is DocID
                         Object.entries(parsed).forEach(([key, val]) => {
-                             if(key !== ADMIN_ID) {
-                                 // Ensure val has docId, if not, assume key is docId
-                                 if(!val.docId) val.docId = key;
+                             // Ensure val has docId, if not, assume key is docId
+                             if(!val.docId) val.docId = key;
+                             
+                             // CRITICAL FIX: If user is ADMIN_ID, merge data (e.g. avatar) but preserve admin flags from DEFAULT_USERS
+                             if(key === ADMIN_ID) {
+                                 this.users[key] = { ...this.users[key], ...val, isAdmin: true, code: ADMIN_ID };
+                             } else {
                                  this.users[key] = val;
                              }
                         });
