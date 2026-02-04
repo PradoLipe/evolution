@@ -54,6 +54,7 @@
             --radius: 16px;
             --radius-sm: 12px;
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
         }
 
         body.light-mode {
@@ -85,12 +86,17 @@
             padding-bottom: var(--safe-bottom);
         }
 
+        /* --- CORREÇÃO iOS ANIMATIONS --- */
         /* Classes para animação de dinheiro */
         .money-particle {
             position: fixed;
             font-size: 24px;
             pointer-events: none;
             z-index: 9999;
+            /* iOS Fix: Força GPU */
+            will-change: transform, opacity;
+            -webkit-transform: translate3d(0,0,0);
+            transform: translate3d(0,0,0);
             animation: flyAndFade 1s ease-out forwards;
         }
 
@@ -110,12 +116,16 @@
             pointer-events: none;
             z-index: 10000;
             text-shadow: 0 2px 20px rgba(0, 217, 166, 0.5);
+            /* iOS Fix: Força GPU */
+            will-change: transform, opacity;
+            -webkit-transform: translate3d(0,0,0);
             animation: floatUpFade 1.5s ease-out forwards;
             background: rgba(0,0,0,0.5);
             padding: 8px 16px;
             border-radius: 12px;
             border: 1px solid var(--success);
             backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
 
         @keyframes floatUpFade {
@@ -132,6 +142,8 @@
             pointer-events: none;
             z-index: 99999;
             overflow: hidden;
+            /* iOS Fix */
+            -webkit-transform: translate3d(0,0,0);
         }
 
         .firework {
@@ -139,6 +151,9 @@
             width: 4px;
             height: 4px;
             border-radius: 50%;
+            /* iOS Fix */
+            will-change: transform, opacity;
+            -webkit-transform: translate3d(0,0,0);
             animation: firework 2.5s ease-out forwards;
         }
 
@@ -154,6 +169,7 @@
             transform: translate(-50%, -50%);
             background: var(--glass);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 2px solid var(--success);
             border-radius: 24px;
             padding: 40px 60px;
@@ -161,6 +177,7 @@
             z-index: 100000;
             animation: goalMessagePop 2.5s ease-out forwards;
             box-shadow: 0 0 60px rgba(0, 217, 166, 0.4);
+            will-change: transform, opacity;
         }
 
         @keyframes goalMessagePop {
@@ -242,6 +259,7 @@
             pointer-events: none;
             border: 1px solid var(--border);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 20;
         }
 
@@ -337,6 +355,7 @@
             border: 2px solid rgba(0, 212, 255, 0.2);
             border-radius: 24px;
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             box-shadow: 
                 0 0 40px rgba(0, 212, 255, 0.15),
                 inset 0 0 40px rgba(0, 212, 255, 0.05);
@@ -418,6 +437,7 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 24px;
@@ -656,6 +676,7 @@
             padding-top: calc(12px + env(safe-area-inset-top));
             background: rgba(10, 14, 39, 0.85);
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -812,6 +833,7 @@
             padding: 12px;
             margin-bottom: 4px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .dashboard-controls-compact {
@@ -946,6 +968,7 @@
         .stat-card {
             background: var(--glass);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 14px;
@@ -1278,6 +1301,11 @@
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
         }
 
+        /* iOS Fix for number inputs */
+        input[type="number"], input[type="text"][inputmode="decimal"] {
+            -moz-appearance: textfield;
+        }
+
         .input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1608,6 +1636,7 @@
             inset: 0;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 1000;
             display: none;
             align-items: center;
@@ -1647,6 +1676,7 @@
             top: 0;
             background: var(--glass);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 10;
         }
 
@@ -1972,6 +2002,7 @@
         .toast {
             background: var(--glass);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             color: var(--text);
             padding: 14px 18px;
@@ -2500,7 +2531,7 @@
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Conf.</label>
-                                <input type="number" id="simConf" value="3" min="1" oninput="app.calcularSimulacao()">
+                                <input type="number" id="simConf" value="3" min="1" oninput="app.calcularSimulacao()" inputmode="numeric">
                             </div>
                         </div>
 
@@ -2508,11 +2539,11 @@
                             <div class="input-row">
                                 <div class="input-group">
                                     <label class="input-label">15h-19h</label>
-                                    <input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()">
+                                    <input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">19h-23h</label>
-                                    <input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()">
+                                    <input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric">
                                 </div>
                             </div>
                         </div>
@@ -2551,7 +2582,7 @@
                             </div>
                             <div class="input-group">
                                 <label class="input-label">Conf.</label>
-                                <input type="number" id="calcQtdConf" value="3" min="1">
+                                <input type="number" id="calcQtdConf" value="3" min="1" inputmode="numeric">
                             </div>
                         </div>
 
@@ -2577,11 +2608,11 @@
                             <div class="input-row">
                                 <div class="input-group">
                                     <label class="input-label">15h-19h</label>
-                                    <input type="number" id="calcP1" placeholder="0">
+                                    <input type="number" id="calcP1" placeholder="0" inputmode="numeric">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">19h-23h</label>
-                                    <input type="number" id="calcP2" placeholder="0">
+                                    <input type="number" id="calcP2" placeholder="0" inputmode="numeric">
                                 </div>
                             </div>
                         </div>
@@ -2640,11 +2671,11 @@
                             <div class="input-row">
                                 <div class="input-group">
                                     <label class="input-label">15h-19h</label>
-                                    <input type="number" id="relP1" placeholder="0">
+                                    <input type="number" id="relP1" placeholder="0" inputmode="numeric">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">19h-23h</label>
-                                    <input type="number" id="relP2" placeholder="0">
+                                    <input type="number" id="relP2" placeholder="0" inputmode="numeric">
                                 </div>
                             </div>
                         </div>
@@ -2761,7 +2792,7 @@
                             <label class="input-label">Adicionar Novo Usuário</label>
                             <div class="admin-grid-fix" style="margin-bottom: 8px;">
                                 <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
-                                <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6">
+                                <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6" inputmode="numeric">
                             </div>
                             <button class="btn btn-primary" onclick="app.addNewUser()">
                                 ➕ Adicionar
@@ -2794,14 +2825,14 @@
                                             <span class="dot normal"></span>
                                             Dia Normal
                                         </div>
-                                        <input type="number" id="rate_07x15_normal" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_07x15_normal" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                     <div>
                                         <div class="rate-type-label">
                                             <span class="dot feriado"></span>
                                             Feriado
                                         </div>
-                                        <input type="number" id="rate_07x15_feriado" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_07x15_feriado" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                 </div>
                             </div>
@@ -2816,14 +2847,14 @@
                                             <span class="dot normal"></span>
                                             Dia Normal
                                         </div>
-                                        <input type="number" id="rate_15x23_p1_normal" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_15x23_p1_normal" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                     <div>
                                         <div class="rate-type-label">
                                             <span class="dot feriado"></span>
                                             Feriado
                                         </div>
-                                        <input type="number" id="rate_15x23_p1_feriado" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_15x23_p1_feriado" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                 </div>
                                 <div class="rate-subtitle" style="margin-top: 12px;">Período 19h-23h</div>
@@ -2833,14 +2864,14 @@
                                             <span class="dot normal"></span>
                                             Dia Normal
                                         </div>
-                                        <input type="number" id="rate_15x23_p2_normal" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_15x23_p2_normal" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                     <div>
                                         <div class="rate-type-label">
                                             <span class="dot feriado"></span>
                                             Feriado
                                         </div>
-                                        <input type="number" id="rate_15x23_p2_feriado" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_15x23_p2_feriado" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                 </div>
                             </div>
@@ -2854,14 +2885,14 @@
                                             <span class="dot normal"></span>
                                             Dia Normal
                                         </div>
-                                        <input type="number" id="rate_23x07_normal" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_23x07_normal" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                     <div>
                                         <div class="rate-type-label">
                                             <span class="dot feriado"></span>
                                             Feriado
                                         </div>
-                                        <input type="number" id="rate_23x07_feriado" step="0.01" placeholder="0,00">
+                                        <input type="number" id="rate_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal">
                                     </div>
                                 </div>
                             </div>
@@ -3043,7 +3074,7 @@
                 <div class="meta-editor" id="metaEditor" style="display: none;">
                     <label>Meta de Recebimento (Líquido)</label>
                     <div class="meta-input-formatted">
-                        <input type="text" id="metaInput" placeholder="5.000,00" oninput="app.formatMetaInput(this)">
+                        <input type="text" id="metaInput" placeholder="5.000,00" oninput="app.formatMetaInput(this)" inputmode="decimal">
                         <span class="meta-currency">R$</span>
                     </div>
                     <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px;">
@@ -4504,9 +4535,9 @@
                 const turno = document.getElementById('simTurno').value;
                 const container = document.getElementById('simCampos');
                 if (turno === '15x23') {
-                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()"></div></div>`;
+                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div></div>`;
                 } else {
-                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="simPT" placeholder="0" oninput="app.calcularSimulacao()"></div>`;
+                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="simPT" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div>`;
                 }
                 this.calcularSimulacao();
             }
@@ -4527,9 +4558,9 @@
                 const turno = document.getElementById('calcTurno').value;
                 const container = document.getElementById('calcCampos');
                 if (turno === '15x23') {
-                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0"></div></div>`; 
+                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0" inputmode="numeric"></div></div>`; 
                 } else {
-                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT" placeholder="0"></div>`; 
+                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT" placeholder="0" inputmode="numeric"></div>`; 
                 }
             }
 
@@ -4537,9 +4568,9 @@
                 const turno = document.getElementById('relTurno').value;
                 const container = document.getElementById('relCamposProducao');
                 if (turno === '15x23') {
-                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0"></div></div>`; 
+                    container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div></div>`; 
                 } else {
-                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT" placeholder="0"></div>`; 
+                    container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT" placeholder="0" inputmode="numeric"></div>`; 
                 }
             }
 
@@ -4663,17 +4694,19 @@
             updateMetaProgress() {
                 if (this.metaMensal <= 0) return;
 
-                // LÓGICA DE META LÍQUIDA CONTÍNUA
-                // Soma apenas valores líquidos de registros marcados como 'pago' (Recebido)
-                // e que foram pagos APÓS a data de definição da meta.
-                
+                // FIX iOS: Comparação de Data Robusta usando .getTime()
                 let totalLiquido = 0;
-                const startDate = this.metaStartDate ? new Date(this.metaStartDate) : null;
+                
+                // Converte metaStartDate para timestamp de forma segura
+                const startTs = this.metaStartDate ? new Date(this.metaStartDate).getTime() : 0;
 
                 this.entries.forEach(e => {
                     if (e.pago && e.paymentDate) {
-                        const paidDate = new Date(e.paymentDate);
-                        if (!startDate || paidDate >= startDate) {
+                        // Converte paymentDate para timestamp de forma segura
+                        const paidTs = new Date(e.paymentDate).getTime();
+                        
+                        // Verifica se as datas são válidas e compara timestamps
+                        if (!isNaN(paidTs) && (!startTs || paidTs >= startTs)) {
                             totalLiquido += Number(e.liquido) || 0;
                         }
                     }
