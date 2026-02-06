@@ -86,6 +86,51 @@
             padding-bottom: var(--safe-bottom);
         }
 
+        /* PAGINATION STYLES */
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .page-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 700;
+        }
+
+        .page-btn:active {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(0.9);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .page-info {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         /* --- CORREÇÃO iOS ANIMATIONS --- */
         .money-particle {
             position: fixed;
@@ -507,6 +552,7 @@
         .vip-gift-notification h4 { font-size: 1rem; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .vip-gift-notification p { font-size: 0.8rem; opacity: 0.9; }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -982,7 +1028,7 @@
                         <div class="section-icon">📊</div>
                         <div class="section-titles">
                             <h3>Histórico</h3>
-                            <p id="histSubtitle">Todos os registros</p>
+                            <p id="histSubtitle">Aguardando pagamento</p>
                         </div>
                     </div>
                     <div class="section-arrow">▼</div>
@@ -990,8 +1036,8 @@
                 <div class="section-content">
                     <div class="section-inner">
                         <div class="filter-tabs">
-                            <button class="filter-tab active" onclick="app.setFilter('all')" id="filter-all">Todos</button>
-                            <button class="filter-tab" onclick="app.setFilter('pending')" id="filter-pending">Pendentes</button>
+                            <button class="filter-tab" onclick="app.setFilter('all')" id="filter-all">Todos</button>
+                            <button class="filter-tab active" onclick="app.setFilter('pending')" id="filter-pending">Pendentes</button>
                             <button class="filter-tab" onclick="app.setFilter('paid')" id="filter-paid">Recebidos</button>
                         </div>
 
@@ -1480,7 +1526,7 @@
                 experimentalForceLongPolling: true
             });
             auth = firebase.auth();
-            // Tenta habilitar persistência, mas captura erro silenciosamente se falhar (comum em abas privadas)
+            // Tenta habilitar persistência, mas captura erro silenciosamente se falhar
             db.enablePersistence({ synchronizeTabs: true }).catch(() => console.log('Persistência não disponível neste modo.'));
         } catch (e) {
             console.error('Erro ao inicializar Firebase:', e);
@@ -1540,9 +1586,9 @@
                 this.currentUser = null;
                 this.currentUserId = null;
                 this.currentUserCode = null; 
-                this.currentFilter = 'all';
+                this.currentFilter = 'pending'; // PADRÃO ALTERADO PARA PENDENTE
                 this.dashboardMode = 'all'; // 'all' or 'month'
-                this.selectedMonth = null; // NOVO: Armazena o mês selecionado
+                this.selectedMonth = null; 
                 this.pinValue = '';
                 this.deviceId = this.getOrCreateDeviceId();
                 this.metaMensal = 0;
@@ -1569,6 +1615,10 @@
                 this.isIOS = false;
                 this.isAndroid = false;
                 this.deferredPrompt = null;
+
+                // PAGINAÇÃO
+                this.currentPage = 1;
+                this.itemsPerPage = 10;
 
                 this.detectPlatform();
                 this.init();
@@ -1782,18 +1832,15 @@
                 if (calcData) calcData.value = hoje;
                 if (relData) relData.value = hoje;
 
-                // CORREÇÃO: Carregar o mês salvo ou usar o atual como fallback
                 const savedMonth = safeStorage.getItem('evo_dashboard_month');
                 const now = new Date();
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, '0');
                 const currentMonth = `${yyyy}-${mm}`;
                 
-                // Se tem mês salvo, usa ele, senão usa o atual
                 this.selectedMonth = savedMonth || currentMonth;
                 
                 const monthInput = document.getElementById('dashboardMonthInput');
-                // Só seta o valor se o elemento existir e estiver vazio ou não tiver valor salvo
                 if (monthInput && !monthInput.value) {
                     monthInput.value = this.selectedMonth;
                 }
@@ -1810,8 +1857,10 @@
                 
                 this.loadUsersFromCache();
                 
+                // MUDANÇA: Inicialização Firebase prioritária
+                this.initFirebasePriority();
+                
                 this.checkSession();
-                this.initFirebaseBackground();
             }
 
             loadUsersFromCache() {
@@ -1825,25 +1874,24 @@
                 }
             }
 
-            async initFirebaseBackground() {
+            // MUDANÇA: Função de inicialização Firebase otimizada para conexão imediata
+            async initFirebasePriority() {
                 if (!auth) return;
                 
-                const attemptConnection = async () => {
-                    try {
-                        const authPromise = auth.signInAnonymously();
-                        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000));
-                        await Promise.race([authPromise, timeoutPromise]);
-                        this.loadRates().catch(() => {});
-                        await this.syncUsersFromFirebase();
-                        await this.loadPendingUsers();
-                        this.firebaseReady = true; this.connectionAttempts = 0;
+                // Monitoramento de estado de autenticação imediato
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        this.firebaseReady = true;
                         this.processSyncQueue();
-                    } catch (error) {
-                        this.connectionAttempts++;
-                        if (this.connectionAttempts < 5) setTimeout(attemptConnection, Math.min(30000, 2000 * Math.pow(2, this.connectionAttempts)));
+                        // Garante carregamento de dados críticos assim que conectar
+                        this.loadRates().catch(() => {});
+                        this.syncUsersFromFirebase();
+                        this.loadPendingUsers();
+                    } else {
+                        // Tenta conectar anonimamente se não estiver logado
+                        auth.signInAnonymously().catch(e => console.error("Auto-login falhou", e));
                     }
-                };
-                attemptConnection();
+                });
             }
 
             async loadRates() {
@@ -1933,10 +1981,8 @@
                 this.isLoggingIn = true;
                 const enteredPin = this.pinValue;
 
-                // Busca por todos os usuários com o PIN informado
                 let matchingUsers = Object.values(this.users).filter(u => u.code === enteredPin);
 
-                // Se não encontrou localmente e Firebase está pronto, busca no servidor
                 if (matchingUsers.length === 0 && this.firebaseReady && db) {
                     try {
                         const q = await db.collection('users').where('code', '==', enteredPin).get();
@@ -1949,7 +1995,6 @@
                     } catch (e) {}
                 }
 
-                // Se não encontrou nenhum usuário com o PIN
                 if (matchingUsers.length === 0) { 
                     const pending = this.pendingUsers.find(p => p.code === enteredPin);
                     if (pending) this.showToast('Seu cadastro está aguardando aprovação', 'warning');
@@ -1958,18 +2003,11 @@
                     return; 
                 }
 
-                // Se encontrou múltiplos usuários com mesmo PIN, filtra pelo deviceId
                 let foundUser = null;
                 if (matchingUsers.length > 1) {
-                    // Tenta encontrar pelo deviceId primeiro
                     foundUser = matchingUsers.find(u => u.deviceId === this.deviceId);
+                    if (!foundUser) foundUser = matchingUsers.find(u => !u.deviceId);
                     
-                    // Se não encontrou pelo deviceId, pega o primeiro que não tem deviceId registrado (primeiro acesso)
-                    if (!foundUser) {
-                        foundUser = matchingUsers.find(u => !u.deviceId);
-                    }
-                    
-                    // Se ainda não encontrou (todos têm deviceId diferente), bloqueia por segurança
                     if (!foundUser) {
                         this.showToast('Acesso negado: Dispositivo não autorizado para este PIN.', 'error');
                         this.pinValue = ''; 
@@ -1981,7 +2019,6 @@
                     foundUser = matchingUsers[0];
                 }
 
-                // Verifica se está bloqueado
                 if (foundUser.blocked && foundUser.code !== ADMIN_ID) { 
                     this.showToast('Usuário bloqueado.', 'error'); 
                     this.pinValue = ''; this.updatePinDisplay(); 
@@ -1999,9 +2036,7 @@
                 const paidActive = foundUser.vipUntil && new Date(foundUser.vipUntil) > now;
                 this.isVip = foundUser.vip || trialActive || paidActive || this.isAdmin;
 
-                // Atualiza deviceId se necessário (primeiro login ou diferente)
                 if (!this.isVip && !this.isAdmin) {
-                    // Se não é VIP e o deviceId é diferente ou não existe, atualiza
                     if (foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
                         this.showToast('Acesso negado: Dispositivo não autorizado.', 'error');
                         setTimeout(() => alert('🚫 BLOQUEADO\n\nSeu plano permite acesso apenas no dispositivo registrado anteriormente.\n\nPara acessar em múltiplos dispositivos, torne-se VIP.'), 300);
@@ -2014,7 +2049,6 @@
                         this.updateUserDevice(this.currentUserId, this.deviceId);
                     }
                 } else {
-                    // VIP ou Admin pode atualizar o device livremente
                     this.updateUserDevice(this.currentUserId, this.deviceId); 
                 }
 
@@ -2023,10 +2057,12 @@
 
                 this.setDashboardMode(this.dashboardMode, false);
 
+                // Força atualização imediata do lastLogin
+                this.updateLastLogin(this.currentUserId);
+
                 setTimeout(() => {
                     this.setupEntriesListener(this.currentUserId);
                     if (this.isAdmin) { this.loadPendingUsers(); }
-                    this.updateLastLogin(this.currentUserId);
                     this.checkSystemMessage();
 
                     if (this.isVip && !this.isAdmin) {
@@ -2097,11 +2133,14 @@
             async updateLastLogin(docId) {
                 if (!this.firebaseReady || !db) return;
                 try { 
+                    // Usa serverTimestamp para precisão no servidor
                     await db.collection('users').doc(docId).set({ 
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp(), 
                         deviceId: this.deviceId 
                     }, { merge: true }); 
-                } catch (e) {}
+                } catch (e) {
+                    console.error("Erro ao atualizar login", e);
+                }
             }
 
             async updateUserDevice(docId, deviceId) {
@@ -2191,6 +2230,7 @@
                                 setTimeout(() => {
                                     this.setupEntriesListener(this.currentUserId);
                                     if (this.isAdmin) { this.loadPendingUsers(); }
+                                    // Força atualização de login na reconexão de sessão
                                     this.updateLastLogin(this.currentUserId);
                                 }, 100);
                             }
@@ -2288,10 +2328,15 @@
                     this.renderAdminRates();
                 }
 
-                // CORREÇÃO: Aplica o modo e mês corretos ao mostrar a app
                 this.setDashboardMode(this.dashboardMode, false);
+                
+                // MUDANÇA: Define o filtro inicial sempre como 'pending' ao carregar o app
+                this.setFilter('pending'); 
+                
+                // Filtros visuais
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                document.getElementById('filter-pending').classList.add('active');
 
-                this.renderHistory(); 
                 this.renderChart(); 
                 this.loadMeta(); 
                 this.updateMetaProgress(); 
@@ -2474,7 +2519,6 @@
                     if(monthSelectorInline) monthSelectorInline.classList.add('visible');
                     if(periodIndicator) periodIndicator.classList.add('visible');
                     
-                    // CORREÇÃO: Garante que o input de mês tem o valor correto ao mudar para modo mensal
                     if(monthInput && this.selectedMonth) {
                         monthInput.value = this.selectedMonth;
                     }
@@ -2489,7 +2533,6 @@
                 const monthVal = monthInput ? monthInput.value : ''; 
                 const periodIndicator = document.getElementById('periodIndicator');
 
-                // CORREÇÃO: Salva o mês atual sempre que o dashboard é atualizado no modo mensal
                 if (mode === 'month' && monthVal) {
                     this.selectedMonth = monthVal;
                     safeStorage.setItem('evo_dashboard_month', monthVal);
@@ -2543,9 +2586,6 @@
 
                 const elBruto = document.getElementById('dashBruto');
                 if (elBruto) {
-                    // REMOVIDO: Animação de milestone a cada 2k
-                    // Agora apenas atualiza os valores normalmente
-                    
                     elBruto.textContent = this.formatMoney(tb);
                     document.getElementById('dashLiq').textContent = this.formatMoney(tl);
                     document.getElementById('dashPend').textContent = this.formatMoney(p);
@@ -2627,13 +2667,20 @@
                 }
             }
 
+            // CORREÇÃO: Formatação correta do "Visto por Último"
             formatLastSeen(timestamp) {
                 if (!timestamp) return 'Nunca';
                 try {
                     let date;
+                    // Se for objeto Firestore Timestamp
                     if (timestamp.toDate) date = timestamp.toDate();
+                    // Se for segundos (timestamp unix)
                     else if (timestamp.seconds) date = new Date(timestamp.seconds * 1000);
-                    else return '-';
+                    // Se for string ou objeto Date direto
+                    else date = new Date(timestamp);
+                    
+                    if (isNaN(date.getTime())) return '-';
+                    
                     return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                 } catch (e) { return '-'; }
             }
@@ -3136,10 +3183,17 @@
 
             setFilter(f) {
                 this.currentFilter = f;
+                this.currentPage = 1; // Reseta para a página 1 ao mudar o filtro
                 document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
                 document.getElementById(`filter-${f}`).classList.add('active');
                 const subs = { 'all': 'Todos os registros', 'pending': 'Aguardando pagamento', 'paid': 'Valores recebidos' };
                 document.getElementById('histSubtitle').textContent = subs[f];
+                this.renderHistory();
+            }
+
+            changePage(delta) {
+                this.currentPage += delta;
+                if (this.currentPage < 1) this.currentPage = 1;
                 this.renderHistory();
             }
 
@@ -3162,6 +3216,7 @@
                 }
             }
 
+            // MUDANÇA: Função renderHistory com suporte a paginação
             renderHistory() {
                 const list = document.getElementById('histList');
                 let f = this.entries;
@@ -3177,7 +3232,13 @@
                     return; 
                 }
 
-                list.innerHTML = f.map(e => `
+                // Lógica de Paginação
+                const totalPages = Math.ceil(f.length / this.itemsPerPage);
+                const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                const endIndex = startIndex + this.itemsPerPage;
+                const pagedEntries = f.slice(startIndex, endIndex);
+
+                let html = pagedEntries.map(e => `
                     <div class="history-item ${e.pago ? 'paid' : 'pending'} ${this.expandedHistoryId === e.id ? 'expanded' : ''}" id="history-item-${e.id}">
                         <div class="history-main-row" onclick="app.toggleHistoryDetail(${e.id})">
                             <div class="history-main"><div class="history-ship">${e.navio}</div><div class="history-meta">${e.dataF} • ${e.turno}</div><span class="status-badge ${e.pago ? 'paid' : 'pending'}">${e.pago ? '✓ PAGO' : '⏳ PENDENTE'}</span></div>
@@ -3193,6 +3254,19 @@
                             </div>
                         </div>
                     </div>`).join('');
+
+                // Controles de Paginação (só mostra se tiver mais que 1 página)
+                if (totalPages > 1) {
+                    html += `
+                        <div class="pagination-controls">
+                            <button class="page-btn" onclick="app.changePage(-1)" ${this.currentPage === 1 ? 'disabled' : ''}>←</button>
+                            <span class="page-info">Página ${this.currentPage} de ${totalPages}</span>
+                            <button class="page-btn" onclick="app.changePage(1)" ${this.currentPage === totalPages ? 'disabled' : ''}>→</button>
+                        </div>
+                    `;
+                }
+
+                list.innerHTML = html;
             }
 
             async togglePago(id) {
@@ -3440,7 +3514,6 @@
                 const terno = document.getElementById('relTernoSelecao').value;
                 if (!navio || !data) { this.showToast('Dados incompletos', 'error'); return; }
                 
-                // ALTERAÇÃO: Nome do navio entre asteriscos para negrito no WhatsApp
                 let msg = `*${navio}*\nData: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} - ${turno}\nTerno: ${terno}\n`;
                 
                 if (turno === '15x23') { 
