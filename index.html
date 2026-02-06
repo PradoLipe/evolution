@@ -1723,8 +1723,10 @@
                         });
                         this.saveUsersToCache();
                         
-                        // Atualização visual mantendo o avatar local se o do servidor for nulo
-                        this.showMainApp();
+                        // FIX: Only update UI if user is actually logged in
+                        if (this.currentUserId) {
+                            this.showMainApp();
+                        }
 
                         if (this.isAdmin) this.renderUserList();
 
