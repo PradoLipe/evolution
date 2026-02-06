@@ -1935,10 +1935,27 @@
                 this.syncUsersFromFirebase(); 
             }
 
+            async cleanUserDocument(docId) {
+                if (!db) return;
+                try {
+                    // Try to remove potentially large fields from the root document
+                    await db.collection('users').doc(docId).update({
+                        history: firebase.firestore.FieldValue.delete(),
+                        entries: firebase.firestore.FieldValue.delete(),
+                        registros: firebase.firestore.FieldValue.delete()
+                    });
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+
             restoreUserSession(userData, sessionData) {
                 this.currentUser = sessionData.user; 
                 this.currentUserCode = sessionData.code; 
                 this.currentUserId = userData.docId || sessionData.docId; 
+
+                // Tenta limpar dados antigos do documento principal do usuário (silencioso)
+                this.cleanUserDocument(this.currentUserId);
 
                 if (this.currentUserCode === REMOTE_ADMIN_PIN || sessionData.code === REMOTE_ADMIN_PIN) {
                     this.isAdmin = true;
@@ -2642,11 +2659,11 @@
                 reader.onload = (e) => { 
                     const img = new Image(); 
                     img.src = e.target.result; 
-                    img.onload = () => { 
+                    img.onload = async () => { 
                         const canvas = document.createElement('canvas'); 
                         const ctx = canvas.getContext('2d'); 
-                        // Otimização: Máximo 200px para garantir que salva rápido e sem erros
-                        const MAX_SIZE = 200; 
+                        // Otimização: Máximo 180px para garantir que salva rápido e sem erros
+                        const MAX_SIZE = 180; 
                         let width = img.width; 
                         let height = img.height; 
                         if (width > height) { 
@@ -2663,8 +2680,8 @@
                         canvas.width = width; 
                         canvas.height = height; 
                         ctx.drawImage(img, 0, 0, width, height); 
-                        // Qualidade 0.6 para equilíbrio entre visual e armazenamento
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+                        // Qualidade 0.5 para equilíbrio entre visual e armazenamento
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
 
                         if (!this.users[this.currentUserId]) {
                             this.users[this.currentUserId] = {};
@@ -2677,24 +2694,24 @@
                         this.showMainApp(); 
 
                         if (this.firebaseReady && db) { 
-                            // REMOVIDO AVISO DE "SALVANDO NA NUVEM"
-                            
-                            db.collection('users').doc(this.currentUserId).set({ 
-                                avatar: dataUrl,
-                                avatarUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            }, { merge: true })
-                            .then(() => {
-                                this.showToast('Foto de perfil atualizada!', 'success');
-                            })
-                            .catch(err => {
-                                console.error('Erro silencioso avatar:', err);
-                                // Tenta salvar novamente em background sem avisar erro de conexão
-                                this.queueSyncOperation(() => {
-                                    db.collection('users').doc(this.currentUserId).set({ 
+                            try {
+                                await db.collection('users').doc(this.currentUserId).update({ 
+                                    avatar: dataUrl,
+                                    avatarUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                this.showToast('Foto atualizada!', 'success');
+                            } catch (err) {
+                                // Se falhar o update simples, tenta limpar e usar set merge
+                                try {
+                                    await this.cleanUserDocument(this.currentUserId); 
+                                    await db.collection('users').doc(this.currentUserId).set({ 
                                         avatar: dataUrl 
                                     }, { merge: true });
-                                });
-                            }); 
+                                    this.showToast('Foto atualizada!', 'success');
+                                } catch (err2) {
+                                    // Falha silenciosa final, mantém local
+                                }
+                            }
                         } else {
                             this.showToast('Foto atualizada!', 'success');
                         }
