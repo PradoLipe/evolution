@@ -1975,6 +1975,8 @@
 
                 setTimeout(() => {
                     this.setupEntriesListener(this.currentUserId);
+                    this.migrateHistoryToMonthly(this.currentUserId); // ATUALIZAÇÃO FIX: Chama migração no login
+                    
                     if (this.isAdmin) { 
                         this.loadPendingUsers(); 
                         this.syncUsersFromFirebase();
@@ -2125,22 +2127,105 @@
                 } catch (e) {}
             }
 
+            // ATUALIZAÇÃO FIX: Novo Listener que carrega múltiplos arquivos mensais
             setupEntriesListener(docId) {
                 if (!db) return;
                 if (this.unsubscribeEntries) this.unsubscribeEntries();
 
-                this.unsubscribeEntries = db.collection('users').doc(docId).collection('data').doc('history')
-                    .onSnapshot({ includeMetadataChanges: true }, (doc) => {
-                        if (doc.exists) {
-                            const data = doc.data();
-                            const serverUpdated = data.updatedAt ? data.updatedAt.toMillis() : 0;
-                            if (serverUpdated > this.lastSyncTime) {
-                                this.loadFromFirebase(data);
+                // Escuta a coleção inteira para pegar todos os arquivos history_YYYY-MM
+                this.unsubscribeEntries = db.collection('users').doc(docId).collection('data')
+                    .onSnapshot({ includeMetadataChanges: true }, (snapshot) => {
+                        let allEntries = [];
+                        let maxUpdated = 0;
+
+                        snapshot.forEach(doc => {
+                            if (doc.id.startsWith('history_')) {
+                                const data = doc.data();
+                                const updatedAt = data.updatedAt ? data.updatedAt.toMillis() : 0;
+                                if (updatedAt > maxUpdated) maxUpdated = updatedAt;
+
+                                let monthlyEntries = [];
+                                if (typeof data.history === 'string') {
+                                    try { monthlyEntries = JSON.parse(data.history); } catch(e){}
+                                } else if (Array.isArray(data.history)) {
+                                    monthlyEntries = data.history;
+                                }
+                                allEntries = allEntries.concat(monthlyEntries);
                             }
-                        }
+                        });
+
+                        // Só atualiza se o servidor tiver dados mais novos ou se for carregamento inicial
+                        // Mas como agora agregamos vários docs, melhor sempre atualizar se houver snapshot
+                        this.entries = allEntries.map(e => ({ ...e, bruto: Number(e.bruto) || 0, liquido: Number(e.liquido) || 0 }));
+                        // Ordena decrescente por data/ID
+                        this.entries.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+                        this.lastSyncTime = maxUpdated;
+                        safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        
+                        this.updateDashboard(); 
+                        this.renderHistory(); 
+                        this.renderChart(); 
+                        this.updateMetaProgress();
                     }, (error) => {
                         console.error('Erro no listener de entries:', error);
                     });
+            }
+
+            // ATUALIZAÇÃO FIX: Função para Migrar arquivo único gigante para mensais
+            async migrateHistoryToMonthly(docId) {
+                if (!db) return;
+                try {
+                    const oldDocRef = db.collection('users').doc(docId).collection('data').doc('history');
+                    const oldDoc = await oldDocRef.get();
+
+                    if (oldDoc.exists) {
+                        const data = oldDoc.data();
+                        let allEntries = [];
+                        if (typeof data.history === 'string') allEntries = JSON.parse(data.history);
+                        else if (Array.isArray(data.history)) allEntries = data.history;
+
+                        if (allEntries.length > 0) {
+                            // MODO SILENCIOSO: Não mostra toast para evitar confusão do usuário
+                            // this.showToast('Otimizando banco de dados...', 'info');
+                            
+                            // Agrupar por mês
+                            const grouped = {};
+                            allEntries.forEach(entry => {
+                                const datePart = entry.data ? entry.data.substring(0, 7) : 'unknown'; // YYYY-MM
+                                if (!grouped[datePart]) grouped[datePart] = [];
+                                grouped[datePart].push(entry);
+                            });
+
+                            // Salvar em lotes mensais
+                            const batch = db.batch();
+                            
+                            for (const [month, entries] of Object.entries(grouped)) {
+                                if (month !== 'unknown') {
+                                    const newDocRef = db.collection('users').doc(docId).collection('data').doc(`history_${month}`);
+                                    batch.set(newDocRef, {
+                                        history: JSON.stringify(entries),
+                                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                        count: entries.length
+                                    });
+                                }
+                            }
+
+                            // Deletar o antigo
+                            batch.delete(oldDocRef);
+
+                            await batch.commit();
+                            // MODO SILENCIOSO
+                            console.log('Migração mensal concluída com sucesso (silenciosa).');
+                            // this.showToast('Otimização concluída!', 'success');
+                        } else {
+                            // Se vazio, só deleta pra limpar
+                            await oldDocRef.delete();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Erro na migração mensal", e);
+                }
             }
 
             loadFromLocalStorage() {
@@ -2155,6 +2240,7 @@
             }
 
             loadFromFirebase(data) {
+                // Mantido para compatibilidade, mas o setupEntriesListener agora faz o trabalho pesado
                 try {
                     let restoredEntries = [];
                     if (typeof data.history === 'string') restoredEntries = JSON.parse(data.history);
@@ -2488,7 +2574,43 @@
             async importData(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (ev) => { try { const d = JSON.parse(ev.target.result); const reg = d.r || d.registros || []; if (reg.length > 0) { this.entries = reg.map(x => ({ ...x, id: x.id || Date.now()+Math.random(), bruto: Number(x.bruto)||0, liquido: Number(x.liquido)||0 })); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Importado!', 'success'); this.closeModal('configModal'); this.persistData(); } else this.showToast('Inválido', 'error'); } catch (err) { this.showToast('Erro arquivo', 'error'); } }; r.readAsText(f); e.target.value = ''; }
             async saveEntry() { const navio = document.getElementById('calcNavio').value.toUpperCase().trim(); const data = document.getElementById('calcData').value; if (!navio || !data) { this.showToast('Dados incompletos', 'error'); return; } const turno = document.getElementById('calcTurno').value; const tipo = document.getElementById('calcTipoDia').value; const conf = document.getElementById('calcQtdConf').value; let valores = (turno === '15x23') ? [document.getElementById('calcP1').value, document.getElementById('calcP2').value] : [document.getElementById('calcPT').value]; const res = this.calcularValores(tipo, turno, valores, conf); const entry = { id: Date.now(), navio, data, dataF: new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'), turno, tipo, valores, conferentes: parseInt(conf), bruto: res.bruto, liquido: res.liquido, pago: false, timestamp: new Date().toISOString() }; this.entries.unshift(entry); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Salvo!', 'success'); document.getElementById('calcNavio').value = ''; this.triggerMoneyAnimation(); this.persistData(); if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix(); }
             triggerMoneyAnimation() { const emojis = ['💸', '💰', '💵', '🤑', '💎']; const particleCount = 20; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.5; const ty = (Math.random() - 0.5) * window.innerHeight * 1.5; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } }
-            async persistData() { if (!this.firebaseReady || !db) return; if (this._persistTimeout) clearTimeout(this._persistTimeout); this._persistTimeout = setTimeout(async () => { try { await db.collection('users').doc(this.currentUserId).collection('data').doc('history').set({ history: JSON.stringify(this.entries), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), count: this.entries.length }); this.lastSyncTime = Date.now(); } catch (error) {} }, 500); }
+            
+            // ATUALIZAÇÃO FIX: Função de Persistência agora divide os dados por mês
+            async persistData() { 
+                if (!this.firebaseReady || !db) return; 
+                if (this._persistTimeout) clearTimeout(this._persistTimeout); 
+                this._persistTimeout = setTimeout(async () => { 
+                    try { 
+                        // Agrupa por mês antes de salvar
+                        const grouped = {};
+                        this.entries.forEach(entry => {
+                            const datePart = entry.data ? entry.data.substring(0, 7) : 'unknown'; // YYYY-MM
+                            if (!grouped[datePart]) grouped[datePart] = [];
+                            grouped[datePart].push(entry);
+                        });
+
+                        const batch = db.batch();
+                        
+                        for (const [month, entries] of Object.entries(grouped)) {
+                            if (month !== 'unknown') {
+                                // Salva em history_YYYY-MM
+                                const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
+                                batch.set(ref, { 
+                                    history: JSON.stringify(entries), 
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                                    count: entries.length 
+                                });
+                            }
+                        }
+
+                        await batch.commit();
+                        this.lastSyncTime = Date.now(); 
+                    } catch (error) {
+                        console.error('Erro ao persistir:', error);
+                    } 
+                }, 500); 
+            }
+
             generateReport() { const navio = document.getElementById('relNavio').value.toUpperCase().trim(); const data = document.getElementById('relData').value; const turno = document.getElementById('relTurno').value; const terno = document.getElementById('relTernoSelecao').value; if (!navio || !data) { this.showToast('Dados incompletos', 'error'); return; } let msg = `*${navio}*\nData: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} - ${turno}\nTerno: ${terno}\n`; if (turno === '15x23') { const p1 = document.getElementById('relP1').value || 0, p2 = document.getElementById('relP2').value || 0; msg += `15×19: ${p1}\n19×23: ${p2}\nTOTAL: ${parseInt(p1) + parseInt(p2)}\n`; } else { msg += `TOTAL: ${document.getElementById('relPT').value || 0}\n`; } msg += `\n${this.currentUser}`; this.copyToClipboard(msg, 'Relatório copiado!'); }
             showPix() { this.closeModal('configModal'); document.getElementById('pixMessage').textContent = DONATION_MESSAGES[Math.floor(Math.random() * DONATION_MESSAGES.length)]; setTimeout(() => this.openModal('pixModal'), 200); }
             copyPix() { this.copyToClipboard('92994821868', 'Chave Copiada!'); }
@@ -2501,6 +2623,8 @@
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
             logout() { if (this.unsubscribeUsers) this.unsubscribeUsers(); if (this.unsubscribeEntries) this.unsubscribeEntries(); if (this.unsubscribePending) this.unsubscribePending(); safeStorage.removeItem('evo_session_v516'); window.close(); document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;"><div style="font-size: 4rem; margin-bottom: 20px;">👋</div><h2 style="margin-bottom: 10px; font-family: 'Inter', sans-serif;">Sessão Finalizada</h2><p style="color: #8b92b4; font-family: 'Inter', sans-serif;">Você pode fechar o aplicativo agora.</p><button onclick="location.reload()" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Entrar Novamente</button></div>`; }
             uploadAvatar() { document.getElementById('avatarInput').click(); }
+
+            // ATUALIZAÇÃO FIX: Função handleAvatarChange OTIMIZADA
             handleAvatarChange(event) { 
                 const file = event.target.files[0]; 
                 if (!file) return; 
@@ -2510,8 +2634,8 @@
                     this.showToast('Selecione uma imagem válida', 'error');
                     return;
                 }
-                if (file.size > 5 * 1024 * 1024) { // 5MB max
-                    this.showToast('Imagem muito grande (máx 5MB)', 'error');
+                if (file.size > 8 * 1024 * 1024) { // Limite inicial de 8MB para upload
+                    this.showToast('Imagem muito grande', 'error');
                     return;
                 }
 
@@ -2522,7 +2646,7 @@
                     img.onload = () => { 
                         const canvas = document.createElement('canvas'); 
                         const ctx = canvas.getContext('2d'); 
-                        const MAX_SIZE = 300; // Aumentado para melhor qualidade
+                        const MAX_SIZE = 250; // Reduzido levemente para otimização
                         let width = img.width; 
                         let height = img.height; 
                         if (width > height) { 
@@ -2539,7 +2663,8 @@
                         canvas.width = width; 
                         canvas.height = height; 
                         ctx.drawImage(img, 0, 0, width, height); 
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.85); 
+                        // Compressão JPEG 0.7 para garantir tamanho pequeno
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
 
                         // Garantir que o usuário existe
                         if (!this.users[this.currentUserId]) {
@@ -2555,19 +2680,22 @@
                         // Atualizar UI imediatamente
                         this.showMainApp(); 
 
-                        // Salvar no Firebase com retry
+                        // Salvar no Firebase com segurança
                         if (this.firebaseReady && db) { 
+                            // Mostrar feedback de carregamento
+                            this.showToast('Salvando foto na nuvem...', 'info');
+                            
                             db.collection('users').doc(this.currentUserId).set({ 
                                 avatar: dataUrl,
                                 avatarUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             }, { merge: true })
                             .then(() => {
-                                this.showToast('Foto atualizada e salva!', 'success');
+                                this.showToast('Foto salva com sucesso!', 'success');
                             })
                             .catch(err => {
                                 console.error('Erro ao salvar avatar:', err);
-                                this.showToast('Foto salva localmente. Sincronizará quando online.', 'warning');
-                                // Adicionar à fila de sincronização
+                                this.showToast('Erro de conexão. Foto salva localmente.', 'warning');
+                                // Adicionar à fila de sincronização para tentar depois
                                 this.queueSyncOperation(() => {
                                     db.collection('users').doc(this.currentUserId).set({ 
                                         avatar: dataUrl 
