@@ -1698,6 +1698,14 @@
                 }
             }
 
+            getLocalAvatar(userId) {
+                return safeStorage.getItem(`evo_avatar_local_${userId}`);
+            }
+
+            setLocalAvatar(userId, dataUrl) {
+                safeStorage.setItem(`evo_avatar_local_${userId}`, dataUrl);
+            }
+
             async syncUsersFromFirebase() {
                 if (!db) return;
                 try {
@@ -1715,6 +1723,9 @@
                         });
                         this.saveUsersToCache();
                         
+                        // Atualização visual mantendo o avatar local se o do servidor for nulo
+                        this.showMainApp();
+
                         if (this.isAdmin) this.renderUserList();
 
                         if (this.pendingSessionCheck) {
@@ -1896,6 +1907,7 @@
                     let oldDocRef = db.collection('users').doc(LEGACY_ADMIN_ID).collection('data').doc('history');
                     let oldDoc = await oldDocRef.get();
                     
+                    // Se não achar, tenta buscar qualquer usuário com o PIN antigo
                     if (!oldDoc.exists) {
                         const q = await db.collection('users').where('code', '==', '002451').limit(1).get();
                         if (!q.empty) {
@@ -1910,13 +1922,14 @@
                         
                         await db.collection('users').doc(newAdminId).collection('data').doc('history').set(oldHistory);
                         
+                        // Opcional: deletar o antigo para limpar, mas cuidado para não perder dados se der erro no meio
+                        // await oldDocRef.delete(); 
+
                         try {
                             const oldProfileRef = oldDocRef.parent.parent;
-                            const oldProfile = await oldProfileRef.get();
-                            if (oldProfile.exists) {
-                                const pData = oldProfile.data();
-                                pData.code = newPin;
-                                await db.collection('users').doc(newAdminId).set(pData);
+                            // Se for o ID fixo legado, limpar
+                            if (oldProfileRef.id === LEGACY_ADMIN_ID) {
+                                await db.collection('users').doc(LEGACY_ADMIN_ID).delete();
                             }
                         } catch(e2){}
 
@@ -1997,6 +2010,10 @@
                     if (this.isAdmin) { 
                         this.loadPendingUsers(); 
                         this.syncUsersFromFirebase();
+                        // Checagem extra de admin para limpeza de 002451
+                        if (this.currentUserCode === REMOTE_ADMIN_PIN) {
+                            this.migrateLegacyAdminData(this.currentUserCode);
+                        }
                     }
                     this.checkSystemMessage();
 
@@ -2027,18 +2044,24 @@
                 if (userNameEl) userNameEl.firstChild.textContent = this.currentUser + ' ';
 
                 const user = this.users[this.currentUserId] || {};
+                
+                // --- LÓGICA HÍBRIDA DE AVATAR (PRIORIDADE LOCAL) ---
+                const localAvatar = this.getLocalAvatar(this.currentUserId);
+                const serverAvatar = user.avatar;
+                const finalAvatar = localAvatar || serverAvatar; // Usa local se existir, senão servidor
+
                 const avatarImg = document.getElementById('userAvatarImg');
                 const avatarInitials = document.getElementById('userAvatarInitials');
                 const profileAvatarImg = document.getElementById('profileAvatarImg');
                 const profileAvatarInitials = document.getElementById('profileAvatarInitials');
                 const btnDeleteAvatar = document.getElementById('btnDeleteAvatar');
 
-                if (user && user.avatar) {
-                    avatarImg.src = user.avatar;
+                if (finalAvatar) {
+                    avatarImg.src = finalAvatar;
                     avatarImg.classList.remove('hidden');
                     avatarInitials.classList.add('hidden');
                     if (profileAvatarImg) {
-                        profileAvatarImg.src = user.avatar;
+                        profileAvatarImg.src = finalAvatar;
                         profileAvatarImg.classList.remove('hidden');
                         profileAvatarInitials.classList.add('hidden');
                         if(btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
@@ -2641,6 +2664,16 @@
             logout() { if (this.unsubscribeUsers) this.unsubscribeUsers(); if (this.unsubscribeEntries) this.unsubscribeEntries(); if (this.unsubscribePending) this.unsubscribePending(); safeStorage.removeItem('evo_session_v516'); window.close(); document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;"><div style="font-size: 4rem; margin-bottom: 20px;">👋</div><h2 style="margin-bottom: 10px; font-family: 'Inter', sans-serif;">Sessão Finalizada</h2><p style="color: #8b92b4; font-family: 'Inter', sans-serif;">Você pode fechar o aplicativo agora.</p><button onclick="location.reload()" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Entrar Novamente</button></div>`; }
             uploadAvatar() { document.getElementById('avatarInput').click(); }
 
+            // --- FUNÇÕES DE AVATAR HÍBRIDAS (LOCAL + NUVEM) ---
+            
+            getLocalAvatar(userId) {
+                return safeStorage.getItem(`evo_avatar_local_${userId}`);
+            }
+
+            setLocalAvatar(userId, dataUrl) {
+                safeStorage.setItem(`evo_avatar_local_${userId}`, dataUrl);
+            }
+
             // ATUALIZAÇÃO FIX: Função handleAvatarChange OTIMIZADA E SILENCIOSA
             handleAvatarChange(event) { 
                 const file = event.target.files[0]; 
@@ -2662,7 +2695,7 @@
                     img.onload = async () => { 
                         const canvas = document.createElement('canvas'); 
                         const ctx = canvas.getContext('2d'); 
-                        // Otimização: Máximo 180px para garantir que salva rápido e sem erros
+                        // Otimização Extrema: Máximo 180px para garantir que sempre salva
                         const MAX_SIZE = 180; 
                         let width = img.width; 
                         let height = img.height; 
@@ -2680,41 +2713,51 @@
                         canvas.width = width; 
                         canvas.height = height; 
                         ctx.drawImage(img, 0, 0, width, height); 
-                        // Qualidade 0.5 para equilíbrio entre visual e armazenamento
+                        // Qualidade 0.5 para leveza
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
+
+                        // 1. SALVAR LOCALMENTE (GARANTIA DE EXIBIÇÃO)
+                        this.setLocalAvatar(this.currentUserId, dataUrl);
 
                         if (!this.users[this.currentUserId]) {
                             this.users[this.currentUserId] = {};
                         }
 
+                        // Atualiza objeto em memória
                         const user = this.users[this.currentUserId]; 
                         user.avatar = dataUrl; 
 
+                        // Salva cache geral
                         this.saveUsersToCache(); 
+                        
+                        // Atualiza a tela imediatamente
                         this.showMainApp(); 
 
+                        // 2. TENTAR SINCRONIZAR COM A NUVEM EM SEGUNDO PLANO
                         if (this.firebaseReady && db) { 
                             try {
+                                // Tenta limpar lixo antes de salvar
+                                await this.cleanUserDocument(this.currentUserId);
+                                
                                 await db.collection('users').doc(this.currentUserId).update({ 
                                     avatar: dataUrl,
                                     avatarUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                                 });
-                                this.showToast('Foto atualizada!', 'success');
+                                // Sucesso silencioso na nuvem
                             } catch (err) {
-                                // Se falhar o update simples, tenta limpar e usar set merge
+                                // Se falhar update, tenta set com merge
                                 try {
-                                    await this.cleanUserDocument(this.currentUserId); 
                                     await db.collection('users').doc(this.currentUserId).set({ 
                                         avatar: dataUrl 
                                     }, { merge: true });
-                                    this.showToast('Foto atualizada!', 'success');
                                 } catch (err2) {
-                                    // Falha silenciosa final, mantém local
+                                    // Falha silenciosa na nuvem, mas o local já garantiu a foto
+                                    console.log('Avatar salvo apenas localmente por enquanto.');
                                 }
                             }
-                        } else {
-                            this.showToast('Foto atualizada!', 'success');
                         }
+                        
+                        this.showToast('Foto atualizada!', 'success');
                     }; 
                     img.onerror = () => {
                         this.showToast('Erro ao processar imagem', 'error');
@@ -2725,7 +2768,7 @@
                 };
                 reader.readAsDataURL(file); 
             }
-            async deleteAvatar() { if(!confirm('Remover foto de perfil?')) return; const user = this.users[this.currentUserId]; if(user) { user.avatar = null; this.saveUsersToCache(); this.showMainApp(); if (this.firebaseReady && db) { try { await db.collection('users').doc(this.currentUserId).update({ avatar: firebase.firestore.FieldValue.delete() }); } catch(e) { console.error(e); } } this.showToast('Foto removida', 'success'); } }
+            async deleteAvatar() { if(!confirm('Remover foto de perfil?')) return; const user = this.users[this.currentUserId]; if(user) { user.avatar = null; safeStorage.removeItem(`evo_avatar_local_${this.currentUserId}`); this.saveUsersToCache(); this.showMainApp(); if (this.firebaseReady && db) { try { await db.collection('users').doc(this.currentUserId).update({ avatar: firebase.firestore.FieldValue.delete() }); } catch(e) { console.error(e); } } this.showToast('Foto removida', 'success'); } }
         }
 
         try { window.app = new EvolutionV516(); } catch (error) { console.error('Falha fatal na inicialização do app:', error); }
