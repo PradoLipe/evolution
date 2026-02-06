@@ -1130,7 +1130,7 @@
                      <button class="btn btn-glass" onclick="app.resetDeviceFromModal()">Reset Device</button>
                 </div>
 
-                <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuário permanentemente?')" style="margin-top: 10px; background: rgba(255, 56, 96, 0.2);">🗑️ Excluir Usuário</button>
+                <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuário permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(255, 56, 96, 0.2);">🗑️ Excluir Usuário</button>
             </div>
         </div>
     </div>
@@ -1574,7 +1574,13 @@
                     }
                 };
                 
-                this.openModal('confirmActionModal');
+                // Fechar modais abertos antes de mostrar confirmação
+                this.closeModal('userManagementModal');
+                this.closeModal('adminModal');
+
+                setTimeout(() => {
+                    this.openModal('confirmActionModal');
+                }, 100);
             }
 
             getOrCreateDeviceId() {
@@ -2331,9 +2337,21 @@
             async toggleBlockFromModal() { if(!this.managingUser) return; const user = this.users[this.managingUser]; const newStatus = !user.blocked; this.users[this.managingUser].blocked = newStatus; this.saveUsersToCache(); const btnBlock = document.getElementById('btnBlockUser'); btnBlock.textContent = newStatus ? 'Desbloquear' : 'Bloquear'; btnBlock.className = newStatus ? 'btn btn-success' : 'btn btn-glass'; this.renderUserList(); if(this.firebaseReady && db) { try { await db.collection('users').doc(this.managingUser).update({ blocked: newStatus }); } catch(e) {} } }
             async resetDeviceFromModal() { if(!this.managingUser) return; if(!confirm('Resetar vínculo de dispositivo?')) return; this.users[this.managingUser].deviceId = null; this.saveUsersToCache(); this.showToast('Dispositivo resetado.', 'success'); if(this.firebaseReady && db) { try { await db.collection('users').doc(this.managingUser).update({ deviceId: null }); } catch(e) {} } }
             async deleteUser(docId) { 
-                if (docId === this.currentUserId) return; // Cant delete self
+                if (!docId) {
+                    this.showToast('Erro: ID do usuário não encontrado', 'error');
+                    this.closeModal('confirmActionModal');
+                    return;
+                }
+                
+                if (docId === this.currentUserId) {
+                    this.showToast('Não pode excluir a si mesmo', 'error');
+                    this.closeModal('confirmActionModal');
+                    return;
+                }
                 
                 try {
+                    this.showToast('Excluindo usuário...', 'info');
+                    
                     // Local removal
                     delete this.users[docId];
                     this.saveUsersToCache();
@@ -2341,26 +2359,26 @@
 
                     // Firebase removal
                     if (this.firebaseReady && db) {
-                        // Delete subcollection docs first if possible, or just the main doc
-                        // Firestore requires recursive delete for subcollections usually, but we will delete main pointer
-                        await db.collection('users').doc(docId).delete();
-                        // Also try to delete history if possible
                         try {
+                            // Delete history first
                             await db.collection('users').doc(docId).collection('data').doc('history').delete();
-                        } catch(e){}
+                        } catch(e){ /* History may not exist */ }
+                        
+                        // Delete user document
+                        await db.collection('users').doc(docId).delete();
                     }
-                    this.showToast('Usuário excluído.', 'success');
+                    
+                    this.showToast('Usuário excluído com sucesso!', 'success');
                     this.closeModal('confirmActionModal');
-                    this.closeModal('userManagementModal'); // Close management modal too
+                    this.managingUser = null; // Limpar referência
                 } catch (e) {
-                    this.showToast('Erro ao excluir', 'error');
+                    console.error('Erro ao excluir usuário:', e);
+                    this.showToast('Erro ao excluir: ' + (e.message || 'Erro desconhecido'), 'error');
+                    this.closeModal('confirmActionModal');
                 }
             }
 
-            async deleteUserFromModal() { 
-                if(!this.managingUser) return;
-                // This triggers the confirmation modal logic, handled by openConfirmModal
-            }
+            
             
             setDashboardMode(mode, savePreference = true) { this.dashboardMode = mode; if (savePreference) { safeStorage.setItem('evo_dashboard_mode', mode); } const pillSwitch = document.getElementById('dashboardSegmentedControl'); const btnAll = document.getElementById('btnFilterAll'); const btnMonth = document.getElementById('btnFilterMonth'); const monthSelectorInline = document.getElementById('monthSelectorInline'); const periodIndicator = document.getElementById('periodIndicator'); const monthInput = document.getElementById('dashboardMonthInput'); if(pillSwitch) pillSwitch.setAttribute('data-state', mode); if (mode === 'all') { btnAll.classList.add('active'); btnMonth.classList.remove('active'); if(monthSelectorInline) monthSelectorInline.classList.remove('visible'); if(periodIndicator) periodIndicator.classList.remove('visible'); } else { btnAll.classList.remove('active'); btnMonth.classList.add('active'); if(monthSelectorInline) monthSelectorInline.classList.add('visible'); if(periodIndicator) periodIndicator.classList.add('visible'); if(monthInput && this.selectedMonth) { monthInput.value = this.selectedMonth; } } this.updateDashboard(); }
             updateDashboard() { const mode = this.dashboardMode; const monthInput = document.getElementById('dashboardMonthInput'); const monthVal = monthInput ? monthInput.value : ''; const periodIndicator = document.getElementById('periodIndicator'); if (mode === 'month' && monthVal) { this.selectedMonth = monthVal; safeStorage.setItem('evo_dashboard_month', monthVal); } if(periodIndicator) { if(mode === 'month' && monthVal) { const [year, month] = monthVal.split('-'); periodIndicator.innerHTML = `📅 ${MONTH_NAMES[parseInt(month)-1]} de ${year}`; } else if(mode === 'all') { periodIndicator.innerHTML = '∞ Visão geral de todos os registros'; } } let filteredEntries = []; if (mode === 'all') { filteredEntries = this.entries; } else if (mode === 'month') { if (monthVal) { filteredEntries = this.entries.filter(e => { if (!e.data) return false; const parts = e.data.split('-'); if (parts.length !== 3) return false; const entryMonth = `${parts[0]}-${parts[1]}`; return entryMonth === monthVal; }); } else { filteredEntries = []; } } let tb = 0, tl = 0, p = 0, pg = 0, cp = 0, cpg = 0; if (filteredEntries.length > 0) { filteredEntries.forEach(e => { const b = Number(e.bruto) || 0; const l = Number(e.liquido) || 0; tb += b; tl += l; if (e.pago) { pg += l; cpg++; } else { p += l; cp++; } }); } const elBruto = document.getElementById('dashBruto'); if (elBruto) { elBruto.textContent = this.formatMoney(tb); document.getElementById('dashLiq').textContent = this.formatMoney(tl); document.getElementById('dashPend').textContent = this.formatMoney(p); document.getElementById('dashPago').textContent = this.formatMoney(pg); document.getElementById('countPend').textContent = `${cp} serviço${cp !== 1 ? 's' : ''}`; document.getElementById('countPago').textContent = `${cpg} serviço${cpg !== 1 ? 's' : ''}`; } this.updateMetaProgress(); }
@@ -2481,9 +2499,94 @@
             closeModal(id) { const m = document.getElementById(id); if(m){ m.classList.remove('active'); document.body.style.overflow = ''; } }
             closeModalOnOverlay(e, id) { if (e.target.id === id) this.closeModal(id); }
             toggleSection(id) { document.getElementById(id).classList.toggle('expanded'); }
-            logout() { if (this.unsubscribeUsers) this.unsubscribeUsers(); if (this.unsubscribeEntries) this.unsubscribeEntries(); if (this.unsubscribePending) this.unsubscribePending(); safeStorage.removeItem('evo_session_v54'); window.close(); document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;"><div style="font-size: 4rem; margin-bottom: 20px;">👋</div><h2 style="margin-bottom: 10px; font-family: 'Inter', sans-serif;">Sessão Finalizada</h2><p style="color: #8b92b4; font-family: 'Inter', sans-serif;">Você pode fechar o aplicativo agora.</p><button onclick="location.reload()" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Entrar Novamente</button></div>`; }
+            logout() { if (this.unsubscribeUsers) this.unsubscribeUsers(); if (this.unsubscribeEntries) this.unsubscribeEntries(); if (this.unsubscribePending) this.unsubscribePending(); safeStorage.removeItem('evo_session_v516'); window.close(); document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;"><div style="font-size: 4rem; margin-bottom: 20px;">👋</div><h2 style="margin-bottom: 10px; font-family: 'Inter', sans-serif;">Sessão Finalizada</h2><p style="color: #8b92b4; font-family: 'Inter', sans-serif;">Você pode fechar o aplicativo agora.</p><button onclick="location.reload()" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Entrar Novamente</button></div>`; }
             uploadAvatar() { document.getElementById('avatarInput').click(); }
-            handleAvatarChange(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const MAX_SIZE = 150; let width = img.width; let height = img.height; if (width > height) { if (width > MAX_SIZE) { height = MAX_SIZE * height / width; width = MAX_SIZE; } } else { if (height > MAX_SIZE) { width = MAX_SIZE * width / height; height = MAX_SIZE; } } canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height); const dataUrl = canvas.toDataURL('image/jpeg', 0.8); const user = this.users[this.currentUserId]; user.avatar = dataUrl; this.saveUsersToCache(); this.showMainApp(); if (this.firebaseReady && db) { db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl }).catch(err => console.error(err)); } this.showToast('Foto atualizada!', 'success'); }; }; reader.readAsDataURL(file); }
+            handleAvatarChange(event) { 
+                const file = event.target.files[0]; 
+                if (!file) return; 
+
+                // Validar tipo e tamanho do arquivo
+                if (!file.type.startsWith('image/')) {
+                    this.showToast('Selecione uma imagem válida', 'error');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) { // 5MB max
+                    this.showToast('Imagem muito grande (máx 5MB)', 'error');
+                    return;
+                }
+
+                const reader = new FileReader(); 
+                reader.onload = (e) => { 
+                    const img = new Image(); 
+                    img.src = e.target.result; 
+                    img.onload = () => { 
+                        const canvas = document.createElement('canvas'); 
+                        const ctx = canvas.getContext('2d'); 
+                        const MAX_SIZE = 300; // Aumentado para melhor qualidade
+                        let width = img.width; 
+                        let height = img.height; 
+                        if (width > height) { 
+                            if (width > MAX_SIZE) { 
+                                height = MAX_SIZE * height / width; 
+                                width = MAX_SIZE; 
+                            } 
+                        } else { 
+                            if (height > MAX_SIZE) { 
+                                width = MAX_SIZE * width / height; 
+                                height = MAX_SIZE; 
+                            } 
+                        } 
+                        canvas.width = width; 
+                        canvas.height = height; 
+                        ctx.drawImage(img, 0, 0, width, height); 
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.85); 
+
+                        // Garantir que o usuário existe
+                        if (!this.users[this.currentUserId]) {
+                            this.users[this.currentUserId] = {};
+                        }
+
+                        const user = this.users[this.currentUserId]; 
+                        user.avatar = dataUrl; 
+
+                        // Salvar no cache local
+                        this.saveUsersToCache(); 
+
+                        // Atualizar UI imediatamente
+                        this.showMainApp(); 
+
+                        // Salvar no Firebase com retry
+                        if (this.firebaseReady && db) { 
+                            db.collection('users').doc(this.currentUserId).set({ 
+                                avatar: dataUrl,
+                                avatarUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true })
+                            .then(() => {
+                                this.showToast('Foto atualizada e salva!', 'success');
+                            })
+                            .catch(err => {
+                                console.error('Erro ao salvar avatar:', err);
+                                this.showToast('Foto salva localmente. Sincronizará quando online.', 'warning');
+                                // Adicionar à fila de sincronização
+                                this.queueSyncOperation(() => {
+                                    db.collection('users').doc(this.currentUserId).set({ 
+                                        avatar: dataUrl 
+                                    }, { merge: true });
+                                });
+                            }); 
+                        } else {
+                            this.showToast('Foto salva localmente', 'success');
+                        }
+                    }; 
+                    img.onerror = () => {
+                        this.showToast('Erro ao processar imagem', 'error');
+                    };
+                }; 
+                reader.onerror = () => {
+                    this.showToast('Erro ao ler arquivo', 'error');
+                };
+                reader.readAsDataURL(file); 
+            }
             async deleteAvatar() { if(!confirm('Remover foto de perfil?')) return; const user = this.users[this.currentUserId]; if(user) { user.avatar = null; this.saveUsersToCache(); this.showMainApp(); if (this.firebaseReady && db) { try { await db.collection('users').doc(this.currentUserId).update({ avatar: firebase.firestore.FieldValue.delete() }); } catch(e) { console.error(e); } } this.showToast('Foto removida', 'success'); } }
         }
 
