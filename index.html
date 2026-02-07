@@ -2606,7 +2606,65 @@
             async togglePago(id) { const e = this.entries.find(x => x.id === id); if (e) { e.pago = !e.pago; if (e.pago) { e.paymentDate = new Date().toISOString(); this.triggerPaymentAnimation(e.liquido); } else { delete e.paymentDate; } safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.updateMetaProgress(); this.persistData(); } }
             triggerPaymentAnimation(amount) { const emojis = ['💰', '🤑', '💵', '💲', '🪙']; const particleCount = 30; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.2; const ty = (Math.random() - 1) * window.innerHeight * 0.8; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } const floatEl = document.createElement('div'); floatEl.className = 'payment-float-value'; floatEl.textContent = `+ ${this.formatMoney(amount)}`; floatEl.style.left = '50%'; floatEl.style.top = '50%'; document.body.appendChild(floatEl); setTimeout(() => floatEl.remove(), 1500); }
             deleteEntry(id) { this.pendingDeleteId = id; this.openModal('confirmModal'); }
-            async executeDelete() { if (!this.pendingDeleteId) return; const idToDelete = Number(this.pendingDeleteId); this.entries = this.entries.filter(e => Number(e.id) !== idToDelete); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.closeModal('confirmModal'); this.pendingDeleteId = null; this.expandedHistoryId = null; this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Excluído', 'success'); this.persistData(); }
+            
+            // --- CORREÇÃO DE BUG: EXCLUIR REGISTRO (LÓGICA BLINDADA) ---
+            async executeDelete() {
+                if (!this.pendingDeleteId) return;
+
+                const idToDelete = Number(this.pendingDeleteId);
+                
+                // 1. Identificar o registro e o mês antes de excluir
+                const entryToDelete = this.entries.find(e => Number(e.id) === idToDelete);
+                let monthToDelete = null;
+                
+                if (entryToDelete && entryToDelete.data) {
+                    // Pega o formato YYYY-MM
+                    monthToDelete = entryToDelete.data.substring(0, 7);
+                }
+
+                // 2. Remove do array local
+                this.entries = this.entries.filter(e => Number(e.id) !== idToDelete);
+                
+                // 3. Salva no Storage Local
+                safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                
+                // 4. Fecha modal e limpa estado
+                this.closeModal('confirmModal');
+                this.pendingDeleteId = null;
+                this.expandedHistoryId = null;
+                
+                // 5. Atualiza UI
+                this.updateDashboard();
+                this.renderHistory();
+                this.renderChart();
+                this.updateMetaProgress();
+                this.showToast('Excluído com sucesso', 'success');
+                
+                // 6. Sincronização Inteligente com Firestore
+                if (this.firebaseReady && db && monthToDelete) {
+                    // Verifica se sobrou algo naquele mês
+                    const remaining = this.entries.filter(e => e.data && e.data.startsWith(monthToDelete));
+                    
+                    if (remaining.length === 0) {
+                        // SE O MÊS FICOU VAZIO, DELETA O DOCUMENTO DIRETAMENTE
+                        // Isso impede que o persistData ignore este mês e deixe o arquivo velho lá
+                        try {
+                            const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${monthToDelete}`);
+                            await ref.delete();
+                            console.log(`Documento history_${monthToDelete} deletado pois ficou vazio.`);
+                        } catch (e) {
+                            console.error("Erro ao limpar mês vazio:", e);
+                        }
+                    } else {
+                        // Se ainda tem itens, o persistData normal vai atualizar o arquivo
+                        this.persistData();
+                    }
+                } else {
+                    // Fallback para persistência normal se não tiver firebase ou data
+                    this.persistData();
+                }
+            }
+
             copyEntryDetails(id) { const e = this.entries.find(x => x.id === id); if (!e) return; this.copyToClipboard(`${e.navio} - ${e.dataF}\nTurno: ${e.turno}\nTipo: ${e.tipo}\nBruto: ${this.formatMoney(e.bruto)}\nLíquido: ${this.formatMoney(e.liquido)}`, 'Copiado!'); }
             formatMoney(c) { return (c/100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
             copyToClipboard(t, m) { if(navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(()=>this.showToast(m,'success')).catch(()=>{}); } else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); this.showToast(m, 'success'); } }
