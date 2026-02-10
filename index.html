@@ -319,11 +319,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         @supports (padding-bottom: env(safe-area-inset-bottom)) { .app-footer { padding-bottom: calc(20px + env(safe-area-inset-bottom)); } }
-        .sync-status { position: fixed; bottom: 80px; right: 16px; padding: 8px 12px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; font-size: 0.65rem; font-weight: 600; display: flex; align-items: center; gap: 6px; z-index: 50; transition: all 0.3s ease; }
-        .sync-status.syncing { color: var(--primary); }
-        .sync-status.synced { color: var(--success); }
-        .sync-status.error { color: var(--danger); }
-        .sync-spinner { width: 12px; height: 12px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
+        
         .monthly-query-container { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
         .pending-section { background: rgba(255, 184, 0, 0.05); border: 1px solid rgba(255, 184, 0, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         .pending-title { font-size: 0.8rem; font-weight: 700; color: var(--warning); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -405,10 +401,6 @@
 
     <div class="ambient-bg"></div>
     <div class="toast-container" id="toastContainer"></div>
-    <div class="sync-status hidden" id="syncStatus">
-        <div class="sync-spinner"></div>
-        <span>Sincronizando...</span>
-    </div>
 
     <!-- Container para animação de meta -->
     <div id="goalCelebrationContainer"></div>
@@ -2574,7 +2566,7 @@
                 if (totalPages > 1) { html += `<div class="pagination-controls"><button class="page-btn" onclick="app.changePage(-1)" ${this.currentPage === 1 ? 'disabled' : ''}>←</button><span class="page-info">Página ${this.currentPage} de ${totalPages}</span><button class="page-btn" onclick="app.changePage(1)" ${this.currentPage === totalPages ? 'disabled' : ''}>→</button></div>`; }
                 list.innerHTML = html;
             }
-            async togglePago(id) { const e = this.entries.find(x => x.id === id); if (e) { e.pago = !e.pago; if (e.pago) { e.paymentDate = new Date().toISOString(); this.triggerPaymentAnimation(e.liquido); } else { delete e.paymentDate; } safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.updateMetaProgress(); this.persistData(); } }
+            async togglePago(id) { const e = this.entries.find(x => x.id === id); if (e) { e.pago = !e.pago; if (e.pago) { e.paymentDate = new Date().toISOString(); this.triggerPaymentAnimation(e.liquido); } else { delete e.paymentDate; } safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.updateMetaProgress(); this.persistData(true); } }
             triggerPaymentAnimation(amount) { const emojis = ['💰', '🤑', '💵', '💲', '🪙']; const particleCount = 30; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.2; const ty = (Math.random() - 1) * window.innerHeight * 0.8; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } const floatEl = document.createElement('div'); floatEl.className = 'payment-float-value'; floatEl.textContent = `+ ${this.formatMoney(amount)}`; floatEl.style.left = '50%'; floatEl.style.top = '50%'; document.body.appendChild(floatEl); setTimeout(() => floatEl.remove(), 1500); }
             deleteEntry(id) { this.pendingDeleteId = id; this.openModal('confirmModal'); }
             
@@ -2615,10 +2607,10 @@
                             console.error("Erro ao limpar mês vazio:", e);
                         }
                     } else {
-                        this.persistData();
+                        this.persistData(true);
                     }
                 } else {
-                    this.persistData();
+                    this.persistData(true);
                 }
             }
 
@@ -2628,7 +2620,7 @@
             showToast(m, t='info') { const c = document.getElementById('toastContainer'); const d = document.createElement('div'); d.className = 'toast'; const cl = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)' }; const icons = { success: '✓', error: '✕', warning: '⚠', info: '•' }; d.style.borderLeft = `3px solid ${cl[t]}`; d.innerHTML = `<span style="color:${cl[t]}; font-weight: 800;">${icons[t]}</span> ${m}`; c.appendChild(d); setTimeout(() => d.remove(), 3000); }
             exportData() { const d = { v: 'V517', u: this.currentUser, t: new Date().toISOString(), r: this.entries }; const b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); this.showToast('Backup OK', 'success'); this.closeModal('configModal'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            async importData(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (ev) => { try { const d = JSON.parse(ev.target.result); const reg = d.r || d.registros || []; if (reg.length > 0) { this.entries = reg.map(x => ({ ...x, id: x.id || Date.now()+Math.random(), bruto: Number(x.bruto)||0, liquido: Number(x.liquido)||0 })); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Importado!', 'success'); this.closeModal('configModal'); this.persistData(); } else this.showToast('Inválido', 'error'); } catch (err) { this.showToast('Erro arquivo', 'error'); } }; r.readAsText(f); e.target.value = ''; }
+            async importData(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (ev) => { try { const d = JSON.parse(ev.target.result); const reg = d.r || d.registros || []; if (reg.length > 0) { this.entries = reg.map(x => ({ ...x, id: x.id || Date.now()+Math.random(), bruto: Number(x.bruto)||0, liquido: Number(x.liquido)||0 })); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Importado!', 'success'); this.closeModal('configModal'); this.persistData(true); } else this.showToast('Inválido', 'error'); } catch (err) { this.showToast('Erro arquivo', 'error'); } }; r.readAsText(f); e.target.value = ''; }
             async saveEntry() { 
                 const btn = document.getElementById('btnSaveEntry');
                 if(btn) btn.disabled = true;
@@ -2646,7 +2638,7 @@
                 const safeDateF = `${d}/${m}/${y}`;
 
                 const entry = { id: Date.now(), navio, data, dataF: safeDateF, turno, tipo, valores, conferentes: parseInt(conf), bruto: res.bruto, liquido: res.liquido, pago: false, timestamp: new Date().toISOString() }; 
-                this.entries.unshift(entry); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Salvo!', 'success'); document.getElementById('calcNavio').value = ''; this.triggerMoneyAnimation(); this.persistData(); if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix();
+                this.entries.unshift(entry); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Salvo!', 'success'); document.getElementById('calcNavio').value = ''; this.triggerMoneyAnimation(); this.persistData(true); if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix();
                 
                 setTimeout(() => {
                     if(btn) btn.disabled = false;
@@ -2654,12 +2646,11 @@
             }
             triggerMoneyAnimation() { const emojis = ['💸', '💰', '💵', '🤑', '💎']; const particleCount = 20; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.5; const ty = (Math.random() - 0.5) * window.innerHeight * 1.5; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } }
             
-            async persistData() { 
+            async persistData(immediate = false) { 
                 if (!this.firebaseReady || !db) return; 
                 if (this._persistTimeout) clearTimeout(this._persistTimeout); 
                 
-                // Increased debounce time to 800ms to prevent database spam on rapid clicks
-                this._persistTimeout = setTimeout(async () => { 
+                const performSave = async () => {
                     try { 
                         const grouped = {};
                         
@@ -2694,7 +2685,13 @@
                     } catch (error) {
                         console.error('Erro ao persistir:', error);
                     } 
-                }, 800); 
+                };
+
+                if (immediate) {
+                    await performSave();
+                } else {
+                    this._persistTimeout = setTimeout(performSave, 1000); 
+                }
             }
 
             generateReport() { const navio = document.getElementById('relNavio').value.toUpperCase().trim(); const data = document.getElementById('relData').value; const turno = document.getElementById('relTurno').value; const terno = document.getElementById('relTernoSelecao').value; if (!navio || !data) { this.showToast('Dados incompletos', 'error'); return; } let msg = `*${navio}*\nData: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} - ${turno}\nTerno: ${terno}\n`; if (turno === '15x23') { const p1 = document.getElementById('relP1').value || 0, p2 = document.getElementById('relP2').value || 0; msg += `15×19: ${p1}\n19×23: ${p2}\nTOTAL: ${parseInt(p1) + parseInt(p2)}\n`; } else { msg += `TOTAL: ${document.getElementById('relPT').value || 0}\n`; } msg += `\n${this.currentUser}`; this.copyToClipboard(msg, 'Relatório copiado!'); }
