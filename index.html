@@ -319,7 +319,11 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         @supports (padding-bottom: env(safe-area-inset-bottom)) { .app-footer { padding-bottom: calc(20px + env(safe-area-inset-bottom)); } }
-        
+        .sync-status { position: fixed; bottom: 80px; right: 16px; padding: 8px 12px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; font-size: 0.65rem; font-weight: 600; display: flex; align-items: center; gap: 6px; z-index: 50; transition: all 0.3s ease; }
+        .sync-status.syncing { color: var(--primary); }
+        .sync-status.synced { color: var(--success); }
+        .sync-status.error { color: var(--danger); }
+        .sync-spinner { width: 12px; height: 12px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
         .monthly-query-container { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
         .pending-section { background: rgba(255, 184, 0, 0.05); border: 1px solid rgba(255, 184, 0, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         .pending-title { font-size: 0.8rem; font-weight: 700; color: var(--warning); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -344,7 +348,6 @@
         .vip-gift-notification h4 { font-size: 1rem; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .vip-gift-notification p { font-size: 0.8rem; opacity: 0.9; }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -401,6 +404,10 @@
 
     <div class="ambient-bg"></div>
     <div class="toast-container" id="toastContainer"></div>
+    <div class="sync-status hidden" id="syncStatus">
+        <div class="sync-spinner"></div>
+        <span>Sincronizando...</span>
+    </div>
 
     <!-- Container para animação de meta -->
     <div id="goalCelebrationContainer"></div>
@@ -1396,7 +1403,7 @@
                     });
                 } 
                 else if (this.isIOS) { this.openModal('iosInstallModal'); } 
-                else { this.showToast('Pressione Opções > Adicionar à Tela Inicial', 'info'); }
+                else { this.showToast('Pressione Opções > Adicionar à Tela de Início', 'info'); }
             }
 
             setupPWA() {
@@ -1621,6 +1628,16 @@
                 this.loadUsersFromCache();
                 this.initFirebasePriority();
                 this.checkSession();
+
+                // Adiciona listener para salvar antes de fechar a página
+                window.addEventListener('beforeunload', (e) => {
+                    if (this._persistTimeout) {
+                        clearTimeout(this._persistTimeout);
+                        if (this.firebaseReady && this.currentUserId) {
+                            this.persistDataImmediate().catch(() => {});
+                        }
+                    }
+                });
             }
 
             loadUsersFromCache() {
@@ -2155,20 +2172,29 @@
                 } catch (e) {}
             }
 
+            // FUNÇÃO CORRIGIDA: Listener com proteção contra sobrescrição
             setupEntriesListener(docId) {
                 if (!db) return;
                 if (this.unsubscribeEntries) this.unsubscribeEntries();
 
                 this.unsubscribeEntries = db.collection('users').doc(docId).collection('data')
                     .onSnapshot({ includeMetadataChanges: true }, (snapshot) => {
+                        // Obtém timestamp da última modificação local
+                        let localMaxModified = 0;
+                        try {
+                            this.entries.forEach(e => {
+                                if (e.lastModified > localMaxModified) localMaxModified = e.lastModified;
+                            });
+                        } catch(e) {}
+
                         let allEntries = [];
-                        let maxUpdated = 0;
+                        let serverMaxModified = 0;
 
                         snapshot.forEach(doc => {
                             if (doc.id.startsWith('history_')) {
                                 const data = doc.data();
                                 const updatedAt = data.updatedAt ? data.updatedAt.toMillis() : 0;
-                                if (updatedAt > maxUpdated) maxUpdated = updatedAt;
+                                if (updatedAt > serverMaxModified) serverMaxModified = updatedAt;
 
                                 let monthlyEntries = [];
                                 if (typeof data.history === 'string') {
@@ -2176,20 +2202,39 @@
                                 } else if (Array.isArray(data.history)) {
                                     monthlyEntries = data.history;
                                 }
-                                allEntries = allEntries.concat(monthlyEntries);
+                                
+                                // Só adiciona se não houver versão local mais recente deste entry
+                                monthlyEntries.forEach(serverEntry => {
+                                    const localVersion = this.entries.find(e => e.id === serverEntry.id);
+                                    if (!localVersion || !localVersion.lastModified || 
+                                        (serverEntry.lastModified && serverEntry.lastModified >= localVersion.lastModified) ||
+                                        (!localVersion.lastModified && updatedAt > Date.now() - 10000)) {
+                                        allEntries.push(serverEntry);
+                                    } else {
+                                        allEntries.push(localVersion); // Mantém local mais recente
+                                    }
+                                });
                             }
                         });
 
-                        this.entries = allEntries.map(e => ({ ...e, bruto: Number(e.bruto) || 0, liquido: Number(e.liquido) || 0 }));
-                        this.entries.sort((a, b) => (b.id || 0) - (a.id || 0));
+                        // Só atualiza se dados do servidor forem mais recentes ou mesmos dados (tolerância 2 segundos)
+                        if (serverMaxModified >= localMaxModified - 2000) {
+                            this.entries = allEntries.map(e => ({ 
+                                ...e, 
+                                bruto: Number(e.bruto) || 0, 
+                                liquido: Number(e.liquido) || 0 
+                            }));
+                            this.entries.sort((a, b) => (b.id || 0) - (a.id || 0));
 
-                        this.lastSyncTime = maxUpdated;
-                        safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                        
-                        this.updateDashboard(); 
-                        this.renderHistory(); 
-                        this.renderChart(); 
-                        this.updateMetaProgress();
+                            this.lastSyncTime = serverMaxModified || Date.now();
+                            safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                            
+                            this.updateDashboard(); 
+                            this.renderHistory(); 
+                            this.updateMetaProgress();
+                        } else {
+                            console.log('Ignorando dados do servidor - modificação local mais recente detectada');
+                        }
                     }, (error) => {
                         console.error('Erro no listener de entries:', error);
                     });
@@ -2210,7 +2255,7 @@
                         if (allEntries.length > 0) {
                             const grouped = {};
                             allEntries.forEach(entry => {
-                                const datePart = entry.data ? entry.data.substring(0, 7) : 'unknown'; // YYYY-MM
+                                const datePart = entry.data ? entry.data.substring(0, 7) : 'unknown';
                                 if (!grouped[datePart]) grouped[datePart] = [];
                                 grouped[datePart].push(entry);
                             });
@@ -2250,18 +2295,6 @@
                         this.entries = parsed.map(e => ({ ...e, bruto: Number(e.bruto) || 0, liquido: Number(e.liquido) || 0 }));
                     } catch (e) { this.entries = []; }
                 } else this.entries = [];
-            }
-
-            loadFromFirebase(data) {
-                try {
-                    let restoredEntries = [];
-                    if (typeof data.history === 'string') restoredEntries = JSON.parse(data.history);
-                    else if (Array.isArray(data.history)) restoredEntries = data.history;
-                    this.entries = restoredEntries.map(e => ({ ...e, bruto: Number(e.bruto) || 0, liquido: Number(e.liquido) || 0 }));
-                    this.lastSyncTime = data.updatedAt ? data.updatedAt.toMillis() : Date.now();
-                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                    this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress();
-                } catch (e) {}
             }
 
             checkSession() { 
@@ -2521,7 +2554,7 @@
             calcularSimulacao() { const turno = document.getElementById('simTurno').value; const tipo = document.getElementById('simTipo').value; const conf = document.getElementById('simConf').value; let valores = (turno === '15x23') ? [document.getElementById('simP1').value || 0, document.getElementById('simP2').value || 0] : [document.getElementById('simPT').value || 0]; const res = this.calcularValores(tipo, turno, valores, conf); document.getElementById('simResult').textContent = this.formatMoney(res.liquido); document.getElementById('simDetalhe').textContent = `Bruto: ${this.formatMoney(res.bruto)} | Líquido: ${this.formatMoney(res.liquido)}`; }
             adjustCalcFields() { const turno = document.getElementById('calcTurno').value; const container = document.getElementById('calcCampos'); if (turno === '15x23') { container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0" inputmode="numeric"></div></div>`; } else { container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="calcPT" placeholder="0" inputmode="numeric"></div>`; } }
             toggleRelatorioCampos() { const turno = document.getElementById('relTurno').value; const container = document.getElementById('relCamposProducao'); if (turno === '15x23') { container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div></div>`; } else { container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="relPT" placeholder="0" inputmode="numeric"></div>`; } }
-            triggerGoalCelebration() { const container = document.getElementById('goalCelebrationContainer'); container.innerHTML = '<div class="goal-celebration" id="celebrationOverlay"></div>'; const overlay = document.getElementById('celebrationOverlay'); const colors = ['#00d4ff', '#00d9a6', '#ffd700', '#ff3860', '#7000ff', '#ffb800']; for (let i = 0; i < 100; i++) { const firework = document.createElement('div'); firework.className = 'firework'; firework.style.background = colors[Math.floor(Math.random() * colors.length)]; firework.style.left = Math.random() * 100 + '%'; firework.style.top = Math.random() * 100 + '%'; const angle = Math.random() * Math.PI * 2; const distance = 100 + Math.random() * 300; const fx = Math.cos(angle) * distance; const fy = Math.sin(angle) * distance; firework.style.setProperty('--fx', `${fx}px`); firework.style.setProperty('--fy', `${fy}px`); firework.style.animationDelay = Math.random() * 0.5 + 's'; overlay.appendChild(firework); } const moneyEmojis = ['💸', '💰', '💵', '🤑', '💎', '💲', '🪙']; for (let i = 0; i < 50; i++) { setTimeout(() => { const money = document.createElement('div'); money.className = 'money-particle'; money.textContent = moneyEmojis[Math.floor(Math.random() * moneyEmojis.length)]; money.style.left = Math.random() * window.innerWidth + 'px'; money.style.top = '-50px'; money.style.fontSize = (20 + Math.random() * 20) + 'px'; money.style.animation = `flyAndFade ${1 + Math.random()}s ease-out forwards`; money.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px'); money.style.setProperty('--ty', (window.innerHeight + 100) + 'px'); money.style.setProperty('--rot', (Math.random() * 720) + 'deg'); overlay.appendChild(money); }, i * 50); } const message = GOAL_MESSAGES[Math.floor(Math.random() * GOAL_MESSAGES.length)]; const msgDiv = document.createElement('div'); msgDiv.className = 'goal-message'; msgDiv.innerHTML = `<h2>${message.title}</h2><p>${message.message}</p>`; overlay.appendChild(msgDiv); setTimeout(() => { container.innerHTML = ''; }, 2500); }
+            triggerGoalCelebration() { const container = document.getElementById('goalCelebrationContainer'); container.innerHTML = '<div class="goal-celebration" id="celebrationOverlay"></div>'; const overlay = document.getElementById('celebrationOverlay'); const colors = ['#00d4ff', '#00d9a6', '#ffd700', '#ff3860', '#7000ff', '#ffb800']; for (let i = 0; i < 100; i++) { const firework = document.createElement('div'); firework.className = 'firework'; firework.style.background = colors[Math.floor(Math.random() * colors.length)]; firework.style.left = Math.random() * 100 + '%'; firework.style.top = Math.random() * 100 + '%'; const angle = Math.random() * Math.PI * 2; const distance = 100 + Math.random() * 300; const fx = Math.cos(angle) * distance; const fy = Math.sin(angle) * distance; firework.style.setProperty('--fx', `${fx}px`); firework.style.setProperty('--fy', `${fy}px`); firework.style.animationDelay = Math.random() * 0.5 + 's'; overlay.appendChild(firework); } const moneyEmojis = ['💸', '💰', '💵', '🤑', '💎', '💲', '🪙']; for (let i = 0; i < 50; i++) { setTimeout(() => { const money = document.createElement('div'); money.className = 'money-particle'; money.textContent = moneyEmojis[Math.floor(Math.random() * moneyEmojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; money.style.left = startX + 'px'; money.style.top = startY + 'px'; money.style.fontSize = (20 + Math.random() * 20) + 'px'; money.style.animation = `flyAndFade ${1 + Math.random()}s ease-out forwards`; money.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px'); money.style.setProperty('--ty', (window.innerHeight + 100) + 'px'); money.style.setProperty('--rot', (Math.random() * 720) + 'deg'); overlay.appendChild(money); }, i * 50); } const message = GOAL_MESSAGES[Math.floor(Math.random() * GOAL_MESSAGES.length)]; const msgDiv = document.createElement('div'); msgDiv.className = 'goal-message'; msgDiv.innerHTML = `<h2>${message.title}</h2><p>${message.message}</p>`; overlay.appendChild(msgDiv); setTimeout(() => { container.innerHTML = ''; }, 2500); }
             formatMetaInput(input) { let value = input.value.replace(/[^\d]/g, ''); if (value) { const num = parseInt(value); input.value = num.toLocaleString('pt-BR'); } }
             loadMeta() { const s = safeStorage.getItem(`evo_meta_${btoa(this.currentUser)}`); const startDate = safeStorage.getItem(`evo_meta_start_${btoa(this.currentUser)}`); const goalReached = safeStorage.getItem(`evo_meta_reached_${btoa(this.currentUser)}`); if (s) { this.metaMensal = parseInt(s); this.metaStartDate = startDate ? new Date(startDate) : null; this.metaGoalReached = goalReached === 'true'; this.renderMetaCard(); } }
             saveMeta() { const input = document.getElementById('metaInput'); const rawValue = input.value.replace(/[.]/g, '').replace(',', '.'); const v = parseFloat(rawValue); if (!v || v <= 0) return; this.metaMensal = Math.round(v * 100); this.metaStartDate = new Date(); this.metaGoalReached = false; safeStorage.setItem(`evo_meta_${btoa(this.currentUser)}`, this.metaMensal); safeStorage.setItem(`evo_meta_start_${btoa(this.currentUser)}`, this.metaStartDate.toISOString()); safeStorage.setItem(`evo_meta_reached_${btoa(this.currentUser)}`, 'false'); this.renderMetaCard(); this.toggleMetaEditor(); this.showToast('Nova meta definida!', 'success'); }
@@ -2566,7 +2599,60 @@
                 if (totalPages > 1) { html += `<div class="pagination-controls"><button class="page-btn" onclick="app.changePage(-1)" ${this.currentPage === 1 ? 'disabled' : ''}>←</button><span class="page-info">Página ${this.currentPage} de ${totalPages}</span><button class="page-btn" onclick="app.changePage(1)" ${this.currentPage === totalPages ? 'disabled' : ''}>→</button></div>`; }
                 list.innerHTML = html;
             }
-            async togglePago(id) { const e = this.entries.find(x => x.id === id); if (e) { e.pago = !e.pago; if (e.pago) { e.paymentDate = new Date().toISOString(); this.triggerPaymentAnimation(e.liquido); } else { delete e.paymentDate; } safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.updateMetaProgress(); this.persistData(true); } }
+            
+            // FUNÇÃO CORRIGIDA: Salva imediatamente no Firebase ao marcar como pago
+            async togglePago(id) { 
+                const e = this.entries.find(x => x.id === id); 
+                if (!e) return;
+
+                // Guarda estado anterior para rollback em caso de erro
+                const previousState = e.pago;
+                const previousPaymentDate = e.paymentDate;
+
+                try {
+                    // Atualiza localmente primeiro (feedback imediato)
+                    e.pago = !e.pago; 
+                    e.lastModified = Date.now(); // Timestamp de controle
+                    
+                    if (e.pago) { 
+                        e.paymentDate = new Date().toISOString(); 
+                        this.triggerPaymentAnimation(e.liquido); 
+                    } else { 
+                        delete e.paymentDate; 
+                    } 
+                    
+                    // Salva no localStorage imediatamente
+                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); 
+                    this.updateDashboard(); 
+                    this.renderHistory(); 
+                    this.updateMetaProgress(); 
+                    
+                    // Cancela debounce pendente e salva imediatamente no Firebase
+                    if (this._persistTimeout) {
+                        clearTimeout(this._persistTimeout);
+                        this._persistTimeout = null;
+                    }
+                    
+                    // Mostra indicador de salvamento
+                    this.showToast('Salvando...', 'info');
+                    
+                    // Aguarda o salvamento no Firebase
+                    await this.persistDataImmediate();
+                    this.showToast(e.pago ? '✓ Marcado como pago' : '↩ Marcado como pendente', 'success');
+                    
+                } catch (err) {
+                    // Rollback em caso de erro
+                    console.error('Erro ao salvar pagamento:', err);
+                    e.pago = previousState;
+                    e.paymentDate = previousPaymentDate;
+                    if (!e.pago) delete e.paymentDate;
+                    
+                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                    this.renderHistory();
+                    this.showToast('Erro ao salvar. Verifique a conexão.', 'error');
+                }
+            }
+
             triggerPaymentAnimation(amount) { const emojis = ['💰', '🤑', '💵', '💲', '🪙']; const particleCount = 30; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.2; const ty = (Math.random() - 1) * window.innerHeight * 0.8; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } const floatEl = document.createElement('div'); floatEl.className = 'payment-float-value'; floatEl.textContent = `+ ${this.formatMoney(amount)}`; floatEl.style.left = '50%'; floatEl.style.top = '50%'; document.body.appendChild(floatEl); setTimeout(() => floatEl.remove(), 1500); }
             deleteEntry(id) { this.pendingDeleteId = id; this.openModal('confirmModal'); }
             
@@ -2607,10 +2693,10 @@
                             console.error("Erro ao limpar mês vazio:", e);
                         }
                     } else {
-                        this.persistData(true);
+                        this.persistData();
                     }
                 } else {
-                    this.persistData(true);
+                    this.persistData();
                 }
             }
 
@@ -2620,7 +2706,7 @@
             showToast(m, t='info') { const c = document.getElementById('toastContainer'); const d = document.createElement('div'); d.className = 'toast'; const cl = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)' }; const icons = { success: '✓', error: '✕', warning: '⚠', info: '•' }; d.style.borderLeft = `3px solid ${cl[t]}`; d.innerHTML = `<span style="color:${cl[t]}; font-weight: 800;">${icons[t]}</span> ${m}`; c.appendChild(d); setTimeout(() => d.remove(), 3000); }
             exportData() { const d = { v: 'V517', u: this.currentUser, t: new Date().toISOString(), r: this.entries }; const b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); this.showToast('Backup OK', 'success'); this.closeModal('configModal'); }
             triggerImport() { document.getElementById('importInput').click(); }
-            async importData(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (ev) => { try { const d = JSON.parse(ev.target.result); const reg = d.r || d.registros || []; if (reg.length > 0) { this.entries = reg.map(x => ({ ...x, id: x.id || Date.now()+Math.random(), bruto: Number(x.bruto)||0, liquido: Number(x.liquido)||0 })); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Importado!', 'success'); this.closeModal('configModal'); this.persistData(true); } else this.showToast('Inválido', 'error'); } catch (err) { this.showToast('Erro arquivo', 'error'); } }; r.readAsText(f); e.target.value = ''; }
+            async importData(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (ev) => { try { const d = JSON.parse(ev.target.result); const reg = d.r || d.registros || []; if (reg.length > 0) { this.entries = reg.map(x => ({ ...x, id: x.id || Date.now()+Math.random(), bruto: Number(x.bruto)||0, liquido: Number(x.liquido)||0 })); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Importado!', 'success'); this.closeModal('configModal'); this.persistData(); } else this.showToast('Inválido', 'error'); } catch (err) { this.showToast('Erro arquivo', 'error'); } }; r.readAsText(f); e.target.value = ''; }
             async saveEntry() { 
                 const btn = document.getElementById('btnSaveEntry');
                 if(btn) btn.disabled = true;
@@ -2638,7 +2724,7 @@
                 const safeDateF = `${d}/${m}/${y}`;
 
                 const entry = { id: Date.now(), navio, data, dataF: safeDateF, turno, tipo, valores, conferentes: parseInt(conf), bruto: res.bruto, liquido: res.liquido, pago: false, timestamp: new Date().toISOString() }; 
-                this.entries.unshift(entry); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Salvo!', 'success'); document.getElementById('calcNavio').value = ''; this.triggerMoneyAnimation(); this.persistData(true); if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix();
+                this.entries.unshift(entry); safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries)); this.updateDashboard(); this.renderHistory(); this.renderChart(); this.updateMetaProgress(); this.showToast('Salvo!', 'success'); document.getElementById('calcNavio').value = ''; this.triggerMoneyAnimation(); this.persistData(); if (!this.isAdmin && !this.isVip && Math.random() < 0.3) this.showPix();
                 
                 setTimeout(() => {
                     if(btn) btn.disabled = false;
@@ -2646,20 +2732,61 @@
             }
             triggerMoneyAnimation() { const emojis = ['💸', '💰', '💵', '🤑', '💎']; const particleCount = 20; for (let i = 0; i < particleCount; i++) { const particle = document.createElement('div'); particle.className = 'money-particle'; particle.textContent = emojis[Math.floor(Math.random() * emojis.length)]; const startX = window.innerWidth / 2; const startY = window.innerHeight / 2; particle.style.left = startX + 'px'; particle.style.top = startY + 'px'; const tx = (Math.random() - 0.5) * window.innerWidth * 1.5; const ty = (Math.random() - 0.5) * window.innerHeight * 1.5; const rot = (Math.random() - 0.5) * 720; particle.style.setProperty('--tx', `${tx}px`); particle.style.setProperty('--ty', `${ty}px`); particle.style.setProperty('--rot', `${rot}deg`); document.body.appendChild(particle); setTimeout(() => particle.remove(), 1000); } }
             
-            async persistData(immediate = false) { 
+            // NOVA FUNÇÃO: Persistência imediata sem debounce (para togglePago)
+            async persistDataImmediate() { 
+                if (!this.firebaseReady || !db || !this.currentUserId) return; 
+                
+                try { 
+                    const grouped = {};
+                    const validEntries = this.entries.filter(e => e && e.data && typeof e.data === 'string' && e.data.length >= 7);
+
+                    validEntries.forEach(entry => {
+                        try {
+                            const datePart = entry.data.substring(0, 7); // YYYY-MM
+                            if (!grouped[datePart]) grouped[datePart] = [];
+                            grouped[datePart].push(entry);
+                        } catch (err) {
+                            console.warn('Erro ao agrupar entry:', entry);
+                        }
+                    });
+
+                    const promises = [];
+                    for (const [month, entries] of Object.entries(grouped)) {
+                        if (month && month !== 'unknown') {
+                            const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
+                            promises.push(
+                                ref.set({ 
+                                    history: JSON.stringify(entries), 
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                                    count: entries.length 
+                                })
+                            );
+                        }
+                    }
+                    
+                    await Promise.all(promises);
+                    this.lastSyncTime = Date.now();
+                    console.log('✓ Dados salvos imediatamente no Firebase');
+                } catch (error) {
+                    console.error('Erro na persistência imediata:', error);
+                    throw error;
+                } 
+            }
+            
+            // FUNÇÃO ORIGINAL: Persistência com debounce (para outras operações)
+            async persistData() { 
                 if (!this.firebaseReady || !db) return; 
                 if (this._persistTimeout) clearTimeout(this._persistTimeout); 
                 
-                const performSave = async () => {
+                this._persistTimeout = setTimeout(async () => { 
                     try { 
                         const grouped = {};
                         
-                        // Safety filter: ensure data integrity
                         const validEntries = this.entries.filter(e => e && e.data && typeof e.data === 'string' && e.data.length >= 7);
 
                         validEntries.forEach(entry => {
                             try {
-                                const datePart = entry.data.substring(0, 7); // YYYY-MM
+                                const datePart = entry.data.substring(0, 7);
                                 if (!grouped[datePart]) grouped[datePart] = [];
                                 grouped[datePart].push(entry);
                             } catch (err) {
@@ -2671,8 +2798,8 @@
                         
                         for (const [month, entries] of Object.entries(grouped)) {
                             if (month && month !== 'unknown') {
-                                const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
-                                batch.set(ref, { 
+                                const newDocRef = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
+                                batch.set(newDocRef, { 
                                     history: JSON.stringify(entries), 
                                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(), 
                                     count: entries.length 
@@ -2685,13 +2812,7 @@
                     } catch (error) {
                         console.error('Erro ao persistir:', error);
                     } 
-                };
-
-                if (immediate) {
-                    await performSave();
-                } else {
-                    this._persistTimeout = setTimeout(performSave, 1000); 
-                }
+                }, 800); 
             }
 
             generateReport() { const navio = document.getElementById('relNavio').value.toUpperCase().trim(); const data = document.getElementById('relData').value; const turno = document.getElementById('relTurno').value; const terno = document.getElementById('relTernoSelecao').value; if (!navio || !data) { this.showToast('Dados incompletos', 'error'); return; } let msg = `*${navio}*\nData: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} - ${turno}\nTerno: ${terno}\n`; if (turno === '15x23') { const p1 = document.getElementById('relP1').value || 0, p2 = document.getElementById('relP2').value || 0; msg += `15×19: ${p1}\n19×23: ${p2}\nTOTAL: ${parseInt(p1) + parseInt(p2)}\n`; } else { msg += `TOTAL: ${document.getElementById('relPT').value || 0}\n`; } msg += `\n${this.currentUser}`; this.copyToClipboard(msg, 'Relatório copiado!'); }
