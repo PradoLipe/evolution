@@ -938,6 +938,7 @@
     </div>
 
     <script>
+
     // ============================================
     // EVOLUTION V5.20 - CODIGO COMPLETO E FUNCIONAL
     // ============================================
@@ -2189,24 +2190,8 @@ ${this.currentUser}`;
             }
         }
 
-            try {
-                const snap = await db.collection('pendingUsers').get();
-                this.pendingUsers = [];
-                snap.forEach(doc => this.pendingUsers.push({ ...doc.data(), docId: doc.id }));
-                this.renderPendingUsers();
 
-                if (this.unsubscribePending) this.unsubscribePending();
-                this.unsubscribePending = db.collection('pendingUsers').onSnapshot((snapshot) => {
-                    this.pendingUsers = [];
-                    snapshot.forEach(doc => this.pendingUsers.push({ ...doc.data(), docId: doc.id }));
-                    this.renderPendingUsers();
-                });
-            } catch (e) {
-                this.renderPendingUsers();
-            }
-        }
-
-                renderPendingUsers() {
+        renderPendingUsers() {
             const container = document.getElementById('pendingList');
             if (!container) return;
 
@@ -2306,7 +2291,6 @@ async approveUser(docId) {
                 this.renderPendingUsers();
                 this.showToast('Rejeitado localmente, mas falhou sincronizar no Firebase', 'warning');
             }
-        }
         }
 
         async fetchAdminSettings() {
@@ -2990,6 +2974,7 @@ async approveUser(docId) {
 
     // Inicializar app
     window.app = new EvolutionApp();
+    
     </script>
 </body>
 </html>
