@@ -2279,27 +2279,6 @@ ${this.currentUser}`;
             }).join('');
         }
 
-            container.innerHTML = filtered.map(p => {
-                const safeDocId = JSON.stringify(p.docId || '');
-                const safeName = (p.name || 'SEM NOME');
-                const safeCode = (p.code || '------');
-                const dt = p.requestedAt ? new Date(p.requestedAt) : null;
-                const dateTxt = dt && !isNaN(dt.getTime()) ? dt.toLocaleDateString('pt-BR') : 'data desconhecida';
-                return `
-                    <div class="pending-item">
-                        <div class="pending-info">
-                            <span class="pending-name">${safeName}</span>
-                            <span class="pending-date">PIN: ${safeCode} • ${dateTxt}</span>
-                        </div>
-                        <div class="pending-actions">
-                            <button class="btn-tiny btn-approve" onclick="app.approveUser(${safeDocId})">✓</button>
-                            <button class="btn-tiny btn-reject" onclick="app.rejectUser(${safeDocId})">✕</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
 async approveUser(docId) {
             const pending = this.pendingUsers.find(p => (p.docId === docId) || (p.code === docId));
             if (!pending) return;
@@ -2355,16 +2334,23 @@ async approveUser(docId) {
         
 
         async rejectUser(docId) {
+            const pending = this.pendingUsers.find(p => (p.docId === docId) || (p.code === docId));
+            if (!pending) {
+                this.showToast('Pedido nao encontrado', 'error');
+                return;
+            }
+            const pendingDocId = pending.docId || docId;
+
             try {
-                if (db) await db.collection('pendingUsers').doc(pending.docId || docId).delete();
-                this.pendingUsers = this.pendingUsers.filter(p => (p.docId !== docId) && (p.code !== docId));
-                this.removeLocalPendingByDocId(pending.docId || docId);
+                if (db) await db.collection('pendingUsers').doc(pendingDocId).delete();
+                this.pendingUsers = this.pendingUsers.filter(p => (p.docId !== pendingDocId) && (p.code !== docId));
+                this.removeLocalPendingByDocId(pendingDocId);
                 this.renderPendingUsers();
                 this.showToast('Cadastro rejeitado', 'info');
             } catch (e) {
                 // Fallback local
-                this.pendingUsers = this.pendingUsers.filter(p => (p.docId !== (pending.docId || docId)) && (p.code !== docId));
-                this.removeLocalPendingByDocId(pending.docId || docId);
+                this.pendingUsers = this.pendingUsers.filter(p => (p.docId !== pendingDocId) && (p.code !== docId));
+                this.removeLocalPendingByDocId(pendingDocId);
                 this.renderPendingUsers();
                 this.showToast('Rejeitado localmente, mas falhou sincronizar no Firebase', 'warning');
             }
@@ -2795,91 +2781,6 @@ async approveUser(docId) {
                     this.showToast('Selecione um mes', 'error');
                     return;
                 }
-                const [y, m] = monthVal.split('-');
-                filtered = this.entries.filter(e => {
-                    if (!e.data) return false;
-                    const parts = e.data.split('-');
-                    return parts[0] === y && parts[1] === m;
-                });
-                titlePeriod = `Mensal (${m}/${y})`;
-            }
-
-            if (filtered.length === 0) {
-                this.showToast('Nenhum dado no periodo', 'warning');
-                return;
-            }
-
-            const emitDate = new Date();
-            const emitStr = emitDate.toLocaleString('pt-BR');
-
-            // Cabeçalho (desenhado 1x aqui e repetido nas páginas pelo didDrawPage)
-            const drawHeader = () => {
-                doc.setFillColor(10, 14, 39);
-                doc.rect(0, 0, 210, 40, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.text("EVOLUTION", 105, 18, { align: "center" });
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.text("Relatorio de Producao", 105, 26, { align: "center" });
-            };
-
-            const drawFooter = () => {
-                const pageHeight = doc.internal.pageSize.getHeight();
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8);
-                doc.setTextColor(120, 120, 120);
-                doc.text(footerText, 105, pageHeight - 8, { align: "center" });
-            };
-
-            drawHeader();
-
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(12);
-            doc.text(`Usuario: ${this.currentUser}`, 14, 50);
-            doc.text(`Periodo: ${titlePeriod}`, 14, 56);
-            doc.setFontSize(11);
-            doc.text(`Emissao: ${emitStr}`, 14, 62);
-
-            filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            const tableBody = filtered.map(e => {
-                totalBruto += Number(e.bruto) || 0;
-                totalLiquido += Number(e.liquido) || 0;
-                return [
-                    e.dataF,
-                    e.navio,
-                    e.turno,
-                    e.tipo === 'normal' ? 'Normal' : 'Feriado',
-                    e.conferentes,
-                    this.formatMoney(e.bruto),
-                    this.formatMoney(e.liquido)
-                ];
-            });
-
-            doc.autoTable({
-                startY: 70,
-                margin: { top: 70, bottom: 18 },
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto', 'Liquido']],
-                body: tableBody,
-                theme: 'striped',
-                headStyles: { fillColor: [0, 212, 255], textColor: [255, 255, 255], fontStyle: 'bold' },
-                foot: [['', '', '', '', 'TOTAIS:', this.formatMoney(totalBruto), this.formatMoney(totalLiquido)]],
-                footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
-                didDrawPage: () => {
-                    // Repete o footer (e mantém o header visual em páginas extras)
-                    drawFooter();
-                }
-            });
-
-            // Garante footer também na 1ª página se a tabela for curta
-            drawFooter();
-
-            doc.save(`Relatorio_Evolution_${this.currentUser.replace(/\s/g, '_')}_${type}.pdf`);
-            this.closeModal('pdfOptionsModal');
-            this.showToast('PDF gerado!', 'success');
-        }
                 const [y, m] = monthVal.split('-');
                 filtered = this.entries.filter(e => {
                     if (!e.data) return false;
