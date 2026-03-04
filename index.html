@@ -1321,6 +1321,29 @@
             safeStorage.setItem('evo_pending_users', JSON.stringify(pending));
         }
 
+
+        getLocalPendingUsers() {
+            try {
+                const raw = safeStorage.getItem('evo_pending_users');
+                const arr = raw ? JSON.parse(raw) : [];
+                return Array.isArray(arr) ? arr : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        setLocalPendingUsers(list) {
+            try {
+                safeStorage.setItem('evo_pending_users', JSON.stringify(Array.isArray(list) ? list : []));
+            } catch (e) {}
+        }
+
+        removeLocalPendingByDocId(docId) {
+            const list = this.getLocalPendingUsers();
+            const next = list.filter(p => (p.docId || (p.code ? `${p.code}-${(p.name || '').replace(/\s+/g, '_')}` : '')) !== docId && p.docId !== docId);
+            this.setLocalPendingUsers(next);
+        }
+
         // ============================================
         // SESSAO E RESTAURACAO
         // ============================================
@@ -2119,10 +2142,52 @@ ${this.currentUser}`;
         }
 
         async loadPendingUsers() {
+            // Sempre carregar pendencias locais (fallback quando Firestore falha)
+            const localPending = this.getLocalPendingUsers();
+            this.pendingUsers = Array.isArray(localPending) ? [...localPending] : [];
+
+            // Tentar carregar do Firestore e mesclar
             if (!db) {
                 this.renderPendingUsers();
                 return;
             }
+
+            try {
+                const snap = await db.collection('pendingUsers').get();
+                const remote = [];
+                snap.forEach(doc => remote.push({ ...doc.data(), docId: doc.id }));
+
+                // Mesclar remoto + local (prioriza remoto quando docId igual)
+                const byKey = new Map();
+                [...this.pendingUsers, ...remote].forEach(p => {
+                    const key = p.docId || p.code;
+                    if (!key) return;
+                    byKey.set(key, p);
+                });
+                this.pendingUsers = Array.from(byKey.values());
+
+                this.renderPendingUsers();
+
+                if (this.unsubscribePending) this.unsubscribePending();
+                this.unsubscribePending = db.collection('pendingUsers').onSnapshot((snapshot) => {
+                    const remote2 = [];
+                    snapshot.forEach(doc => remote2.push({ ...doc.data(), docId: doc.id }));
+
+                    const local2 = this.getLocalPendingUsers();
+                    const byKey2 = new Map();
+                    [...(Array.isArray(local2) ? local2 : []), ...remote2].forEach(p => {
+                        const key = p.docId || p.code;
+                        if (!key) return;
+                        byKey2.set(key, p);
+                    });
+                    this.pendingUsers = Array.from(byKey2.values());
+                    this.renderPendingUsers();
+                });
+            } catch (e) {
+                // Se Firestore falhar, pelo menos mostra o local
+                this.renderPendingUsers();
+            }
+        }
 
             try {
                 const snap = await db.collection('pendingUsers').get();
@@ -2141,30 +2206,41 @@ ${this.currentUser}`;
             }
         }
 
-        renderPendingUsers() {
+                renderPendingUsers() {
             const container = document.getElementById('pendingList');
             if (!container) return;
 
-            if (!this.pendingUsers || this.pendingUsers.length === 0) {
+            const list = Array.isArray(this.pendingUsers) ? this.pendingUsers.slice() : [];
+            // Mostrar somente "pending" quando existir status
+            const filtered = list.filter(p => !p.status || p.status === 'pending');
+
+            if (filtered.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px;">Nenhum cadastro pendente</div>';
                 return;
             }
 
-            container.innerHTML = this.pendingUsers.map(p => `
-                <div class="pending-item">
-                    <div class="pending-info">
-                        <span class="pending-name">${p.name}</span>
-                        <span class="pending-date">PIN: ${p.code} • ${new Date(p.requestedAt).toLocaleDateString('pt-BR')}</span>
+            container.innerHTML = filtered.map(p => {
+                const safeDocId = JSON.stringify(p.docId || '');
+                const safeName = (p.name || 'SEM NOME');
+                const safeCode = (p.code || '------');
+                const dt = p.requestedAt ? new Date(p.requestedAt) : null;
+                const dateTxt = dt && !isNaN(dt.getTime()) ? dt.toLocaleDateString('pt-BR') : 'data desconhecida';
+                return `
+                    <div class="pending-item">
+                        <div class="pending-info">
+                            <span class="pending-name">${safeName}</span>
+                            <span class="pending-date">PIN: ${safeCode} • ${dateTxt}</span>
+                        </div>
+                        <div class="pending-actions">
+                            <button class="btn-tiny btn-approve" onclick="app.approveUser(${safeDocId})">✓</button>
+                            <button class="btn-tiny btn-reject" onclick="app.rejectUser(${safeDocId})">✕</button>
+                        </div>
                     </div>
-                    <div class="pending-actions">
-                        <button class="btn-tiny btn-approve" onclick="app.approveUser('${p.docId}')">✓</button>
-                        <button class="btn-tiny btn-reject" onclick="app.rejectUser('${p.docId}')">✕</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        async approveUser(docId) {
+async approveUser(docId) {
             const pending = this.pendingUsers.find(p => p.docId === docId);
             if (!pending) return;
 
@@ -2197,24 +2273,40 @@ ${this.currentUser}`;
                 }
                 this.users[docId] = userData;
                 this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
+                this.removeLocalPendingByDocId(docId);
                 this.saveUsersToCache();
                 this.renderPendingUsers();
                 this.renderUserList();
                 this.showToast(`Usuario ${pending.name} aprovado!`, 'success');
             } catch (e) {
-                this.showToast('Erro ao aprovar', 'error');
+                // Fallback local (quando Firestore falha): ainda permite aprovar no dispositivo
+                this.users[docId] = userData;
+                this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
+                this.removeLocalPendingByDocId(docId);
+                this.saveUsersToCache();
+                this.renderPendingUsers();
+                this.renderUserList();
+                this.showToast('Aprovado localmente, mas falhou sincronizar no Firebase', 'warning');
             }
         }
+
+        
 
         async rejectUser(docId) {
             try {
                 if (db) await db.collection('pendingUsers').doc(docId).delete();
                 this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
+                this.removeLocalPendingByDocId(docId);
                 this.renderPendingUsers();
                 this.showToast('Cadastro rejeitado', 'info');
             } catch (e) {
-                this.showToast('Erro ao rejeitar', 'error');
+                // Fallback local
+                this.pendingUsers = this.pendingUsers.filter(p => p.docId !== docId);
+                this.removeLocalPendingByDocId(docId);
+                this.renderPendingUsers();
+                this.showToast('Rejeitado localmente, mas falhou sincronizar no Firebase', 'warning');
             }
+        }
         }
 
         async fetchAdminSettings() {
