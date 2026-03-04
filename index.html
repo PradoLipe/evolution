@@ -1089,6 +1089,21 @@
                     </div>
                 </div>
 
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admFlood')">
+                        <span>💸 Taxa de Doação (Flood)</span>
+                        <span>▼</span>
+                    </button>
+                    <div id="admFlood" class="admin-toggle-content">
+                        <div class="input-group">
+                            <label class="input-label">Probabilidade de exibir mensagem (%)</label>
+                            <input type="number" id="floodPercentage" min="0" max="100" value="40" placeholder="40">
+                            <div class="input-hint">Valor de 0 a 100. Define a % de chance de exibir a mensagem pedindo doação.</div>
+                        </div>
+                        <button class="btn btn-success" onclick="app.saveFloodRate()">Salvar Taxa</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1558,10 +1573,16 @@
                 const existingUser = Object.values(this.users).find(u => u.code === pending.code);
                 if (existingUser) { this.showToast(`PIN ${pending.code} já em uso por ${existingUser.name}`, 'error'); return; }
 
+                // Calcula data de vencimento do trial (15 dias a partir de agora)
+                const trialDate = new Date();
+                trialDate.setDate(trialDate.getDate() + 15);
+
                 const userData = {
                     name: pending.name, code: pending.code, blocked: false, isAdmin: false,
                     approvedAt: new Date().toISOString(), approvedBy: this.currentUserId, 
-                    deviceId: pending.deviceId, docId: docId, trialUsed: false 
+                    deviceId: pending.deviceId, docId: docId, trialUsed: true,
+                    vipTrialUntil: trialDate.toISOString(),
+                    vipType: 'trial'
                 };
 
                 try {
@@ -2564,11 +2585,69 @@
                         </div>
                     </div>`}).join('');
             }
-            renderAdminRates() { try { document.getElementById('rate_07x15_normal').value = this.taxas['07x15'].normal; document.getElementById('rate_07x15_feriado').value = this.taxas['07x15'].feriado; document.getElementById('rate_15x23_p1_normal').value = this.taxas['15x23'].normal.p1; document.getElementById('rate_15x23_p1_feriado').value = this.taxas['15x23'].feriado.p1; document.getElementById('rate_15x23_p2_normal').value = this.taxas['15x23'].normal.p2; document.getElementById('rate_15x23_p2_feriado').value = this.taxas['15x23'].feriado.p2; document.getElementById('rate_23x07_normal').value = this.taxas['23x07'].normal; document.getElementById('rate_23x07_feriado').value = this.taxas['23x07'].feriado; } catch (e) {} }
+            renderAdminRates() { 
+                try { 
+                    document.getElementById('rate_07x15_normal').value = this.taxas['07x15'].normal; 
+                    document.getElementById('rate_07x15_feriado').value = this.taxas['07x15'].feriado; 
+                    document.getElementById('rate_15x23_p1_normal').value = this.taxas['15x23'].normal.p1; 
+                    document.getElementById('rate_15x23_p1_feriado').value = this.taxas['15x23'].feriado.p1; 
+                    document.getElementById('rate_15x23_p2_normal').value = this.taxas['15x23'].normal.p2; 
+                    document.getElementById('rate_15x23_p2_feriado').value = this.taxas['15x23'].feriado.p2; 
+                    document.getElementById('rate_23x07_normal').value = this.taxas['23x07'].normal; 
+                    document.getElementById('rate_23x07_feriado').value = this.taxas['23x07'].feriado; 
+                } catch (e) {} 
+                // Carrega a taxa de flood também
+                this.loadFloodRate();
+            }
             async saveRates() { const newRates = { '07x15': { normal: parseFloat(document.getElementById('rate_07x15_normal').value), feriado: parseFloat(document.getElementById('rate_07x15_feriado').value) }, '15x23': { normal: { p1: parseFloat(document.getElementById('rate_15x23_p1_normal').value), p2: parseFloat(document.getElementById('rate_15x23_p2_normal').value) }, feriado: { p1: parseFloat(document.getElementById('rate_15x23_p1_feriado').value), p2: parseFloat(document.getElementById('rate_15x23_p2_feriado').value) } }, '23x07': { normal: parseFloat(document.getElementById('rate_23x07_normal').value), feriado: parseFloat(document.getElementById('rate_23x07_feriado').value) } }; this.taxas = newRates; safeStorage.setItem('evo_rates_v54', JSON.stringify(newRates)); this.showToast('Taxas salvas!', 'success'); this.closeModal('adminModal'); if (this.firebaseReady && db) { try { await db.collection('config').doc('rates').set(newRates); } catch (e) {} } }
             toggleMsgDates() { const type = document.getElementById('msgType').value; document.getElementById('msgDates').style.display = type === 'period' ? 'grid' : 'none'; }
             async publishMessage() { const content = document.getElementById('msgContent').value.trim(); const type = document.getElementById('msgType').value; const start = document.getElementById('msgStart').value; const end = document.getElementById('msgEnd').value; if (!content) { this.showToast('Digite msg', 'error'); return; } const msgData = { content, type, start, end, id: Date.now().toString(), updatedAt: new Date().toISOString() }; if (this.firebaseReady && db) { try { await db.collection('config').doc('message').set(msgData); this.showToast('Publicado!', 'success'); } catch (e) {} } }
             async deleteMessage() { if (this.firebaseReady && db) { try { await db.collection('config').doc('message').delete(); this.showToast('Removido!', 'success'); } catch (e) {} } }
+            async saveFloodRate() { 
+                const percentage = parseInt(document.getElementById('floodPercentage').value); 
+                if (isNaN(percentage) || percentage < 0 || percentage > 100) { 
+                    this.showToast('Digite um valor entre 0 e 100', 'error'); 
+                    return; 
+                } 
+                const floodRate = percentage / 100;
+                safeStorage.setItem('evo_flood_rate', floodRate);
+                if (this.firebaseReady && db) { 
+                    try { 
+                        await db.collection('config').doc('floodRate').set({ rate: floodRate, percentage: percentage, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); 
+                        this.showToast('Taxa salva!', 'success'); 
+                    } catch (e) { this.showToast('Erro ao salvar', 'error'); } 
+                } else {
+                    this.showToast('Taxa salva localmente!', 'success');
+                }
+            }
+            async loadFloodRate() { 
+                let rate = 0.4; // Default 40%
+                let percentage = 40;
+                // Tenta carregar do localStorage primeiro
+                const localRate = safeStorage.getItem('evo_flood_rate');
+                if (localRate) {
+                    rate = parseFloat(localRate);
+                    percentage = Math.round(rate * 100);
+                }
+                // Tenta carregar do Firebase
+                if (this.firebaseReady && db) { 
+                    try { 
+                        const doc = await db.collection('config').doc('floodRate').get(); 
+                        if (doc.exists) { 
+                            rate = doc.data().rate || 0.4; 
+                            percentage = doc.data().percentage || 40;
+                            safeStorage.setItem('evo_flood_rate', rate);
+                        } 
+                    } catch (e) {} 
+                }
+                const input = document.getElementById('floodPercentage');
+                if (input) input.value = percentage;
+                return rate;
+            }
+            getFloodRate() {
+                const localRate = safeStorage.getItem('evo_flood_rate');
+                return localRate ? parseFloat(localRate) : 0.4;
+            }
             async checkSystemMessage() { if (!this.firebaseReady || !db) return; try { const doc = await db.collection('config').doc('message').get(); if (doc.exists) { const msg = doc.data(); let show = false; if (msg.type === 'always') show = true; else if (msg.type === 'once') { if (!safeStorage.getItem(`evo_msg_seen_${msg.id}`)) show = true; } else if (msg.type === 'period') { const now = new Date().toISOString().split('T')[0]; if (now >= msg.start && now <= msg.end) show = true; } if (show) { document.getElementById('sysMsgContent').textContent = msg.content; this.openModal('messageModal'); if (msg.type === 'once') safeStorage.setItem(`evo_msg_seen_${msg.id}`, 'true'); } } const localGiftRead = safeStorage.getItem(`evo_gift_read_${this.currentUserId}`); if (!localGiftRead) { const notifDoc = await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').get(); if (notifDoc.exists && !notifDoc.data().read) { const msg = notifDoc.data().message || 'Você recebeu um VIP de presente do Administrador! 🎁'; document.getElementById('vipNotifType').textContent = 'Presente do Admin 🎁'; document.getElementById('vipNotifDate').textContent = 'Vencimento: Verifique no Perfil'; document.getElementById('vipGiftMessageContainer').innerHTML = `<p>${msg}</p>`; document.getElementById('vipGiftMessageContainer').classList.remove('hidden'); const btn = document.getElementById('btnVipAction'); btn.textContent = 'Aceitar Presente'; btn.onclick = async () => { safeStorage.setItem(`evo_gift_read_${this.currentUserId}`, 'true'); app.closeModal('vipNotificationModal'); app.showToast('Presente aceito!', 'success'); await db.collection('users').doc(this.currentUserId).collection('notifications').doc('vipGift').update({ read: true }); }; this.openModal('vipNotificationModal'); } } } catch(e) {} }
             calcularValores(tipo, turno, valores, qtdConf) { const taxa = this.taxas[turno]; const numConf = parseInt(qtdConf) || 1; let bruto = 0; if (turno === '15x23') { const t = tipo === 'feriado' ? taxa.feriado : taxa.normal; bruto = (parseInt(valores[0]) || 0) * t.p1 + (parseInt(valores[1]) || 0) * t.p2; } else { bruto = (parseInt(valores[0]) || 0) * taxa[tipo === 'feriado' ? 'feriado' : 'normal']; } const porPessoa = bruto / numConf; return { bruto: Math.round(porPessoa * 100), liquido: Math.round(porPessoa * 82) }; }
             updateSimFields() { const turno = document.getElementById('simTurno').value; const container = document.getElementById('simCampos'); if (turno === '15x23') { container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div></div>`; } else { container.innerHTML = `<div class="input-group"><label class="input-label">Produção Total</label><input type="number" id="simPT" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div>`; } this.calcularSimulacao(); }
@@ -2592,9 +2671,24 @@
             toggleHistoryDetail(id) { const item = document.getElementById(`history-item-${id}`); if (!item) return; item.classList.add('clicked'); setTimeout(() => item.classList.remove('clicked'), 600); if (this.expandedHistoryId === id) { item.classList.remove('expanded'); this.expandedHistoryId = null; } else { if (this.expandedHistoryId) { const prev = document.getElementById(`history-item-${this.expandedHistoryId}`); if(prev) prev.classList.remove('expanded'); } item.classList.add('expanded'); this.expandedHistoryId = id; } }
             renderHistory() {
                 const list = document.getElementById('histList');
-                let f = this.entries;
-                if (this.currentFilter === 'pending') f = this.entries.filter(e => !e.pago);
-                if (this.currentFilter === 'paid') f = this.entries.filter(e => e.pago);
+                let f = [...this.entries]; // Cria cópia para não modificar original
+
+                if (this.currentFilter === 'pending') {
+                    // PENDENTE: Filtra pendentes e ordena por data do navio (mais antigo primeiro)
+                    f = f.filter(e => !e.pago);
+                    f.sort((a, b) => new Date(a.data) - new Date(b.data));
+                } else if (this.currentFilter === 'paid') {
+                    // PAGAMENTO: Filtra pagos e ordena por data de pagamento (mais recente primeiro)
+                    f = f.filter(e => e.pago);
+                    f.sort((a, b) => {
+                        const dateA = a.paymentDate ? new Date(a.paymentDate) : new Date(a.data);
+                        const dateB = b.paymentDate ? new Date(b.paymentDate) : new Date(b.data);
+                        return dateB - dateA;
+                    });
+                } else {
+                    // TODOS: Ordena por data do navio (mais recente primeiro - inverso da aba pendente)
+                    f.sort((a, b) => new Date(b.data) - new Date(a.data));
+                }
 
                 if(this.expandedHistoryId && !f.find(e => e.id === this.expandedHistoryId)) { this.expandedHistoryId = null; }
                 if (f.length === 0) { list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div style="font-size:0.85rem;font-weight:600;">Nenhum registro</div></div>`; return; }
@@ -2886,7 +2980,15 @@
             }
             showPix() { this.closeModal('configModal'); document.getElementById('pixMessage').textContent = DONATION_MESSAGES[Math.floor(Math.random() * DONATION_MESSAGES.length)]; setTimeout(() => this.openModal('pixModal'), 200); }
             copyPix() { this.copyToClipboard('92994821868', 'Chave Copiada!'); }
-            startAutoPix() { setInterval(() => { if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { if (!this.isAdmin && !this.isVip && Math.random() < 0.4) this.showPix(); } }, 180000); }
+            startAutoPix() { 
+                // Carrega a taxa configurada (default 40%)
+                const floodRate = this.getFloodRate();
+                setInterval(() => { 
+                    if (!document.getElementById('mainApp').classList.contains('hidden') && !document.querySelector('.modal-overlay.active')) { 
+                        if (!this.isAdmin && !this.isVip && Math.random() < floodRate) this.showPix(); 
+                    } 
+                }, 180000); 
+            }
             toggleTheme() { document.body.classList.toggle('light-mode'); safeStorage.setItem('evo_theme_v516', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
             loadTheme() { if (safeStorage.getItem('evo_theme_v516') === 'light') document.body.classList.add('light-mode'); }
             openModal(id) { const m = document.getElementById(id); if(m){ m.classList.add('active'); document.body.style.overflow = 'hidden'; } }
