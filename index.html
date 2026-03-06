@@ -8,7 +8,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.26 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.27 ESTAVEL | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -716,7 +716,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V5.26</div>
+            <div class="footer-brand">EVOLUTION V5.27</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -971,11 +971,11 @@
     <script>
 
     // ============================================
-    // EVOLUTION V5.26 - CODIGO COMPLETO E FUNCIONAL
+    // EVOLUTION V5.27 ESTAVEL - CODIGO COMPLETO E FUNCIONAL
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.26';
+    window.EVOLUTION_APP_VERSION = 'V5.27 ESTAVEL';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -1083,6 +1083,12 @@
             this.unsubscribeUsers = null;
             this.unsubscribeEntries = null;
             this.unsubscribePending = null;
+            this.sessionMaxAgeMs = 1000 * 60 * 60 * 24 * 30;
+            this.persistDebounceTimer = null;
+            this.persistInFlight = false;
+            this.pendingPersistReason = null;
+            this.lastRenderHash = '';
+            this.lastPersistAt = 0;
 
             this.init();
         }
@@ -1105,6 +1111,11 @@
                 db = firebase.firestore();
                 db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
                 auth = firebase.auth();
+                try {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                } catch (persistErr) {
+                    console.warn('Persistencia LOCAL do Firebase Auth nao aplicada:', persistErr);
+                }
 
                 auth.onAuthStateChanged(async (user) => {
                     if (user) {
@@ -1114,11 +1125,11 @@
                         this.syncUsersFromFirebase();
                         await this.checkSession(true);
                     } else {
-                        auth.signInAnonymously().catch(() => {});
+                        auth.signInAnonymously().catch((e) => this.handleVisibleError('Falha ao autenticar anonimamente no Firebase', e, { silentToast: true }));
                     }
                 });
             } catch (e) {
-                console.log('Firebase nao disponivel:', e);
+                this.handleVisibleError('Firebase nao disponivel', e, { silentToast: true });
             }
 
             // Carregar cache de usuarios
@@ -1145,13 +1156,16 @@
 
             // Event listeners
             document.getElementById('importInput')?.addEventListener('change', (e) => this.importData(e));
+            window.addEventListener('online', () => this.schedulePersistData('browser-online', 800));
         }
 
         loadUsersFromCache() {
             try {
                 const cached = safeStorage.getItem('evo_users_cache_v516');
                 if (cached) this.users = JSON.parse(cached);
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao ler cache local de usuarios', e, { silentToast: true });
+            }
         }
 
         saveUsersToCache() {
@@ -1163,11 +1177,132 @@
                 user: this.currentUser,
                 code: this.currentUserCode,
                 docId: this.currentUserId,
-                ts: Date.now()
+                ts: Date.now(),
+                v: window.EVOLUTION_APP_VERSION || 'V5.27 ESTAVEL'
             };
             try {
                 safeStorage.setItem('evo_session_v516', btoa(JSON.stringify(payload)));
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Nao foi possivel salvar a sessao local', e, { silentToast: true });
+            }
+        }
+
+        getEntryStorageKey(userId = null) {
+            return `evo_data_${userId || this.currentUserId}`;
+        }
+
+        getBackupStorageKey(userId = null) {
+            return `evo_data_backup_${userId || this.currentUserId}`;
+        }
+
+        normalizeEntry(entry) {
+            if (!entry) return null;
+            return {
+                ...entry,
+                id: entry.id || Date.now() + Math.random(),
+                bruto: Number(entry.bruto) || 0,
+                liquido: Number(entry.liquido) || 0,
+                conferentes: Number(entry.conferentes) || 1,
+                pago: !!entry.pago,
+                timestamp: entry.timestamp || new Date().toISOString(),
+                syncUpdatedAt: entry.syncUpdatedAt || entry.updatedAt || new Date().toISOString()
+            };
+        }
+
+        sortEntriesList(list) {
+            return (Array.isArray(list) ? list : []).slice().sort((a, b) => {
+                const dbb = new Date(b?.data || b?.timestamp || 0).getTime();
+                const daa = new Date(a?.data || a?.timestamp || 0).getTime();
+                return dbb - daa;
+            });
+        }
+
+        getReadableError(error, fallback = 'Erro desconhecido') {
+            if (!error) return fallback;
+            const raw = String(error.message || error.code || error).trim();
+            if (!raw) return fallback;
+            const normalized = raw
+                .replace('Missing or insufficient permissions', 'Permissao insuficiente no Firebase')
+                .replace('Network request failed', 'Falha de rede')
+                .replace('Failed to get document because the client is offline.', 'Cliente offline')
+                .replace('The user does not have permission to access the desired data.', 'Sem permissao para acessar os dados');
+            return normalized;
+        }
+
+        handleVisibleError(context, error, options = {}) {
+            const message = `${context}: ${this.getReadableError(error)}`;
+            console.error(message, error);
+            if (!options.silentToast) this.showToast(message, 'error');
+            return message;
+        }
+
+        createHistoryBackup(reason = 'manual') {
+            if (!this.currentUserId) return;
+            const backupKey = this.getBackupStorageKey();
+            let backups = [];
+            try {
+                backups = JSON.parse(safeStorage.getItem(backupKey) || '[]');
+                if (!Array.isArray(backups)) backups = [];
+            } catch (e) {
+                backups = [];
+            }
+            backups.unshift({
+                at: new Date().toISOString(),
+                reason,
+                count: Array.isArray(this.entries) ? this.entries.length : 0,
+                data: this.sortEntriesList(this.entries)
+            });
+            safeStorage.setItem(backupKey, JSON.stringify(backups.slice(0, 8)));
+        }
+
+        saveEntriesLocally(reason = 'local-save') {
+            if (!this.currentUserId) return;
+            this.entries = this.sortEntriesList((this.entries || []).map(entry => this.normalizeEntry(entry)).filter(Boolean));
+            try {
+                safeStorage.setItem(this.getEntryStorageKey(), JSON.stringify(this.entries));
+                this.createHistoryBackup(reason);
+            } catch (e) {
+                this.handleVisibleError('Falha ao salvar historico local', e);
+            }
+        }
+
+        mergeEntryLists(...lists) {
+            const merged = new Map();
+            lists.flat().forEach((item) => {
+                const entry = this.normalizeEntry(item);
+                if (!entry || !entry.id) return;
+                const current = merged.get(entry.id);
+                if (!current) {
+                    merged.set(entry.id, entry);
+                    return;
+                }
+                const currentTs = new Date(current.syncUpdatedAt || current.timestamp || 0).getTime();
+                const nextTs = new Date(entry.syncUpdatedAt || entry.timestamp || 0).getTime();
+                merged.set(entry.id, nextTs >= currentTs ? { ...current, ...entry } : current);
+            });
+            return this.sortEntriesList(Array.from(merged.values()));
+        }
+
+        schedulePersistData(reason = 'queued-sync', delay = 700) {
+            this.pendingPersistReason = reason;
+            if (this.persistDebounceTimer) clearTimeout(this.persistDebounceTimer);
+            this.persistDebounceTimer = setTimeout(() => {
+                this.persistDebounceTimer = null;
+                this.persistData(this.pendingPersistReason || reason);
+            }, delay);
+        }
+
+        getUserVipStatus(user) {
+            const now = new Date();
+            const trialUntil = user?.vipTrialUntil ? new Date(user.vipTrialUntil) : null;
+            const vipUntil = user?.vipUntil ? new Date(user.vipUntil) : null;
+            const trialActive = trialUntil && !isNaN(trialUntil) && trialUntil > now;
+            const paidActive = vipUntil && !isNaN(vipUntil) && vipUntil > now;
+            const active = !!(user?.vip || trialActive || paidActive);
+            let daysLeft = null;
+            if (trialActive) daysLeft = Math.ceil((trialUntil - now) / 86400000);
+            else if (paidActive) daysLeft = Math.ceil((vipUntil - now) / 86400000);
+            return { active, daysLeft, expiresAt: trialActive ? trialUntil : (paidActive ? vipUntil : null) };
         }
 
         formatAdminDate(value) {
@@ -1213,13 +1348,13 @@
                 lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastSeenAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastDeviceId: this.getOrCreateDeviceId(),
-                lastAppVersion: window.EVOLUTION_APP_VERSION || 'V5.26'
+                lastAppVersion: window.EVOLUTION_APP_VERSION || 'V5.27 ESTAVEL'
             };
             if (userData && !userData.createdAt) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             try {
                 await db.collection('users').doc(this.currentUserId).set(payload, { merge: true });
             } catch (e) {
-                console.error('Erro ao atualizar ultimo login:', e);
+                this.handleVisibleError('Erro ao atualizar ultimo login', e, { silentToast: true });
             }
         }
 
@@ -1233,7 +1368,9 @@
                     adminName: this.currentUser || 'ADMIN',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao registrar acao admin', e, { silentToast: true });
+            }
         }
 
         async checkSession(forceRemote = false) {
@@ -1241,7 +1378,7 @@
             if (!s) return false;
             try {
                 const d = JSON.parse(atob(s));
-                if (!d || !d.docId || d.ts <= Date.now() - 86400000) {
+                if (!d || !d.docId || d.ts <= Date.now() - this.sessionMaxAgeMs) {
                     safeStorage.removeItem('evo_session_v516');
                     return false;
                 }
@@ -1264,7 +1401,9 @@
                                 this.saveUsersToCache();
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        this.handleVisibleError('Falha ao validar sessao com Firebase', e, { silentToast: true });
+                    }
                 }
 
                 if (userData && !userData.blocked) {
@@ -1273,7 +1412,9 @@
                     }
                     return true;
                 }
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao restaurar sessao salva', e, { silentToast: true });
+            }
             return false;
         }
 
@@ -1356,7 +1497,9 @@
                         this.users[doc.id] = foundUser;
                         this.saveUsersToCache();
                     }
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao validar PIN de admin no Firebase', e, { silentToast: true });
+                }
             }
 
             if (!foundUser) {
@@ -1470,6 +1613,7 @@
                 this.savePendingUserLocally(registration);
                 document.getElementById('registerForm').classList.add('hidden');
                 document.getElementById('registerStatus').classList.remove('hidden');
+                this.handleVisibleError('Cadastro salvo apenas localmente', error);
             }
         }
 
@@ -1494,7 +1638,9 @@
         setLocalPendingUsers(list) {
             try {
                 safeStorage.setItem('evo_pending_users', JSON.stringify(Array.isArray(list) ? list : []));
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao salvar fila local de cadastros pendentes', e, { silentToast: true });
+            }
         }
         removeLocalPendingByDocId(docId) {
             const list = this.getLocalPendingUsers();
@@ -1538,6 +1684,7 @@
                     this.renderUserList();
                     this.renderAdminRates();
                 }
+                this.schedulePersistData('session-restore', 1200);
             }, 100);
 
             this.updateUserLoginMeta(userData);
@@ -1664,34 +1811,32 @@
         }
 
         loadFromLocalStorage() {
-            const key = `evo_data_${this.currentUserId}`;
-            const saved = safeStorage.getItem(key);
-            if (saved) {
-                try {
-                    this.entries = JSON.parse(saved).map(e => ({
-                        ...e,
-                        bruto: Number(e.bruto) || 0,
-                        liquido: Number(e.liquido) || 0
-                    }));
-                } catch (e) {
-                    this.entries = [];
-                }
+            const saved = safeStorage.getItem(this.getEntryStorageKey());
+            if (!saved) {
+                this.entries = [];
+                return;
+            }
+            try {
+                this.entries = this.sortEntriesList(JSON.parse(saved).map(e => this.normalizeEntry(e)).filter(Boolean));
+            } catch (e) {
+                this.handleVisibleError('Falha ao ler historico local', e);
+                this.entries = [];
             }
         }
 
         migrateOldEntries() {
             let needsMigration = false;
-            this.entries = this.entries.map(entry => {
-                if (entry.pago && !entry.paymentDate) {
+            this.entries = (this.entries || []).map(entry => {
+                const normalized = this.normalizeEntry(entry);
+                if (!normalized) return null;
+                if (normalized.pago && !normalized.paymentDate) {
                     needsMigration = true;
-                    entry.paymentDate = entry.data ? new Date(entry.data).toISOString() : new Date().toISOString();
+                    normalized.paymentDate = normalized.data ? new Date(normalized.data).toISOString() : new Date().toISOString();
                 }
-                entry.bruto = Number(entry.bruto) || 0;
-                entry.liquido = Number(entry.liquido) || 0;
-                return entry;
-            });
+                return normalized;
+            }).filter(Boolean);
             if (needsMigration) {
-                safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                this.saveEntriesLocally('migration');
             }
         }
 
@@ -1976,11 +2121,12 @@
                 delete e.paymentDate;
             }
 
-            safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+            e.syncUpdatedAt = new Date().toISOString();
+            this.saveEntriesLocally('toggle-payment');
             this.updateDashboard();
             this.renderHistory();
             this.updateMetaProgress();
-            this.persistData();
+            this.schedulePersistData('toggle-payment');
 
             this.showToast(e.pago ? '✓ Marcado como pago' : '↩ Marcado como pendente', 'success');
         }
@@ -1994,7 +2140,7 @@
             if (!this.pendingDeleteId) return;
 
             this.entries = this.entries.filter(e => e.id !== this.pendingDeleteId);
-            safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+            this.saveEntriesLocally('delete-entry');
 
             this.closeModal('confirmModal');
             this.pendingDeleteId = null;
@@ -2004,7 +2150,7 @@
             this.renderHistory();
             this.renderChart();
             this.updateMetaProgress();
-            this.persistData();
+            this.schedulePersistData('delete-entry');
 
             this.showToast('Excluido com sucesso', 'success');
         }
@@ -2343,8 +2489,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 timestamp: new Date().toISOString()
             };
 
-            this.entries.unshift(entry);
-            safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+            this.entries.unshift(this.normalizeEntry(entry));
+            this.saveEntriesLocally('new-entry');
 
             this.updateDashboard();
             this.renderHistory();
@@ -2353,7 +2499,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             document.getElementById('calcNavio').value = '';
             this.triggerMoneyAnimation();
-            this.persistData();
+            this.schedulePersistData('new-entry');
             this.showToast('Registro salvo!', 'success');
 
             setTimeout(() => { if (btn) btn.disabled = false; }, 1500);
@@ -2435,7 +2581,9 @@ ${this.currentUser}`;
                                     this.showToast('Sua sessao foi encerrada pelo administrador', 'warning');
                                     setTimeout(() => location.reload(), 1200);
                                 }
-                            } catch (e) {}
+                            } catch (e) {
+                                this.handleVisibleError('Falha ao processar logout forcado remoto', e, { silentToast: true });
+                            }
                         }
                     }
                 }, (error) => {
@@ -2650,7 +2798,9 @@ async approveUser(docId) {
                     REMOTE_ADMIN_PIN = doc.data().adminPin;
                     safeStorage.setItem('evo_admin_pin_enc', btoa(REMOTE_ADMIN_PIN));
                 }
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao carregar configuracao admin', e, { silentToast: true });
+            }
         }
 
         async loadRates() {
@@ -2662,100 +2812,117 @@ async approveUser(docId) {
                     safeStorage.setItem('evo_rates_v54', JSON.stringify(this.taxas));
                 }
             } catch (e) {
+                this.handleVisibleError('Falha ao carregar taxas do Firebase', e, { silentToast: true });
                 const local = safeStorage.getItem('evo_rates_v54');
                 if (local) this.taxas = JSON.parse(local);
             }
         }
 
         setupEntriesListener(docId) {
-            if (!db) return;
+            if (!db || !docId) return;
             if (this.unsubscribeEntries) this.unsubscribeEntries();
 
             this.unsubscribeEntries = db.collection('users').doc(docId).collection('data')
                 .onSnapshot((snapshot) => {
                     let serverEntries = [];
                     snapshot.forEach(doc => {
-                        if (doc.id.startsWith('history_')) {
-                            const data = doc.data();
-                            let entries = [];
-                            if (typeof data.history === 'string') {
-                                try { entries = JSON.parse(data.history); } catch (e) {}
-                            } else if (Array.isArray(data.history)) {
-                                entries = data.history;
+                        if (!doc.id.startsWith('history_')) return;
+                        const data = doc.data() || {};
+                        let entries = [];
+                        if (typeof data.history === 'string') {
+                            try {
+                                entries = JSON.parse(data.history);
+                            } catch (e) {
+                                this.handleVisibleError(`Falha ao ler historico remoto ${doc.id}`, e, { silentToast: true });
                             }
-                            serverEntries.push(...entries);
+                        } else if (Array.isArray(data.history)) {
+                            entries = data.history;
                         }
+                        const remoteUpdatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : (data.updatedAt?.seconds ? new Date(data.updatedAt.seconds * 1000).toISOString() : new Date().toISOString());
+                        serverEntries.push(...entries.map(item => ({ ...item, syncUpdatedAt: item?.syncUpdatedAt || remoteUpdatedAt })));
                     });
 
-                    if (serverEntries.length > 0) {
-                        const merged = new Map();
-                        [...serverEntries, ...this.entries].forEach(entry => {
-                            if (!entry || !entry.id) return;
-                            if (!merged.has(entry.id)) merged.set(entry.id, entry);
-                        });
-                        this.entries = Array.from(merged.values()).sort((a, b) => {
-                            const da = new Date(a.data || a.timestamp || 0).getTime();
-                            const dbb = new Date(b.data || b.timestamp || 0).getTime();
-                            return dbb - da;
-                        });
-                        safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                        this.migrateOldEntries();
-                        this.updateDashboard();
-                        this.renderHistory();
-                        this.updateMetaProgress();
-                    }
+                    const mergedEntries = this.mergeEntryLists(serverEntries, this.entries);
+                    const remoteIds = new Set(serverEntries.map(entry => entry?.id).filter(Boolean));
+                    const localOnlyRecent = (this.entries || []).filter(entry => {
+                        if (!entry?.id || remoteIds.has(entry.id)) return false;
+                        const syncAt = new Date(entry.syncUpdatedAt || entry.timestamp || 0).getTime();
+                        return syncAt >= (Date.now() - 1000 * 60 * 10);
+                    });
+                    this.entries = this.mergeEntryLists(mergedEntries, localOnlyRecent);
+                    this.migrateOldEntries();
+                    this.saveEntriesLocally('listener-merge');
+                    this.updateDashboard();
+                    this.renderHistory();
+                    this.updateMetaProgress();
                 }, (error) => {
-                    console.error('Erro listener entries:', error);
+                    this.handleVisibleError('Erro no listener do historico', error);
                 });
         }
 
-        async persistData() {
+        async persistData(reason = 'manual-sync') {
             if (!this.firebaseReady || !db || !this.currentUserId) return;
+            if (this.persistInFlight) {
+                this.schedulePersistData(reason, 1200);
+                return;
+            }
 
             const grouped = {};
-            this.entries.forEach(entry => {
+            (this.entries || []).forEach(entry => {
                 if (entry.data && entry.data.length >= 7) {
                     const month = entry.data.substring(0, 7);
                     if (!grouped[month]) grouped[month] = [];
-                    grouped[month].push(entry);
+                    grouped[month].push({ ...entry, syncUpdatedAt: entry.syncUpdatedAt || new Date().toISOString() });
                 }
             });
 
+            this.persistInFlight = true;
             try {
                 for (const [month, entries] of Object.entries(grouped)) {
                     const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
-                    let remoteEntries = [];
-                    try {
-                        const existing = await ref.get();
+                    await db.runTransaction(async (transaction) => {
+                        const existing = await transaction.get(ref);
+                        let remoteEntries = [];
                         if (existing.exists) {
                             const data = existing.data() || {};
                             const raw = typeof data.history === 'string' ? data.history : JSON.stringify(data.history || []);
-                            remoteEntries = JSON.parse(raw || '[]');
+                            try {
+                                remoteEntries = JSON.parse(raw || '[]');
+                            } catch (e) {
+                                this.handleVisibleError(`Falha ao ler historico remoto ${month}`, e, { silentToast: true });
+                            }
                         }
-                    } catch (e) {}
 
-                    const merged = new Map();
-                    [...remoteEntries, ...entries].forEach(item => {
-                        if (!item || !item.id) return;
-                        merged.set(item.id, item);
-                    });
-                    const finalEntries = Array.from(merged.values()).sort((a, b) => {
-                        const da = new Date(a.data || a.timestamp || 0).getTime();
-                        const dbb = new Date(b.data || b.timestamp || 0).getTime();
-                        return dbb - da;
-                    });
+                        const finalEntries = this.mergeEntryLists(remoteEntries, entries).map(item => ({
+                            ...item,
+                            syncUpdatedAt: item.syncUpdatedAt || new Date().toISOString()
+                        }));
+                        const backupPayload = {
+                            reason,
+                            savedAt: new Date().toISOString(),
+                            count: finalEntries.length,
+                            history: JSON.stringify(finalEntries)
+                        };
 
-                    await ref.set({
-                        history: JSON.stringify(finalEntries),
-                        historyBackup: JSON.stringify(finalEntries),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        count: finalEntries.length,
-                        lastDeviceId: this.getOrCreateDeviceId(),
-                        lastAppVersion: window.EVOLUTION_APP_VERSION || 'V5.26'
-                    }, { merge: true });
+                        transaction.set(ref, {
+                            history: JSON.stringify(finalEntries),
+                            historyBackup: JSON.stringify(backupPayload),
+                            lastBackupAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            count: finalEntries.length,
+                            lastDeviceId: this.getOrCreateDeviceId(),
+                            lastAppVersion: window.EVOLUTION_APP_VERSION || 'V5.27 ESTAVEL'
+                        }, { merge: true });
+                    });
                 }
+                this.lastPersistAt = Date.now();
             } catch (e) {
-                console.error('Erro ao persistir:', e);
+                const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+                this.handleVisibleError(offline ? 'Sem internet, historico mantido localmente e sincronizacao reagendada' : 'Falha ao salvar historico no Firebase', e);
+                this.saveEntriesLocally('persist-failed-backup');
+                this.schedulePersistData('retry-after-error', offline ? 4000 : 2500);
+            } finally {
+                this.persistInFlight = false;
             }
         }
 
@@ -2790,6 +2957,7 @@ async approveUser(docId) {
                 pendingFirstAccess: allUsers.filter(u => !u.lastLoginAt && !u.lastSeenAt).length,
                 vip: allUsers.filter(u => u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now)).length
             };
+            summary.vipWithDays = allUsers.filter(u => this.getUserVipStatus(u).daysLeft !== null).length;
 
             let userArray = allUsers.filter(u => {
                 const search = this.adminUserSearch.trim().toLowerCase();
@@ -2819,6 +2987,8 @@ async approveUser(docId) {
                     <div class="admin-summary-card"><div class="admin-summary-label">Ativos hoje</div><div class="admin-summary-value">${summary.activeToday}</div></div>
                     <div class="admin-summary-card"><div class="admin-summary-label">Bloqueados</div><div class="admin-summary-value">${summary.blocked}</div></div>
                     <div class="admin-summary-card"><div class="admin-summary-label">VIP</div><div class="admin-summary-value">${summary.vip}</div></div>
+                    <div class="admin-summary-card"><div class="admin-summary-label">Sem 1o login</div><div class="admin-summary-value">${summary.pendingFirstAccess}</div></div>
+                    <div class="admin-summary-card"><div class="admin-summary-label">VIP com prazo</div><div class="admin-summary-value">${summary.vipWithDays}</div></div>
                 </div>
                 <div class="admin-toolbar">
                     <input class="input-modern" type="text" placeholder="Buscar por nome ou PIN" value="${this.adminUserSearch.replace(/"/g, '&quot;')}" oninput="app.adminUserSearch=this.value; app.renderUserList();">
@@ -2841,7 +3011,8 @@ async approveUser(docId) {
 
             const cards = userArray.map(u => {
                 const uid = u.docId || u.code;
-                const isVip = u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now);
+                const vipStatus = this.getUserVipStatus(u);
+                const isVip = vipStatus.active;
                 const lastSeenText = this.formatRelativeTime(u.lastLoginAt || u.lastSeenAt);
                 const stale = ['ontem'].includes(lastSeenText) || /ha \d+ dias/.test(lastSeenText);
                 const statusBadge = u.blocked ? '<span class="badge-mini blocked">Bloqueado</span>' : (stale ? '<span class="badge-mini inactive">Inativo</span>' : '<span class="badge-mini">Ativo</span>');
@@ -2859,6 +3030,7 @@ async approveUser(docId) {
                             <div><strong>Dispositivo</strong><br>${u.lastDeviceId || u.deviceId || '-'}</div>
                             <div><strong>Cadastro</strong><br>${this.formatAdminDate(u.createdAt)}</div>
                             <div><strong>Status</strong><br>${u.blocked ? 'Bloqueado' : (u.lastLoginAt ? 'Ativo' : 'Nunca logou')}</div>
+                            <div><strong>VIP restante</strong><br>${vipStatus.daysLeft !== null ? `${vipStatus.daysLeft} dia(s)` : (isVip ? 'Permanente' : '-')}</div>
                         </div>
                     </div>`;
             }).join('');
@@ -2901,7 +3073,9 @@ async approveUser(docId) {
             if (db) {
                 try {
                     await db.collection('users').doc(docId).set(newUser);
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao salvar novo usuario no Firebase', e);
+                }
             }
 
             this.showToast(`Usuario ${name} adicionado!`, 'success');
@@ -2916,7 +3090,9 @@ async approveUser(docId) {
             document.getElementById('manageUserLastLogin').textContent = this.formatRelativeTime(user.lastLoginAt || user.lastSeenAt);
             document.getElementById('manageUserDevice').textContent = user.lastDeviceId || user.deviceId || '-';
             document.getElementById('manageUserCreated').textContent = this.formatAdminDate(user.createdAt);
+            const vipStatus = this.getUserVipStatus(user);
             document.getElementById('manageUserStatus').textContent = user.blocked ? 'Bloqueado' : (user.lastLoginAt ? 'Ativo recentemente' : 'Aguardando primeiro acesso');
+            document.getElementById('manageUserStatus').textContent += vipStatus.active ? ` • VIP ${vipStatus.daysLeft !== null ? `(${vipStatus.daysLeft} dia(s))` : '(permanente)'}` : ' • Sem VIP';
             const btnBlock = document.getElementById('btnBlockUser');
             btnBlock.textContent = user.blocked ? 'Desbloquear' : 'Bloquear';
             this.openModal('userManagementModal');
@@ -2931,6 +3107,8 @@ async approveUser(docId) {
             const updateData = { vipType: type, trialUsed: true };
             const now = new Date();
 
+            updateData.vipUntil = null;
+            updateData.vipTrialUntil = null;
             if (duration === 'perm') {
                 updateData.vip = true;
             } else {
@@ -2952,7 +3130,9 @@ async approveUser(docId) {
             if (db) {
                 try {
                     await db.collection('users').doc(this.managingUser).update(updateData);
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao atualizar VIP do usuario', e);
+                }
             }
         }
 
@@ -2967,7 +3147,9 @@ async approveUser(docId) {
             if (db) {
                 try {
                     await db.collection('users').doc(this.managingUser).update({ blocked: newStatus });
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao atualizar bloqueio do usuario', e);
+                }
             }
         }
 
@@ -2981,7 +3163,9 @@ async approveUser(docId) {
                 try {
                     await db.collection('users').doc(this.managingUser).update({ deviceId: null, lastDeviceId: null });
                     this.logAdminAction('reset_device', { userId: this.managingUser });
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao resetar dispositivo do usuario', e);
+                }
             }
             this.openUserManagement(this.managingUser);
         }
@@ -3014,7 +3198,9 @@ async approveUser(docId) {
                 try {
                     await db.collection('users').doc(docId).delete();
                     this.logAdminAction('delete_user', { userId: docId });
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao excluir usuario no Firebase', e);
+                }
             }
 
             this.showToast('Usuario excluido', 'success');
@@ -3031,7 +3217,9 @@ async approveUser(docId) {
                 document.getElementById('rate_15x23_p2_feriado').value = this.taxas['15x23'].feriado.p2;
                 document.getElementById('rate_23x07_normal').value = this.taxas['23x07'].normal;
                 document.getElementById('rate_23x07_feriado').value = this.taxas['23x07'].feriado;
-            } catch (e) {}
+            } catch (e) {
+                this.handleVisibleError('Falha ao renderizar painel de taxas admin', e, { silentToast: true });
+            }
         }
 
         async saveRates() {
@@ -3064,7 +3252,9 @@ async approveUser(docId) {
             if (db) {
                 try {
                     await db.collection('config').doc('rates').set(newRates);
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao salvar taxas no Firebase', e);
+                }
             }
         }
 
@@ -3086,7 +3276,7 @@ async approveUser(docId) {
         // ============================================
         exportData() {
             const data = {
-                v: 'V520',
+                v: 'V527',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -3121,12 +3311,12 @@ async approveUser(docId) {
                             liquido: Number(x.liquido) || 0
                         }));
                         this.migrateOldEntries();
-                        safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        this.saveEntriesLocally('import-data');
                         this.updateDashboard();
                         this.renderHistory();
                         this.renderChart();
                         this.updateMetaProgress();
-                        this.persistData();
+                        this.schedulePersistData('import-data');
                         this.showToast('Importado!', 'success');
                         this.closeModal('configModal');
                     }
@@ -3150,7 +3340,7 @@ async approveUser(docId) {
         async generatePdf(type) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.26');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.27 ESTAVEL');
             const generatedAt = new Date().toLocaleString('pt-BR');
 
             let filtered = [], titlePeriod = '', totalBruto = 0, totalLiquido = 0;
@@ -3331,7 +3521,9 @@ async approveUser(docId) {
                     if (db) {
                         try {
                             await db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl });
-                        } catch (e) {}
+                        } catch (e) {
+                            this.handleVisibleError('Falha ao enviar avatar ao Firebase', e, { silentToast: true });
+                        }
                     }
                     this.showToast('Foto atualizada!', 'success');
                 };
@@ -3350,7 +3542,9 @@ async approveUser(docId) {
             if (db) {
                 try {
                     await db.collection('users').doc(this.currentUserId).update({ avatar: null });
-                } catch (e) {}
+                } catch (e) {
+                    this.handleVisibleError('Falha ao remover avatar do Firebase', e, { silentToast: true });
+                }
             }
             this.showToast('Foto removida', 'success');
         }
