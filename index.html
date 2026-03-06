@@ -34,6 +34,10 @@
             --glass: rgba(255, 255, 255, 0.8); --border: rgba(0, 0, 0, 0.08); --text: #0f172a;
             --text-secondary: #64748b; --text-muted: #94a3b8;
         }
+        body.session-booting #loginScreen,
+        body.session-booting #mainApp {
+            visibility: hidden;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { scroll-behavior: smooth; touch-action: manipulation; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: background 0.5s ease, color 0.3s ease; position: relative; }
@@ -336,7 +340,7 @@
         .meta-currency { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
     </style>
 </head>
-<body>
+<body class="session-booting">
     <div class="ambient-bg"></div>
     <div class="toast-container" id="toastContainer"></div>
     <div id="goalCelebrationContainer"></div>
@@ -1089,6 +1093,9 @@
             this.pendingPersistReason = null;
             this.lastRenderHash = '';
             this.lastPersistAt = 0;
+            this.historyMigrationInFlight = false;
+            this.hasSavedSessionAtBoot = false;
+            this.lastVipStatusFingerprint = null;
 
             this.init();
         }
@@ -1103,6 +1110,9 @@
         }
 
         async init() {
+            this.setBootState(true);
+            this.hasSavedSessionAtBoot = !!safeStorage.getItem('evo_session_v516');
+
             // Inicializar Firebase
             try {
                 if (!firebase.apps.length) {
@@ -1123,7 +1133,10 @@
                         this.loadRates();
                         this.fetchAdminSettings();
                         this.syncUsersFromFirebase();
-                        await this.checkSession(true);
+                        const restored = await this.checkSession(true);
+                        if (!restored && !this.currentUserId) {
+                            this.showLoginScreen();
+                        }
                     } else {
                         auth.signInAnonymously().catch((e) => this.handleVisibleError('Falha ao autenticar anonimamente no Firebase', e, { silentToast: true }));
                     }
@@ -1152,7 +1165,10 @@
             if (savedMode) this.dashboardMode = savedMode;
 
             // Verificar sessao local enquanto Firebase carrega
-            await this.checkSession(false);
+            const restoredLocalSession = await this.checkSession(false);
+            if (!restoredLocalSession && !this.hasSavedSessionAtBoot) {
+                this.showLoginScreen();
+            }
 
             // Event listeners
             document.getElementById('importInput')?.addEventListener('change', (e) => this.importData(e));
@@ -1193,6 +1209,61 @@
 
         getBackupStorageKey(userId = null) {
             return `evo_data_backup_${userId || this.currentUserId}`;
+        }
+
+        getHistorySyncMetaKey(userId = null) {
+            return `evo_history_sync_meta_${userId || this.currentUserId}`;
+        }
+
+        getHistorySyncMeta(userId = null) {
+            try {
+                const parsed = JSON.parse(safeStorage.getItem(this.getHistorySyncMetaKey(userId)) || '{}');
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        setHistorySyncMeta(meta = {}, userId = null) {
+            try {
+                safeStorage.setItem(this.getHistorySyncMetaKey(userId), JSON.stringify({
+                    ...(this.getHistorySyncMeta(userId) || {}),
+                    ...meta,
+                    updatedAt: new Date().toISOString()
+                }));
+            } catch (e) {
+                this.handleVisibleError('Falha ao salvar estado de sincronizacao do historico', e, { silentToast: true });
+            }
+        }
+
+        markHistoryNeedsRemoteSync(reason = 'local-change', extra = {}) {
+            if (!this.currentUserId) return;
+            this.setHistorySyncMeta({
+                pending: true,
+                reason,
+                lastLocalCount: Array.isArray(this.entries) ? this.entries.length : 0,
+                ...extra
+            });
+        }
+
+        clearHistoryNeedsRemoteSync(extra = {}) {
+            if (!this.currentUserId) return;
+            this.setHistorySyncMeta({
+                pending: false,
+                reason: 'synced',
+                lastRemoteSyncAt: new Date().toISOString(),
+                lastLocalCount: Array.isArray(this.entries) ? this.entries.length : 0,
+                ...extra
+            });
+        }
+
+        hasHistoryPendingRemoteSync(userId = null) {
+            return !!this.getHistorySyncMeta(userId).pending;
+        }
+
+        getMissingRemoteEntries(serverEntries = [], localEntries = this.entries) {
+            const remoteIds = new Set((serverEntries || []).map(entry => entry?.id).filter(Boolean));
+            return this.sortEntriesList((localEntries || []).filter(entry => entry?.id && !remoteIds.has(entry.id)));
         }
 
         normalizeEntry(entry) {
@@ -1255,12 +1326,15 @@
             safeStorage.setItem(backupKey, JSON.stringify(backups.slice(0, 8)));
         }
 
-        saveEntriesLocally(reason = 'local-save') {
+        saveEntriesLocally(reason = 'local-save', options = {}) {
             if (!this.currentUserId) return;
             this.entries = this.sortEntriesList((this.entries || []).map(entry => this.normalizeEntry(entry)).filter(Boolean));
             try {
                 safeStorage.setItem(this.getEntryStorageKey(), JSON.stringify(this.entries));
                 this.createHistoryBackup(reason);
+                if (options.markPending !== false) {
+                    this.markHistoryNeedsRemoteSync(reason, { localUpdatedAt: new Date().toISOString() });
+                }
             } catch (e) {
                 this.handleVisibleError('Falha ao salvar historico local', e);
             }
@@ -1669,6 +1743,7 @@
             const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
             const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
             this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
+            this.lastVipStatusFingerprint = this.getVipNotificationFingerprint(userData);
 
             this.loadFromLocalStorage();
             this.migrateOldEntries();
@@ -1684,10 +1759,11 @@
                     this.renderUserList();
                     this.renderAdminRates();
                 }
-                this.schedulePersistData('session-restore', 1200);
+                this.schedulePersistData(this.hasHistoryPendingRemoteSync() ? 'urgent-history-migration' : 'session-restore', this.hasHistoryPendingRemoteSync() ? 250 : 1200);
             }, 100);
 
             this.updateUserLoginMeta(userData);
+            setTimeout(() => this.maybeShowVipNotification(userData), 180);
         }
 
         // ============================================
@@ -1818,6 +1894,9 @@
             }
             try {
                 this.entries = this.sortEntriesList(JSON.parse(saved).map(e => this.normalizeEntry(e)).filter(Boolean));
+                if (this.entries.length) {
+                    this.markHistoryNeedsRemoteSync('local-history-detected', { localCount: this.entries.length });
+                }
             } catch (e) {
                 this.handleVisibleError('Falha ao ler historico local', e);
                 this.entries = [];
@@ -1843,6 +1922,104 @@
         // ============================================
         // INTERFACE PRINCIPAL
         // ============================================
+        setBootState(isBooting) {
+            document.body.classList.toggle('session-booting', !!isBooting);
+        }
+
+        showLoginScreen() {
+            const loginScreen = document.getElementById('loginScreen');
+            const mainApp = document.getElementById('mainApp');
+            if (mainApp) mainApp.classList.add('hidden');
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            this.setBootState(false);
+        }
+
+        getVipNotificationStorageKey(userId = null) {
+            return `evo_vip_notice_${userId || this.currentUserId}`;
+        }
+
+        getVipNotificationFingerprint(userData) {
+            if (!userData) return 'no-user';
+            const vipInfo = this.getVipInfo(userData);
+            if (!vipInfo.active) return 'inactive';
+            const expiry = vipInfo.until instanceof Date && !isNaN(vipInfo.until) ? vipInfo.until.toISOString() : 'permanent';
+            const version = userData.vipNotificationVersion || userData.vipGrantedAt || userData.vipUpdatedAt || '';
+            return `${vipInfo.kind || 'vip'}|${expiry}|${version}`;
+        }
+
+        hasSeenVipNotification(userData) {
+            try {
+                return safeStorage.getItem(this.getVipNotificationStorageKey()) === this.getVipNotificationFingerprint(userData);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        markVipNotificationSeen(userData) {
+            try {
+                safeStorage.setItem(this.getVipNotificationStorageKey(), this.getVipNotificationFingerprint(userData));
+            } catch (e) {
+                this.handleVisibleError('Falha ao salvar recibo local da notificacao VIP', e, { silentToast: true });
+            }
+        }
+
+        maybeShowVipNotification(userData, options = {}) {
+            if (!userData || !this.currentUserId || this.isAdmin) return;
+            const vipInfo = this.getVipInfo(userData);
+            if (!vipInfo.active) return;
+
+            const fingerprint = this.getVipNotificationFingerprint(userData);
+            const unseen = !this.hasSeenVipNotification(userData);
+            const changed = options.previousFingerprint && options.previousFingerprint !== fingerprint;
+
+            if (!unseen && !changed && !userData.vipNotificationPending) return;
+
+            const typeEl = document.getElementById('vipNotifType');
+            const dateEl = document.getElementById('vipNotifDate');
+            const giftEl = document.getElementById('vipGiftMessageContainer');
+
+            if (typeEl) {
+                const label = vipInfo.kind === 'trial' ? 'VIP TESTE ATIVO' : (vipInfo.kind === 'gift' ? 'VIP BRINDE ATIVO' : 'VIP ATIVO');
+                typeEl.textContent = label;
+            }
+
+            if (dateEl) {
+                if (vipInfo.until instanceof Date && !isNaN(vipInfo.until)) {
+                    dateEl.textContent = `Vencimento: ${vipInfo.until.toLocaleDateString('pt-BR')}`;
+                } else {
+                    dateEl.textContent = 'Vencimento: acesso permanente';
+                }
+            }
+
+            if (giftEl) {
+                if (userData.vipType === 'gift') {
+                    giftEl.textContent = 'O administrador liberou seu VIP. Aproveite todos os recursos premium!';
+                    giftEl.classList.remove('hidden');
+                } else {
+                    giftEl.textContent = '';
+                    giftEl.classList.add('hidden');
+                }
+            }
+
+            this.markVipNotificationSeen(userData);
+            this.openModal('vipNotificationModal');
+
+            if (db && userData.vipNotificationPending) {
+                db.collection('users').doc(this.currentUserId).set({
+                    vipNotificationPending: false,
+                    vipNotificationReadAt: new Date().toISOString()
+                }, { merge: true }).catch((e) => this.handleVisibleError('Falha ao confirmar leitura da notificacao VIP', e, { silentToast: true }));
+            }
+        }
+
+        handleCurrentUserRemoteUpdate(userData, previousUserData = null) {
+            if (!userData || !this.currentUserId || userData.docId !== this.currentUserId) return;
+            const previousFingerprint = previousUserData ? this.getVipNotificationFingerprint(previousUserData) : this.lastVipStatusFingerprint;
+            this.lastVipStatusFingerprint = this.getVipNotificationFingerprint(userData);
+            this.updateVipUI();
+            this.maybeShowVipNotification(userData, { previousFingerprint });
+        }
+
         showMainApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -2569,9 +2746,11 @@ ${this.currentUser}`;
             if (this.currentUserId && !this.isAdmin) {
                 this.unsubscribeUsers = db.collection('users').doc(this.currentUserId).onSnapshot((doc) => {
                     if (doc.exists) {
+                        const previousData = this.users[doc.id] ? { ...this.users[doc.id] } : null;
                         const data = { ...doc.data(), docId: doc.id };
                         this.users[doc.id] = data;
                         this.saveUsersToCache();
+                        this.handleCurrentUserRemoteUpdate(data, previousData);
                         const localSession = safeStorage.getItem('evo_session_v516');
                         if (data.forcedLogoutAt && localSession) {
                             try {
@@ -2843,15 +3022,20 @@ async approveUser(docId) {
                     });
 
                     const mergedEntries = this.mergeEntryLists(serverEntries, this.entries);
-                    const remoteIds = new Set(serverEntries.map(entry => entry?.id).filter(Boolean));
-                    const localOnlyRecent = (this.entries || []).filter(entry => {
-                        if (!entry?.id || remoteIds.has(entry.id)) return false;
-                        const syncAt = new Date(entry.syncUpdatedAt || entry.timestamp || 0).getTime();
-                        return syncAt >= (Date.now() - 1000 * 60 * 10);
-                    });
-                    this.entries = this.mergeEntryLists(mergedEntries, localOnlyRecent);
+                    const missingRemoteEntries = this.getMissingRemoteEntries(serverEntries, this.entries);
+                    this.entries = mergedEntries;
                     this.migrateOldEntries();
-                    this.saveEntriesLocally('listener-merge');
+                    this.saveEntriesLocally('listener-merge', { markPending: missingRemoteEntries.length > 0 || this.hasHistoryPendingRemoteSync() });
+                    if (missingRemoteEntries.length > 0 || this.hasHistoryPendingRemoteSync()) {
+                        this.markHistoryNeedsRemoteSync('listener-found-local-pending', {
+                            localOnlyCount: missingRemoteEntries.length,
+                            remoteCount: serverEntries.length,
+                            localCount: this.entries.length
+                        });
+                        this.schedulePersistData('listener-found-local-pending', missingRemoteEntries.length > 0 ? 350 : 800);
+                    } else {
+                        this.clearHistoryNeedsRemoteSync({ remoteCount: serverEntries.length });
+                    }
                     this.updateDashboard();
                     this.renderHistory();
                     this.updateMetaProgress();
@@ -2864,6 +3048,12 @@ async approveUser(docId) {
             if (!this.firebaseReady || !db || !this.currentUserId) return;
             if (this.persistInFlight) {
                 this.schedulePersistData(reason, 1200);
+                return;
+            }
+
+            this.entries = this.sortEntriesList((this.entries || []).map(entry => this.normalizeEntry(entry)).filter(Boolean));
+            if (!this.entries.length) {
+                this.clearHistoryNeedsRemoteSync({ reason: 'empty-history' });
                 return;
             }
 
@@ -2916,6 +3106,8 @@ async approveUser(docId) {
                     });
                 }
                 this.lastPersistAt = Date.now();
+                this.clearHistoryNeedsRemoteSync({ reason, syncedCount: this.entries.length });
+                this.saveEntriesLocally('persist-success', { markPending: false });
             } catch (e) {
                 const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
                 this.handleVisibleError(offline ? 'Sem internet, historico mantido localmente e sincronizacao reagendada' : 'Falha ao salvar historico no Firebase', e);
@@ -3104,7 +3296,15 @@ async approveUser(docId) {
             const duration = document.getElementById('vipDurationSelect').value;
             const user = this.users[this.managingUser];
 
-            const updateData = { vipType: type, trialUsed: true };
+            const updateData = {
+                vipType: type,
+                trialUsed: true,
+                vipGrantedAt: new Date().toISOString(),
+                vipUpdatedAt: new Date().toISOString(),
+                vipNotificationPending: true,
+                vipNotificationReadAt: null,
+                vipNotificationVersion: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+            };
             const now = new Date();
 
             updateData.vipUntil = null;
