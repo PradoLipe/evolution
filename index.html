@@ -989,7 +989,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.25';
+    window.EVOLUTION_APP_VERSION = 'V5.19C';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -1125,8 +1125,13 @@
                         this.firebaseReady = true;
                         this.loadRates();
                         this.fetchAdminSettings();
+
+                        // Mantem a lista base de usuarios sincronizada para nao quebrar o login por PIN,
+                        // inclusive contas administrativas que dependem do cache/local antes da sessao.
+                        this.syncUsersFromFirebase();
+
+                        // Dados pesados/administrativos continuam restritos ao admin.
                         if (this.isAdmin) {
-                            this.syncUsersFromFirebase();
                             this.loadPendingUsers();
                         } else if (this.currentUserId) {
                             this.listenToCurrentUserDoc();
