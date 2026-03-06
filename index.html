@@ -446,9 +446,9 @@
                             <div class="input-hint">Este nome aparecera nos relatorios que voce gerar</div>
                         </div>
                         <div class="input-group">
-                            <label class="input-label">Senha (6 digitos)</label>
+                            <label class="input-label">Senha (4 a 6 digitos)</label>
                             <input type="password" id="regCode" placeholder="Crie uma senha numerica" maxlength="6" inputmode="numeric">
-                            <div class="input-hint">Minimo 6 numeros. Esta sera sua senha de acesso.</div>
+                            <div class="input-hint">De 4 a 6 numeros. Esta sera sua senha de acesso.</div>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Confirmar Senha</label>
@@ -790,7 +790,7 @@
                             <label class="input-label">Adicionar Novo Usuario</label>
                             <div class="admin-grid-fix" style="margin-bottom: 8px;">
                                 <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
-                                <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6" inputmode="numeric">
+                                <input type="text" id="newUserCode" placeholder="Senha (PIN 4 a 6 digitos)" maxlength="6" inputmode="numeric">
                             </div>
                             <button class="btn btn-primary" onclick="app.addNewUser()">➕ Adicionar</button>
                         </div>
@@ -1482,8 +1482,8 @@
             const enteredPin = String(this.pinValue || '').trim();
             let foundUser = null;
 
-            if (!enteredPin || enteredPin.length !== 6) {
-                this.showPinError('Digite 6 numeros');
+            if (!enteredPin || !/^\d{4,6}$/.test(enteredPin)) {
+                this.showPinError('Digite de 4 a 6 numeros');
                 this.isLoggingIn = false;
                 return;
             }
@@ -1577,8 +1577,8 @@
                 this.showToast('Digite um nome valido (minimo 3 caracteres)', 'error');
                 return;
             }
-            if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
-                this.showToast('A senha deve ter exatamente 6 digitos numericos', 'error');
+            if (!code || !/^\d{4,6}$/.test(code)) {
+                this.showToast('A senha deve ter de 4 a 6 digitos numericos', 'error');
                 return;
             }
             if (code !== codeConfirm) {
@@ -3044,8 +3044,8 @@ async approveUser(docId) {
             const name = nameInput.value.toUpperCase().trim();
             const code = codeInput.value.trim();
 
-            if (!name || !code || code.length !== 6) {
-                this.showToast('Preencha nome e PIN (6 digitos)', 'error');
+            if (!name || !/^\d{4,6}$/.test(code)) {
+                this.showToast('Preencha nome e PIN de 4 a 6 digitos', 'error');
                 return;
             }
 
