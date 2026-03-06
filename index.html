@@ -111,6 +111,25 @@
         .user-pill { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 50px; cursor: pointer; transition: all 0.3s ease; }
         .user-pill:active { transform: scale(0.98); }
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; color: white; position: relative; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+        .admin-summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 14px; }
+        .admin-summary-card { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+        .admin-summary-label { font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 6px; }
+        .admin-summary-value { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--accent); font-weight: 700; }
+        .admin-toolbar { display: grid; gap: 10px; margin-bottom: 12px; }
+        .admin-toolbar .input-modern, .admin-toolbar select { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.82rem; }
+        .admin-filter-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .admin-filter-chip { border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); padding: 8px 10px; border-radius: 999px; font-size: 0.66rem; font-weight: 700; letter-spacing: .4px; cursor: pointer; }
+        .admin-filter-chip.active { background: var(--gradient-primary); color: white; border-color: transparent; }
+        .user-item { padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+        .user-item.offline-long { border-color: rgba(255,184,0,0.35); }
+        .user-item.blocked-user { border-color: rgba(255,56,96,0.35); background: rgba(255,56,96,0.04); }
+        .user-last-seen { font-size: 0.68rem; color: var(--text-secondary); margin-top: 4px; }
+        .user-device-line { font-size: 0.64rem; color: var(--text-muted); margin-top: 4px; word-break: break-word; }
+        .manage-user-meta { display: grid; gap: 8px; margin-bottom: 16px; }
+        .manage-user-meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+        .manage-user-meta-label { font-size: 0.62rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+        .manage-user-meta-value { font-size: 0.82rem; color: var(--text); font-weight: 600; word-break: break-word; }
         .user-info { display: flex; flex-direction: column; }
         .user-info h3 { font-size: 0.8rem; font-weight: 700; margin-bottom: 0; display: flex; align-items: center; gap: 6px; }
         .vip-badge { font-size: 0.55rem; background: var(--gradient-gold); color: #0a0e27; padding: 1px 6px; border-radius: 6px; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); animation: pulse-gold 2s infinite; }
@@ -772,6 +791,27 @@
                         </div>
                         <div class="input-group">
                             <label class="input-label">Lista de Usuarios</label>
+                            <div class="admin-summary-grid" id="adminSummaryGrid">
+                                <div class="admin-summary-card"><div class="admin-summary-label">Total</div><div class="admin-summary-value" id="admSummaryTotal">0</div></div>
+                                <div class="admin-summary-card"><div class="admin-summary-label">Ativos hoje</div><div class="admin-summary-value" id="admSummaryActive">0</div></div>
+                                <div class="admin-summary-card"><div class="admin-summary-label">Bloqueados</div><div class="admin-summary-value" id="admSummaryBlocked">0</div></div>
+                                <div class="admin-summary-card"><div class="admin-summary-label">VIP</div><div class="admin-summary-value" id="admSummaryVip">0</div></div>
+                            </div>
+                            <div class="admin-toolbar">
+                                <input type="text" id="adminUserSearch" class="input-modern" placeholder="Buscar por nome ou PIN" oninput="app.setAdminUserSearch(this.value)">
+                                <select id="adminUserSort" onchange="app.setAdminUserSort(this.value)">
+                                    <option value="lastLogin">Ordenar por ultimo login</option>
+                                    <option value="name">Ordenar por nome</option>
+                                    <option value="createdAt">Ordenar por cadastro</option>
+                                </select>
+                                <div class="admin-filter-row">
+                                    <button class="admin-filter-chip active" id="filterChip_all" onclick="app.setAdminUserFilter('all')">Todos</button>
+                                    <button class="admin-filter-chip" id="filterChip_vip" onclick="app.setAdminUserFilter('vip')">VIP</button>
+                                    <button class="admin-filter-chip" id="filterChip_blocked" onclick="app.setAdminUserFilter('blocked')">Bloqueados</button>
+                                    <button class="admin-filter-chip" id="filterChip_pending" onclick="app.setAdminUserFilter('pending')">Pendentes</button>
+                                    <button class="admin-filter-chip" id="filterChip_admin" onclick="app.setAdminUserFilter('admin')">Admin</button>
+                                </div>
+                            </div>
                             <div class="user-list" id="userList"><div></div></div>
                         </div>
                     </div>
@@ -841,7 +881,11 @@
             <div class="modal-header"><h3 class="modal-title">Gerenciar Usuario</h3><button class="modal-close" onclick="app.closeModal('userManagementModal')">✕</button></div>
             <div class="modal-body">
                 <h4 id="manageUserName" style="text-align: center; margin-bottom: 8px; color: var(--text);">Nome</h4>
-                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 20px;">PIN: <span id="manageUserPin">000000</span></div>
+                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 14px;">PIN: <span id="manageUserPin">000000</span></div>
+                <div class="manage-user-meta">
+                    <div class="manage-user-meta-card"><div class="manage-user-meta-label">Ultimo login</div><div class="manage-user-meta-value" id="manageUserLastLogin">Nunca</div></div>
+                    <div class="manage-user-meta-card"><div class="manage-user-meta-label">Ultimo dispositivo</div><div class="manage-user-meta-value" id="manageUserDevice">Nao informado</div></div>
+                </div>
                 <div class="input-group">
                     <label class="input-label">Conceder VIP</label>
                     <div class="input-row">
@@ -855,6 +899,7 @@
                     <button class="btn btn-glass" id="btnBlockUser" onclick="app.toggleBlockFromModal()">Bloquear</button>
                     <button class="btn btn-glass" onclick="app.resetDeviceFromModal()">Reset Device</button>
                 </div>
+                <button class="btn btn-glass" onclick="app.forceLogoutFromModal()" style="margin-top: 10px;">Forcar Logout</button>
                 <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(255, 56, 96, 0.2);">🗑 Excluir Usuario</button>
             </div>
         </div>
@@ -1079,9 +1124,13 @@
                     if (user) {
                         this.firebaseReady = true;
                         this.loadRates();
-                        this.syncUsersFromFirebase();
-                        this.loadPendingUsers();
                         this.fetchAdminSettings();
+                        if (this.isAdmin) {
+                            this.syncUsersFromFirebase();
+                            this.loadPendingUsers();
+                        } else if (this.currentUserId) {
+                            this.listenToCurrentUserDoc();
+                        }
                     } else {
                         auth.signInAnonymously().catch(() => {});
                     }
@@ -1364,7 +1413,7 @@
                     if (d.ts > Date.now() - 86400000) {
                         const userData = this.users[d.docId];
                         if (userData && !userData.blocked) {
-                            this.restoreUserSession(userData, d);
+                            this.restoreUserSession(userData, { ...d, restored: true });
                         }
                     }
                 } catch (e) {}
@@ -1376,6 +1425,7 @@
             this.currentUserCode = sessionData.code;
             this.currentUserId = userData.docId || sessionData.docId;
             this.isAdmin = userData.isAdmin || false;
+            this.lastSessionStartedAt = Date.now();
 
             // Verificar VIP
             const now = new Date();
@@ -1395,10 +1445,15 @@
             setTimeout(() => {
                 this.setupEntriesListener(this.currentUserId);
                 if (this.isAdmin) {
+                    this.syncUsersFromFirebase();
                     this.loadPendingUsers();
                     this.renderUserList();
                     this.renderAdminRates();
+                } else {
+                    this.listenToCurrentUserDoc();
                 }
+                this.updateUserActivity(this.currentUserId, { login: !(sessionData && sessionData.restored) });
+                this.startPresenceTracking();
             }, 100);
         }
 
@@ -2446,6 +2501,7 @@ async approveUser(docId) {
                 this.saveUsersToCache();
                 this.renderPendingUsers();
                 this.renderUserList();
+                await this.logAdminAction('aprovar_usuario', { ...userData, docId: userDocId });
                 this.showToast(`Usuario ${pending.name} aprovado!`, 'success');
             } catch (e) {
                 console.error('Falha ao aprovar usuario no Firebase:', e);
@@ -2470,6 +2526,7 @@ async approveUser(docId) {
                 this.pendingUsers = this.pendingUsers.filter(p => (p.docId !== pendingDocId) && (p.code !== docId));
                 this.removeLocalPendingByDocId(pendingDocId);
                 this.renderPendingUsers();
+                await this.logAdminAction('rejeitar_usuario', pending);
                 this.showToast('Cadastro rejeitado', 'info');
             } catch (e) {
                 console.error('Falha ao rejeitar no Firebase:', e);
@@ -2567,51 +2624,132 @@ async approveUser(docId) {
         // ============================================
         // ADMIN - USUARIOS
         // ============================================
+        renderAdminSummary(userArray) {
+            const now = new Date();
+            const isVipUser = (u) => !!(u && (u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now)));
+            const isActiveToday = (u) => {
+                const dt = this.parseStoredDate(u && (u.lastLoginAt || u.lastSeenAt));
+                if (!dt) return false;
+                return dt.toDateString() === now.toDateString();
+            };
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val); };
+            set('admSummaryTotal', userArray.length);
+            set('admSummaryActive', userArray.filter(isActiveToday).length);
+            set('admSummaryBlocked', userArray.filter(u => u && u.blocked).length);
+            set('admSummaryVip', userArray.filter(isVipUser).length);
+        }
+
+        setAdminUserSearch(value) {
+            this.adminUserSearch = (value || '').toUpperCase().trim();
+            this.renderUserList();
+        }
+
+        setAdminUserFilter(value) {
+            this.adminUserFilter = value || 'all';
+            ['all','vip','blocked','pending','admin'].forEach(key => {
+                document.getElementById(`filterChip_${key}`)?.classList.toggle('active', key === this.adminUserFilter);
+            });
+            this.renderUserList();
+        }
+
+        setAdminUserSort(value) {
+            this.adminUserSort = value || 'lastLogin';
+            this.renderUserList();
+        }
+
+        parseStoredDate(value) {
+            if (!value) return null;
+            if (value instanceof Date) return isNaN(value) ? null : value;
+            if (typeof value === 'string' || typeof value === 'number') {
+                const d = new Date(value);
+                return isNaN(d) ? null : d;
+            }
+            if (value.seconds) {
+                const d = new Date(value.seconds * 1000);
+                return isNaN(d) ? null : d;
+            }
+            if (typeof value.toDate === 'function') {
+                try { return value.toDate(); } catch (e) {}
+            }
+            return null;
+        }
+
+        formatLastSeen(value) {
+            const dt = this.parseStoredDate(value);
+            if (!dt) return 'Nunca acessou';
+            const now = new Date();
+            const diff = now - dt;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            if (minutes < 1) return 'Agora mesmo';
+            if (minutes < 60) return `Ha ${minutes} min`;
+            if (hours < 24 && now.toDateString() === dt.toDateString()) return `Hoje as ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+            const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+            if (yesterday.toDateString() === dt.toDateString()) return `Ontem as ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+            return dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
         renderUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
 
-            const userArray = Object.values(this.users).filter(u => u && u.name).sort((a, b) => {
+            const now = new Date();
+            const isVipUser = (u) => !!(u && (u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now)));
+            let userArray = Object.entries(this.users)
+                .map(([id, u]) => ({ ...(u || {}), docId: u?.docId || id }))
+                .filter(u => u && u.name);
+
+            this.renderAdminSummary(userArray);
+
+            const search = this.adminUserSearch || '';
+            if (search) userArray = userArray.filter(u => (`${u.name || ''} ${u.code || ''}`).toUpperCase().includes(search));
+            if (this.adminUserFilter === 'vip') userArray = userArray.filter(isVipUser);
+            if (this.adminUserFilter === 'blocked') userArray = userArray.filter(u => u.blocked);
+            if (this.adminUserFilter === 'admin') userArray = userArray.filter(u => u.isAdmin);
+            if (this.adminUserFilter === 'pending') userArray = [];
+
+            userArray.sort((a, b) => {
                 if (a.name === 'FELIPE PRADO') return -1;
                 if (b.name === 'FELIPE PRADO') return 1;
-                return (a.name || '').localeCompare(b.name || '');
+                if (this.adminUserSort === 'name') return (a.name || '').localeCompare(b.name || '');
+                if (this.adminUserSort === 'createdAt') return (this.parseStoredDate(b.createdAt)?.getTime() || 0) - (this.parseStoredDate(a.createdAt)?.getTime() || 0);
+                return (this.parseStoredDate(b.lastLoginAt || b.lastSeenAt)?.getTime() || 0) - (this.parseStoredDate(a.lastLoginAt || a.lastSeenAt)?.getTime() || 0);
             });
 
             if (userArray.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.8rem;">Nenhum usuario</div>';
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.8rem;">Nenhum usuario encontrado</div>';
                 return;
             }
 
+            const esc = (v) => String(v || '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
             container.innerHTML = userArray.map(u => {
-                const now = new Date();
-                const isVip = u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now);
+                const isVip = isVipUser(u);
                 const uid = u.docId || u.code;
+                const last = this.parseStoredDate(u.lastLoginAt || u.lastSeenAt);
+                const longOffline = last ? (now - last) > (7 * 24 * 60 * 60 * 1000) : true;
+                const statusLabel = u.blocked ? 'Bloqueado' : (u.isAdmin ? 'Administrador' : 'Ativo');
+                const deviceLabel = u.lastDeviceId || u.deviceId || 'Nao informado';
                 let vipIcon = '', vipDaysText = '';
-
                 if (isVip) {
                     vipIcon = u.vipType === 'gift' ? '🎁' : (u.vipType === 'trial' ? '⏳' : '💎');
                     let daysLeft = 0;
-                    if (u.vipUntil) {
-                        const diff = new Date(u.vipUntil) - now;
-                        daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    } else if (u.vipTrialUntil) {
-                        const diff = new Date(u.vipTrialUntil) - now;
-                        daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    }
+                    if (u.vipUntil) daysLeft = Math.ceil((new Date(u.vipUntil) - now) / (1000 * 60 * 60 * 24));
+                    else if (u.vipTrialUntil) daysLeft = Math.ceil((new Date(u.vipTrialUntil) - now) / (1000 * 60 * 60 * 24));
                     if (daysLeft > 0 && !u.vip) vipDaysText = `<span class="user-vip-days">${daysLeft} dia${daysLeft !== 1 ? 's' : ''}</span>`;
                     else if (u.vip) vipDaysText = `<span class="user-vip-days">Permanente</span>`;
                 }
-
                 return `
-                    <div class="user-item">
+                    <div class="user-item ${u.blocked ? 'blocked-user' : ''} ${longOffline ? 'offline-long' : ''}">
                         <div class="user-item-info">
-                            <span class="user-item-name">${u.name} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
-                            <span class="user-item-code">PIN: ${u.code}</span>
+                            <span class="user-item-name">${esc(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
+                            <span class="user-item-code">PIN: ${esc(u.code)}</span>
                             ${vipDaysText}
+                            <div class="user-last-seen">Ultimo login: ${this.formatLastSeen(u.lastLoginAt || u.lastSeenAt)}</div>
+                            <div class="user-device-line">Dispositivo: ${esc(deviceLabel)} • ${statusLabel}</div>
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
-                            ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${uid}')">⚙</button>` : ''}
+                            ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${esc(uid)}')">⚙</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -2656,6 +2794,7 @@ async approveUser(docId) {
                 } catch (e) {}
             }
 
+            await this.logAdminAction('adicionar_usuario', newUser);
             this.showToast(`Usuario ${name} adicionado!`, 'success');
         }
 
@@ -2665,6 +2804,8 @@ async approveUser(docId) {
             this.managingUser = docId;
             document.getElementById('manageUserName').textContent = user.name;
             document.getElementById('manageUserPin').textContent = user.code;
+            document.getElementById('manageUserLastLogin').textContent = this.formatLastSeen(user.lastLoginAt || user.lastSeenAt);
+            document.getElementById('manageUserDevice').textContent = user.lastDeviceId || user.deviceId || 'Nao informado';
             const btnBlock = document.getElementById('btnBlockUser');
             btnBlock.textContent = user.blocked ? 'Desbloquear' : 'Bloquear';
             this.openModal('userManagementModal');
@@ -2747,6 +2888,7 @@ async approveUser(docId) {
                 } catch (e) {}
             }
 
+            await this.logAdminAction('excluir_usuario', { ...user, docId });
             this.showToast('Usuario excluido', 'success');
             this.closeModal('confirmActionModal');
         }
@@ -2882,8 +3024,6 @@ async approveUser(docId) {
             const doc = new jsPDF();
 
             const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.25');
-            const footerText = `Gerado por Evolution App ${APP_VERSION} - Felipe Prado Systems`;
-
             let filtered = [], titlePeriod = '', totalBruto = 0, totalLiquido = 0;
 
             if (type === 'weekly') {
@@ -2916,46 +3056,74 @@ async approveUser(docId) {
                 return;
             }
 
-            doc.setFillColor(10, 14, 39);
-            doc.rect(0, 0, 210, 40, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.setFont("helvetica", "bold");
-            doc.text("EVOLUTION", 105, 18, { align: "center" });
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text("Relatorio de Producao", 105, 26, { align: "center" });
-
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(12);
-            doc.text(`Usuario: ${this.currentUser}`, 14, 50);
-            doc.text(`Periodo: ${titlePeriod}`, 14, 56);
-
             filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            const tableBody = filtered.map(e => {
+            const tableBody = filtered.map((e, idx) => {
                 totalBruto += Number(e.bruto) || 0;
                 totalLiquido += Number(e.liquido) || 0;
-                return [
-                    e.dataF,
-                    e.navio,
-                    e.turno,
-                    e.tipo === 'normal' ? 'Normal' : 'Feriado',
-                    e.conferentes,
-                    this.formatMoney(e.bruto),
-                    this.formatMoney(e.liquido)
-                ];
+                return [idx + 1, e.dataF, e.navio, e.turno, e.tipo === 'normal' ? 'Normal' : 'Feriado', e.conferentes, this.formatMoney(e.bruto), this.formatMoney(e.liquido)];
             });
 
+            doc.setFillColor(10, 14, 39);
+            doc.rect(0, 0, 210, 34, 'F');
+            doc.setFillColor(0, 212, 255);
+            doc.rect(0, 34, 210, 4, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            doc.text('EVOLUTION', 14, 18);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Relatorio profissional de producao', 14, 25);
+            doc.setTextColor(35, 44, 67);
+            doc.setDrawColor(220, 228, 240);
+            doc.roundedRect(14, 46, 182, 28, 4, 4, 'S');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('Usuario', 18, 55);
+            doc.text('Periodo', 18, 67);
+            doc.setFont('helvetica', 'normal');
+            doc.text(String(this.currentUser || '-'), 42, 55);
+            doc.text(String(titlePeriod || '-'), 42, 67);
+
+            doc.roundedRect(14, 80, 56, 22, 4, 4, 'S');
+            doc.roundedRect(77, 80, 56, 22, 4, 4, 'S');
+            doc.roundedRect(140, 80, 56, 22, 4, 4, 'S');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.text('TOTAL BRUTO', 18, 88);
+            doc.text('TOTAL LIQUIDO', 81, 88);
+            doc.text('REGISTROS', 144, 88);
+            doc.setFontSize(11);
+            doc.setTextColor(0, 120, 170);
+            doc.text(this.formatMoney(totalBruto), 18, 96);
+            doc.setTextColor(170, 120, 0);
+            doc.text(this.formatMoney(totalLiquido), 81, 96);
+            doc.setTextColor(35, 44, 67);
+            doc.text(String(filtered.length), 144, 96);
+
             doc.autoTable({
-                startY: 70,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto', 'Liquido']],
+                startY: 110,
+                head: [['#', 'Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto', 'Liquido']],
                 body: tableBody,
-                theme: 'striped',
-                headStyles: { fillColor: [0, 212, 255], textColor: [255, 255, 255], fontStyle: 'bold' },
-                foot: [['', '', '', '', 'TOTAIS:', this.formatMoney(totalBruto), this.formatMoney(totalLiquido)]],
-                footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 3, textColor: [35, 44, 67], lineColor: [225, 232, 240], lineWidth: 0.1 },
+                headStyles: { fillColor: [10, 14, 39], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                foot: [['', '', '', '', '', 'TOTAIS', this.formatMoney(totalBruto), this.formatMoney(totalLiquido)]],
+                footStyles: { fillColor: [235, 242, 255], textColor: [15, 23, 42], fontStyle: 'bold' },
+                margin: { left: 14, right: 14 }
             });
+
+            const pageCount = doc.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setDrawColor(230, 236, 244);
+                doc.line(14, 287, 196, 287);
+                doc.setFontSize(8);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Evolution App ${APP_VERSION} • Documento gerado em ${new Date().toLocaleString('pt-BR')}`, 14, 292);
+                doc.text(`Pagina ${i}/${pageCount}`, 196, 292, { align: 'right' });
+            }
 
             doc.save(`Relatorio_Evolution_${this.currentUser.replace(/\s/g, '_')}_${type}.pdf`);
             this.closeModal('pdfOptionsModal');
@@ -3022,17 +3190,16 @@ async approveUser(docId) {
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const MAX_SIZE = 180;
-                    let w = img.width, h = img.height;
-                    if (w > h) {
-                        if (w > MAX_SIZE) { h = MAX_SIZE * h / w; w = MAX_SIZE; }
-                    } else {
-                        if (h > MAX_SIZE) { w = MAX_SIZE * w / h; h = MAX_SIZE; }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    const SIZE = 320;
+                    canvas.width = SIZE;
+                    canvas.height = SIZE;
+                    const minSide = Math.min(img.width, img.height);
+                    const sx = (img.width - minSide) / 2;
+                    const sy = (img.height - minSide) / 2;
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, SIZE, SIZE);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
 
                     safeStorage.setItem(`evo_avatar_local_${this.currentUserId}`, dataUrl);
                     if (!this.users[this.currentUserId]) this.users[this.currentUserId] = {};
@@ -3089,6 +3256,11 @@ async approveUser(docId) {
                     this.updateVipUI();
                 }
                 if (id === 'adminModal' && this.isAdmin) {
+                    const searchEl = document.getElementById('adminUserSearch');
+                    const sortEl = document.getElementById('adminUserSort');
+                    if (searchEl) searchEl.value = this.adminUserSearch || '';
+                    if (sortEl) sortEl.value = this.adminUserSort || 'lastLogin';
+                    this.syncUsersFromFirebase();
                     this.loadPendingUsers();
                     this.renderUserList();
                 }
@@ -3109,6 +3281,98 @@ async approveUser(docId) {
 
         toggleSection(id) {
             document.getElementById(id)?.classList.toggle('expanded');
+        }
+
+
+        async updateUserActivity(docId, opts = {}) {
+            if (!db || !docId) return;
+            const login = !!opts.login;
+            const nowIso = new Date().toISOString();
+            const payload = {
+                lastSeenAt: nowIso,
+                lastDeviceId: this.deviceId,
+                lastAppVersion: window.EVOLUTION_APP_VERSION || 'V5.25'
+            };
+            if (login) payload.lastLoginAt = nowIso;
+            try {
+                await db.collection('users').doc(docId).set(payload, { merge: true });
+                if (this.users[docId]) {
+                    this.users[docId] = { ...this.users[docId], ...payload };
+                    this.saveUsersToCache();
+                }
+            } catch (e) {}
+        }
+
+        startPresenceTracking() {
+            if (this._presenceStarted) return;
+            this._presenceStarted = true;
+            const touch = () => {
+                const now = Date.now();
+                if (!this.currentUserId || now - this.lastPresenceTouch < 45000) return;
+                this.lastPresenceTouch = now;
+                this.updateUserActivity(this.currentUserId, { login: false });
+            };
+            document.addEventListener('click', touch, { passive: true });
+            document.addEventListener('touchstart', touch, { passive: true });
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && this.currentUserId) this.updateUserActivity(this.currentUserId, { login: false });
+            });
+        }
+
+        listenToCurrentUserDoc() {
+            if (!db || !this.currentUserId) return;
+            if (this.unsubscribeCurrentUser) this.unsubscribeCurrentUser();
+            this.unsubscribeCurrentUser = db.collection('users').doc(this.currentUserId).onSnapshot((doc) => {
+                if (!doc.exists) return;
+                const data = doc.data() || {};
+                const previousForce = this.users[this.currentUserId]?.forceLogoutAt;
+                this.users[this.currentUserId] = { ...(this.users[this.currentUserId] || {}), ...data, docId: doc.id };
+                this.saveUsersToCache();
+                if (this.currentUserId === doc.id) {
+                    this.isAdmin = !!data.isAdmin;
+                    this.showMainApp();
+                }
+                const currentForce = data.forceLogoutAt;
+                const forceDate = this.parseStoredDate(currentForce);
+                const prevDate = this.parseStoredDate(previousForce);
+                if (forceDate && (!prevDate || forceDate.getTime() !== prevDate.getTime()) && forceDate.getTime() > this.lastSessionStartedAt) {
+                    this.showToast('Sessao encerrada pelo administrador', 'warning');
+                    setTimeout(() => this.logout(), 700);
+                }
+                if (this.isAdmin) this.renderUserList();
+            }, () => {});
+        }
+
+        async logAdminAction(action, targetUser, details = {}) {
+            if (!db || !this.isAdmin) return;
+            try {
+                await db.collection('adminLogs').add({
+                    action,
+                    adminName: this.currentUser,
+                    adminId: this.currentUserId,
+                    targetName: targetUser?.name || '',
+                    targetCode: targetUser?.code || '',
+                    targetId: targetUser?.docId || '',
+                    details,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (e) {}
+        }
+
+        async forceLogoutFromModal() {
+            const user = this.users[this.managingUser];
+            if (!user || !db) return;
+            try {
+                const forcedAt = new Date().toISOString();
+                await db.collection('users').doc(this.managingUser).set({ forceLogoutAt: forcedAt }, { merge: true });
+                this.users[this.managingUser] = { ...user, forceLogoutAt: forcedAt };
+                this.saveUsersToCache();
+                await this.logAdminAction('forcar_logout', { ...user, docId: this.managingUser });
+                this.renderUserList();
+                this.showToast('Logout forcado com sucesso', 'success');
+            } catch (e) {
+                this.showToast('Falha ao forcar logout', 'error');
+            }
         }
 
         // ============================================
@@ -3144,6 +3408,7 @@ async approveUser(docId) {
             if (this.unsubscribeUsers) this.unsubscribeUsers();
             if (this.unsubscribeEntries) this.unsubscribeEntries();
             if (this.unsubscribePending) this.unsubscribePending();
+            if (this.unsubscribeCurrentUser) this.unsubscribeCurrentUser();
             safeStorage.removeItem('evo_session_v516');
             location.reload();
         }
