@@ -1136,11 +1136,10 @@
 
             // Event listeners
             window.addEventListener('online', () => {
-                this.showToast('Internet restabelecida. Sincronizando...', 'success');
                 this.scheduleHistorySync('online', 300);
             });
             window.addEventListener('offline', () => {
-                this.showToast('Sem internet. Os dados locais serao preservados.', 'warning');
+                // Dados locais preservados automaticamente, sem notificar o usuario
             });
             document.getElementById('importInput')?.addEventListener('change', (e) => this.importData(e));
         }
@@ -3160,6 +3159,9 @@ async approveUser(docId) {
 
             const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.25');
             const generatedAt = new Date().toLocaleString('pt-BR');
+            const pageW = 210;
+            const marginL = 14;
+            const marginR = 196;
 
             let filtered = [], titlePeriod = '', totalBruto = 0, totalLiquido = 0;
 
@@ -3171,7 +3173,7 @@ async approveUser(docId) {
                     const d = new Date(e.data);
                     return d >= sevenDaysAgo && d <= today;
                 });
-                titlePeriod = `Semanal (${sevenDaysAgo.toLocaleDateString('pt-BR')} - ${today.toLocaleDateString('pt-BR')})`;
+                titlePeriod = `Semanal  •  ${sevenDaysAgo.toLocaleDateString('pt-BR')} ate ${today.toLocaleDateString('pt-BR')}`;
             } else {
                 const picker = document.getElementById('pdfMonthPicker');
                 const monthVal = picker.value;
@@ -3180,12 +3182,13 @@ async approveUser(docId) {
                     return;
                 }
                 const [y, m] = monthVal.split('-');
+                const monthNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
                 filtered = this.entries.filter(e => {
                     if (!e.data) return false;
                     const parts = e.data.split('-');
                     return parts[0] === y && parts[1] === m;
                 });
-                titlePeriod = `Mensal (${m}/${y})`;
+                titlePeriod = `${monthNames[parseInt(m, 10) - 1]} de ${y}`;
             }
 
             if (filtered.length === 0) {
@@ -3211,102 +3214,228 @@ async approveUser(docId) {
 
             const totalPago = filtered.filter(e => e.pago).reduce((sum, e) => sum + (Number(e.liquido) || 0), 0);
             const totalPendente = totalLiquido - totalPago;
+            const qtdPago = filtered.filter(e => e.pago).length;
+            const qtdPendente = filtered.filter(e => !e.pago).length;
 
-            doc.setFillColor(10, 14, 39);
-            doc.rect(0, 0, 210, 32, 'F');
-            doc.setDrawColor(0, 212, 255);
-            doc.setLineWidth(0.8);
-            doc.line(14, 24, 196, 24);
-            doc.setTextColor(255, 255, 255);
+            // ── HELPER: Desenha cabecalho em cada pagina ──────────────────────────
+            const drawHeader = () => {
+                // Fundo escuro do topo
+                doc.setFillColor(8, 12, 34);
+                doc.rect(0, 0, pageW, 30, 'F');
+                // Faixa lateral ciano
+                doc.setFillColor(0, 212, 255);
+                doc.rect(0, 0, 3, 30, 'F');
+                // Linha inferior do header
+                doc.setDrawColor(0, 212, 255);
+                doc.setLineWidth(0.4);
+                doc.line(0, 30, pageW, 30);
+
+                // Titulo EVOLUTION
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.setTextColor(255, 255, 255);
+                doc.text('EVOLUTION', 9, 13);
+                // Subtitulo
+                doc.setFontSize(7.5);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 212, 255);
+                doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
+                // Felipe Prado Systems
+                doc.setFontSize(6.5);
+                doc.setTextColor(120, 140, 180);
+                doc.text('Felipe Prado Systems  |  ' + APP_VERSION, 9, 25);
+                // Data geracao (direita)
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(180, 200, 220);
+                doc.text('Gerado em:', marginR, 16, { align: 'right' });
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(7.5);
+                doc.setTextColor(255, 255, 255);
+                doc.text(generatedAt, marginR, 22, { align: 'right' });
+            };
+
+            // ── HELPER: Marca dagua em cada pagina ───────────────────────────────
+            const drawWatermark = () => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(64);
+                doc.setTextColor(228, 238, 248);
+                doc.text('EVOLUTION', 105, 152, { align: 'center', angle: 38 });
+                doc.setFontSize(18);
+                doc.setTextColor(228, 238, 248);
+                doc.text('Felipe Prado Systems', 105, 175, { align: 'center', angle: 38 });
+            };
+
+            // ── HELPER: Rodape em cada pagina ────────────────────────────────────
+            const drawFooter = (pageNum, totalPagesRef) => {
+                const pageH = doc.internal.pageSize.height;
+                doc.setFillColor(245, 248, 252);
+                doc.rect(0, pageH - 12, pageW, 12, 'F');
+                doc.setDrawColor(200, 215, 230);
+                doc.setLineWidth(0.3);
+                doc.line(0, pageH - 12, pageW, pageH - 12);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(7);
+                doc.setTextColor(80, 100, 130);
+                doc.text('EVOLUTION  |  ' + (this.currentUser || 'Usuario').toUpperCase(), marginL, pageH - 5);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Documento gerado automaticamente. Nao requer assinatura.', 105, pageH - 5, { align: 'center' });
+                doc.text(`Pag. ${pageNum}`, marginR, pageH - 5, { align: 'right' });
+            };
+
+            // ── PAGINA 1 ─────────────────────────────────────────────────────────
+            drawWatermark();
+            drawHeader();
+
+            // Bloco de identificacao
+            doc.setFillColor(248, 250, 253);
+            doc.setDrawColor(220, 230, 245);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(marginL, 34, marginR - marginL, 18, 3, 3, 'FD');
+            // Faixa colorida esquerda do bloco
+            doc.setFillColor(0, 212, 255);
+            doc.roundedRect(marginL, 34, 3, 18, 1.5, 1.5, 'F');
+
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(22);
-            doc.text('EVOLUTION', 14, 14);
-            doc.setFontSize(10);
+            doc.setFontSize(12);
+            doc.setTextColor(15, 25, 50);
+            doc.text(this.currentUser || 'Usuario', 21, 42);
             doc.setFont('helvetica', 'normal');
-            doc.text('Relatorio premium de producao', 14, 20);
+            doc.setFontSize(8);
+            doc.setTextColor(80, 100, 140);
+            doc.text('Operador Portuario  |  ' + titlePeriod, 21, 48);
+            // Registros no canto direito
+            doc.setFont('helvetica', 'bold');
             doc.setFontSize(9);
-            doc.text(generatedAt, 196, 14, { align: 'right' });
-            doc.text(`Versao ${APP_VERSION}`, 196, 20, { align: 'right' });
-
-            doc.setTextColor(22, 28, 45);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(13);
-            doc.text(this.currentUser || 'Usuario', 14, 42);
+            doc.setTextColor(0, 150, 200);
+            doc.text(`${filtered.length} registros`, marginR, 42, { align: 'right' });
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.setTextColor(95, 106, 129);
-            doc.text(titlePeriod, 14, 48);
+            doc.setFontSize(7.5);
+            doc.setTextColor(120, 140, 170);
+            doc.text(`${qtdPago} pagos  •  ${qtdPendente} pendentes`, marginR, 48, { align: 'right' });
 
-            const cards = [
-                { x: 14, title: 'Total bruto', value: this.formatMoney(totalBruto) },
-                { x: 63, title: 'Total liquido', value: this.formatMoney(totalLiquido) },
-                { x: 112, title: 'Ja pago', value: this.formatMoney(totalPago) },
-                { x: 161, title: 'Pendente', value: this.formatMoney(totalPendente) }
+            // Cards de resumo (4 cards lado a lado)
+            const cardW = 43;
+            const cardGap = 3;
+            const cardStartX = marginL;
+            const cardY = 56;
+            const cardH = 22;
+
+            const cardDefs = [
+                { title: 'BRUTO TOTAL',   value: this.formatMoney(totalBruto),    accent: [0, 180, 216],   bg: [240, 252, 255] },
+                { title: 'LIQUIDO TOTAL', value: this.formatMoney(totalLiquido),   accent: [255, 184, 0],   bg: [255, 252, 235] },
+                { title: 'JA RECEBIDO',   value: this.formatMoney(totalPago),      accent: [0, 210, 160],   bg: [240, 255, 250] },
+                { title: 'PENDENTE',      value: this.formatMoney(totalPendente),  accent: [255, 56, 96],   bg: [255, 242, 245] }
             ];
 
-            cards.forEach((card) => {
-                doc.setFillColor(245, 248, 252);
-                doc.setDrawColor(220, 227, 238);
-                doc.roundedRect(card.x, 56, 35, 20, 3, 3, 'FD');
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(95, 106, 129);
-                doc.text(card.title, card.x + 3, 63);
+            cardDefs.forEach((card, i) => {
+                const cx = cardStartX + i * (cardW + cardGap);
+                // Fundo do card
+                doc.setFillColor(...card.bg);
+                doc.setDrawColor(...card.accent.map(v => Math.min(255, v + 40)));
+                doc.setLineWidth(0.25);
+                doc.roundedRect(cx, cardY, cardW, cardH, 3, 3, 'FD');
+                // Faixa topo colorida
+                doc.setFillColor(...card.accent);
+                doc.roundedRect(cx, cardY, cardW, 2.5, 1.5, 1.5, 'F');
+                doc.rect(cx, cardY + 1.5, cardW, 1, 'F');
+                // Label
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(10);
-                doc.setTextColor(18, 24, 38);
-                doc.text(card.value, card.x + 3, 71);
+                doc.setFontSize(6.2);
+                doc.setTextColor(...card.accent);
+                doc.text(card.title, cx + 3, cardY + 8);
+                // Valor
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9.5);
+                doc.setTextColor(15, 25, 50);
+                // Quebra valor se for muito longo
+                const valText = card.value;
+                doc.text(valText, cx + 3, cardY + 17, { maxWidth: cardW - 5 });
             });
 
+            // Barra de progresso pago/total (visual)
+            const barY = 82;
+            const barW = marginR - marginL;
+            const pctPago = totalLiquido > 0 ? (totalPago / totalLiquido) : 0;
+            doc.setFillColor(230, 238, 248);
+            doc.roundedRect(marginL, barY, barW, 4, 2, 2, 'F');
+            if (pctPago > 0) {
+                doc.setFillColor(0, 210, 160);
+                doc.roundedRect(marginL, barY, barW * pctPago, 4, 2, 2, 'F');
+            }
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6.5);
+            doc.setTextColor(80, 100, 140);
+            doc.text(`${Math.round(pctPago * 100)}% recebido`, marginL, barY + 8);
+            doc.text(`${Math.round((1 - pctPago) * 100)}% pendente`, marginR, barY + 8, { align: 'right' });
+
+            // Tabela principal
             doc.autoTable({
-                startY: 84,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto', 'Liquido']],
+                startY: 92,
+                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Liquido (R$)']],
                 body: tableBody,
                 theme: 'grid',
                 styles: {
-                    fontSize: 8.4,
-                    cellPadding: 2.8,
-                    textColor: [24, 28, 39],
-                    lineColor: [226, 232, 240],
-                    lineWidth: 0.15
+                    fontSize: 8.2,
+                    cellPadding: { top: 3, right: 3, bottom: 3, left: 3 },
+                    textColor: [24, 32, 52],
+                    lineColor: [215, 225, 240],
+                    lineWidth: 0.18
                 },
                 headStyles: {
-                    fillColor: [15, 23, 42],
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold'
+                    fillColor: [10, 18, 46],
+                    textColor: [220, 235, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
                 },
                 alternateRowStyles: {
-                    fillColor: [248, 250, 252]
+                    fillColor: [248, 251, 255]
                 },
                 columnStyles: {
-                    0: { cellWidth: 21 },
-                    1: { cellWidth: 48 },
+                    0: { cellWidth: 22 },
+                    1: { cellWidth: 46 },
                     2: { cellWidth: 22 },
                     3: { cellWidth: 18 },
                     4: { halign: 'center', cellWidth: 14 },
-                    5: { halign: 'right', cellWidth: 30 },
-                    6: { halign: 'right', cellWidth: 30 }
+                    5: { halign: 'right', cellWidth: 32, fontStyle: 'normal' },
+                    6: { halign: 'right', cellWidth: 28, fontStyle: 'bold', textColor: [0, 140, 100] }
                 },
-                foot: [['', '', '', '', 'TOTAIS', this.formatMoney(totalBruto), this.formatMoney(totalLiquido)]],
-                footStyles: {
-                    fillColor: [230, 236, 244],
-                    textColor: [16, 24, 40],
-                    fontStyle: 'bold'
-                },
-                didDrawPage: () => {
-                    const pageHeight = doc.internal.pageSize.height;
-                    doc.setDrawColor(220, 227, 238);
-                    doc.line(14, pageHeight - 14, 196, pageHeight - 14);
-                    doc.setFontSize(8);
-                    doc.setTextColor(100, 116, 139);
-                    doc.text(`Evolution App • ${this.currentUser || 'Usuario'}`, 14, pageHeight - 9);
-                    doc.text(`Pagina ${doc.internal.getNumberOfPages()}`, 196, pageHeight - 9, { align: 'right' });
+                // FIX: foot com colspan para evitar bug do "S" na linha de totais
+                foot: [[
+                    { content: '', colSpan: 4, styles: { fillColor: [15, 25, 60] } },
+                    { content: 'TOTAIS', styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
+                ]],
+                didDrawPage: (data) => {
+                    const pgNum = doc.internal.getNumberOfPages();
+                    // Marca dagua em paginas adicionais
+                    if (pgNum > 1) {
+                        drawWatermark();
+                        drawHeader();
+                    }
+                    drawFooter(pgNum, '?');
                 }
             });
 
-            doc.save(`Relatorio_Evolution_${(this.currentUser || 'usuario').replace(/\s/g, '_')}_${type}.pdf`);
+            // Atualizando rodape da pagina 1 com total correto de paginas
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let p = 1; p <= totalPages; p++) {
+                doc.setPage(p);
+                const pageH = doc.internal.pageSize.height;
+                // Reescrever apenas o numero de pagina com total correto
+                doc.setFillColor(245, 248, 252);
+                doc.rect(marginR - 25, pageH - 11, 30, 9, 'F');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(80, 100, 130);
+                doc.text(`Pag. ${p} / ${totalPages}`, marginR, pageH - 5, { align: 'right' });
+            }
+
+            doc.save(`Evolution_${(this.currentUser || 'usuario').replace(/\s+/g, '_')}_${titlePeriod.replace(/\s+/g, '_')}.pdf`);
             this.closeModal('pdfOptionsModal');
-            this.showToast('PDF gerado!', 'success');
+            this.showToast('PDF gerado com sucesso!', 'success');
         }
 
         // ============================================
