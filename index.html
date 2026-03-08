@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1597,6 +1598,32 @@
             safeStorage.setItem(this.getHistoryQueueKey(), JSON.stringify(this.pendingHistoryQueue || {}));
         }
 
+        // ============================================
+        // TOMBSTONE - controle de entradas excluidas
+        // Garante que deletados nao retornem do Firebase
+        // ============================================
+        getDeletedIdsKey() {
+            return `evo_deleted_ids_${this.currentUserId}`;
+        }
+
+        getDeletedIds() {
+            try {
+                const raw = safeStorage.getItem(this.getDeletedIdsKey());
+                return new Set(JSON.parse(raw || '[]').map(String));
+            } catch (e) {
+                return new Set();
+            }
+        }
+
+        addDeletedId(id) {
+            if (!this.currentUserId || id == null) return;
+            const ids = this.getDeletedIds();
+            ids.add(String(id));
+            // Limitar a 500 IDs para nao crescer indefinidamente
+            const arr = [...ids].slice(-500);
+            safeStorage.setItem(this.getDeletedIdsKey(), JSON.stringify(arr));
+        }
+
         collectEntryMonths() {
             const months = new Set();
             (this.entries || []).forEach(entry => {
@@ -1659,13 +1686,24 @@
                     }
                 }
 
-                const byId = new Map();
-                [...remoteEntries, ...localEntries].forEach(entry => {
+                // BUG FIX: Antes era [...remoteEntries, ...localEntries] com local sobrescrevendo remoto,
+                // mas entradas DELETADAS localmente ainda existiam no remoto e voltavam ao mapa.
+                // Agora: local e a fonte da verdade. Remoto so adiciona entradas que nao existem localmente.
+                // Tombstone garante que IDs deletados sejam filtrados de ambas as fontes.
+                const deletedIds = this.getDeletedIds();
+                const localById = new Map();
+                localEntries.forEach(entry => {
                     if (!entry) return;
-                    const key = entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`;
-                    byId.set(key, entry);
+                    const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                    if (!deletedIds.has(key)) localById.set(key, entry);
                 });
-                const mergedEntries = Array.from(byId.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+                // Adicionar do remoto SOMENTE entradas que nao existem localmente e nao foram deletadas
+                remoteEntries.forEach(entry => {
+                    if (!entry) return;
+                    const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                    if (!deletedIds.has(key) && !localById.has(key)) localById.set(key, entry);
+                });
+                const mergedEntries = Array.from(localById.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
 
                 await ref.set({
                     history: JSON.stringify(mergedEntries),
@@ -2076,8 +2114,18 @@
         executeDelete() {
             if (!this.pendingDeleteId) return;
 
+            // BUG FIX: Registrar ID deletado no tombstone ANTES de remover do array
+            // Sem isso, o Firebase devolve a entrada deletada via listener/sync
+            this.addDeletedId(this.pendingDeleteId);
+
             this.entries = this.entries.filter(e => e.id !== this.pendingDeleteId);
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+
+            // Marcar o mes da entrada como pendente para sincronizar a exclusao
+            const allMonths = this.collectEntryMonths();
+            const currentMonth = getCurrentMonthStringManaus();
+            const monthsToSync = new Set([...allMonths, currentMonth]);
+            this.markHistoryMonthsPending([...monthsToSync]);
 
             this.closeModal('confirmModal');
             this.pendingDeleteId = null;
@@ -2712,6 +2760,36 @@ async approveUser(docId) {
                     REMOTE_ADMIN_PIN = doc.data().adminPin;
                     safeStorage.setItem('evo_admin_pin_enc', btoa(REMOTE_ADMIN_PIN));
                 }
+                if (doc.exists && doc.data().floodPercentage != null) {
+                    const fp = document.getElementById('floodPercentage');
+                    if (fp) fp.value = doc.data().floodPercentage;
+                }
+            } catch (e) {}
+
+            // BUG FIX: Carregar e exibir mensagem do sistema (era funcionalidade sem implementacao)
+            try {
+                const msgDoc = await db.collection('config').doc('message').get();
+                if (msgDoc.exists) {
+                    const msgData = msgDoc.data();
+                    if (!msgData || !msgData.content) return;
+                    const now = new Date();
+                    let shouldShow = false;
+                    const seenKey = `evo_msg_seen_${this.currentUserId}`;
+                    if (msgData.type === 'always') {
+                        shouldShow = true;
+                    } else if (msgData.type === 'once') {
+                        shouldShow = safeStorage.getItem(seenKey) !== msgData.createdAt;
+                    } else if (msgData.type === 'period' && msgData.startDate && msgData.endDate) {
+                        const start = new Date(msgData.startDate);
+                        const end = new Date(msgData.endDate + 'T23:59:59');
+                        shouldShow = now >= start && now <= end;
+                    }
+                    if (shouldShow) {
+                        document.getElementById('sysMsgContent').textContent = msgData.content;
+                        setTimeout(() => this.openModal('messageModal'), 1500);
+                        if (msgData.type === 'once') safeStorage.setItem(seenKey, msgData.createdAt || '');
+                    }
+                }
             } catch (e) {}
         }
 
@@ -2753,14 +2831,27 @@ async approveUser(docId) {
                     });
 
                     if (serverEntries.length > 0) {
+                        // BUG FIX: Antes servidor ganhava prioridade (if !byId.has(key)),
+                        // causando entradas deletadas localmente voltarem do Firebase.
+                        // Agora: local tem prioridade. Servidor so contribui com entradas novas.
+                        const deletedIds = this.getDeletedIds();
                         const byId = new Map();
-                        [...serverEntries, ...this.entries].forEach(entry => {
+                        // 1) Processar local primeiro (fonte da verdade)
+                        (this.entries || []).forEach(entry => {
                             if (!entry) return;
-                            const key = entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`;
-                            if (!byId.has(key)) byId.set(key, entry);
+                            const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                            if (!deletedIds.has(key)) byId.set(key, entry);
+                        });
+                        // 2) Servidor so adiciona entradas ausentes localmente (ex: outro dispositivo)
+                        serverEntries.forEach(entry => {
+                            if (!entry) return;
+                            const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                            if (!deletedIds.has(key) && !byId.has(key)) byId.set(key, entry);
                         });
                         const merged = Array.from(byId.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
-                        const changed = merged.length !== this.entries.length;
+                        // BUG FIX: Verificar conteudo real, nao apenas tamanho
+                        const changed = merged.length !== this.entries.length ||
+                            merged.some((e, i) => !this.entries[i] || e.id !== this.entries[i].id || e.pago !== this.entries[i].pago);
                         this.entries = merged;
                         if (changed) {
                             this.migrateOldEntries();
@@ -3602,6 +3693,71 @@ async approveUser(docId) {
 
         toggleSection(id) {
             document.getElementById(id)?.classList.toggle('expanded');
+        }
+
+        // ============================================
+        // ADMIN - MENSAGENS DO SISTEMA
+        // BUG FIX: Funcoes faltavam completamente — causavam erro ao clicar nos botoes admin
+        // ============================================
+        toggleMsgDates() {
+            const msgType = document.getElementById('msgType')?.value;
+            const dates = document.getElementById('msgDates');
+            if (dates) dates.style.display = msgType === 'period' ? 'grid' : 'none';
+        }
+
+        async publishMessage() {
+            const content = document.getElementById('msgContent')?.value?.trim();
+            const type = document.getElementById('msgType')?.value || 'once';
+            if (!content) {
+                this.showToast('Digite o conteudo do aviso', 'error');
+                return;
+            }
+            const msgData = {
+                content,
+                type,
+                createdAt: new Date().toISOString()
+            };
+            if (type === 'period') {
+                msgData.startDate = document.getElementById('msgStart')?.value || '';
+                msgData.endDate = document.getElementById('msgEnd')?.value || '';
+                if (!msgData.startDate || !msgData.endDate) {
+                    this.showToast('Selecione as datas do periodo', 'error');
+                    return;
+                }
+            }
+            if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
+            try {
+                await db.collection('config').doc('message').set(msgData);
+                this.showToast('Aviso publicado com sucesso!', 'success');
+            } catch (e) {
+                this.showToast('Erro ao publicar aviso', 'error');
+            }
+        }
+
+        async deleteMessage() {
+            if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
+            try {
+                await db.collection('config').doc('message').delete();
+                this.showToast('Aviso removido!', 'success');
+            } catch (e) {
+                this.showToast('Erro ao remover aviso', 'error');
+            }
+        }
+
+        async saveFloodRate() {
+            const input = document.getElementById('floodPercentage');
+            const value = parseInt(input?.value ?? '40');
+            if (isNaN(value) || value < 0 || value > 100) {
+                this.showToast('Valor deve ser entre 0 e 100', 'error');
+                return;
+            }
+            if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
+            try {
+                await db.collection('config').doc('settings').set({ floodPercentage: value }, { merge: true });
+                this.showToast('Taxa de doacao salva!', 'success');
+            } catch (e) {
+                this.showToast('Erro ao salvar taxa', 'error');
+            }
         }
 
         // ============================================
