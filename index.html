@@ -365,6 +365,21 @@
         </div>
     </div>
 
+    <!-- DELETE AVATAR CONFIRM MODAL -->
+    <div class="modal-overlay" id="deleteAvatarModal" onclick="app.closeModalOnOverlay(event, 'deleteAvatarModal')">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--danger);">Remover Foto</h3></div>
+            <div class="modal-body">
+                <div style="font-size: 2.5rem; margin-bottom: 16px;">🗑</div>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);">Tem certeza que deseja remover sua foto de perfil?</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-glass" onclick="app.closeModal('deleteAvatarModal')">Cancelar</button>
+                    <button class="btn btn-danger" onclick="app.executeDeleteAvatar()">Remover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- LOGIN SCREEN -->
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
@@ -843,7 +858,10 @@
             <div class="modal-header"><h3 class="modal-title">Gerenciar Usuario</h3><button class="modal-close" onclick="app.closeModal('userManagementModal')">✕</button></div>
             <div class="modal-body">
                 <h4 id="manageUserName" style="text-align: center; margin-bottom: 8px; color: var(--text);">Nome</h4>
-                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 20px;">PIN: <span id="manageUserPin">000000</span></div>
+                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 8px;">PIN: <span id="manageUserPin">000000</span></div>
+                <div id="manageUserLastLogin" style="text-align: center; margin-bottom: 20px; font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <span>🕐</span><span id="manageUserLastLoginText">Ultimo acesso: sem registro</span>
+                </div>
                 <div class="input-group">
                     <label class="input-label">Conceder VIP</label>
                     <div class="input-row">
@@ -1268,6 +1286,18 @@
                 code: foundUser.code,
                 docId: foundUser.docId
             });
+
+            // Registrar ultimo login
+            const loginTs = new Date().toISOString();
+            if (this.users[foundUser.docId]) {
+                this.users[foundUser.docId].lastLoginAt = loginTs;
+                this.saveUsersToCache();
+            }
+            if (db) {
+                try {
+                    await db.collection('users').doc(foundUser.docId).set({ lastLoginAt: loginTs }, { merge: true });
+                } catch(e) {}
+            }
 
             // Salvar sessao
             safeStorage.setItem('evo_session_v516', btoa(JSON.stringify({
@@ -1749,7 +1779,10 @@
             // Atualizar nome
             const userNameEl = document.getElementById('userName');
             if (userNameEl) {
-                userNameEl.childNodes[0].textContent = this.currentUser + ' ';
+                // Safe: recria o conteudo sem depender de childNodes existentes
+                const vipBadgeEl = userNameEl.querySelector('#vipBadge');
+                const badgeHtml = vipBadgeEl ? vipBadgeEl.outerHTML : '<span id="vipBadge" class="vip-badge hidden">VIP</span>';
+                userNameEl.innerHTML = this.escHtml(this.currentUser) + ' ' + badgeHtml;
             }
 
             // Avatar
@@ -1948,8 +1981,8 @@
                 <div class="history-item ${e.pago ? 'paid' : 'pending'} ${this.expandedHistoryId === e.id ? 'expanded' : ''}" id="history-item-${e.id}">
                     <div class="history-main-row" onclick="app.toggleHistoryDetail(${e.id})">
                         <div class="history-main">
-                            <div class="history-ship">${e.navio}</div>
-                            <div class="history-meta">${e.dataF} • ${e.turno}</div>
+                            <div class="history-ship">${this.escHtml(e.navio)}</div>
+                            <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(e.turno)}</div>
                             <span class="status-badge ${e.pago ? 'paid' : 'pending'}">${e.pago ? '✓ PAGO' : '⏳ PENDENTE'}</span>
                         </div>
                         <div class="history-values">
@@ -1960,10 +1993,10 @@
                     </div>
                     <div class="history-details">
                         <div class="details-grid">
-                            <div class="detail-item"><div class="detail-label">Data</div><div class="detail-value">${e.dataF}</div></div>
-                            <div class="detail-item"><div class="detail-label">Turno</div><div class="detail-value">${e.turno}</div></div>
+                            <div class="detail-item"><div class="detail-label">Data</div><div class="detail-value">${this.escHtml(e.dataF)}</div></div>
+                            <div class="detail-item"><div class="detail-label">Turno</div><div class="detail-value">${this.escHtml(e.turno)}</div></div>
                             <div class="detail-item"><div class="detail-label">Tipo</div><div class="detail-value">${e.tipo === 'normal' ? 'Normal' : 'Feriado'}</div></div>
-                            <div class="detail-item"><div class="detail-label">Conf.</div><div class="detail-value">${e.conferentes}</div></div>
+                            <div class="detail-item"><div class="detail-label">Conf.</div><div class="detail-value">${this.escHtml(String(e.conferentes))}</div></div>
                         </div>
                         <div class="history-actions-row">
                             <button class="action-btn" onclick="event.stopPropagation(); app.togglePago(${e.id});">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
@@ -2003,8 +2036,15 @@
         }
 
         changePage(delta) {
-            this.currentPage += delta;
-            if (this.currentPage < 1) this.currentPage = 1;
+            const totalPages = Math.ceil(
+                (this.currentFilter === 'pending'
+                    ? this.entries.filter(e => !e.pago)
+                    : this.currentFilter === 'paid'
+                        ? this.entries.filter(e => e.pago)
+                        : this.entries
+                ).length / this.itemsPerPage
+            ) || 1;
+            this.currentPage = Math.min(Math.max(1, this.currentPage + delta), totalPages);
             this.renderHistory();
         }
 
@@ -2257,7 +2297,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const max = Math.max(...vals, 10);
 
             const calc = (pts) => pts.map((pt, i) => ({
-                x: (i / (days - 1)) * (w - 2 * p) + p,
+                x: days <= 1 ? w / 2 : (i / (days - 1)) * (w - 2 * p) + p,
                 y: h - p - ((pt.val / max) * (h - 2 * p))
             }));
 
@@ -2814,13 +2854,13 @@ async approveUser(docId) {
                 return `
                     <div class="user-item">
                         <div class="user-item-info">
-                            <span class="user-item-name">${u.name} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
-                            <span class="user-item-code">PIN: ${u.code}</span>
+                            <span class="user-item-name">${this.escHtml(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
+                            <span class="user-item-code">PIN: ${this.escHtml(u.code)}</span>
                             ${vipDaysText}
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
-                            ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${uid}')">⚙</button>` : ''}
+                            ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${this.escHtml(uid)}')">⚙</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -2874,6 +2914,23 @@ async approveUser(docId) {
             this.managingUser = docId;
             document.getElementById('manageUserName').textContent = user.name;
             document.getElementById('manageUserPin').textContent = user.code;
+
+            // Exibir ultimo login
+            const lastLoginEl = document.getElementById('manageUserLastLoginText');
+            if (lastLoginEl) {
+                if (user.lastLoginAt) {
+                    const dt = new Date(user.lastLoginAt);
+                    const dd = String(dt.getDate()).padStart(2, '0');
+                    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                    const yyyy = dt.getFullYear();
+                    const hh = String(dt.getHours()).padStart(2, '0');
+                    const min = String(dt.getMinutes()).padStart(2, '0');
+                    lastLoginEl.textContent = `Ultimo acesso: ${dd}/${mm}/${yyyy} as ${hh}:${min}`;
+                } else {
+                    lastLoginEl.textContent = 'Ultimo acesso: sem registro';
+                }
+            }
+
             const btnBlock = document.getElementById('btnBlockUser');
             btnBlock.textContent = user.blocked ? 'Desbloquear' : 'Bloquear';
             this.openModal('userManagementModal');
@@ -3036,7 +3093,7 @@ async approveUser(docId) {
         // ============================================
         exportData() {
             const data = {
-                v: 'V520',
+                v: 'V525',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -3255,21 +3312,42 @@ async approveUser(docId) {
         // ============================================
         // UTILITARIOS
         // ============================================
+        escHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         formatMoney(cents) {
             return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
         copyToClipboard(text, msg) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => this.showToast(msg, 'success')).catch(() => {});
+                navigator.clipboard.writeText(text)
+                    .then(() => this.showToast(msg, 'success'))
+                    .catch(() => this._copyFallback(text, msg));
             } else {
+                this._copyFallback(text, msg);
+            }
+        }
+
+        _copyFallback(text, msg) {
+            try {
                 const ta = document.createElement('textarea');
                 ta.value = text;
+                ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
                 document.body.appendChild(ta);
+                ta.focus();
                 ta.select();
                 document.execCommand('copy');
                 document.body.removeChild(ta);
                 this.showToast(msg, 'success');
+            } catch(e) {
+                this.showToast('Nao foi possivel copiar automaticamente', 'error');
             }
         }
 
@@ -3331,8 +3409,12 @@ async approveUser(docId) {
             reader.readAsDataURL(file);
         }
 
-        async deleteAvatar() {
-            if (!confirm('Remover foto de perfil?')) return;
+        deleteAvatar() {
+            this.openModal('deleteAvatarModal');
+        }
+
+        async executeDeleteAvatar() {
+            this.closeModal('deleteAvatarModal');
             safeStorage.removeItem(`evo_avatar_local_${this.currentUserId}`);
             if (this.users[this.currentUserId]) {
                 this.users[this.currentUserId].avatar = null;
