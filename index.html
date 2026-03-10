@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -192,6 +193,31 @@
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; }
         input, select { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; -webkit-appearance: none; appearance: none; }
+
+        /* ==========================
+         * Calendario de operacoes
+         * ==========================
+         * O calendario mensal exibe os dias com registros. Dias com todos
+         * pagamentos quitados ficam em verde; dias com algum pendente ficam
+         * em laranja/vermelho. Os dias vazios sao escondidos.
+         */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+        .calendar-day { padding: 6px; border-radius: 6px; text-align: center; font-size: 0.65rem; cursor: pointer; user-select: none; min-height: 32px; display: flex; align-items: center; justify-content: center; }
+        .calendar-day.empty { visibility: hidden; }
+        .calendar-day.header { font-weight: 700; color: var(--text-secondary); cursor: default; }
+        .calendar-day.paid { background: rgba(0, 217, 166, 0.15); border: 1px solid rgba(0, 217, 166, 0.5); color: var(--success); }
+        .calendar-day.pending { background: rgba(255, 184, 0, 0.15); border: 1px solid rgba(255, 184, 0, 0.5); color: var(--warning); }
+
+        /* ==========================
+         * Caixa de sugestoes de navio
+         * ==========================
+         * A lista de sugestoes aparece abaixo dos campos de navio ao digitar.
+         * Cada item aceita clique para preencher e long-press para remover.
+         */
+        .navio-suggestions { position: relative; }
+        .navio-suggestions-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); max-height: 150px; overflow-y: auto; }
+        .navio-suggestion-item { padding: 6px 10px; font-size: 0.8rem; cursor: pointer; color: var(--text); }
+        .navio-suggestion-item:hover { background: var(--surface-elevated); }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1); }
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -347,6 +373,50 @@
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-glass" onclick="app.closeModal('confirmActionModal')">Cancelar</button>
                     <button class="btn btn-danger" id="btnConfirmActionExec">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Record Modal -->
+    <div class="modal-overlay" id="editModal" onclick="app.closeModalOnOverlay(event, 'editModal')">
+        <div class="modal-content" style="max-width: 380px;">
+            <div class="modal-header"><h3 class="modal-title">Editar Registro</h3></div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label class="input-label">Navio</label>
+                    <input type="text" id="editNavio" style="text-transform: uppercase;">
+                </div>
+                <div class="input-row">
+                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="editData"></div>
+                    <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="editQtdConf" min="1"></div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group"><label class="input-label">Turno</label><select id="editTurno" onchange="app.adjustEditFields()"><option value="07x15">07x15</option><option value="15x23">15x23</option><option value="23x07">23x07</option></select></div>
+                    <div class="input-group"><label class="input-label">Tipo</label><select id="editTipo"><option value="normal">Normal</option><option value="feriado">Feriado</option></select></div>
+                </div>
+                <div id="editCampos">
+                    <div class="input-row">
+                        <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="editP1" placeholder="0"></div>
+                        <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="editP2" placeholder="0"></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end;">
+                    <button class="btn btn-glass" onclick="app.closeModal('editModal')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="app.saveEditedEntry()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Summary Modal -->
+    <div class="modal-overlay" id="daySummaryModal" onclick="app.closeModalOnOverlay(event, 'daySummaryModal')">
+        <div class="modal-content" style="max-width: 380px;">
+            <div class="modal-header"><h3 class="modal-title" id="daySummaryTitle">Resumo do Dia</h3></div>
+            <div class="modal-body">
+                <div id="daySummaryContent"></div>
+                <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end;">
+                    <button class="btn btn-glass" onclick="app.closeModal('daySummaryModal')">Fechar</button>
                 </div>
             </div>
         </div>
@@ -622,7 +692,7 @@
 
             <!-- New Entry -->
             <div class="section fade-in" id="secNew">
-                <div class="section-header" onclick="app.toggleSection('secNew')">
+                <div class="section-header" onclick="app.toggleSection('secNew'); app.suggestDefaultTurno()">
                     <div class="section-title-group">
                         <div class="section-icon">➕</div>
                         <div class="section-titles"><h3>Registrar Producao</h3><p>Adicionar ao historico</p></div>
@@ -631,9 +701,11 @@
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
-                        <div class="input-group">
+                        <div class="input-group navio-suggestions">
                             <label class="input-label">Navio</label>
                             <input type="text" id="calcNavio" style="text-transform: uppercase;" placeholder="Nome do navio">
+                            <!-- Caixa de sugestoes dinamica para o campo calcNavio -->
+                            <div class="navio-suggestions-list" id="calcNavioSuggestions" style="display: none;"></div>
                         </div>
                         <div class="input-row">
                             <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
@@ -665,7 +737,7 @@
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
-                        <div class="input-group"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform: uppercase;" placeholder="Nome do navio"></div>
+                        <div class="input-group navio-suggestions"><label class="input-label">Navio</label><input type="text" id="relNavio" style="text-transform: uppercase;" placeholder="Nome do navio"><!-- Caixa de sugestoes dinamica para o campo relNavio --><div class="navio-suggestions-list" id="relNavioSuggestions" style="display: none;"></div></div>
                         <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
                         <div class="input-row-3">
                             <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
@@ -707,6 +779,26 @@
                     </div>
                 </div>
             </div>
+            <!-- Calendar -->
+            <div class="section fade-in" id="secCal">
+                <div class="section-header" onclick="app.toggleSection('secCal')">
+                    <div class="section-title-group">
+                        <div class="section-icon">📅</div>
+                        <div class="section-titles"><h3>Calendario</h3><p>Resumo mensal de operacoes</p></div>
+                    </div>
+                    <div class="section-arrow">▼</div>
+                </div>
+                <div class="section-content">
+                    <div class="section-inner">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <label for="calendarMonth" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Mes</label>
+                            <input type="month" id="calendarMonth" onchange="app.renderCalendar()" style="flex: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <footer class="app-footer">
@@ -1057,6 +1149,10 @@
             this.metaStartDate = null;
             this.metaGoalReached = false;
             this.expandedHistoryId = null;
+            // ID da entrada em edicao
+            this.editingEntryId = null;
+            // Conjunto de nomes de navio removidos das sugestoes (persistente via safeStorage)
+            this.removedNavioSuggestions = new Set();
             this.users = {};
             this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
             this.isAdmin = false;
@@ -1134,6 +1230,19 @@
 
             // Verificar sessao
             this.checkSession();
+
+            // Carregar lista de navios removidos das sugestoes
+            try {
+                const removed = safeStorage.getItem('evo_removed_navio');
+                this.removedNavioSuggestions = new Set(removed ? JSON.parse(removed) : []);
+            } catch (err) {
+                this.removedNavioSuggestions = new Set();
+            }
+            // Event listeners para mostrar sugestoes de navio
+            document.getElementById('calcNavio')?.addEventListener('input', () => this.showNavioSuggestions('calcNavio'));
+            document.getElementById('relNavio')?.addEventListener('input', () => this.showNavioSuggestions('relNavio'));
+            // Inicializar calendario
+            this.renderCalendar();
 
             // Event listeners
             window.addEventListener('online', () => {
@@ -2038,6 +2147,7 @@
                         <div class="history-actions-row">
                             <button class="action-btn" onclick="event.stopPropagation(); app.togglePago(${e.id});">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
                             <button class="action-btn" onclick="event.stopPropagation(); app.copyEntryDetails(${e.id});">📋 Copiar</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); app.openEditModal(${e.id});">✏ Editar</button>
                             <button class="action-btn delete" onclick="event.stopPropagation(); app.deleteEntry(${e.id});">🗑 Excluir</button>
                         </div>
                     </div>
@@ -2137,6 +2247,11 @@
             this.updateMetaProgress();
             this.persistData();
 
+            // Atualizar calendario e sugestoes apos exclusao
+            if (typeof this.renderCalendar === 'function') this.renderCalendar();
+            this.showNavioSuggestions('calcNavio');
+            this.showNavioSuggestions('relNavio');
+
             this.showToast('Excluido com sucesso', 'success');
         }
 
@@ -2149,6 +2264,315 @@ Tipo: ${e.tipo}
 Bruto: ${this.formatMoney(e.bruto)}
 Liquido: ${this.formatMoney(e.liquido)}`;
             this.copyToClipboard(text, 'Copiado!');
+        }
+
+        // ============================================
+        // CALENDÁRIO E EDIÇÃO
+        // ============================================
+
+        /**
+         * Sugere automaticamente o turno mais frequente com base nos registros existentes.
+         * Ao invocar este metodo, o campo calcTurno sera atualizado para o turno
+         * mais usado pelo usuario. Caso nao existam registros, permanece o valor atual.
+         */
+        suggestDefaultTurno() {
+            try {
+                const freq = {};
+                (this.entries || []).forEach(e => {
+                    if (!e || !e.turno) return;
+                    freq[e.turno] = (freq[e.turno] || 0) + 1;
+                });
+                let max = 0;
+                let best = null;
+                Object.keys(freq).forEach(k => {
+                    if (freq[k] > max) { max = freq[k]; best = k; }
+                });
+                if (best) {
+                    const sel = document.getElementById('calcTurno');
+                    if (sel && sel.value !== best) {
+                        sel.value = best;
+                        this.adjustCalcFields();
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao sugerir turno', err);
+            }
+        }
+
+        /**
+         * Atualiza os campos de edicao conforme o turno selecionado. Similar a adjustCalcFields,
+         * mas opera nos elementos de edicao (editP1, editP2, editPT). Quando o turno e 15x23,
+         * exibe 2 campos de producao; nos demais, apenas o total.
+         */
+        adjustEditFields() {
+            const turno = document.getElementById('editTurno')?.value;
+            const container = document.getElementById('editCampos');
+            if (!container) return;
+            if (turno === '15x23') {
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="editP1" placeholder="0"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="editP2" placeholder="0"></div></div>`;
+            } else {
+                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><input type="number" id="editPT" placeholder="0"></div>`;
+            }
+        }
+
+        /**
+         * Abre o modal de edicao de registro, preenchendo os campos com os dados
+         * da entrada escolhida. Mantem o ID original para que a atualizacao seja feita
+         * na mesma posicao do array de entradas.
+         * @param {string|number} id ID da entrada a ser editada
+         */
+        openEditModal(id) {
+            const entry = this.entries.find(e => String(e.id) === String(id));
+            if (!entry) return;
+            // Guardar o id em edicao para salvar posteriormente
+            this.editingEntryId = entry.id;
+            // Preencher campos
+            const navioInput = document.getElementById('editNavio');
+            const dataInput = document.getElementById('editData');
+            const confInput = document.getElementById('editQtdConf');
+            const turnoInput = document.getElementById('editTurno');
+            const tipoInput = document.getElementById('editTipo');
+            if (navioInput) navioInput.value = entry.navio || '';
+            if (dataInput) dataInput.value = entry.data || '';
+            if (confInput) confInput.value = entry.conferentes || 1;
+            if (turnoInput) turnoInput.value = entry.turno || '';
+            if (tipoInput) tipoInput.value = entry.tipo || 'normal';
+            // Ajustar campos de producao
+            this.adjustEditFields();
+            if (entry.turno === '15x23') {
+                document.getElementById('editP1').value = Array.isArray(entry.valores) ? entry.valores[0] : '';
+                document.getElementById('editP2').value = Array.isArray(entry.valores) ? entry.valores[1] : '';
+            } else {
+                document.getElementById('editPT').value = Array.isArray(entry.valores) ? entry.valores[0] : '';
+            }
+            // Abrir modal
+            this.openModal('editModal');
+        }
+
+        /**
+         * Salva as alteracoes feitas no modal de edicao. Recalcula os valores
+         * brutos e liquidos com base nas novas informacoes e atualiza o objeto de entrada
+         * mantendo o mesmo ID. Em seguida, atualiza a interface, salva localmente
+         * e sincroniza com o Firestore.
+         */
+        saveEditedEntry() {
+            if (!this.editingEntryId) return;
+            const navio = document.getElementById('editNavio')?.value?.toUpperCase().trim() || '';
+            const data = document.getElementById('editData')?.value || '';
+            const conf = parseInt(document.getElementById('editQtdConf')?.value) || 1;
+            const turno = document.getElementById('editTurno')?.value || '';
+            const tipo = document.getElementById('editTipo')?.value || 'normal';
+            if (!navio || !data || !turno) {
+                this.showToast('Preencha todos os campos', 'error');
+                return;
+            }
+            let valores;
+            if (turno === '15x23') {
+                const p1 = document.getElementById('editP1')?.value || 0;
+                const p2 = document.getElementById('editP2')?.value || 0;
+                valores = [p1, p2];
+            } else {
+                const pt = document.getElementById('editPT')?.value || 0;
+                valores = [pt];
+            }
+            const res = this.calcularValores(tipo, turno, valores, conf);
+            // Encontrar entrada para atualizar
+            const idx = this.entries.findIndex(e => String(e.id) === String(this.editingEntryId));
+            if (idx !== -1) {
+                const [y, m, d] = data.split('-');
+                this.entries[idx] = {
+                    ...this.entries[idx],
+                    navio,
+                    data,
+                    dataF: `${d}/${m}/${y}`,
+                    turno,
+                    tipo,
+                    valores,
+                    conferentes: conf,
+                    bruto: res.bruto,
+                    liquido: res.liquido
+                };
+                safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                // Atualizar dashboards e listas
+                this.updateDashboard();
+                this.renderHistory();
+                this.renderChart();
+                this.updateMetaProgress();
+                // Atualizar calendario e sugestoes
+                if (typeof this.renderCalendar === 'function') this.renderCalendar();
+                // Sugerir turno mais utilizado novamente
+                this.suggestDefaultTurno();
+                // Atualizar caixas de sugestoes (usar showNavioSuggestions para recomputar)
+                this.showNavioSuggestions('calcNavio');
+                this.showNavioSuggestions('relNavio');
+                this.persistData();
+                this.showToast('Registro atualizado!', 'success');
+            }
+            this.closeModal('editModal');
+            this.editingEntryId = null;
+        }
+
+        /**
+         * Exibe sugestões de nomes de navio baseadas no historico. A lista e filtrada
+         * pelo valor digitado e exclui sugestoes previamente removidas. Itens podem ser
+         * removidos por long press de 3 segundos, apos confirmacao do usuario.
+         * @param {string} fieldId ID do campo de input (calcNavio ou relNavio)
+         */
+        showNavioSuggestions(fieldId) {
+            try {
+                const inputEl = document.getElementById(fieldId);
+                if (!inputEl) return;
+                const container = document.getElementById(fieldId + 'Suggestions');
+                if (!container) return;
+                const query = inputEl.value.toUpperCase().trim();
+                // Obter lista unica de navios, removendo itens deletados permanentemente
+                const namesSet = new Set();
+                (this.entries || []).forEach(e => {
+                    if (e && e.navio && !this.removedNavioSuggestions?.has(e.navio)) {
+                        namesSet.add(e.navio);
+                    }
+                });
+                const names = Array.from(namesSet);
+                let filtered = names;
+                if (query) {
+                    filtered = names.filter(n => n.includes(query));
+                }
+                // Limitar a exibir ate 8 sugestoes
+                filtered = filtered.slice(0, 8);
+                if (filtered.length === 0) {
+                    container.style.display = 'none';
+                    container.innerHTML = '';
+                    return;
+                }
+                container.innerHTML = '';
+                filtered.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'navio-suggestion-item';
+                    item.textContent = name;
+                    // Clique preenche o valor e esconde a lista
+                    item.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        inputEl.value = name;
+                        container.style.display = 'none';
+                    });
+                    // Long press (3 segundos) para remover sugestao
+                    let pressTimer;
+                    const start = () => {
+                        pressTimer = setTimeout(() => {
+                            if (confirm(`Remover \"${name}\" das sugestoes?`)) {
+                                if (!this.removedNavioSuggestions) this.removedNavioSuggestions = new Set();
+                                this.removedNavioSuggestions.add(name);
+                                safeStorage.setItem('evo_removed_navio', JSON.stringify(Array.from(this.removedNavioSuggestions)));
+                                this.showNavioSuggestions(fieldId);
+                            }
+                        }, 3000);
+                    };
+                    const cancel = () => {
+                        clearTimeout(pressTimer);
+                    };
+                    item.addEventListener('mousedown', start);
+                    item.addEventListener('touchstart', start);
+                    item.addEventListener('mouseup', cancel);
+                    item.addEventListener('mouseleave', cancel);
+                    item.addEventListener('touchend', cancel);
+                    container.appendChild(item);
+                });
+                container.style.display = 'block';
+            } catch (err) {
+                console.error('Erro ao mostrar sugestoes', err);
+            }
+        }
+
+        /**
+         * Renderiza o calendario mensal com destaque para os dias que possuem registros.
+         * O usuario pode selecionar o mes pelo input type="month". Cada dia
+         * exibido recebe classes condizentes com o status (paid/pending) e ao
+         * clicar abre um resumo do dia.
+         */
+        renderCalendar() {
+            const monthInput = document.getElementById('calendarMonth');
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            // Garantir que o input exista e tenha valor; se nao, definir para o mes atual
+            let monthStr = monthInput?.value;
+            if (!monthStr) {
+                monthStr = getCurrentMonthStringManaus();
+                if (monthInput) monthInput.value = monthStr;
+            }
+            const [year, month] = monthStr.split('-');
+            if (!year || !month) return;
+            const yearNum = parseInt(year);
+            const monthNum = parseInt(month);
+            // Dias no mes
+            const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+            // Dia da semana do primeiro dia (0=Domingo)
+            const firstDay = new Date(yearNum, monthNum - 1, 1).getDay();
+            // Cabecalho dos dias da semana
+            const weekNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+            let html = '';
+            weekNames.forEach(n => {
+                html += `<div class="calendar-day header">${n}</div>`;
+            });
+            // Preencher espacos vazios antes do dia 1
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="calendar-day empty"></div>`;
+            }
+            // Dias do mes
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dd = d.toString().padStart(2, '0');
+                const mm = month.padStart(2, '0');
+                const dateStr = `${year}-${mm}-${dd}`;
+                const entriesForDay = (this.entries || []).filter(e => e && e.data === dateStr);
+                let statusClass = '';
+                if (entriesForDay.length > 0) {
+                    const allPaid = entriesForDay.every(e => e.pago);
+                    statusClass = allPaid ? 'paid' : 'pending';
+                }
+                html += `<div class="calendar-day ${statusClass}" data-date="${dateStr}" onclick="app.openDaySummary('${dateStr}')">${d}</div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        /**
+         * Abre o modal de resumo do dia, exibindo os registros do dia selecionado.
+         * Mostra navio, data, turno, valores e um botao para edicao de cada registro.
+         * @param {string} dateStr Data no formato YYYY-MM-DD
+         */
+        openDaySummary(dateStr) {
+            try {
+                const modalTitle = document.getElementById('daySummaryTitle');
+                const content = document.getElementById('daySummaryContent');
+                if (!content) return;
+                // Definir titulo com data formatada
+                if (modalTitle) {
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        modalTitle.textContent = `Resumo de ${parts[2]}/${parts[1]}/${parts[0]}`;
+                    } else {
+                        modalTitle.textContent = 'Resumo do Dia';
+                    }
+                }
+                const list = (this.entries || []).filter(e => e && e.data === dateStr);
+                if (list.length === 0) {
+                    content.innerHTML = '<div style="font-size:0.8rem;color:var(--text-secondary);">Nenhum registro neste dia</div>';
+                } else {
+                    content.innerHTML = list.map(e => {
+                        const status = e.pago ? '<span style="color:var(--success);font-weight:700;">✓ Pago</span>' : '<span style="color:var(--danger);font-weight:700;">⏳ Pendente</span>';
+                        return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px;">
+                            <div style="font-weight:700;">${this.escHtml(e.navio)}</div>
+                            <div style="font-size:0.75rem;color:var(--text-secondary);">Turno: ${this.escHtml(e.turno)} | Tipo: ${e.tipo === 'normal' ? 'Normal' : 'Feriado'}</div>
+                            <div style="font-size:0.75rem;">Bruto: ${this.formatMoney(e.bruto)} | Liquido: ${this.formatMoney(e.liquido)}</div>
+                            <div style="margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+                                ${status}
+                                <button class="btn-tiny btn-glass" onclick="app.openEditModal(${e.id}); event.stopPropagation();">✏ Editar</button>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+                this.openModal('daySummaryModal');
+            } catch (err) {
+                console.error('Erro ao abrir resumo do dia', err);
+            }
         }
 
         // ============================================
@@ -2460,7 +2884,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const [y, m, d] = dataInput.split('-');
 
             const entry = {
-                id: Date.now(),
+                // ID convertido para string para evitar inconsistências de tipo entre dispositivos
+                id: String(Date.now()),
                 navio,
                 data: dataInput,
                 dataF: `${d}/${m}/${y}`,
@@ -2485,7 +2910,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             document.getElementById('calcNavio').value = '';
             this.triggerMoneyAnimation();
             this.persistData();
+
             this.showToast('Registro salvo!', 'success');
+            // atualizar calendário e sugestões após salvar
+            if (typeof this.renderCalendar === 'function') this.renderCalendar();
+            // Atualizar sugestoes apos salvar
+            this.showNavioSuggestions('calcNavio');
+            this.showNavioSuggestions('relNavio');
 
             setTimeout(() => { if (btn) btn.disabled = false; }, 1500);
         }
@@ -2859,6 +3290,8 @@ async approveUser(docId) {
                             this.updateDashboard();
                             this.renderHistory();
                             this.updateMetaProgress();
+                            // Atualizar calendario quando registros mudarem via Firebase
+                            if (typeof this.renderCalendar === 'function') this.renderCalendar();
                         }
                     }
 
@@ -3352,9 +3785,8 @@ async approveUser(docId) {
                 doc.setFontSize(64);
                 doc.setTextColor(228, 238, 248);
                 doc.text('EVOLUTION', 105, 152, { align: 'center', angle: 38 });
-                doc.setFontSize(18);
-                doc.setTextColor(228, 238, 248);
-                doc.text('Felipe Prado Systems', 105, 175, { align: 'center', angle: 38 });
+                // Removido o texto da marca d'água que exibia o nome do desenvolvedor.
+                // Agora, somente "EVOLUTION" é mostrado como marca d'água.
             };
 
             // ── HELPER: Rodape em cada pagina ────────────────────────────────────
@@ -3495,7 +3927,7 @@ async approveUser(docId) {
                 // FIX: foot com colspan para evitar bug do "S" na linha de totais
                 foot: [[
                     { content: '', colSpan: 4, styles: { fillColor: [15, 25, 60] } },
-                    { content: 'TOTAIS', styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
+                    { content: 'TOTAL', styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
                     { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
                     { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
                 ]],
