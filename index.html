@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.34 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.37 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1001,7 +1001,7 @@
         </nav>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V5.34</div>
+            <div class="footer-brand">EVOLUTION V5.37</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -1252,11 +1252,11 @@
     <script>
 
     // ============================================
-    // EVOLUTION V5.34 - CODIGO COMPLETO E FUNCIONAL
+    // EVOLUTION V5.37 - CODIGO COMPLETO E FUNCIONAL
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.34';
+    window.EVOLUTION_APP_VERSION = 'V5.37';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -4235,7 +4235,7 @@ async approveUser(docId) {
         // ============================================
         exportData() {
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.34',
+                v: window.EVOLUTION_APP_VERSION || 'V5.37',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -4959,129 +4959,202 @@ async approveUser(docId) {
         // MONITORAMENTO NAVIOS – CHIBATAO
         // ============================================
         async loadNavios(forceRefresh) {
-            const container = document.getElementById('naviosContent');
+            const container  = document.getElementById('naviosContent');
             const refreshBtn = document.getElementById('naviosRefreshBtn');
             if (!container) return;
 
-            // Evita recarregar desnecessariamente (cache de 5 min)
             const now = Date.now();
             if (!forceRefresh && this._naviosLoaded && this._naviosTs && (now - this._naviosTs) < 300000) return;
 
-            // Estado de loading
             refreshBtn?.classList.add('spinning');
             container.innerHTML = `
                 <div class="navios-loading">
                     <div class="navios-loading-spinner"></div>
-                    <p>Atualizando programacao...</p>
+                    <p>Carregando programacao...</p>
                 </div>`;
 
             const TARGET = 'http://modallport.grupochibatao.com.br:2424/modallweb/home/navios';
-            const PROXIES = [
-                `https://api.allorigins.win/get?url=${encodeURIComponent(TARGET)}`,
-                `https://corsproxy.io/?${encodeURIComponent(TARGET)}`
-            ];
 
-            let html = null;
-            for (const proxy of PROXIES) {
-                try {
-                    const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
-                    if (!res.ok) continue;
-                    const json = await res.json().catch(() => null);
-                    html = json?.contents || await res.text();
-                    if (html && html.length > 200) break;
-                } catch(e) { continue; }
+            // Tenta obter o HTML do Chibatao em 3 etapas:
+            // 1. Fetch direto (funciona em file:// e redes locais)
+            // 2. Iframe escondido + leitura de contentDocument (funciona quando cross-origin nao bloqueia)
+            // 3. Proxies CORS (funciona em HTTPS/GitHub Pages)
+            let navios = null;
+
+            // ── Etapa 1: fetch direto ──────────────────────────────────
+            try {
+                const res = await fetch(TARGET, {
+                    signal: AbortSignal.timeout(8000),
+                    mode: 'no-cors' // permite a requisicao sem exigir CORS header
+                });
+                // no-cors retorna resposta opaca — tentamos text() mesmo assim
+                const text = await res.text().catch(() => '');
+                if (text && text.length > 200) {
+                    navios = this._parseNaviosChibatao(text);
+                }
+            } catch(e) { /* segue para proxima etapa */ }
+
+            // ── Etapa 2: iframe escondido ─────────────────────────────
+            if (!navios || !navios.length) {
+                navios = await this._loadNaviosViaIframe(TARGET);
+            }
+
+            // ── Etapa 3: proxies CORS ─────────────────────────────────
+            if (!navios || !navios.length) {
+                const PROXIES = [
+                    { url: `https://api.allorigins.win/get?url=${encodeURIComponent(TARGET)}`,       parse: async r => { const j = await r.json(); return j.contents; } },
+                    { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(TARGET)}`,  parse: r => r.text() },
+                    { url: `https://thingproxy.freeboard.io/fetch/${TARGET}`,                        parse: r => r.text() },
+                    { url: `https://corsproxy.io/?${encodeURIComponent(TARGET)}`,                    parse: r => r.text() },
+                ];
+                for (const proxy of PROXIES) {
+                    try {
+                        const res = await fetch(proxy.url, { signal: AbortSignal.timeout(10000) });
+                        if (!res.ok) continue;
+                        const text = await proxy.parse(res);
+                        if (text && text.length > 200) {
+                            navios = this._parseNaviosChibatao(text);
+                            if (navios.length) break;
+                        }
+                    } catch(e) { continue; }
+                }
             }
 
             refreshBtn?.classList.remove('spinning');
 
-            if (!html) {
+            if (!navios || !navios.length) {
                 container.innerHTML = `
                     <div class="navios-error">
                         <div style="font-size:2rem;margin-bottom:12px;">📡</div>
-                        <p>Nao foi possivel conectar ao sistema do Chibatao.<br>Verifique sua conexao e tente novamente.</p>
+                        <p>Nao foi possivel carregar a programacao agora.</p>
+                        <a href="${TARGET}" target="_blank" rel="noopener"
+                           class="btn btn-primary" style="height:44px;text-decoration:none;margin-bottom:8px;">
+                            🚢 Ver no site do porto
+                        </a>
                         <button class="btn btn-glass" onclick="app.loadNavios(true)" style="height:40px;">↻ Tentar novamente</button>
                     </div>`;
                 return;
             }
 
-            // Parse do HTML recebido
-            const navios = this._parseNaviosChibatao(html);
+            this._renderNaviosList(container, navios);
+            this._naviosLoaded = true;
+            this._naviosTs = now;
+        }
 
-            if (!navios.length) {
-                container.innerHTML = `
-                    <div class="navios-error">
-                        <div style="font-size:2rem;margin-bottom:12px;">🔍</div>
-                        <p>Nenhum navio encontrado na programacao no momento.</p>
-                        <button class="btn btn-glass" onclick="app.loadNavios(true)" style="height:40px;">↻ Atualizar</button>
-                    </div>`;
-                return;
-            }
+        // Carrega a pagina num iframe oculto e tenta ler o DOM
+        _loadNaviosViaIframe(url) {
+            return new Promise(resolve => {
+                // Remove iframe anterior se houver
+                const old = document.getElementById('naviosHiddenIframe');
+                if (old) old.remove();
 
-            // Renderiza a lista
-            const ts = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-            const items = navios.map((n, i) => {
-                const dotClass = this._navioStatusClass(n.status);
-                return `
-                    <div class="navio-item" style="animation-delay:${i * 0.05}s">
-                        <div class="navio-status-dot ${dotClass}"></div>
-                        <div class="navio-info">
-                            <div class="navio-nome">${this.escHtml(n.nome)}</div>
-                            <div class="navio-meta">
-                                ${n.data  ? `<span class="navio-tag data">📅 ${this.escHtml(n.data)}</span>` : ''}
-                                ${n.berco ? `<span class="navio-tag berco">⚓ ${this.escHtml(n.berco)}</span>` : ''}
-                                ${n.status ? `<span class="navio-tag status-label">${this.escHtml(n.status)}</span>` : ''}
-                            </div>
+                const iframe = document.createElement('iframe');
+                iframe.id    = 'naviosHiddenIframe';
+                iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+                iframe.src   = url;
+
+                const timeout = setTimeout(() => {
+                    iframe.remove();
+                    resolve([]);
+                }, 12000);
+
+                iframe.onload = () => {
+                    clearTimeout(timeout);
+                    try {
+                        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                        if (!doc || !doc.body) { iframe.remove(); resolve([]); return; }
+                        const navios = this._parseNaviosChibatao(doc.body.innerHTML);
+                        iframe.remove();
+                        resolve(navios);
+                    } catch(e) {
+                        // Cross-origin bloqueado — nao conseguimos ler o conteudo
+                        iframe.remove();
+                        resolve([]);
+                    }
+                };
+
+                iframe.onerror = () => { clearTimeout(timeout); iframe.remove(); resolve([]); };
+                document.body.appendChild(iframe);
+            });
+        }
+
+        _renderNaviosList(container, navios) {
+            const ts    = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+            const items = navios.map((n, i) => `
+                <div class="navio-item" style="animation-delay:${i * 0.04}s">
+                    <div class="navio-status-dot ${this._navioStatusClass(n.status)}"></div>
+                    <div class="navio-info">
+                        <div class="navio-nome">${this.escHtml(n.nome)}</div>
+                        <div class="navio-meta">
+                            ${n.viagem ? `<span class="navio-tag" style="color:var(--text-secondary)">${this.escHtml(n.viagem)}</span>` : ''}
+                            ${n.data   ? `<span class="navio-tag data">📅 ${this.escHtml(n.data)}</span>` : ''}
+                            ${n.berco  ? `<span class="navio-tag berco">⚓ ${this.escHtml(n.berco)}</span>` : ''}
+                            ${n.status ? `<span class="navio-tag status-label">${this.escHtml(n.status)}</span>` : ''}
                         </div>
-                    </div>`;
-            }).join('');
+                    </div>
+                </div>`).join('');
 
             container.innerHTML = `
                 <div class="navios-list">${items}</div>
-                <div class="navios-timestamp">Atualizado em ${ts} · ${navios.length} navio${navios.length !== 1 ? 's' : ''}</div>`;
-
-            this._naviosLoaded = true;
-            this._naviosTs = now;
+                <div class="navios-timestamp">Atualizado ${ts} · ${navios.length} navio${navios.length !== 1 ? 's' : ''}</div>`;
         }
 
         _parseNaviosChibatao(html) {
             try {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
+                const doc    = parser.parseFromString(html, 'text/html');
                 const navios = [];
 
-                // Tenta extrair de tabelas (estrutura mais comum no ModallWeb)
-                const rows = doc.querySelectorAll('table tr, tbody tr');
-                rows.forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td, th'))
-                        .map(c => c.textContent.trim()).filter(Boolean);
-                    if (cells.length >= 2) {
-                        const nome = cells.find(c => c.length > 3 && /[A-Z]{2,}/.test(c) && !/^\d/.test(c));
-                        const data = cells.find(c => /\d{2}\/\d{2}/.test(c) || /\d{4}-\d{2}-\d{2}/.test(c));
-                        const berco = cells.find(c => /berco|bco|pier|cais/i.test(c)) ||
-                                      cells.find(c => /^[A-Z]?[0-9]{1,3}$/i.test(c));
-                        const status = cells.find(c => /atrac|operad|previsto|aguard|desatrac|saind/i.test(c));
-                        if (nome && nome !== data) {
-                            navios.push({ nome, data: data || '', berco: berco || '', status: status || '' });
-                        }
-                    }
-                });
+                // Mapeia cabecalhos da tabela para indices
+                doc.querySelectorAll('table').forEach(table => {
+                    const ths = Array.from(table.querySelectorAll('th'))
+                        .map(th => th.textContent.trim().toLowerCase());
 
-                // Fallback: extrai linhas de listas / divs com nome de navio
-                if (!navios.length) {
-                    const candidates = doc.querySelectorAll('[class*="navio"], [class*="vessel"], [class*="ship"], [class*="embarcac"]');
-                    candidates.forEach(el => {
-                        const nome = el.textContent.trim();
-                        if (nome.length > 3) navios.push({ nome, data: '', berco: '', status: '' });
+                    // Indices de colunas conhecidas do ModallWeb
+                    const iNome   = ths.findIndex(h => /navio|embarcac|vessel|nome/.test(h));
+                    const iViagem = ths.findIndex(h => /viagem|voyage/.test(h));
+                    const iEscala = ths.findIndex(h => /escala/.test(h));
+                    const iBerco  = ths.findIndex(h => /local|berco|pier|cais|atrac/.test(h));
+                    const iData   = ths.findIndex(h => /prev|data|chegada|saida|hora/.test(h));
+                    const iStatus = ths.findIndex(h => /status|situac|operac/.test(h));
+
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('td'))
+                            .map(td => td.textContent.replace(/\s+/g,' ').trim());
+                        if (cells.length < 2) return;
+
+                        const get = i => (i >= 0 && cells[i]) ? cells[i] : '';
+
+                        // Com cabecalho mapeado
+                        if (iNome >= 0) {
+                            const nome = get(iNome);
+                            if (!nome || nome.length < 2) return;
+                            navios.push({
+                                nome,
+                                viagem: get(iViagem),
+                                data:   get(iData),
+                                berco:  get(iBerco),
+                                status: get(iStatus),
+                            });
+                        } else {
+                            // Sem cabecalho: heuristica — 1a coluna costuma ser o nome
+                            const nome = cells[0];
+                            if (!nome || nome.length < 2 || /^\d/.test(nome)) return;
+                            const data = cells.find(c => /\d{2}[\/\-]\d{2}/.test(c)) || '';
+                            const berco = cells.find(c => /^[A-Z]?\d{1,3}$/.test(c)) || '';
+                            navios.push({ nome, viagem: '', data, berco, status: '' });
+                        }
                     });
-                }
+                });
 
                 // Deduplica por nome
                 const seen = new Set();
                 return navios.filter(n => {
-                    if (seen.has(n.nome)) return false;
-                    seen.add(n.nome);
+                    const k = n.nome.toUpperCase().trim();
+                    if (!k || seen.has(k)) return false;
+                    seen.add(k);
                     return true;
-                }).slice(0, 30);
+                }).slice(0, 40);
 
             } catch(e) { return []; }
         }
