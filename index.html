@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.27 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.28 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -838,7 +838,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V5.27</div>
+            <div class="footer-brand">EVOLUTION V5.28</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -1237,7 +1237,11 @@
                         this.syncUsersFromFirebase();
                         this.loadPendingUsers();
                         this.fetchAdminSettings();
-                        this.resumeSessionAfterFirebase();
+                        // So tenta restaurar sessao se ha sessao pendente E usuario ainda nao logou
+                        // (evita re-restaurar sessao apos logout manual)
+                        if (this.pendingSessionData && !this.currentUserId) {
+                            this.resumeSessionAfterFirebase();
+                        }
                     } else {
                         auth.signInAnonymously().catch(() => {});
                     }
@@ -1248,6 +1252,13 @@
 
             // Carregar cache de usuarios
             this.loadUsersFromCache();
+
+            // Restaurar REMOTE_ADMIN_PIN do cache local ANTES de checkSession
+            // (fetchAdminSettings e async — sem isso o admin perderia sessao no refresh)
+            try {
+                const cachedPin = safeStorage.getItem('evo_admin_pin_enc');
+                if (cachedPin) REMOTE_ADMIN_PIN = atob(cachedPin);
+            } catch(e) {}
 
             // Configurar datas
             const hoje = getCurrentDateStringManaus();
@@ -1432,6 +1443,11 @@
             }
 
             // Login bem-sucedido
+            // Garantir que o flag isAdmin está correto (admin identificado pelo PIN)
+            if (REMOTE_ADMIN_PIN && foundUser.code === REMOTE_ADMIN_PIN) {
+                foundUser.isAdmin = true;
+                foundUser.vip = true;
+            }
             this.restoreUserSession(foundUser, {
                 user: foundUser.name,
                 code: foundUser.code,
@@ -1560,7 +1576,7 @@
                 }
                 this.pendingSessionData = d;
 
-                // 1. Verifica se é admin pelo PIN remoto (prioridade máxima)
+                // 1. Verifica se é admin pelo PIN remoto (REMOTE_ADMIN_PIN ja foi carregado do cache local)
                 if (REMOTE_ADMIN_PIN && d.code === REMOTE_ADMIN_PIN) {
                     const adminDocId = d.docId || `${d.code}-FELIPE_PRADO`;
                     const adminUser = {
@@ -1577,17 +1593,18 @@
                     return;
                 }
 
-                // 2. Verifica cache local
+                // 2. Verifica cache local — tambem aceita usuarios marcados como admin no cache
                 const cachedUser = this.users[d.docId];
                 if (cachedUser && !cachedUser.blocked) {
                     this.restoreUserSession({ ...cachedUser, docId: cachedUser.docId || d.docId }, d);
                     return;
                 }
 
-                // 3. Aguarda Firebase
+                // 3. Aguarda Firebase (fetchAdminSettings vai chamar resumeSessionAfterFirebase novamente)
                 if (this.firebaseReady) {
                     this.resumeSessionAfterFirebase();
                 }
+                // Senao, auth.onAuthStateChanged vai disparar resumeSessionAfterFirebase quando pronto
             } catch (e) {
                 safeStorage.removeItem('evo_session_v516');
             }
@@ -3403,6 +3420,10 @@ async approveUser(docId) {
                 if (doc.exists && doc.data().adminPin) {
                     REMOTE_ADMIN_PIN = doc.data().adminPin;
                     safeStorage.setItem('evo_admin_pin_enc', btoa(REMOTE_ADMIN_PIN));
+                    // Retentar restauracao de sessao se o admin ainda nao foi autenticado
+                    if (this.pendingSessionData && !this.currentUserId) {
+                        this.resumeSessionAfterFirebase();
+                    }
                 }
                 if (doc.exists && doc.data().floodPercentage != null) {
                     const fp = document.getElementById('floodPercentage');
@@ -4442,9 +4463,18 @@ async approveUser(docId) {
         // ============================================
         logout() {
             clearTimeout(this.historySyncTimer);
-            if (this.unsubscribeUsers) this.unsubscribeUsers();
-            if (this.unsubscribeEntries) this.unsubscribeEntries();
-            if (this.unsubscribePending) this.unsubscribePending();
+
+            // Cancelar todas as subscriptions e nullar referencias
+            if (this.unsubscribeUsers) { this.unsubscribeUsers(); this.unsubscribeUsers = null; }
+            if (this.unsubscribeEntries) { this.unsubscribeEntries(); this.unsubscribeEntries = null; }
+            if (this.unsubscribePending) { this.unsubscribePending(); this.unsubscribePending = null; }
+
+            // Fechar TODOS os modais abertos (eles sao position:fixed e ficam visiveis
+            // mesmo apos mainApp ser ocultado, causando o bug de "tela nao muda")
+            document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            document.body.style.overflow = '';
+
+            // Limpar sessao e estado
             safeStorage.removeItem('evo_session_v516');
             safeStorage.removeItem('evo_calendar_month');
             this.pendingSessionData = null;
@@ -4454,7 +4484,12 @@ async approveUser(docId) {
             this.isAdmin = false;
             this.isVip = false;
             this.entries = [];
+            this.expandedHistoryId = null;
+            this.editingEntryId = null;
+            this.managingUser = null;
             this.pinValue = '';
+
+            // Mostrar tela de login
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
             this.updatePinDisplay();
