@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.28 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.29 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -19,7 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         :root {
             --primary: #00d4ff; --primary-glow: rgba(0, 212, 255, 0.4); --secondary: #7000ff; --accent: #ffd700;
             --danger: #ff3860; --success: #00d9a6; --warning: #ffb800; --info: #00b4d8; --bg: #0a0e27;
@@ -39,7 +39,7 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { scroll-behavior: smooth; touch-action: manipulation; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: background 0.5s ease, color 0.3s ease; position: relative; }
+        body { font-family: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: background 0.5s ease, color 0.3s ease; position: relative; }
         .pagination-controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
         .page-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-weight: 700; }
         .page-btn:active { background: var(--primary); color: #fff; transform: scale(0.9); }
@@ -54,6 +54,9 @@
         @keyframes firework { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--fx), var(--fy)) scale(0); opacity: 0; } }
         .goal-message { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--glass); backdrop-filter: blur(20px); border: 2px solid var(--success); border-radius: 24px; padding: 40px 60px; text-align: center; z-index: 100000; animation: goalMessagePop 2.5s ease-out forwards; box-shadow: 0 0 60px rgba(0, 217, 166, 0.4); }
         @keyframes goalMessagePop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 20% { transform: translate(-50%, -50%) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } }
+        @keyframes goalBgIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes goalCardIn { from { opacity: 0; transform: scale(0.7) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes goalIconSpin { from { transform: scale(0) rotate(-180deg); } to { transform: scale(1) rotate(0deg); } }
         .goal-message h2 { font-size: 2.5rem; background: var(--gradient-success); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
         .goal-message p { font-size: 1.2rem; color: var(--text); font-weight: 600; }
         @keyframes holoShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -1093,7 +1096,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.25';
+    window.EVOLUTION_APP_VERSION = 'V5.29';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -1667,6 +1670,16 @@
             const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
             const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
             this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
+
+            // Salvar sessao (garante que TODOS os caminhos de login persistem a sessao,
+            // incluindo o caminho rapido do admin que retorna cedo antes do save no login())
+            safeStorage.setItem('evo_session_v516', btoa(JSON.stringify({
+                user: this.currentUser,
+                code: this.currentUserCode,
+                docId: this.currentUserId,
+                isAdmin: this.isAdmin || false,
+                ts: Date.now()
+            })));
 
             this.loadHistoryQueue();
 
@@ -2890,6 +2903,33 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (isHidden && this.metaMensal > 0) {
                 document.getElementById('metaInput').value = (this.metaMensal / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
             }
+
+            // Mostrar botao de cancelar meta somente quando ha meta ativa
+            const cancelContainer = document.getElementById('cancelMetaContainer');
+            if (cancelContainer) {
+                if (isHidden && this.metaMensal > 0) {
+                    cancelContainer.innerHTML = `
+                        <button class="btn btn-glass" onclick="app.cancelMeta()" style="margin-top: 8px; width: 100%; border-color: var(--danger); color: var(--danger);">
+                            🗑 Cancelar Meta Atual
+                        </button>`;
+                } else {
+                    cancelContainer.innerHTML = '';
+                }
+            }
+        }
+
+        cancelMeta() {
+            if (!confirm('Deseja cancelar a meta atual? O progresso sera perdido.')) return;
+            this.metaMensal = 0;
+            this.metaStartDate = null;
+            this.metaGoalReached = false;
+            safeStorage.removeItem(`evo_meta_${this.currentUserId}`);
+            safeStorage.removeItem(`evo_meta_start_${this.currentUserId}`);
+            safeStorage.removeItem(`evo_meta_reached_${this.currentUserId}`);
+            document.getElementById('metaCard').style.display = 'none';
+            document.getElementById('metaEditor').style.display = 'none';
+            document.getElementById('cancelMetaContainer').innerHTML = '';
+            this.showToast('Meta cancelada', 'info');
         }
 
         formatMetaInput(input) {
@@ -2901,6 +2941,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         }
 
         triggerGoalCelebration() {
+            // Confetes visuais
             const container = document.getElementById('goalCelebrationContainer');
             container.innerHTML = '<div class="goal-celebration" id="celebrationOverlay"></div>';
             const overlay = document.getElementById('celebrationOverlay');
@@ -2919,14 +2960,49 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 firework.style.animationDelay = Math.random() * 0.5 + 's';
                 overlay.appendChild(firework);
             }
+            setTimeout(() => { if (container) container.innerHTML = ''; }, 3000);
 
+            // Modal de celebracao (persistente - requer clique do usuario)
             const msg = GOAL_MESSAGES[Math.floor(Math.random() * GOAL_MESSAGES.length)];
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'goal-message';
-            msgDiv.innerHTML = `<h2>${msg.title}</h2><p>${msg.message}</p>`;
-            overlay.appendChild(msgDiv);
+            const existing = document.getElementById('goalModalOverlay');
+            if (existing) existing.remove();
 
-            setTimeout(() => container.innerHTML = '', 3000);
+            const modal = document.createElement('div');
+            modal.id = 'goalModalOverlay';
+            modal.style.cssText = `
+                position: fixed; inset: 0; z-index: 200000;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+                animation: goalBgIn 0.4s ease forwards;
+            `;
+            modal.innerHTML = `
+                <div style="
+                    background: var(--glass); backdrop-filter: blur(24px);
+                    border: 2px solid var(--success); border-radius: 28px;
+                    padding: 44px 48px; text-align: center; max-width: 340px; width: 90%;
+                    box-shadow: 0 0 80px rgba(0,217,166,0.5), 0 20px 60px rgba(0,0,0,0.5);
+                    animation: goalCardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+                ">
+                    <div style="font-size: 4rem; margin-bottom: 16px; animation: goalIconSpin 0.6s ease 0.2s both;">🏆</div>
+                    <h2 style="
+                        font-size: 1.6rem; font-weight: 800; margin-bottom: 12px;
+                        background: var(--gradient-success); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                        letter-spacing: 1px;
+                    ">${msg.title}</h2>
+                    <p style="font-size: 1rem; color: var(--text); font-weight: 500; line-height: 1.5; margin-bottom: 28px; opacity: 0.9;">${msg.message}</p>
+                    <div style="background: rgba(0,217,166,0.1); border: 1px solid rgba(0,217,166,0.3); border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; font-size: 0.8rem; color: var(--success); font-weight: 700; letter-spacing: 0.5px;">
+                        ✅ META 100% ATINGIDA
+                    </div>
+                    <button onclick="document.getElementById('goalModalOverlay').remove()" style="
+                        background: var(--gradient-success); color: white; border: none;
+                        padding: 14px 40px; border-radius: 14px; font-size: 1rem; font-weight: 800;
+                        cursor: pointer; width: 100%; font-family: inherit;
+                        box-shadow: 0 4px 20px rgba(0,217,166,0.4);
+                        letter-spacing: 0.5px;
+                    ">🎉 Continuar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         triggerPaymentAnimation(amount) {
@@ -4158,10 +4234,10 @@ async approveUser(docId) {
                     5: { halign: 'right', cellWidth: 32, fontStyle: 'normal' },
                     6: { halign: 'right', cellWidth: 28, fontStyle: 'bold', textColor: [0, 140, 100] }
                 },
-                // FIX: foot com colspan para evitar bug do "S" na linha de totais
+                // FIX: foot com colspan correto - TOTAL ocupa col Tipo+Conf (32mm) para nao quebrar
                 foot: [[
-                    { content: '', colSpan: 4, styles: { fillColor: [15, 25, 60] } },
-                    { content: 'TOTAL', styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
+                    { content: '', colSpan: 3, styles: { fillColor: [15, 25, 60] } },
+                    { content: 'TOTAL', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60], fontSize: 8 } },
                     { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
                     { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
                 ]],
