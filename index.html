@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.31 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.32 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1092,11 +1092,11 @@
     <script>
 
     // ============================================
-    // EVOLUTION V5.26 - CODIGO COMPLETO E FUNCIONAL
+    // EVOLUTION V5.32 - CODIGO COMPLETO E FUNCIONAL
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.31';
+    window.EVOLUTION_APP_VERSION = 'V5.32';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -1140,14 +1140,61 @@
         "Apoie quem trabalha para facilitar a sua produtividade diaria."
     ];
 
-    // Safe Storage
+    // Safe Storage — captura erros de cota e avisa o usuario
     const safeStorage = {
+        _quotaWarned: false,
         getItem: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
-        setItem: (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} },
+        setItem: (k, v) => {
+            try {
+                localStorage.setItem(k, v);
+            } catch(e) {
+                if (!safeStorage._quotaWarned && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+                    safeStorage._quotaWarned = true;
+                    setTimeout(() => {
+                        const t = document.getElementById('toastContainer');
+                        if (t) {
+                            const d = document.createElement('div');
+                            d.className = 'toast';
+                            d.style.borderLeft = '3px solid var(--warning)';
+                            d.innerHTML = '<span style="color:var(--warning);font-weight:800;">⚠</span> Armazenamento local cheio. Exporte um backup.';
+                            t.appendChild(d);
+                            setTimeout(() => d.remove(), 5000);
+                        }
+                    }, 500);
+                }
+            }
+        },
         removeItem: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
     };
 
-    // Funcoes de data (Manaus UTC-4)
+    // FIX 24: Helpers de sessao — mascara o PIN antes de salvar no localStorage
+    // Nao e criptografia real, mas impede leitura trivial do PIN no DevTools
+    function encodeSession(obj) {
+        try {
+            const json = JSON.stringify(obj);
+            // XOR simples com chave fixa para ofuscar o conteudo
+            const key = 'EVOLUTIONv532';
+            let out = '';
+            for (let i = 0; i < json.length; i++) {
+                out += String.fromCharCode(json.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return btoa(out);
+        } catch(e) { return btoa(JSON.stringify(obj)); }
+    }
+    function decodeSession(str) {
+        try {
+            const raw = atob(str);
+            const key = 'EVOLUTIONv532';
+            let out = '';
+            for (let i = 0; i < raw.length; i++) {
+                out += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return JSON.parse(out);
+        } catch(e) {
+            // Fallback: tenta decodificar como base64 puro (sessoes antigas)
+            try { return JSON.parse(atob(str)); } catch(_) { return null; }
+        }
+    }
     function getManausDate() {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -1282,6 +1329,12 @@
             // Verificar sessao
             this.checkSession();
 
+            // Restaurar tema salvo
+            try {
+                const savedTheme = safeStorage.getItem('evo_theme_v516');
+                if (savedTheme === 'light') document.body.classList.add('light-mode');
+            } catch(e) {}
+
             // Carregar lista de navios removidos das sugestoes
             try {
                 const removed = safeStorage.getItem('evo_removed_navio');
@@ -1382,6 +1435,7 @@
             if (this.isLoggingIn) return;
             this.isLoggingIn = true;
 
+            try {
             const enteredPin = this.pinValue;
 
             // Verificar se e admin
@@ -1398,7 +1452,6 @@
                 this.users[adminId] = adminUser;
                 this.saveUsersToCache();
                 this.restoreUserSession(adminUser, { user: adminUser.name, code: adminUser.code, docId: adminId });
-                this.isLoggingIn = false;
                 return;
             }
 
@@ -1434,14 +1487,12 @@
                 } else {
                     this.showPinError('PIN nao encontrado');
                 }
-                this.isLoggingIn = false;
                 return;
             }
 
             // Verificar se esta bloqueado
             if (foundUser.blocked && !foundUser.isAdmin) {
                 this.showToast('Usuario bloqueado', 'error');
-                this.isLoggingIn = false;
                 return;
             }
 
@@ -1470,16 +1521,23 @@
             }
 
             // Salvar sessao (inclui flag isAdmin para restaurar corretamente no refresh)
-            safeStorage.setItem('evo_session_v516', btoa(JSON.stringify({
+            safeStorage.setItem('evo_session_v516', encodeSession({
                 user: this.currentUser,
                 code: this.currentUserCode,
                 docId: this.currentUserId,
                 isAdmin: this.isAdmin || false,
                 ts: Date.now()
-            })));
+            }));
 
             this.pinValue = '';
-            this.isLoggingIn = false;
+
+            } catch(loginErr) {
+                console.error('Erro inesperado no login:', loginErr);
+                this.showPinError('Erro ao autenticar. Tente novamente.');
+            } finally {
+                // FIX 1: isLoggingIn SEMPRE resetado, mesmo em caso de excecao
+                this.isLoggingIn = false;
+            }
         }
 
         async submitRegistration() {
@@ -1572,9 +1630,21 @@
             const s = safeStorage.getItem('evo_session_v516');
             if (!s) return;
             try {
-                const d = JSON.parse(atob(s));
+                const d = decodeSession(s);
                 if (!d?.ts || d.ts <= Date.now() - 86400000) {
                     safeStorage.removeItem('evo_session_v516');
+                    // FIX 5: Avisa o usuario que a sessao expirou (evita confusao ao cair na tela de PIN)
+                    setTimeout(() => {
+                        const t = document.getElementById('toastContainer');
+                        if (t) {
+                            const d2 = document.createElement('div');
+                            d2.className = 'toast';
+                            d2.style.borderLeft = '3px solid var(--info)';
+                            d2.innerHTML = '<span style="color:var(--primary);font-weight:800;">•</span> Sessao expirada. Faca login novamente.';
+                            t.appendChild(d2);
+                            setTimeout(() => { try { d2.remove(); } catch(_) {} }, 4000);
+                        }
+                    }, 800);
                     return;
                 }
                 this.pendingSessionData = d;
@@ -1598,6 +1668,11 @@
 
                 // 2. Verifica cache local — tambem aceita usuarios marcados como admin no cache
                 const cachedUser = this.users[d.docId];
+                // FIX 8: Verifica bloqueio do cache local para impedir acesso offline de usuario bloqueado
+                if (cachedUser && cachedUser.blocked) {
+                    safeStorage.removeItem('evo_session_v516');
+                    return;
+                }
                 if (cachedUser && !cachedUser.blocked) {
                     this.restoreUserSession({ ...cachedUser, docId: cachedUser.docId || d.docId }, d);
                     return;
@@ -1673,13 +1748,13 @@
 
             // Salvar sessao (garante que TODOS os caminhos de login persistem a sessao,
             // incluindo o caminho rapido do admin que retorna cedo antes do save no login())
-            safeStorage.setItem('evo_session_v516', btoa(JSON.stringify({
+            safeStorage.setItem('evo_session_v516', encodeSession({
                 user: this.currentUser,
                 code: this.currentUserCode,
                 docId: this.currentUserId,
                 isAdmin: this.isAdmin || false,
                 ts: Date.now()
-            })));
+            }));
 
             this.loadHistoryQueue();
 
@@ -1878,8 +1953,8 @@
             if (!this.currentUserId || id == null) return;
             const ids = this.getDeletedIds();
             ids.add(String(id));
-            // Limitar a 500 IDs para nao crescer indefinidamente
-            const arr = [...ids].slice(-500);
+            // FIX 19: Limite aumentado para 2000 IDs para suportar uso a longo prazo
+            const arr = [...ids].slice(-2000);
             safeStorage.setItem(this.getDeletedIdsKey(), JSON.stringify(arr));
         }
 
@@ -1901,6 +1976,14 @@
                     updatedAt: new Date().toISOString()
                 };
             });
+            // FIX 20: Limita queue a 36 meses para nao crescer indefinidamente offline
+            const keys = Object.keys(this.pendingHistoryQueue);
+            if (keys.length > 36) {
+                const toKeep = keys.sort().slice(-36);
+                const trimmed = {};
+                toKeep.forEach(k => { trimmed[k] = this.pendingHistoryQueue[k]; });
+                this.pendingHistoryQueue = trimmed;
+            }
             this.saveHistoryQueue();
         }
 
@@ -2352,23 +2435,29 @@
                 const patterns = { light: [30], medium: [60], success: [40, 30, 80] };
                 navigator.vibrate(patterns[type] || patterns.medium);
             }
-            // iOS Safari: AudioContext com oscilador inaudivel gera feedback tatil em alguns dispositivos
+            // FIX 13: iOS Safari — AudioContext fechado corretamente em todos os caminhos
+            let ctx = null;
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-                gain.gain.setValueAtTime(0.00001, ctx.currentTime); // inaudivel
+                gain.gain.setValueAtTime(0.00001, ctx.currentTime);
                 osc.frequency.setValueAtTime(type === 'success' ? 200 : 150, ctx.currentTime);
+                const duration = type === 'success' ? 0.12 : 0.06;
                 osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + (type === 'success' ? 0.12 : 0.06));
-                osc.onended = () => ctx.close();
-            } catch (_) {}
+                osc.stop(ctx.currentTime + duration);
+                osc.onended = () => { try { ctx.close(); } catch(_) {} };
+                // Garantia: fecha apos o dobro do tempo esperado
+                setTimeout(() => { try { if (ctx.state !== 'closed') ctx.close(); } catch(_) {} }, (duration * 1000) + 200);
+            } catch (_) {
+                if (ctx) { try { ctx.close(); } catch(__) {} }
+            }
         }
 
         async togglePago(id) {
-            const e = this.entries.find(x => x.id === id);
+            const e = this.entries.find(x => String(x.id) === String(id));
             if (!e) return;
 
             e.pago = !e.pago;
@@ -2430,7 +2519,7 @@
         }
 
         copyEntryDetails(id) {
-            const e = this.entries.find(x => x.id === id);
+            const e = this.entries.find(x => String(x.id) === String(id));
             if (!e) return;
             const text = `${e.navio} - ${e.dataF}
 Turno: ${e.turno}
@@ -2513,11 +2602,15 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (tipoInput) tipoInput.value = entry.tipo || 'normal';
             // Ajustar campos de producao
             this.adjustEditFields();
+            // FIX 7: Verificacao de nulo antes de acessar .value nos campos de producao
             if (entry.turno === '15x23') {
-                document.getElementById('editP1').value = Array.isArray(entry.valores) ? entry.valores[0] : '';
-                document.getElementById('editP2').value = Array.isArray(entry.valores) ? entry.valores[1] : '';
+                const p1 = document.getElementById('editP1');
+                const p2 = document.getElementById('editP2');
+                if (p1) p1.value = Array.isArray(entry.valores) ? (entry.valores[0] || '') : '';
+                if (p2) p2.value = Array.isArray(entry.valores) ? (entry.valores[1] || '') : '';
             } else {
-                document.getElementById('editPT').value = Array.isArray(entry.valores) ? entry.valores[0] : '';
+                const pt = document.getElementById('editPT');
+                if (pt) pt.value = Array.isArray(entry.valores) ? (entry.valores[0] || '') : '';
             }
             // Abrir modal
             this.openModal('editModal');
@@ -3067,6 +3160,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             for (let i = days - 1; i >= 0; i--) {
                 const d = new Date(today);
                 d.setDate(today.getDate() - i);
+                // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
                 const ds = formatDateManaus(d);
                 const v = this.entries.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
                 cTot += v;
@@ -3076,6 +3170,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             for (let i = days - 1; i >= 0; i--) {
                 const d = new Date(today);
                 d.setDate(today.getDate() - (i + days));
+                // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
                 const ds = formatDateManaus(d);
                 const v = this.entries.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
                 pTot += v;
@@ -3152,7 +3247,9 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         }
 
         calcularValores(tipo, turno, valores, qtdConf) {
-            const taxa = this.taxas[turno];
+            // Protecao: se a taxa do turno nao estiver disponivel, usa os defaults para evitar NaN/crash
+            const taxa = (this.taxas && this.taxas[turno]) ? this.taxas[turno] : DEFAULT_TAXAS[turno];
+            if (!taxa) return { bruto: 0, liquido: 0 };
             const numConf = parseInt(qtdConf) || 1;
             let bruto = 0;
 
@@ -3210,12 +3307,22 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 ? [document.getElementById('calcP1')?.value, document.getElementById('calcP2')?.value]
                 : [document.getElementById('calcPT')?.value];
 
+            // FIX 4: Validar producao zerada
+            const totalProducao = valores.reduce((s, v) => s + (parseInt(v) || 0), 0);
+            if (totalProducao <= 0) {
+                this.showToast('Informe a producao antes de salvar', 'error');
+                if (btn) btn.disabled = false;
+                return;
+            }
+
             const res = this.calcularValores(tipo, turno, valores, conf);
             const [y, m, d] = dataInput.split('-');
 
+            // FIX 23: ID unico com sufixo aleatorio para evitar colisao por Date.now()
+            const uniqueId = String(Date.now()) + '_' + Math.random().toString(36).substr(2, 6);
+
             const entry = {
-                // ID convertido para string para evitar inconsistências de tipo entre dispositivos
-                id: String(Date.now()),
+                id: uniqueId,
                 navio,
                 data: dataInput,
                 dataF: `${d}/${m}/${y}`,
@@ -3312,21 +3419,26 @@ ${this.currentUser}`;
 
             if (this.unsubscribeUsers) this.unsubscribeUsers();
 
+            // FIX 22: listener com tratamento robusto; admin precisa de todos os usuarios
             this.unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    const data = change.doc.data();
-                    data.docId = change.doc.id;
-                    if (change.type === 'removed') {
-                        delete this.users[change.doc.id];
-                    } else {
-                        this.users[change.doc.id] = data;
-                        if (this.currentUserId && change.doc.id === this.currentUserId) {
-                            this.handleCurrentUserRemoteUpdate(data);
+                try {
+                    snapshot.docChanges().forEach((change) => {
+                        const data = change.doc.data();
+                        data.docId = change.doc.id;
+                        if (change.type === 'removed') {
+                            delete this.users[change.doc.id];
+                        } else {
+                            this.users[change.doc.id] = data;
+                            if (this.currentUserId && change.doc.id === this.currentUserId) {
+                                this.handleCurrentUserRemoteUpdate(data);
+                            }
                         }
-                    }
-                });
-                this.saveUsersToCache();
-                if (this.isAdmin) this.renderUserList();
+                    });
+                    this.saveUsersToCache();
+                    if (this.isAdmin) this.renderUserList();
+                } catch(snapshotErr) {
+                    console.error('Erro processando snapshot de usuarios:', snapshotErr);
+                }
             }, (error) => {
                 console.error('Erro sync usuarios:', error);
             });
@@ -3551,7 +3663,16 @@ async approveUser(docId) {
                     }
                     if (shouldShow) {
                         document.getElementById('sysMsgContent').textContent = msgData.content;
-                        setTimeout(() => this.openModal('messageModal'), 1500);
+                        // FIX 11: So exibe mensagem apos o mainApp estar visivel
+                        const showMsg = () => {
+                            const mainApp = document.getElementById('mainApp');
+                            if (mainApp && !mainApp.classList.contains('hidden')) {
+                                this.openModal('messageModal');
+                            } else {
+                                setTimeout(showMsg, 500);
+                            }
+                        };
+                        setTimeout(showMsg, 1500);
                         if (msgData.type === 'once') safeStorage.setItem(seenKey, msgData.createdAt || '');
                     }
                 }
@@ -3567,8 +3688,12 @@ async approveUser(docId) {
                     safeStorage.setItem('evo_rates_v54', JSON.stringify(this.taxas));
                 }
             } catch (e) {
-                const local = safeStorage.getItem('evo_rates_v54');
-                if (local) this.taxas = JSON.parse(local);
+                try {
+                    const local = safeStorage.getItem('evo_rates_v54');
+                    if (local) this.taxas = JSON.parse(local);
+                } catch (parseErr) {
+                    this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
+                }
             }
         }
 
@@ -3950,7 +4075,7 @@ async approveUser(docId) {
         // ============================================
         exportData() {
             const data = {
-                v: 'V525',
+                v: window.EVOLUTION_APP_VERSION || 'V5.32',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -3978,12 +4103,18 @@ async approveUser(docId) {
                     const data = JSON.parse(ev.target.result);
                     const regs = data.r || data.registros || [];
                     if (regs.length > 0) {
-                        this.entries = regs.map(x => ({
+                        // FIX 3: Deduplica por ID e garante IDs unicos para evitar duplicatas em re-importacao
+                        const existingIds = new Set(this.entries.map(x => String(x.id)));
+                        const imported = regs.map(x => ({
                             ...x,
-                            id: x.id || Date.now() + Math.random(),
+                            id: String(x.id || (Date.now() + '_' + Math.random().toString(36).substr(2, 6))),
                             bruto: Number(x.bruto) || 0,
                             liquido: Number(x.liquido) || 0
-                        }));
+                        })).filter(x => !existingIds.has(String(x.id)));
+                        // Mescla: importados + existentes, sem duplicar
+                        const allById = new Map();
+                        [...this.entries, ...imported].forEach(x => allById.set(String(x.id), x));
+                        this.entries = Array.from(allById.values());
                         this.migrateOldEntries();
                         safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                         this.updateDashboard();
@@ -4339,14 +4470,18 @@ async approveUser(docId) {
 
         showToast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
+            // FIX 14: Limita a 3 toasts simultaneos para nao entupir a tela
+            const existing = container.querySelectorAll('.toast');
+            if (existing.length >= 3) existing[0].remove();
             const toast = document.createElement('div');
             toast.className = 'toast';
             const colors = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)' };
             const icons = { success: '✓', error: '✕', warning: '⚠', info: '•' };
-            toast.style.borderLeft = `3px solid ${colors[type]}`;
-            toast.innerHTML = `<span style="color:${colors[type]};font-weight:800;">${icons[type]}</span> ${msg}`;
+            toast.style.borderLeft = `3px solid ${colors[type] || colors.info}`;
+            toast.innerHTML = `<span style="color:${colors[type] || colors.info};font-weight:800;">${icons[type] || icons.info}</span> ${msg}`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => { try { toast.remove(); } catch(_) {} }, 3000);
         }
 
         // ============================================
@@ -4382,10 +4517,16 @@ async approveUser(docId) {
                     this.showMainApp();
 
                     if (db) {
-                        try {
-                            await db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl });
-                        } catch (e) {
-                            console.error('Falha ao salvar avatar no Firebase:', e);
+                        // FIX 12: Firestore tem limite de 1MB por documento — nao salva avatar grande
+                        const avatarSizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
+                        if (avatarSizeKB > 700) {
+                            this.showToast('Foto salva localmente (muito grande para sincronizar)', 'warning');
+                        } else {
+                            try {
+                                await db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl });
+                            } catch (e) {
+                                console.error('Falha ao salvar avatar no Firebase:', e);
+                            }
                         }
                     }
                     this.showToast('Foto atualizada!', 'success');
@@ -4432,6 +4573,8 @@ async approveUser(docId) {
             const m = document.getElementById(id);
             if (m) {
                 m.classList.add('active');
+                // FIX 9: Conta modais abertos para nao restaurar scroll prematuramente
+                this._openModalCount = (this._openModalCount || 0) + 1;
                 document.body.style.overflow = 'hidden';
 
                 // Atualizacoes ao abrir modais
@@ -4449,7 +4592,11 @@ async approveUser(docId) {
             const m = document.getElementById(id);
             if (m) {
                 m.classList.remove('active');
-                document.body.style.overflow = '';
+                // FIX 9: So restaura overflow quando TODOS os modais estiverem fechados
+                this._openModalCount = Math.max(0, (this._openModalCount || 1) - 1);
+                if (this._openModalCount === 0) {
+                    document.body.style.overflow = '';
+                }
             }
         }
 
