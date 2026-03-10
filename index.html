@@ -2357,8 +2357,8 @@
             const paged = filtered.slice(start, start + this.itemsPerPage);
 
             let html = paged.map(e => `
-                <div class="history-item ${e.pago ? 'paid' : 'pending'} ${this.expandedHistoryId === e.id ? 'expanded' : ''}" id="history-item-${e.id}">
-                    <div class="history-main-row" onclick="app.toggleHistoryDetail(${e.id})">
+                <div class="history-item ${e.pago ? 'paid' : 'pending'} ${String(this.expandedHistoryId) === String(e.id) ? 'expanded' : ''}" id="history-item-${e.id}">
+                    <div class="history-main-row" onclick="app.toggleHistoryDetail('${e.id}')">
                         <div class="history-main">
                             <div class="history-ship">${this.escHtml(e.navio)}</div>
                             <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(e.turno)}</div>
@@ -2378,10 +2378,10 @@
                             <div class="detail-item"><div class="detail-label">Conf.</div><div class="detail-value">${this.escHtml(String(e.conferentes))}</div></div>
                         </div>
                         <div class="history-actions-row">
-                            <button class="action-btn" onclick="event.stopPropagation(); app.togglePago(${e.id});">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
-                            <button class="action-btn" onclick="event.stopPropagation(); app.copyEntryDetails(${e.id});">📋 Copiar</button>
-                            <button class="action-btn" onclick="event.stopPropagation(); app.openEditModal(${e.id});">✏ Editar</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); app.deleteEntry(${e.id});">🗑 Excluir</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); app.togglePago('${e.id}');">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); app.copyEntryDetails('${e.id}');">📋 Copiar</button>
+                            <button class="action-btn" onclick="event.stopPropagation(); app.openEditModal('${e.id}');">✏ Editar</button>
+                            <button class="action-btn delete" onclick="event.stopPropagation(); app.deleteEntry('${e.id}');">🗑 Excluir</button>
                         </div>
                     </div>
                 </div>
@@ -2399,10 +2399,11 @@
         }
 
         toggleHistoryDetail(id) {
-            const item = document.getElementById(`history-item-${id}`);
+            const sid = String(id);
+            const item = document.getElementById(`history-item-${sid}`);
             if (!item) return;
 
-            if (this.expandedHistoryId === id) {
+            if (String(this.expandedHistoryId) === sid) {
                 item.classList.remove('expanded');
                 this.expandedHistoryId = null;
             } else {
@@ -2411,7 +2412,7 @@
                     if (prev) prev.classList.remove('expanded');
                 }
                 item.classList.add('expanded');
-                this.expandedHistoryId = id;
+                this.expandedHistoryId = sid;
             }
         }
 
@@ -2926,7 +2927,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                                 <div>💎 Liquido: <strong style="color:var(--success);">${this.formatMoney(e.liquido)}</strong></div>
                             </div>
                             <div style="margin-top:10px;text-align:right;">
-                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" onclick="app.openEditModal(${e.id}); app.closeModal('daySummaryModal');">✏ Editar</button>
+                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" onclick="app.openEditModal('${e.id}'); app.closeModal('daySummaryModal');">✏ Editar</button>
                             </div>
                         </div>
                     </div>`;
