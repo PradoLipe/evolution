@@ -16,6 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -1109,7 +1110,7 @@
     };
 
     // Variaveis globais
-    let db = null, auth = null;
+    let db = null, auth = null, storage = null;
     let REMOTE_ADMIN_PIN = null;
     const LEGACY_ADMIN_ID = "002451-FELIPE_PRADO";
 
@@ -1279,6 +1280,7 @@
                 db = firebase.firestore();
                 db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
                 auth = firebase.auth();
+                storage = firebase.storage();
 
                 auth.onAuthStateChanged((user) => {
                     if (user) {
@@ -1761,6 +1763,13 @@
             // Carregar dados locais
             this.loadFromLocalStorage();
             this.migrateOldEntries();
+
+            // Restaurar mes do calendario do Firestore se localStorage estiver vazio
+            const savedCalMonth = safeStorage.getItem('evo_calendar_month');
+            if (!savedCalMonth && userData.calendarMonth) {
+                safeStorage.setItem('evo_calendar_month', userData.calendarMonth);
+            }
+
             this.syncCalendarMonthWithEntries(true);
 
             // Mostrar app
@@ -2810,7 +2819,14 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         handleCalendarMonthChange() {
             const monthInput = document.getElementById('calendarMonth');
             if (!monthInput) return;
-            safeStorage.setItem('evo_calendar_month', monthInput.value || '');
+            const monthVal = monthInput.value || '';
+            safeStorage.setItem('evo_calendar_month', monthVal);
+            // Sincroniza mes do calendario no Firestore para outros dispositivos
+            if (db && this.currentUserId && monthVal) {
+                db.collection('users').doc(this.currentUserId).set({
+                    calendarMonth: monthVal
+                }, { merge: true }).catch(e => console.error('Erro ao salvar mes do calendario:', e));
+            }
             this.renderCalendar();
         }
 
@@ -2955,6 +2971,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 this.metaGoalReached = goalReached === 'true';
                 this.renderMetaCard();
             }
+            // Fallback assincrono: carrega do Firestore se localStorage esta vazio (outro navegador)
+            this.loadMetaFromFirestore();
         }
 
         saveMeta() {
@@ -2980,6 +2998,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             this.showToast('Nova meta definida!', 'success');
             // allowCelebration=false: não celebrar ao definir meta (evita falso positivo)
             this.updateMetaProgress(false);
+            // Sincroniza meta no Firestore para outros dispositivos
+            this.syncMetaToFirestore();
         }
 
         renderMetaCard() {
@@ -3013,11 +3033,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (p >= 100 && !this.metaGoalReached && allowCelebration) {
                 this.metaGoalReached = true;
                 safeStorage.setItem(`evo_meta_reached_${this.currentUserId}`, 'true');
+                this.syncMetaToFirestore();
                 this.triggerGoalCelebration();
             } else if (p >= 100 && !this.metaGoalReached) {
                 // Marca como atingida sem disparar celebração (carga inicial / edição)
                 this.metaGoalReached = true;
                 safeStorage.setItem(`evo_meta_reached_${this.currentUserId}`, 'true');
+                this.syncMetaToFirestore();
             }
         }
 
@@ -3057,6 +3079,52 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             document.getElementById('metaEditor').style.display = 'none';
             document.getElementById('cancelMetaContainer').innerHTML = '';
             this.showToast('Meta cancelada', 'info');
+            // Limpa do Firestore tambem
+            if (db && this.currentUserId) {
+                db.collection('users').doc(this.currentUserId).set({
+                    meta: null, metaStartDate: null, metaGoalReached: false
+                }, { merge: true }).catch(e => console.error('Erro ao limpar meta no Firestore:', e));
+            }
+        }
+
+        // Salva meta mensal no Firestore para sincronizar entre dispositivos
+        async syncMetaToFirestore() {
+            if (!db || !this.currentUserId) return;
+            try {
+                await db.collection('users').doc(this.currentUserId).set({
+                    meta: this.metaMensal,
+                    metaStartDate: this.metaStartDate ? this.metaStartDate.toISOString() : null,
+                    metaGoalReached: this.metaGoalReached || false
+                }, { merge: true });
+            } catch (e) {
+                console.error('Erro ao sincronizar meta no Firestore:', e);
+            }
+        }
+
+        // Carrega meta do Firestore como fallback quando localStorage esta vazio (outro navegador/dispositivo)
+        async loadMetaFromFirestore() {
+            if (!db || !this.currentUserId) return;
+            // So busca do Firestore se localStorage nao tem meta
+            const localMeta = safeStorage.getItem(`evo_meta_${this.currentUserId}`);
+            if (localMeta) return; // localStorage tem prioridade
+            try {
+                const doc = await db.collection('users').doc(this.currentUserId).get();
+                if (!doc.exists) return;
+                const data = doc.data();
+                if (!data.meta || data.meta <= 0) return;
+                // Popula a meta com os dados do Firestore
+                this.metaMensal = parseInt(data.meta) || 0;
+                this.metaStartDate = data.metaStartDate ? new Date(data.metaStartDate) : null;
+                this.metaGoalReached = data.metaGoalReached || false;
+                // Sincroniza no localStorage para proximas cargas
+                safeStorage.setItem(`evo_meta_${this.currentUserId}`, this.metaMensal);
+                if (this.metaStartDate) safeStorage.setItem(`evo_meta_start_${this.currentUserId}`, this.metaStartDate.toISOString());
+                safeStorage.setItem(`evo_meta_reached_${this.currentUserId}`, this.metaGoalReached ? 'true' : 'false');
+                this.renderMetaCard();
+                this.updateMetaProgress(false);
+            } catch (e) {
+                console.error('Erro ao carregar meta do Firestore:', e);
+            }
         }
 
         formatMetaInput(input) {
@@ -4520,26 +4588,37 @@ async approveUser(docId) {
                     ctx.drawImage(img, sx, sy, side, side, 0, 0, MAX_SIZE, MAX_SIZE);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
 
+                    // Salva base64 no localStorage para exibicao instantanea
                     safeStorage.setItem(`evo_avatar_local_${this.currentUserId}`, dataUrl);
                     if (!this.users[this.currentUserId]) this.users[this.currentUserId] = {};
                     this.users[this.currentUserId].avatar = dataUrl;
                     this.saveUsersToCache();
                     this.showMainApp();
+                    this.showToast('Foto atualizada!', 'success');
 
-                    if (db) {
-                        // FIX 12: Firestore tem limite de 1MB por documento — nao salva avatar grande
-                        const avatarSizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
-                        if (avatarSizeKB > 700) {
-                            this.showToast('Foto salva localmente (muito grande para sincronizar)', 'warning');
-                        } else {
+                    // Upload para Firebase Storage (sem limite de tamanho)
+                    if (storage && db) {
+                        try {
+                            const storageRef = storage.ref(`avatars/${this.currentUserId}/profile.jpg`);
+                            const response = await fetch(dataUrl);
+                            const blob = await response.blob();
+                            await storageRef.put(blob, { contentType: 'image/jpeg' });
+                            const downloadURL = await storageRef.getDownloadURL();
+                            // Salva apenas a URL (pequena) no Firestore — sem pressao no documento
+                            await db.collection('users').doc(this.currentUserId).update({ avatar: downloadURL });
+                            // Atualiza cache local com a URL para que outros dispositivos carreguem direto
+                            this.users[this.currentUserId].avatar = downloadURL;
+                            this.saveUsersToCache();
+                        } catch (err) {
+                            console.error('Falha ao salvar avatar no Storage:', err);
+                            // Fallback: tenta salvar base64 direto no Firestore se Storage falhar
                             try {
                                 await db.collection('users').doc(this.currentUserId).update({ avatar: dataUrl });
-                            } catch (e) {
-                                console.error('Falha ao salvar avatar no Firebase:', e);
+                            } catch (err2) {
+                                console.error('Fallback Firestore tambem falhou:', err2);
                             }
                         }
                     }
-                    this.showToast('Foto atualizada!', 'success');
                 };
                 img.src = e.target.result;
             };
@@ -4562,7 +4641,15 @@ async approveUser(docId) {
                 try {
                     await db.collection('users').doc(this.currentUserId).update({ avatar: null });
                 } catch (e) {
-                    console.error('Falha ao remover avatar no Firebase:', e);
+                    console.error('Falha ao remover avatar no Firestore:', e);
+                }
+            }
+            // Remove do Firebase Storage tambem
+            if (storage) {
+                try {
+                    await storage.ref(`avatars/${this.currentUserId}/profile.jpg`).delete();
+                } catch (e) {
+                    // Ignora erro se arquivo nao existe no Storage (foto antiga salva como base64)
                 }
             }
             this.showToast('Foto removida', 'success');
