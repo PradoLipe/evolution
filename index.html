@@ -4585,6 +4585,13 @@ async approveUser(docId) {
                     this.loadPendingUsers();
                     this.renderUserList();
                 }
+                // FIX: Sempre abre configModal com metaEditor recolhido (estado limpo)
+                if (id === 'configModal') {
+                    const me = document.getElementById('metaEditor');
+                    const cc = document.getElementById('cancelMetaContainer');
+                    if (me) me.style.display = 'none';
+                    if (cc) cc.innerHTML = '';
+                }
             }
         }
 
@@ -4596,6 +4603,13 @@ async approveUser(docId) {
                 this._openModalCount = Math.max(0, (this._openModalCount || 1) - 1);
                 if (this._openModalCount === 0) {
                     document.body.style.overflow = '';
+                }
+                // FIX: Recolhe metaEditor ao fechar configModal (qualquer forma de fechar)
+                if (id === 'configModal') {
+                    const me = document.getElementById('metaEditor');
+                    const cc = document.getElementById('cancelMetaContainer');
+                    if (me) me.style.display = 'none';
+                    if (cc) cc.innerHTML = '';
                 }
             }
         }
@@ -4756,8 +4770,11 @@ async approveUser(docId) {
                 }
                 this.closeModal('confirmActionModal');
             };
-            this.closeModal('userManagementModal');
-            this.closeModal('adminModal');
+            // FIX: Fecha apenas modais realmente ativos para nao dessincronizar _openModalCount
+            const _mgmt = document.getElementById('userManagementModal');
+            const _adm  = document.getElementById('adminModal');
+            if (_mgmt && _mgmt.classList.contains('active')) this.closeModal('userManagementModal');
+            if (_adm  && _adm.classList.contains('active'))  this.closeModal('adminModal');
             setTimeout(() => this.openModal('confirmActionModal'), 100);
         }
     }
