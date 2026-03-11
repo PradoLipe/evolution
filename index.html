@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.34 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.37 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -542,7 +542,7 @@
                         <div class="input-group">
                             <label class="input-label">Senha (4 a 6 digitos)</label>
                             <input type="password" id="regCode" placeholder="Crie uma senha numerica" maxlength="6" inputmode="numeric">
-                            <div class="input-hint">Minimo 6 numeros. Esta sera sua senha de acesso.</div>
+                            <div class="input-hint">De 4 a 6 numeros. Esta sera sua senha de acesso.</div>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Confirmar Senha</label>
@@ -842,7 +842,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V5.28</div>
+            <div class="footer-brand">EVOLUTION V5.37</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -1093,11 +1093,11 @@
     <script>
 
     // ============================================
-    // EVOLUTION V5.32 - CODIGO COMPLETO E FUNCIONAL
+    // EVOLUTION V5.37 - CODIGO COMPLETO E FUNCIONAL
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.32';
+    window.EVOLUTION_APP_VERSION = 'V5.37';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -1399,6 +1399,8 @@
             if (this.pinValue.length < 6 && this.currentMode === 'login') {
                 this.pinValue += digit;
                 this.updatePinDisplay();
+                // Auto-login apenas ao completar 6 digitos (seguro para PINs de 4-6 digitos:
+                // usuarios com PIN < 6 usam o botao de acao → abaixo para confirmar)
                 if (this.pinValue.length === 6) {
                     setTimeout(() => this.login(), 100);
                 }
@@ -2266,10 +2268,12 @@
                 btnAll?.classList.add('active');
                 btnMonth?.classList.remove('active');
                 monthSelector?.classList.remove('visible');
+                periodIndicator?.classList.remove('visible');
             } else {
                 btnAll?.classList.remove('active');
                 btnMonth?.classList.add('active');
                 monthSelector?.classList.add('visible');
+                periodIndicator?.classList.add('visible');
             }
 
             this.updateDashboard();
@@ -3428,6 +3432,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             this.updateMetaProgress();
 
             document.getElementById('calcNavio').value = '';
+            // FIX 2: Limpar campos de producao para evitar registro duplicado acidental
+            const _calcPT = document.getElementById('calcPT');
+            const _calcP1 = document.getElementById('calcP1');
+            const _calcP2 = document.getElementById('calcP2');
+            if (_calcPT) _calcPT.value = '';
+            if (_calcP1) _calcP1.value = '';
+            if (_calcP2) _calcP2.value = '';
             this.triggerMoneyAnimation();
             this.persistData();
 
@@ -4158,7 +4169,7 @@ async approveUser(docId) {
         // ============================================
         exportData() {
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.32',
+                v: window.EVOLUTION_APP_VERSION || 'V5.37',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -4229,7 +4240,7 @@ async approveUser(docId) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.25');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.37');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -4834,7 +4845,10 @@ async approveUser(docId) {
 
             // Fechar TODOS os modais abertos (eles sao position:fixed e ficam visiveis
             // mesmo apos mainApp ser ocultado, causando o bug de "tela nao muda")
+            // FIX 1: Reset explicito do contador para garantir que body.overflow seja
+            // restaurado corretamente em qualquer sessao futura (evita scroll travado)
             document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            this._openModalCount = 0;
             document.body.style.overflow = '';
 
             // Limpar sessao e estado
