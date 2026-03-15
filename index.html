@@ -222,7 +222,9 @@
         .calendar-day.today { border-color: rgba(0, 212, 255, 0.45); box-shadow: inset 0 0 0 1px rgba(0,212,255,0.18); }
         .calendar-day.paid { background: rgba(0, 217, 166, 0.15); border: 1px solid rgba(0, 217, 166, 0.5); color: var(--success); }
         .calendar-day.pending { background: rgba(255, 184, 0, 0.15); border: 1px solid rgba(255, 184, 0, 0.5); color: var(--warning); }
-        .calendar-day.has-service { font-weight: 800; }
+        .calendar-day.has-service { font-weight: 800; cursor: pointer; }
+        .calendar-day.paid:hover { background: rgba(0, 217, 166, 0.28); box-shadow: 0 0 12px rgba(0, 217, 166, 0.4); transform: scale(1.1); }
+        .calendar-day.pending:hover { background: rgba(255, 184, 0, 0.28); box-shadow: 0 0 12px rgba(255, 184, 0, 0.4); transform: scale(1.1); }
 
         /* ==========================
          * Caixa de sugestoes de navio
@@ -890,6 +892,8 @@
                             <button class="btn btn-glass" onclick="app.generatePdf('monthly')">Baixar</button>
                         </div>
                     </div>
+                    <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
+                    <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);">📋 Todos os Registros (Historico Completo)</button>
                 </div>
             </div>
         </div>
@@ -1240,6 +1244,8 @@
             this.editingEntryId = null;
             // Conjunto de nomes de navio removidos das sugestoes (persistente via safeStorage)
             this.removedNavioSuggestions = new Set();
+            // Lista de navios aprendidos (persistente, sobrevive exclusao de registros)
+            this.learnedNavios = new Set();
             this.users = {};
             this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
             this.isAdmin = false;
@@ -2154,6 +2160,13 @@
                     this.entries = [];
                 }
             }
+            // Carregar navios aprendidos
+            try {
+                const learnedRaw = safeStorage.getItem(`evo_learned_navios_${this.currentUserId}`);
+                this.learnedNavios = new Set(learnedRaw ? JSON.parse(learnedRaw) : []);
+            } catch (e) {
+                this.learnedNavios = new Set();
+            }
         }
 
         migrateOldEntries() {
@@ -2513,42 +2526,74 @@
         }
 
         deleteEntry(id) {
-            this.pendingDeleteId = id;
-            this.openModal('confirmModal');
-        }
+            const entry = this.entries.find(e => String(e.id) === String(id));
+            if (!entry) return;
 
-        executeDelete() {
-            if (!this.pendingDeleteId) return;
+            // Guarda para possivel undo
+            this._undoEntry = { ...entry };
+            this._undoIndex = this.entries.findIndex(e => String(e.id) === String(id));
 
-            // BUG FIX: Registrar ID deletado no tombstone ANTES de remover do array
-            // Sem isso, o Firebase devolve a entrada deletada via listener/sync
-            this.addDeletedId(this.pendingDeleteId);
-
-            this.entries = this.entries.filter(e => e.id !== this.pendingDeleteId);
+            // Registrar no tombstone imediatamente (evita ressurreicao do Firebase)
+            this.addDeletedId(id);
+            this.entries = this.entries.filter(e => String(e.id) !== String(id));
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
 
-            // Marcar o mes da entrada como pendente para sincronizar a exclusao
-            const allMonths = this.collectEntryMonths();
-            const currentMonth = getCurrentMonthStringManaus();
-            const monthsToSync = new Set([...allMonths, currentMonth]);
-            this.markHistoryMonthsPending([...monthsToSync]);
-
-            this.closeModal('confirmModal');
-            this.pendingDeleteId = null;
             this.expandedHistoryId = null;
-
             this.updateDashboard();
             this.renderHistory();
             this.renderChart();
             this.updateMetaProgress();
-            this.persistData();
-
-            // Atualizar calendario e sugestoes apos exclusao
             if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
             this.hideNavioSuggestions('calcNavio');
             this.hideNavioSuggestions('relNavio');
 
-            this.showToast('Excluido com sucesso', 'success');
+            // Cancela timer anterior se existir
+            if (this._undoTimer) clearTimeout(this._undoTimer);
+
+            this.showUndoToast('Registro excluido', () => {
+                // Restaurar registro
+                if (this._undoEntry) {
+                    // Remover do tombstone para nao bloquear restauracao
+                    try {
+                        const ids = this.getDeletedIds();
+                        ids.delete(String(this._undoEntry.id));
+                        const arr = [...ids].slice(-2000);
+                        safeStorage.setItem(this.getDeletedIdsKey(), JSON.stringify(arr));
+                    } catch(_) {}
+                    // Reinserir na posicao original
+                    const idx = Math.min(this._undoIndex || 0, this.entries.length);
+                    this.entries.splice(idx, 0, this._undoEntry);
+                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                    this._undoEntry = null;
+                    this.updateDashboard();
+                    this.renderHistory();
+                    this.renderChart();
+                    this.updateMetaProgress();
+                    if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                    this.showToast('Registro restaurado', 'success');
+                    if (this._undoTimer) clearTimeout(this._undoTimer);
+                }
+            });
+
+            // Apos 5s confirma a exclusao e sincroniza
+            this._undoTimer = setTimeout(() => {
+                if (this._undoEntry) {
+                    const allMonths = this.collectEntryMonths();
+                    const currentMonth = getCurrentMonthStringManaus();
+                    const monthsToSync = new Set([...allMonths, currentMonth]);
+                    this.markHistoryMonthsPending([...monthsToSync]);
+                    this.persistData();
+                    this._undoEntry = null;
+                }
+            }, 5000);
+        }
+
+        executeDelete() {
+            // Mantido para compatibilidade com o modal de confirmacao (nao usado no fluxo principal)
+            if (!this.pendingDeleteId) return;
+            this.deleteEntry(this.pendingDeleteId);
+            this.closeModal('confirmModal');
+            this.pendingDeleteId = null;
         }
 
         copyEntryDetails(id) {
@@ -2718,6 +2763,18 @@ Liquido: ${this.formatMoney(e.liquido)}`;
          * removidos por long press de 3 segundos, apos confirmacao do usuario.
          * @param {string} fieldId ID do campo de input (calcNavio ou relNavio)
          */
+        learnNavioName(name) {
+            if (!name || !this.currentUserId) return;
+            if (!this.learnedNavios) this.learnedNavios = new Set();
+            this.learnedNavios.add(name.toUpperCase().trim());
+            // Limita a 500 entradas
+            if (this.learnedNavios.size > 500) {
+                const arr = Array.from(this.learnedNavios);
+                this.learnedNavios = new Set(arr.slice(-500));
+            }
+            safeStorage.setItem(`evo_learned_navios_${this.currentUserId}`, JSON.stringify(Array.from(this.learnedNavios)));
+        }
+
         hideNavioSuggestions(fieldId) {
             const container = document.getElementById(fieldId + 'Suggestions');
             const wrapper = container?.closest('.navio-suggestions');
@@ -2764,6 +2821,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 }
 
                 const navioMap = new Map();
+                // Navios aprendidos (persistem mesmo apos exclusao de registros)
+                (this.learnedNavios || []).forEach(name => {
+                    if (!name || this.removedNavioSuggestions?.has(name)) return;
+                    if (!navioMap.has(name)) navioMap.set(name, { name, count: 0, lastDate: '' });
+                });
+                // Navios dos registros atuais (sobrescrevem com dados de uso real)
                 (this.entries || []).forEach(e => {
                     if (!e?.navio || this.removedNavioSuggestions?.has(e.navio)) return;
                     const prev = navioMap.get(e.navio);
@@ -3054,7 +3117,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             const p = Math.min((totalLiquido / this.metaMensal) * 100, 100);
             document.getElementById('metaProgress').style.width = p + '%';
-            document.getElementById('metaAtual').textContent = `${this.formatMoney(totalLiquido)} recebido`;
+            const faltam = this.metaMensal - totalLiquido;
+            if (p >= 100) {
+                document.getElementById('metaAtual').textContent = '✓ Meta atingida!';
+            } else {
+                document.getElementById('metaAtual').textContent = `${this.formatMoney(totalLiquido)} recebido • Faltam ${this.formatMoney(Math.max(0, faltam))}`;
+            }
             document.getElementById('metaPercent').textContent = Math.round(p) + '%';
 
             if (p >= 100 && !this.metaGoalReached && allowCelebration) {
@@ -3442,6 +3510,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             };
 
             this.entries.unshift(entry);
+            this.learnNavioName(navio);
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
 
             this.updateDashboard();
@@ -4266,7 +4335,18 @@ async approveUser(docId) {
 
             let filtered = [], titlePeriod = '', totalBruto = 0, totalLiquido = 0;
 
-            if (type === 'weekly') {
+            if (type === 'all') {
+                filtered = [...this.entries];
+                const monthNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                if (filtered.length > 0) {
+                    const dates = filtered.map(e => e.data).filter(Boolean).sort();
+                    const [fy, fm] = dates[0].split('-');
+                    const [ly, lm] = dates[dates.length - 1].split('-');
+                    titlePeriod = `${monthNames[parseInt(fm,10)-1]} ${fy} ate ${monthNames[parseInt(lm,10)-1]} ${ly}`;
+                } else {
+                    titlePeriod = 'Historico Completo';
+                }
+            } else if (type === 'weekly') {
                 const today = getManausDate();
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
@@ -4297,12 +4377,42 @@ async approveUser(docId) {
                 return;
             }
 
-            filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+            // Para 'all': ordem cronologica ASC para agrupar por mes
+            // Para outros tipos: ordem DESC (mais recente primeiro)
+            if (type === 'all') {
+                filtered.sort((a, b) => new Date(a.data) - new Date(b.data));
+            } else {
+                filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+            }
 
-            const tableBody = filtered.map((e) => {
+            const _mNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            const tableBody = [];
+            let _lastMk = null;
+            filtered.forEach((e) => {
                 totalBruto += Number(e.bruto) || 0;
                 totalLiquido += Number(e.liquido) || 0;
-                return [
+                // Separador de mes para tipo 'all'
+                if (type === 'all' && e.data) {
+                    const mk = e.data.substring(0, 7);
+                    if (mk !== _lastMk) {
+                        _lastMk = mk;
+                        const [ym, mm] = mk.split('-');
+                        const mLabel = (_mNames[parseInt(mm, 10) - 1] + ' ' + ym).toUpperCase();
+                        tableBody.push([{
+                            content: mLabel,
+                            colSpan: 7,
+                            styles: {
+                                fillColor: [10, 18, 46],
+                                textColor: [0, 212, 255],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                halign: 'center',
+                                cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
+                            }
+                        }]);
+                    }
+                }
+                tableBody.push([
                     e.dataF || e.data || '-',
                     e.navio || '-',
                     e.turno || '-',
@@ -4310,7 +4420,7 @@ async approveUser(docId) {
                     String(e.conferentes || '-'),
                     this.formatMoney(e.bruto),
                     this.formatMoney(e.liquido)
-                ];
+                ]);
             });
 
             const totalPago = filtered.filter(e => e.pago).reduce((sum, e) => sum + (Number(e.liquido) || 0), 0);
@@ -4341,10 +4451,10 @@ async approveUser(docId) {
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(0, 212, 255);
                 doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
-                // Felipe Prado Systems
+                // Versao
                 doc.setFontSize(6.5);
                 doc.setTextColor(120, 140, 180);
-                doc.text('Felipe Prado Systems  |  ' + APP_VERSION, 9, 25);
+                doc.text(APP_VERSION, 9, 25);
                 // Data geracao (direita)
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7);
@@ -4379,9 +4489,16 @@ async approveUser(docId) {
                 doc.setTextColor(80, 100, 130);
                 doc.text('EVOLUTION  |  ' + (this.currentUser || 'Usuario').toUpperCase(), marginL, pageH - 5);
                 doc.setFont('helvetica', 'normal');
-                doc.text('Documento gerado automaticamente. Nao requer assinatura.', 105, pageH - 5, { align: 'center' });
                 doc.text(`Pag. ${pageNum}`, marginR, pageH - 5, { align: 'right' });
             };
+
+            // Metadados do documento (evita avisos de assinatura em leitores de PDF)
+            doc.setProperties({
+                title: 'Relatorio EVOLUTION - ' + titlePeriod,
+                subject: 'Relatorio de Producao Portuaria',
+                author: this.currentUser || 'Usuario',
+                creator: 'EVOLUTION'
+            });
 
             // ── PAGINA 1 ─────────────────────────────────────────────────────────
             drawWatermark();
@@ -4508,13 +4625,16 @@ async approveUser(docId) {
                     { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
                     { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
                 ]],
-                didDrawPage: (data) => {
+                willDrawPage: (data) => {
                     const pgNum = doc.internal.getNumberOfPages();
-                    // Marca dagua em paginas adicionais
+                    // Marca dagua e cabecalho ANTES do conteudo nas paginas adicionais
                     if (pgNum > 1) {
                         drawWatermark();
                         drawHeader();
                     }
+                },
+                didDrawPage: (data) => {
+                    const pgNum = doc.internal.getNumberOfPages();
                     drawFooter(pgNum, '?');
                 }
             });
@@ -4600,6 +4720,31 @@ async approveUser(docId) {
             toast.appendChild(document.createTextNode(' ' + msg));
             container.appendChild(toast);
             setTimeout(() => { try { toast.remove(); } catch(_) {} }, 3000);
+        }
+
+        showUndoToast(msg, onUndo) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const existing = container.querySelectorAll('.toast');
+            if (existing.length >= 3) existing[0].remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.cssText = 'border-left: 3px solid var(--danger); pointer-events: auto; justify-content: space-between;';
+            const left = document.createElement('span');
+            left.style.cssText = 'display:flex;align-items:center;gap:8px;';
+            const icon = document.createElement('span');
+            icon.style.cssText = 'color:var(--danger);font-weight:800;';
+            icon.textContent = '🗑';
+            left.appendChild(icon);
+            left.appendChild(document.createTextNode(' ' + msg));
+            const undoBtn = document.createElement('button');
+            undoBtn.textContent = '↩ Desfazer';
+            undoBtn.style.cssText = 'background:var(--danger);color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:12px;font-family:inherit;';
+            undoBtn.onclick = () => { toast.remove(); if (typeof onUndo === 'function') onUndo(); };
+            toast.appendChild(left);
+            toast.appendChild(undoBtn);
+            container.appendChild(toast);
+            setTimeout(() => { try { toast.remove(); } catch(_) {} }, 5000);
         }
 
         // ============================================
