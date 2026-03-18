@@ -411,6 +411,7 @@
             // Mostrar app
             this.showMainApp();
             this.setDashboardMode(this.dashboardMode, false);
+            this.restoreHistoryPrefs();
             this.checkVipNotification(userData);
             this.renderCalendar();
 

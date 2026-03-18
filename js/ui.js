@@ -215,7 +215,67 @@
             const subs = { all: 'Todos os registros', pending: 'Aguardando pagamento', paid: 'Valores recebidos' };
             document.getElementById('histSubtitle').textContent = subs[f];
 
+            const monthSelector = document.getElementById('monthSelector');
+            const monthSelect = document.getElementById('monthSelect');
+            if (f === 'all' || f === 'paid') {
+                monthSelector.style.display = 'block';
+                const savedMonth = safeStorage.getItem('evo_history_month');
+                if (savedMonth) {
+                    this.historyMonth = parseInt(savedMonth);
+                    monthSelect.value = savedMonth;
+                } else if (!monthSelect.value) {
+                    this.historyMonth = null;
+                }
+            } else {
+                monthSelector.style.display = 'none';
+                this.historyMonth = null;
+                if (monthSelect) monthSelect.value = '';
+            }
+
+            safeStorage.setItem('evo_history_filter', f);
+            this.updateHistSubtitle();
             this.renderHistory();
+        };
+
+        EvolutionApp.prototype.setMonth = function(month) {
+            this.historyMonth = month ? parseInt(month) : null;
+            this.currentPage = 1;
+
+            if (this.historyMonth) {
+                safeStorage.setItem('evo_history_month', String(this.historyMonth));
+            } else {
+                safeStorage.removeItem('evo_history_month');
+            }
+
+            this.updateHistSubtitle();
+            this.renderHistory();
+        };
+
+        EvolutionApp.prototype.updateHistSubtitle = function() {
+            const meses = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            if (this.historyMonth) {
+                const prefixo = this.currentFilter === 'paid' ? 'Recebidos de ' : 'Registros de ';
+                document.getElementById('histSubtitle').textContent = prefixo + meses[this.historyMonth];
+            } else {
+                const subs = { all: 'Todos os registros', pending: 'Aguardando pagamento', paid: 'Valores recebidos' };
+                document.getElementById('histSubtitle').textContent = subs[this.currentFilter] || 'Todos os registros';
+            }
+        };
+
+        EvolutionApp.prototype.restoreHistoryPrefs = function() {
+            const savedFilter = safeStorage.getItem('evo_history_filter');
+            const savedMonth = safeStorage.getItem('evo_history_month');
+
+            if (savedFilter && savedFilter !== 'pending') {
+                this.setFilter(savedFilter);
+            }
+            if (savedMonth) {
+                const monthSelect = document.getElementById('monthSelect');
+                if (monthSelect) monthSelect.value = savedMonth;
+                this.historyMonth = parseInt(savedMonth);
+                this.updateHistSubtitle();
+                this.renderHistory();
+            }
         };
 
         EvolutionApp.prototype.renderHistory = function() {
@@ -229,12 +289,26 @@
                 filtered.sort((a, b) => new Date(a.data) - new Date(b.data));
             } else if (this.currentFilter === 'paid') {
                 filtered = filtered.filter(e => e.pago);
+                if (this.historyMonth) {
+                    filtered = filtered.filter(e => {
+                        const parts = e.data.split('-');
+                        const month = parseInt(parts[1], 10);
+                        return month === this.historyMonth;
+                    });
+                }
                 filtered.sort((a, b) => {
                     const dateA = a.paymentDate ? new Date(a.paymentDate) : new Date(a.data);
                     const dateB = b.paymentDate ? new Date(b.paymentDate) : new Date(b.data);
                     return dateB - dateA;
                 });
             } else {
+                if (this.historyMonth) {
+                    filtered = filtered.filter(e => {
+                        const parts = e.data.split('-');
+                        const month = parseInt(parts[1], 10);
+                        return month === this.historyMonth;
+                    });
+                }
                 filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
             }
 

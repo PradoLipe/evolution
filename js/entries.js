@@ -190,7 +190,11 @@ TOTAL: ${parseInt(p1) + parseInt(p2)}
                 msg += `TOTAL: ${document.getElementById('relPT')?.value || 0}
 `;
             }
+            let userName = this.currentUser;
+            if (userName && userName.toLowerCase().includes('anderson prado')) {
+                userName += ' \u{1F64F}';
+            }
             msg += `
-${this.currentUser}`;
+${userName}`;
             this.copyToClipboard(msg, 'Relatorio copiado!');
         };

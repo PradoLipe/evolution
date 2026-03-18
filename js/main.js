@@ -9,7 +9,7 @@
             this.currentUserCode = null;
             this.currentFilter = 'pending';
             this.dashboardMode = 'all';
-            this.selectedMonth = null;
+            this.historyMonth = null;
             this.pinValue = '';
             this.deviceId = this.getOrCreateDeviceId();
             this.metaMensal = 0;
