@@ -249,7 +249,6 @@
 
             let html = paged.map(e => `
                 <div class="history-item ${e.pago ? 'paid' : 'pending'} ${String(this.expandedHistoryId) === String(e.id) ? 'expanded' : ''}" id="history-item-${e.id}">
-                    <div class="swipe-pay-bg">${e.pago ? '↩ DESFAZER' : '✓ PAGO'}</div>
                     <div class="history-main-row" onclick="app.toggleHistoryDetail('${e.id}')">
                         <div class="history-main">
                             <div class="history-ship">${this.escHtml(e.navio)}</div>
@@ -288,12 +287,9 @@
             }
 
             list.innerHTML = html;
-            this._initSwipeToPayListeners();
         };
 
         EvolutionApp.prototype.toggleHistoryDetail = function(id) {
-            // Ignorar click disparado logo apos um swipe
-            if (this._swipeJustCompleted) { this._swipeJustCompleted = false; return; }
             // Protecao defensiva: se nenhum modal esta aberto, garante que o scroll da pagina nao fica travado
             if ((this._openModalCount || 0) === 0) {
                 document.body.style.overflow = '';
@@ -461,91 +457,6 @@ Tipo: ${e.tipo}
 Bruto: ${this.formatMoney(e.bruto)}
 Liquido: ${this.formatMoney(e.liquido)}`;
             this.copyToClipboard(text, 'Copiado!');
-        };
-
-        // ============================================
-        // SWIPE TO PAY
-        // ============================================
-        EvolutionApp.prototype._initSwipeToPayListeners = function() {
-            const THRESHOLD = 80;
-            document.querySelectorAll('#histList .history-main-row').forEach(row => {
-                let startX = 0, startY = 0, dx = 0, tracking = false;
-
-                row.addEventListener('touchstart', function(e) {
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    dx = 0;
-                    tracking = true;
-                    row.style.transition = 'none';
-                }, { passive: true });
-
-                row.addEventListener('touchmove', function(e) {
-                    if (!tracking) return;
-                    dx = e.touches[0].clientX - startX;
-                    const dy = e.touches[0].clientY - startY;
-                    // Se mais vertical que horizontal, deixa o scroll acontecer
-                    if (Math.abs(dy) > Math.abs(dx) + 5) { tracking = false; return; }
-                    // So swipe para direita
-                    if (dx <= 0) { dx = 0; return; }
-                    e.preventDefault();
-                    const item = row.closest('.history-item');
-                    const bg = item && item.querySelector('.swipe-pay-bg');
-                    const clamped = Math.min(dx, THRESHOLD * 1.3);
-                    row.style.transform = 'translateX(' + clamped + 'px)';
-                    if (bg) bg.style.opacity = String(Math.min(dx / THRESHOLD, 1));
-                }, { passive: false });
-
-                const self = this;
-                row.addEventListener('touchend', function() {
-                    if (!tracking) return;
-                    tracking = false;
-                    const completed = dx >= THRESHOLD;
-                    row.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                    row.style.transform = '';
-                    const item = row.closest('.history-item');
-                    const bg = item && item.querySelector('.swipe-pay-bg');
-                    if (bg) {
-                        bg.style.transition = 'opacity 0.25s ease';
-                        bg.style.opacity = '0';
-                    }
-                    if (dx > 12) {
-                        // Qualquer swipe significativo cancela o click
-                        self._swipeJustCompleted = true;
-                        setTimeout(function() { self._swipeJustCompleted = false; }, 300);
-                    }
-                    if (completed && item) {
-                        const id = item.id.replace('history-item-', '');
-                        setTimeout(function() { self.togglePago(id); }, 50);
-                    }
-                }, { passive: true });
-            });
-        };
-
-        // ============================================
-        // BOTTOM NAVIGATION
-        // ============================================
-        EvolutionApp.prototype.navTo = function(target) {
-            document.querySelectorAll('.bottom-nav-btn').forEach(function(b) { b.classList.remove('active'); });
-            const navIds = { dashboard: 'navDashboard', register: 'navRegister', history: 'navHistory', simulate: 'navSimulate' };
-            const el = document.getElementById(navIds[target]);
-            if (el) el.classList.add('active');
-
-            if (target === 'dashboard') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
-            }
-
-            const sectionIds = { register: 'secNew', history: 'secHist', simulate: 'secSim' };
-            const sectionId = sectionIds[target];
-            const section = document.getElementById(sectionId);
-            if (!section) return;
-
-            if (!section.classList.contains('expanded')) {
-                this.toggleSection(sectionId);
-            }
-            setTimeout(function() {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 80);
         };
 
         // ============================================
