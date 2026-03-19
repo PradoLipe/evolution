@@ -284,6 +284,12 @@
         .modal-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
         .modal-close:active { background: var(--danger); color: white; transform: rotate(90deg); }
         .modal-body { padding: 20px; }
+        .report-preview-body { display: flex; flex-direction: column; gap: 14px; }
+        .report-preview-meta { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+        .report-preview-title { font-size: 0.95rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); }
+        .report-preview-sub { font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; }
+        .report-preview-text { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; min-height: 180px; max-height: 45vh; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text); white-space: pre-wrap; }
+        .report-preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .config-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         .admin-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .admin-grid-fix { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }

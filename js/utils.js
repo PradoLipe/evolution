@@ -10,9 +10,13 @@
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            const objectUrl = URL.createObjectURL(blob);
+            a.href = objectUrl;
             a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => {
+                try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+            }, 1000);
             this.showToast('Backup exportado!', 'success');
             this.closeModal('configModal');
         };
@@ -628,6 +632,9 @@
                 this._openModalCount = Math.max(0, (this._openModalCount || 1) - 1);
                 if (this._openModalCount === 0) {
                     document.body.style.overflow = '';
+                }
+                if (id === 'reportPreviewModal' && typeof this.clearReportPreview === 'function') {
+                    this.clearReportPreview();
                 }
                 // FIX: Recolhe metaEditor ao fechar configModal (qualquer forma de fechar)
                 if (id === 'configModal') {

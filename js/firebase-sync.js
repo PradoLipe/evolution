@@ -82,9 +82,17 @@
             if (!this.isRemoteHistoryEnabled()) return;
             clearTimeout(this.historySyncTimer);
             this.historySyncTimer = setTimeout(() => {
-                this.flushPendingHistoryQueue(reason).catch((error) => {
-                    console.error('Falha ao sincronizar historico:', error);
-                });
+                this.flushPendingHistoryQueue(reason)
+                    .then((synced) => {
+                        // Mantem tentativas em background quando a fila ainda nao zerou.
+                        if (!synced && this.isRemoteHistoryEnabled()) {
+                            const retryDelay = (!navigator.onLine || !this.firebaseReady || !db) ? 10000 : 2500;
+                            this.scheduleHistorySync(`${reason}-retry`, retryDelay);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Falha ao sincronizar historico:', error);
+                    });
             }, delay);
         };
 
@@ -105,61 +113,80 @@
                 grouped[month].push(entry);
             });
 
+            let syncedAnyMonth = false;
             for (const month of pendingMonths) {
-                const localEntries = Array.isArray(grouped[month]) ? grouped[month] : [];
-                const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
-                const snap = await ref.get();
-                let remoteEntries = [];
-                if (snap.exists) {
-                    const data = snap.data() || {};
-                    if (typeof data.history === 'string') {
-                        try { remoteEntries = JSON.parse(data.history) || []; } catch (e) { remoteEntries = []; }
-                    } else if (Array.isArray(data.history)) {
-                        remoteEntries = data.history;
+                try {
+                    const localEntries = Array.isArray(grouped[month]) ? grouped[month] : [];
+                    const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
+                    const snap = await ref.get();
+                    let remoteEntries = [];
+                    if (snap.exists) {
+                        const data = snap.data() || {};
+                        if (typeof data.history === 'string') {
+                            try { remoteEntries = JSON.parse(data.history) || []; } catch (e) { remoteEntries = []; }
+                        } else if (Array.isArray(data.history)) {
+                            remoteEntries = data.history;
+                        }
                     }
+
+                    // BUG FIX: Antes era [...remoteEntries, ...localEntries] com local sobrescrevendo remoto,
+                    // mas entradas DELETADAS localmente ainda existiam no remoto e voltavam ao mapa.
+                    // Agora: local e a fonte da verdade. Remoto so adiciona entradas que nao existem localmente.
+                    // Tombstone garante que IDs deletados sejam filtrados de ambas as fontes.
+                    const deletedIds = this.getDeletedIds();
+                    const localById = new Map();
+                    localEntries.forEach(entry => {
+                        if (!entry) return;
+                        const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                        if (!deletedIds.has(key)) localById.set(key, entry);
+                    });
+                    // Adicionar do remoto SOMENTE entradas que nao existem localmente e nao foram deletadas
+                    remoteEntries.forEach(entry => {
+                        if (!entry) return;
+                        const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
+                        if (!deletedIds.has(key) && !localById.has(key)) localById.set(key, entry);
+                    });
+                    const mergedEntries = Array.from(localById.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+
+                    await ref.set({
+                        history: JSON.stringify(mergedEntries),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        localUpdatedAt: new Date().toISOString(),
+                        count: mergedEntries.length,
+                        source: 'queue-retry'
+                    }, { merge: true });
+
+                    delete this.pendingHistoryQueue[month];
+                    syncedAnyMonth = true;
+                } catch (error) {
+                    console.error(`Falha ao sincronizar historico do mes ${month}:`, error);
+                    const prev = this.pendingHistoryQueue?.[month] || {};
+                    this.pendingHistoryQueue[month] = {
+                        ...prev,
+                        status: 'pending',
+                        updatedAt: new Date().toISOString(),
+                        lastError: String(error?.message || error || 'erro-desconhecido').slice(0, 200)
+                    };
                 }
-
-                // BUG FIX: Antes era [...remoteEntries, ...localEntries] com local sobrescrevendo remoto,
-                // mas entradas DELETADAS localmente ainda existiam no remoto e voltavam ao mapa.
-                // Agora: local e a fonte da verdade. Remoto so adiciona entradas que nao existem localmente.
-                // Tombstone garante que IDs deletados sejam filtrados de ambas as fontes.
-                const deletedIds = this.getDeletedIds();
-                const localById = new Map();
-                localEntries.forEach(entry => {
-                    if (!entry) return;
-                    const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
-                    if (!deletedIds.has(key)) localById.set(key, entry);
-                });
-                // Adicionar do remoto SOMENTE entradas que nao existem localmente e nao foram deletadas
-                remoteEntries.forEach(entry => {
-                    if (!entry) return;
-                    const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
-                    if (!deletedIds.has(key) && !localById.has(key)) localById.set(key, entry);
-                });
-                const mergedEntries = Array.from(localById.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
-
-                await ref.set({
-                    history: JSON.stringify(mergedEntries),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    localUpdatedAt: new Date().toISOString(),
-                    count: mergedEntries.length,
-                    source: 'queue-retry'
-                }, { merge: true });
-
-                delete this.pendingHistoryQueue[month];
             }
 
             this.saveHistoryQueue();
-            await db.collection('users').doc(this.currentUserId).set({
-                lastSyncAt: new Date().toISOString(),
-                historyBackup: {
-                    count: Array.isArray(this.entries) ? this.entries.length : 0,
-                    updatedAt: new Date().toISOString(),
-                    deviceId: this.deviceId,
-                    reason
+            if (syncedAnyMonth) {
+                try {
+                    await db.collection('users').doc(this.currentUserId).set({
+                        lastSyncAt: new Date().toISOString(),
+                        historyBackup: {
+                            count: Array.isArray(this.entries) ? this.entries.length : 0,
+                            updatedAt: new Date().toISOString(),
+                            deviceId: this.deviceId,
+                            reason
+                        }
+                    }, { merge: true });
+                } catch (error) {
+                    console.error('Falha ao atualizar metadados de sincronizacao:', error);
                 }
-            }, { merge: true });
-            return true;
+            }
+            return Object.keys(this.pendingHistoryQueue || {}).length === 0;
         };
 
         EvolutionApp.prototype.checkVipNotification = function(userData) {

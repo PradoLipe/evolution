@@ -291,6 +291,7 @@
                 .onSnapshot((snapshot) => {
                     let serverEntries = [];
                     const serverMonthCount = {};
+                    const serverMonthSyncTs = {};
                     snapshot.forEach(doc => {
                         if (doc.id.startsWith('history_')) {
                             const data = doc.data();
@@ -302,54 +303,78 @@
                             }
                             const month = doc.id.replace('history_', '');
                             serverMonthCount[month] = entries.length;
+                            let serverTs = 0;
+                            if (data?.localUpdatedAt) {
+                                const t = new Date(data.localUpdatedAt).getTime();
+                                if (!isNaN(t)) serverTs = t;
+                            } else if (data?.updatedAt?.toDate) {
+                                const t = data.updatedAt.toDate().getTime();
+                                if (!isNaN(t)) serverTs = t;
+                            }
+                            if (serverTs > 0) serverMonthSyncTs[month] = serverTs;
                             serverEntries.push(...entries);
                         }
                     });
 
-                    if (serverEntries.length > 0) {
-                        // BUG FIX: Antes servidor ganhava prioridade (if !byId.has(key)),
-                        // causando entradas deletadas localmente voltarem do Firebase.
-                        // Agora: local tem prioridade. Servidor so contribui com entradas novas.
-                        const deletedIds = this.getDeletedIds();
-                        const byId = new Map();
-                        // 1) Processar local primeiro (fonte da verdade)
-                        (this.entries || []).forEach(entry => {
-                            if (!entry) return;
-                            const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
-                            if (!deletedIds.has(key)) byId.set(key, entry);
-                        });
-                        // 2) Servidor so adiciona entradas ausentes localmente (ex: outro dispositivo)
-                        serverEntries.forEach(entry => {
-                            if (!entry) return;
-                            const key = String(entry.id || `${entry.data || ''}_${entry.navio || ''}_${entry.turno || ''}_${entry.createdAt || ''}`);
-                            if (!deletedIds.has(key) && !byId.has(key)) byId.set(key, entry);
-                        });
-                        const merged = Array.from(byId.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
-                        // BUG FIX: Verificar conteudo real, nao apenas tamanho
-                        const changed = merged.length !== this.entries.length ||
-                            merged.some((e, i) => !this.entries[i] || e.id !== this.entries[i].id || e.pago !== this.entries[i].pago || e.navio !== this.entries[i].navio || e.data !== this.entries[i].data || Number(e.liquido) !== Number(this.entries[i].liquido));
-                        this.entries = merged;
-                        if (changed) {
-                            this.migrateOldEntries();
-                            safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                            this.updateDashboard();
-                            this.renderHistory();
-                            this.updateMetaProgress();
-                            // Atualizar calendario quando registros mudarem via Firebase
-                            if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
-                        }
+                    // Evita limpar dados locais quando offline e snapshot veio so de cache vazio.
+                    if (snapshot?.metadata?.fromCache && !navigator.onLine && Object.keys(serverMonthCount).length === 0) {
+                        return;
                     }
 
-                    const localMonthCount = {};
-                    (this.entries || []).forEach(entry => {
-                        if (!entry || !entry.data || entry.data.length < 7) return;
-                        const month = entry.data.substring(0, 7);
-                        localMonthCount[month] = (localMonthCount[month] || 0) + 1;
+                    this.loadHistoryQueue();
+                    const pendingQueue = this.pendingHistoryQueue || {};
+                    const pendingMonths = new Set();
+                    let queueChanged = false;
+                    Object.keys(pendingQueue).forEach((month) => {
+                        const pendingTs = new Date(pendingQueue[month]?.updatedAt || 0).getTime();
+                        const serverTs = serverMonthSyncTs[month] || 0;
+                        // Se o servidor ja tem um snapshot mais novo, este pendente local ficou obsoleto.
+                        if (serverTs > 0 && !isNaN(pendingTs) && pendingTs > 0 && pendingTs <= serverTs) {
+                            delete this.pendingHistoryQueue[month];
+                            queueChanged = true;
+                            return;
+                        }
+                        pendingMonths.add(month);
                     });
-                    const pendingMonths = Object.keys(localMonthCount).filter(month => (localMonthCount[month] || 0) > (serverMonthCount[month] || 0));
-                    if (pendingMonths.length > 0) {
-                        this.markHistoryMonthsPending(pendingMonths);
-                        this.scheduleHistorySync('listener-merge', 900);
+                    if (queueChanged) this.saveHistoryQueue();
+
+                    const toKey = (entry) => String(entry?.id || `${entry?.data || ''}_${entry?.navio || ''}_${entry?.turno || ''}_${entry?.createdAt || ''}`);
+                    const deletedIds = this.getDeletedIds();
+                    const byId = new Map();
+
+                    // Base: estado remoto (fonte de verdade entre dispositivos).
+                    serverEntries.forEach(entry => {
+                        if (!entry) return;
+                        const key = toKey(entry);
+                        if (!deletedIds.has(key)) byId.set(key, entry);
+                    });
+
+                    // Sobreposicao local apenas para meses com alteracao pendente local.
+                    (this.entries || []).forEach(entry => {
+                        if (!entry) return;
+                        const key = toKey(entry);
+                        const month = (entry.data && entry.data.length >= 7) ? entry.data.substring(0, 7) : '';
+                        if (!month || !pendingMonths.has(month) || deletedIds.has(key)) return;
+                        byId.set(key, entry);
+                    });
+
+                    const merged = Array.from(byId.values()).sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+                    // BUG FIX: Verificar conteudo real, nao apenas tamanho
+                    const changed = merged.length !== this.entries.length ||
+                        merged.some((e, i) => !this.entries[i] || e.id !== this.entries[i].id || e.pago !== this.entries[i].pago || e.navio !== this.entries[i].navio || e.data !== this.entries[i].data || Number(e.liquido) !== Number(this.entries[i].liquido));
+                    this.entries = merged;
+                    if (changed) {
+                        this.migrateOldEntries();
+                        safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                        this.updateDashboard();
+                        this.renderHistory();
+                        this.updateMetaProgress();
+                        // Atualizar calendario quando registros mudarem via Firebase
+                        if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                    }
+
+                    if (pendingMonths.size > 0) {
+                        this.scheduleHistorySync('listener-pending', 900);
                     }
                 }, (error) => {
                     console.error('Erro listener entries:', error);
@@ -374,7 +399,8 @@
             }
 
             try {
-                await this.flushPendingHistoryQueue('persistData');
+                const synced = await this.flushPendingHistoryQueue('persistData');
+                if (!synced) this.scheduleHistorySync('persist-partial', 2500);
             } catch (e) {
                 console.error('Erro ao persistir historico:', e);
                 this.scheduleHistorySync('persist-error', 2500);

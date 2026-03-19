@@ -184,17 +184,60 @@ Terno: ${terno}
                 const p2 = document.getElementById('relP2')?.value || 0;
                 msg += `15x19: ${p1}
 19x23: ${p2}
-TOTAL: ${parseInt(p1) + parseInt(p2)}
+TOTAL: ${(parseInt(p1, 10) || 0) + (parseInt(p2, 10) || 0)}
 `;
             } else {
                 msg += `TOTAL: ${document.getElementById('relPT')?.value || 0}
 `;
             }
-            let userName = this.currentUser;
+            let userName = String(this.currentUser || 'USUARIO').trim() || 'USUARIO';
             if (userName && userName.toLowerCase().includes('anderson prado')) {
                 userName += ' \u{1F64F}';
             }
             msg += `
 ${userName}`;
-            this.copyToClipboard(msg, 'Relatorio copiado!');
+            this.openReportPreview(msg);
+        };
+
+        EvolutionApp.prototype.openReportPreview = function(msg) {
+            this._reportText = msg || '';
+            const textEl = document.getElementById('reportPreviewText');
+            const subEl = document.getElementById('reportPreviewSubtitle');
+            if (textEl) textEl.textContent = this._reportText;
+            if (subEl) subEl.textContent = this._reportText ? 'Relatorio pronto para enviar' : 'Aguardando geracao...';
+            this.openModal('reportPreviewModal');
+        };
+
+        EvolutionApp.prototype.clearReportPreview = function() {
+            this._reportText = '';
+            const textEl = document.getElementById('reportPreviewText');
+            const subEl = document.getElementById('reportPreviewSubtitle');
+            if (textEl) textEl.textContent = '';
+            if (subEl) subEl.textContent = 'Aguardando geracao...';
+        };
+
+        EvolutionApp.prototype.copyReportText = function() {
+            if (!this._reportText) {
+                this.showToast('Gere um relatorio primeiro', 'warning');
+                return;
+            }
+            this.copyToClipboard(this._reportText, 'Relatorio copiado!');
+        };
+
+        EvolutionApp.prototype.shareReportText = async function() {
+            if (!this._reportText) {
+                this.showToast('Gere um relatorio primeiro', 'warning');
+                return;
+            }
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Relatorio EVOLUTION',
+                        text: this._reportText
+                    });
+                    return;
+                } catch (e) {}
+            }
+            this.copyReportText();
+            this.showToast('Copiado para compartilhar', 'info');
         };

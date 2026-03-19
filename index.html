@@ -459,7 +459,7 @@
                                 <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="app.generateReport()">Copiar Relatorio</button>
+                        <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatorio</button>
                     </div>
                 </div>
             </div>
@@ -561,6 +561,27 @@
                     </div>
                     <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
                     <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);">📋 Todos os Registros (Historico Completo)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT PREVIEW MODAL -->
+    <div class="modal-overlay" id="reportPreviewModal" onclick="app.closeModalOnOverlay(event, 'reportPreviewModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Pre-visualizacao</h3>
+                <button class="modal-close" onclick="app.closeModal('reportPreviewModal')">&times;</button>
+            </div>
+            <div class="modal-body report-preview-body">
+                <div class="report-preview-meta">
+                    <div class="report-preview-title">Relatorio para WhatsApp</div>
+                    <div class="report-preview-sub" id="reportPreviewSubtitle">Aguardando geracao...</div>
+                </div>
+                <pre class="report-preview-text" id="reportPreviewText"></pre>
+                <div class="report-preview-actions">
+                    <button class="btn btn-glass" onclick="app.copyReportText()">Copiar</button>
+                    <button class="btn btn-primary" onclick="app.shareReportText()">Compartilhar</button>
                 </div>
             </div>
         </div>
