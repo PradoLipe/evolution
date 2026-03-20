@@ -791,6 +791,20 @@
         // LOGOUT
         // ============================================
         EvolutionApp.prototype.logout = function() {
+            const prevUserId = this.currentUserId;
+            if (typeof this.stopSessionWatch === 'function') {
+                this.stopSessionWatch();
+            }
+            if (prevUserId && this.users[prevUserId]) {
+                this.users[prevUserId].lastSeenAt = new Date().toISOString();
+                this.saveUsersToCache();
+            }
+            if (db && prevUserId) {
+                db.collection('users').doc(prevUserId).set({
+                    lastSeenAt: new Date().toISOString(),
+                    lastSeenSource: 'logout'
+                }, { merge: true }).catch(() => {});
+            }
             clearTimeout(this.historySyncTimer);
 
             // Cancelar todas as subscriptions e nullar referencias

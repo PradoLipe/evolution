@@ -9,6 +9,105 @@
             safeStorage.setItem('evo_users_cache_v516', JSON.stringify(this.users));
         };
 
+        EvolutionApp.prototype.getInactivityLimitMs = function() {
+            return Number(this.inactivityLimitMs) || (40 * 60 * 1000);
+        };
+
+        EvolutionApp.prototype.updateSessionActivityTimestamp = function(ts = Date.now()) {
+            const sessionRaw = safeStorage.getItem('evo_session_v516');
+            if (!sessionRaw) return;
+            try {
+                const sessionData = decodeSession(sessionRaw);
+                if (!sessionData) return;
+                sessionData.lastActivityTs = ts;
+                safeStorage.setItem('evo_session_v516', encodeSession(sessionData));
+            } catch (e) {}
+        };
+
+        EvolutionApp.prototype.syncCurrentUserLastSeen = function(force = false, source = 'activity') {
+            if (!this.currentUserId) return;
+            const nowTs = Date.now();
+            const minInterval = Number(this.presenceSyncIntervalMs) || (90 * 1000);
+            if (!force && nowTs - (this._lastPresenceSyncTs || 0) < minInterval) return;
+            this._lastPresenceSyncTs = nowTs;
+            const seenIso = new Date(nowTs).toISOString();
+
+            if (this.users[this.currentUserId]) {
+                this.users[this.currentUserId].lastSeenAt = seenIso;
+                this.saveUsersToCache();
+            }
+
+            if (db) {
+                db.collection('users').doc(this.currentUserId).set({
+                    lastSeenAt: seenIso,
+                    lastSeenSource: source
+                }, { merge: true }).catch(() => {});
+            }
+        };
+
+        EvolutionApp.prototype.markUserActivity = function(source = 'interaction', forcePresenceSync = false) {
+            if (!this.currentUserId) return;
+            const nowTs = Date.now();
+            if (!forcePresenceSync && source === 'interaction' && nowTs - (this._lastActivityEventTs || 0) < 10000) return;
+            this._lastActivityEventTs = nowTs;
+            this._lastUserActivityTs = nowTs;
+            this.updateSessionActivityTimestamp(nowTs);
+            this.syncCurrentUserLastSeen(forcePresenceSync, source);
+        };
+
+        EvolutionApp.prototype.bindSessionActivityListeners = function() {
+            if (this._activityListenersBound) return;
+            this._activityHandler = () => this.markUserActivity('interaction');
+            this._visibilityHandler = () => {
+                if (document.visibilityState === 'visible') this.markUserActivity('visible', true);
+            };
+            this._focusHandler = () => this.markUserActivity('focus', true);
+
+            ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
+                document.addEventListener(evt, this._activityHandler, { passive: true });
+            });
+            document.addEventListener('visibilitychange', this._visibilityHandler);
+            window.addEventListener('focus', this._focusHandler);
+            this._activityListenersBound = true;
+        };
+
+        EvolutionApp.prototype.stopSessionWatch = function() {
+            clearInterval(this._sessionWatchTimer);
+            this._sessionWatchTimer = null;
+            if (!this._activityListenersBound) return;
+
+            ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
+                document.removeEventListener(evt, this._activityHandler);
+            });
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            window.removeEventListener('focus', this._focusHandler);
+
+            this._activityListenersBound = false;
+            this._activityHandler = null;
+            this._visibilityHandler = null;
+            this._focusHandler = null;
+        };
+
+        EvolutionApp.prototype.startSessionWatch = function() {
+            if (!this.currentUserId) return;
+            this.stopSessionWatch();
+            this.bindSessionActivityListeners();
+            this._lastUserActivityTs = Date.now();
+            this.updateSessionActivityTimestamp(this._lastUserActivityTs);
+            this.syncCurrentUserLastSeen(true, 'session-start');
+
+            this._sessionWatchTimer = setInterval(() => {
+                if (!this.currentUserId) return;
+                const idleMs = Date.now() - (this._lastUserActivityTs || Date.now());
+                if (idleMs >= this.getInactivityLimitMs()) {
+                    this.showToast('Sessao encerrada por inatividade (40 min).', 'warning');
+                    this.logout();
+                    return;
+                }
+                this.syncCurrentUserLastSeen(false, 'heartbeat');
+            }, 60 * 1000);
+        };
+
         // ============================================
         // LOGIN E AUTENTICACAO
         // ============================================
@@ -163,7 +262,8 @@
                 code: this.currentUserCode,
                 docId: this.currentUserId,
                 isAdmin: this.isAdmin || false,
-                ts: Date.now()
+                ts: Date.now(),
+                lastActivityTs: Date.now()
             }));
 
             this.pinValue = '';
@@ -285,6 +385,23 @@
                     }, 800);
                     return;
                 }
+                const inactivityLimit = this.getInactivityLimitMs();
+                const lastActivityTs = Number(d.lastActivityTs || d.ts || 0);
+                if (!lastActivityTs || lastActivityTs <= Date.now() - inactivityLimit) {
+                    safeStorage.removeItem('evo_session_v516');
+                    setTimeout(() => {
+                        const t = document.getElementById('toastContainer');
+                        if (t) {
+                            const d3 = document.createElement('div');
+                            d3.className = 'toast';
+                            d3.style.borderLeft = '3px solid var(--warning)';
+                            d3.innerHTML = '<span style="color:var(--warning);font-weight:800;">•</span> Sessao encerrada por inatividade (40 min).';
+                            t.appendChild(d3);
+                            setTimeout(() => { try { d3.remove(); } catch(_) {} }, 4000);
+                        }
+                    }, 800);
+                    return;
+                }
                 this.pendingSessionData = d;
 
                 // 1. Verifica se é admin pelo PIN remoto (REMOTE_ADMIN_PIN ja foi carregado do cache local)
@@ -386,13 +503,16 @@
 
             // Salvar sessao (garante que TODOS os caminhos de login persistem a sessao,
             // incluindo o caminho rapido do admin que retorna cedo antes do save no login())
+            const nowTs = Date.now();
             safeStorage.setItem('evo_session_v516', encodeSession({
                 user: this.currentUser,
                 code: this.currentUserCode,
                 docId: this.currentUserId,
                 isAdmin: this.isAdmin || false,
-                ts: Date.now()
+                ts: sessionData?.ts || nowTs,
+                lastActivityTs: nowTs
             }));
+            this._lastUserActivityTs = nowTs;
 
             this.loadHistoryQueue();
 
@@ -408,8 +528,15 @@
 
             this.syncCalendarMonthWithEntries(true);
 
+            // Verificar se ha comando de logout remoto pendente
+            try {
+                const cachedForceTs = safeStorage.getItem('evo_force_logout_before');
+                if (cachedForceTs) this._checkForceLogout(Number(cachedForceTs));
+            } catch (_) {}
+
             // Mostrar app
             this.showMainApp();
+            this.startSessionWatch();
             this.setDashboardMode(this.dashboardMode, false);
             this.restoreHistoryPrefs();
             this.checkVipNotification(userData);

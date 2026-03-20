@@ -130,11 +130,11 @@
                     <div class="pending-item">
                         <div class="pending-info">
                             <span class="pending-name">${safeName}</span>
-                            <span class="pending-date">PIN: ${safeCode} • ${dateTxt}</span>
+                            <span class="pending-date">PIN: ${safeCode} â€¢ ${dateTxt}</span>
                         </div>
                         <div class="pending-actions">
-                            <button class="btn-tiny btn-approve" data-action="approve" data-docid="${esc(docId)}" title="Aprovar">✓</button>
-                            <button class="btn-tiny btn-reject" data-action="reject" data-docid="${esc(docId)}" title="Rejeitar">✕</button>
+                            <button class="btn-tiny btn-approve" data-action="approve" data-docid="${esc(docId)}" title="Aprovar">âœ“</button>
+                            <button class="btn-tiny btn-reject" data-action="reject" data-docid="${esc(docId)}" title="Rejeitar">âœ•</button>
                         </div>
                     </div>
                 `;
@@ -211,6 +211,41 @@
             }
         };
 
+        // Verifica se a sessao atual deve ser encerrada por comando remoto do admin
+        EvolutionApp.prototype._checkForceLogout = function(forceTs) {
+            if (!forceTs || this.isAdmin || this._forceLogoutPending) return;
+            const sessionRaw = safeStorage.getItem('evo_session_v516');
+            if (!sessionRaw) return;
+            try {
+                const sd = decodeSession(sessionRaw);
+                if (sd && sd.ts && Number(sd.ts) < Number(forceTs)) {
+                    this._forceLogoutPending = true;
+                    this.showToast('Sessao encerrada. Faca login novamente.', 'warning');
+                    setTimeout(() => {
+                        this.logout();
+                        window.location.reload(true);
+                    }, 2000);
+                }
+            } catch (e) {}
+        };
+
+        // Publica o comando de logout forcado para todos os usuarios no Firebase
+        EvolutionApp.prototype.forceLogoutAll = async function() {
+            if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
+            const btn = document.getElementById('btnForceLogoutAll');
+            if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+            try {
+                await db.collection('config').doc('settings').set({
+                    forceLogoutBefore: Date.now()
+                }, { merge: true });
+                this.showToast('Todos os usuarios serao desconectados ao abrir o app!', 'success');
+            } catch (e) {
+                this.showToast('Erro ao enviar comando', 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '⚡ Forcar Logout de Todos'; }
+            }
+        };
+
         EvolutionApp.prototype.fetchAdminSettings = async function() {
             if (!db) return;
             try {
@@ -226,6 +261,15 @@
                 if (doc.exists && doc.data().floodPercentage != null) {
                     const fp = document.getElementById('floodPercentage');
                     if (fp) fp.value = doc.data().floodPercentage;
+                }
+                // Logout remoto forcado: se o admin publicou um forceLogoutBefore,
+                // qualquer sessao criada ANTES desse timestamp e invalidada
+                if (doc.exists && doc.data().forceLogoutBefore != null) {
+                    const forceTs = Number(doc.data().forceLogoutBefore);
+                    if (forceTs) {
+                        safeStorage.setItem('evo_force_logout_before', String(forceTs));
+                        this._checkForceLogout(forceTs);
+                    }
                 }
             } catch (e) {}
 
@@ -410,6 +454,35 @@
         // ============================================
         // ADMIN - USUARIOS
         // ============================================
+        EvolutionApp.prototype.formatAdminDateTime = function(rawDate) {
+            if (!rawDate) return null;
+            let dt = null;
+            if (typeof rawDate === 'string') dt = new Date(rawDate);
+            else if (rawDate?.toDate) dt = rawDate.toDate();
+            else if (rawDate?.seconds) dt = new Date(rawDate.seconds * 1000);
+            else dt = new Date(rawDate);
+            if (!dt || isNaN(dt.getTime())) return null;
+            const dd = String(dt.getDate()).padStart(2, '0');
+            const mm = String(dt.getMonth() + 1).padStart(2, '0');
+            const yyyy = dt.getFullYear();
+            const hh = String(dt.getHours()).padStart(2, '0');
+            const min = String(dt.getMinutes()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy} as ${hh}:${min}`;
+        };
+
+        EvolutionApp.prototype.getUserPresenceMeta = function(user) {
+            const lastSeenText = this.formatAdminDateTime(user?.lastSeenAt);
+            const lastSeenMs = lastSeenText ? new Date(user.lastSeenAt).getTime() : 0;
+            const onlineWindow = Number(this.presenceOnlineWindowMs) || (5 * 60 * 1000);
+            const isActiveNow = !!lastSeenMs && (Date.now() - lastSeenMs) <= onlineWindow;
+            return {
+                activeNow: isActiveNow,
+                label: lastSeenText
+                    ? (isActiveNow ? `Atividade: agora (${lastSeenText})` : `Atividade: ${lastSeenText}`)
+                    : 'Atividade: sem registro'
+            };
+        };
+
         EvolutionApp.prototype.renderUserList = function() {
             const container = document.getElementById('userList');
             if (!container) return;
@@ -429,6 +502,8 @@
                 const now = new Date();
                 const isVip = u.vip || (u.vipUntil && new Date(u.vipUntil) > now) || (u.vipTrialUntil && new Date(u.vipTrialUntil) > now);
                 const uid = u.docId || u.code;
+                const presence = this.getUserPresenceMeta(u);
+                const statusClass = u.blocked ? 'blocked' : (presence.activeNow ? 'active' : 'idle');
                 let vipIcon = '', vipDaysText = '';
 
                 if (isVip) {
@@ -450,17 +525,17 @@
                         <div class="user-item-info">
                             <span class="user-item-name">${this.escHtml(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
                             <span class="user-item-code">PIN: ${this.escHtml(u.code)}</span>
+                            <span class="user-last-seen">${presence.label}</span>
                             ${vipDaysText}
                         </div>
                         <div class="user-item-status">
-                            <div class="status-indicator ${u.blocked ? 'blocked' : 'active'}"></div>
+                            <div class="status-indicator ${statusClass}"></div>
                             ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${this.escHtml(uid)}')">⚙</button>` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
         };
-
         EvolutionApp.prototype.addNewUser = async function() {
             const nameInput = document.getElementById('newUserName');
             const codeInput = document.getElementById('newUserCode');
@@ -512,17 +587,14 @@
             // Exibir ultimo login
             const lastLoginEl = document.getElementById('manageUserLastLoginText');
             if (lastLoginEl) {
-                if (user.lastLoginAt) {
-                    const dt = new Date(user.lastLoginAt);
-                    const dd = String(dt.getDate()).padStart(2, '0');
-                    const mm = String(dt.getMonth() + 1).padStart(2, '0');
-                    const yyyy = dt.getFullYear();
-                    const hh = String(dt.getHours()).padStart(2, '0');
-                    const min = String(dt.getMinutes()).padStart(2, '0');
-                    lastLoginEl.textContent = `Ultimo acesso: ${dd}/${mm}/${yyyy} as ${hh}:${min}`;
-                } else {
-                    lastLoginEl.textContent = 'Ultimo acesso: sem registro';
-                }
+                const loginText = this.formatAdminDateTime(user.lastLoginAt);
+                lastLoginEl.textContent = loginText ? `Ultimo acesso: ${loginText}` : 'Ultimo acesso: sem registro';
+            }
+
+            const lastSeenEl = document.getElementById('manageUserLastSeenText');
+            if (lastSeenEl) {
+                const presence = this.getUserPresenceMeta(user);
+                lastSeenEl.textContent = presence.label;
             }
 
             const btnBlock = document.getElementById('btnBlockUser');

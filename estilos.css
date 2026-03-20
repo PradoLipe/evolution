@@ -293,21 +293,22 @@
         .report-preview-text:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15); }
         .report-preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .config-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .admin-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .admin-grid-fix { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-        .admin-toggle-btn { width: 100%; text-align: left; background: transparent; border: none; color: var(--primary); font-size: 0.9rem; font-weight: 800; cursor: pointer; padding: 4px 0; text-transform: uppercase; letter-spacing: 1.5px; display: flex; justify-content: space-between; align-items: center; }
-        .admin-toggle-content { display: none; padding-top: 24px; margin-top: 12px; border-top: 1px solid var(--border); }
+        .admin-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .admin-grid-fix { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+        .admin-toggle-btn { width: 100%; text-align: left; background: transparent; border: none; color: var(--primary); font-size: 0.85rem; font-weight: 800; cursor: pointer; padding: 10px 2px; text-transform: uppercase; letter-spacing: 1.2px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-toggle-content { display: none; padding-top: 16px; margin-top: 10px; border-top: 1px solid var(--border); }
         .user-list { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px; }
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--surface-elevated); border-radius: 12px; border: 1px solid var(--border); transition: transform 0.2s; }
+        .user-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px; background: var(--surface-elevated); border-radius: 12px; border: 1px solid var(--border); transition: transform 0.2s; }
         .user-item:active { transform: scale(0.99); }
         .user-item-info { display: flex; flex-direction: column; gap: 4px; }
         .user-item-name { font-size: 0.95rem; font-weight: 700; color: var(--text); display: flex; align-items: center; }
         .user-item-code { font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
-        .user-last-seen { font-size: 0.65rem; color: var(--info); font-weight: 600; margin-top: 2px; }
+        .user-last-seen { font-size: 0.64rem; color: var(--info); font-weight: 700; margin-top: 2px; }
         .user-vip-days { font-size: 0.65rem; color: var(--success); font-weight: 700; margin-top: 2px; }
         .user-item-status { display: flex; align-items: center; gap: 8px; }
         .status-indicator { width: 8px; height: 8px; border-radius: 50%; }
         .status-indicator.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-indicator.idle { background: #8ca1bd; box-shadow: 0 0 6px rgba(140, 161, 189, 0.35); }
         .status-indicator.blocked { background: var(--danger); }
         .btn-small { padding: 6px 12px; font-size: 0.65rem; }
         .btn-icon { padding: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 1rem; }
@@ -340,7 +341,7 @@
         .pending-section { background: rgba(255, 184, 0, 0.05); border: 1px solid rgba(255, 184, 0, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         .pending-title { font-size: 0.8rem; font-weight: 700; color: var(--warning); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .pending-list { display: flex; flex-direction: column; gap: 10px; }
-        .pending-item { background: var(--surface-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .pending-item { background: var(--surface-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .pending-info { display: flex; flex-direction: column; gap: 2px; }
         .pending-name { font-weight: 700; font-size: 0.9rem; }
         .pending-date { font-size: 0.7rem; color: var(--text-muted); }
@@ -348,6 +349,22 @@
         .btn-tiny { padding: 6px 10px; font-size: 0.65rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; }
         .btn-approve { background: var(--success); color: white; }
         .btn-reject { background: var(--danger); color: white; }
+        #adminModal .modal-content { width: min(96vw, 780px); max-width: 780px; }
+        #adminModal .modal-body { padding: 22px; }
+        #adminModal textarea { min-height: 110px; resize: vertical; }
+        #adminModal .rate-type-row { gap: 14px; }
+        #adminModal .pending-actions { flex-wrap: wrap; justify-content: flex-end; }
+        #adminModal .btn { min-height: 42px; }
+        #userManagementModal .modal-content { width: min(94vw, 520px); max-width: 520px; }
+        @media (max-width: 768px) {
+            #adminModal .modal-content { width: calc(100vw - 20px); max-width: calc(100vw - 20px); }
+            #adminModal .admin-grid-fix { grid-template-columns: 1fr; }
+            #adminModal .rate-type-row { grid-template-columns: 1fr; }
+            #adminModal .pending-item,
+            #adminModal .user-item { flex-direction: column; align-items: stretch; }
+            #adminModal .pending-actions { width: 100%; }
+            #adminModal .pending-actions .btn-tiny { flex: 1; }
+        }
         .ios-steps { background: var(--surface); border-radius: 12px; padding: 16px; margin: 16px 0; text-align: left; }
         .ios-step { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 0.85rem; }
         .ios-step:last-child { margin-bottom: 0; }

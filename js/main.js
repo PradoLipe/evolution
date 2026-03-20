@@ -40,6 +40,17 @@
             this.unsubscribePending = null;
             this.pendingHistoryQueue = {};
             this.historySyncTimer = null;
+            this.inactivityLimitMs = 40 * 60 * 1000;
+            this.presenceSyncIntervalMs = 90 * 1000;
+            this.presenceOnlineWindowMs = 5 * 60 * 1000;
+            this._lastUserActivityTs = 0;
+            this._lastPresenceSyncTs = 0;
+            this._lastActivityEventTs = 0;
+            this._sessionWatchTimer = null;
+            this._activityListenersBound = false;
+            this._activityHandler = null;
+            this._visibilityHandler = null;
+            this._focusHandler = null;
 
             this.init();
         }
@@ -121,6 +132,12 @@
                     const _d = decodeSession(_s);
                     if (!_d?.ts || _d.ts <= Date.now() - 86400000) {
                         this.showToast('Sessao expirada. Faca login novamente.', 'warning');
+                        this.logout();
+                        return;
+                    }
+                    const _lastActivity = Number(_d?.lastActivityTs || _d?.ts || 0);
+                    if (_lastActivity && _lastActivity <= Date.now() - (this.inactivityLimitMs || (40 * 60 * 1000))) {
+                        this.showToast('Sessao encerrada por inatividade (40 min).', 'warning');
                         this.logout();
                     }
                 } catch(e) {}

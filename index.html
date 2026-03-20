@@ -673,6 +673,20 @@
                         <button class="btn btn-success" onclick="app.saveFloodRate()">Salvar Taxa</button>
                     </div>
                 </div>
+
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutencao / Atualizacao</span><span>▼</span></button>
+                    <div id="admForceLogout" class="admin-toggle-content">
+                        <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
+                            Use este botao para <strong style="color:var(--warning);">desconectar todos os usuarios</strong> imediatamente.
+                            Na proxima vez que abrirem o app, serao obrigados a fazer login novamente —
+                            garantindo que estao na versao mais recente e que todos os dados locais sejam sincronizados com o banco de dados.
+                        </p>
+                        <button id="btnForceLogoutAll" class="btn btn-danger" onclick="app.forceLogoutAll()" style="width:100%;">
+                            ⚡ Forcar Logout de Todos
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -686,6 +700,9 @@
                 <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 8px;">PIN: <span id="manageUserPin">000000</span></div>
                 <div id="manageUserLastLogin" style="text-align: center; margin-bottom: 20px; font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 5px;">
                     <span>🕐</span><span id="manageUserLastLoginText">Ultimo acesso: sem registro</span>
+                </div>
+                <div id="manageUserLastSeen" style="text-align: center; margin-top: -12px; margin-bottom: 20px; font-size: 0.68rem; color: var(--info); display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <span>o</span><span id="manageUserLastSeenText">Atividade: sem registro</span>
                 </div>
                 <div class="input-group">
                     <label class="input-label">Conceder VIP</label>
