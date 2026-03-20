@@ -203,29 +203,44 @@ ${userName}`;
             this._reportText = msg || '';
             const textEl = document.getElementById('reportPreviewText');
             const subEl = document.getElementById('reportPreviewSubtitle');
-            if (textEl) textEl.textContent = this._reportText;
+            if (textEl) textEl.value = this._reportText;
             if (subEl) subEl.textContent = this._reportText ? 'Relatorio pronto para enviar' : 'Aguardando geracao...';
             this.openModal('reportPreviewModal');
+        };
+
+        EvolutionApp.prototype.getReportPreviewText = function() {
+            const textEl = document.getElementById('reportPreviewText');
+            const currentText = textEl ? String(textEl.value || '') : '';
+            this._reportText = currentText;
+            return currentText;
+        };
+
+        EvolutionApp.prototype.onReportPreviewInput = function() {
+            const currentText = this.getReportPreviewText();
+            const subEl = document.getElementById('reportPreviewSubtitle');
+            if (subEl) subEl.textContent = currentText.trim() ? 'Relatorio editado e pronto para enviar' : 'Digite o relatorio para continuar';
         };
 
         EvolutionApp.prototype.clearReportPreview = function() {
             this._reportText = '';
             const textEl = document.getElementById('reportPreviewText');
             const subEl = document.getElementById('reportPreviewSubtitle');
-            if (textEl) textEl.textContent = '';
+            if (textEl) textEl.value = '';
             if (subEl) subEl.textContent = 'Aguardando geracao...';
         };
 
         EvolutionApp.prototype.copyReportText = function() {
-            if (!this._reportText) {
+            const currentText = this.getReportPreviewText();
+            if (!currentText.trim()) {
                 this.showToast('Gere um relatorio primeiro', 'warning');
                 return;
             }
-            this.copyToClipboard(this._reportText, 'Relatorio copiado!');
+            this.copyToClipboard(currentText, 'Relatorio copiado!');
         };
 
         EvolutionApp.prototype.shareReportText = async function() {
-            if (!this._reportText) {
+            const currentText = this.getReportPreviewText();
+            if (!currentText.trim()) {
                 this.showToast('Gere um relatorio primeiro', 'warning');
                 return;
             }
@@ -233,7 +248,7 @@ ${userName}`;
                 try {
                     await navigator.share({
                         title: 'Relatorio EVOLUTION',
-                        text: this._reportText
+                        text: currentText
                     });
                     return;
                 } catch (e) {}

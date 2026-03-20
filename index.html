@@ -578,7 +578,7 @@
                     <div class="report-preview-title">Relatorio para WhatsApp</div>
                     <div class="report-preview-sub" id="reportPreviewSubtitle">Aguardando geracao...</div>
                 </div>
-                <pre class="report-preview-text" id="reportPreviewText"></pre>
+                <textarea class="report-preview-text" id="reportPreviewText" oninput="app.onReportPreviewInput()" spellcheck="false" placeholder="Digite ou ajuste o texto do relatorio aqui..."></textarea>
                 <div class="report-preview-actions">
                     <button class="btn btn-glass" onclick="app.copyReportText()">Copiar</button>
                     <button class="btn btn-primary" onclick="app.shareReportText()">Compartilhar</button>

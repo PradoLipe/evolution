@@ -163,12 +163,17 @@
                         }]);
                     }
                 }
+                const isPaid = !!e.pago;
                 tableBody.push([
                     e.dataF || e.data || '-',
                     e.navio || '-',
                     e.turno || '-',
                     e.tipo === 'normal' ? 'Normal' : 'Feriado',
-                    String(e.conferentes || '-'),
+                    {
+                        content: '',
+                        paid: isPaid,
+                        styles: { halign: 'center' }
+                    },
                     this.formatMoney(e.bruto),
                     this.formatMoney(e.liquido)
                 ]);
@@ -337,10 +342,24 @@
             doc.text(`${Math.round(pctPago * 100)}% recebido`, marginL, barY + 8);
             doc.text(`${Math.round((1 - pctPago) * 100)}% pendente`, marginR, barY + 8, { align: 'right' });
 
+            // Legenda de status para a coluna com bolinhas
+            const legendY = 93;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(6.8);
+            doc.setTextColor(80, 100, 140);
+            doc.text('Status:', marginL, legendY);
+            doc.setFillColor(220, 50, 90);
+            doc.circle(marginL + 18, legendY - 1, 1.1, 'F');
+            doc.setFont('helvetica', 'normal');
+            doc.text('Pendente', marginL + 21.5, legendY);
+            doc.setFillColor(0, 170, 120);
+            doc.circle(marginL + 45.5, legendY - 1, 1.1, 'F');
+            doc.text('Pago', marginL + 49, legendY);
+
             // Tabela principal
             doc.autoTable({
-                startY: 92,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Liquido (R$)']],
+                startY: 97,
+                head: [['Data', 'Navio', 'Turno', 'Tipo', '', 'Bruto (R$)', 'Liquido (R$)']],
                 body: tableBody,
                 theme: 'grid',
                 styles: {
@@ -362,20 +381,37 @@
                 },
                 columnStyles: {
                     0: { cellWidth: 22 },
-                    1: { cellWidth: 46 },
-                    2: { cellWidth: 22 },
-                    3: { cellWidth: 18 },
-                    4: { halign: 'center', cellWidth: 14 },
-                    5: { halign: 'right', cellWidth: 32, fontStyle: 'normal' },
-                    6: { halign: 'right', cellWidth: 28, fontStyle: 'bold', textColor: [0, 140, 100] }
+                    1: { cellWidth: 52 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 17 },
+                    4: { halign: 'center', cellWidth: 7 },
+                    5: { halign: 'right', cellWidth: 31, fontStyle: 'normal' },
+                    6: { halign: 'right', cellWidth: 33, fontStyle: 'bold', textColor: [0, 140, 100] }
                 },
-                // FIX: foot com colspan correto - TOTAL ocupa col Tipo+Conf (32mm) para nao quebrar
+                // Rodape com total distribuido em 7 colunas
                 foot: [[
                     { content: '', colSpan: 3, styles: { fillColor: [15, 25, 60] } },
                     { content: 'TOTAL', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60], fontSize: 8 } },
                     { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
                     { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
                 ]],
+                didParseCell: (data) => {
+                    if (data.section !== 'body' || data.column.index !== 6) return;
+                    const raw = data.row?.raw;
+                    const statusCell = Array.isArray(raw) ? raw[4] : null;
+                    if (!statusCell || typeof statusCell !== 'object' || !Object.prototype.hasOwnProperty.call(statusCell, 'paid')) return;
+                    data.cell.styles.textColor = statusCell.paid ? [0, 140, 100] : [220, 50, 90];
+                },
+                didDrawCell: (data) => {
+                    if (data.section !== 'body' || data.column.index !== 4) return;
+                    const raw = data.cell.raw;
+                    if (!raw || typeof raw !== 'object' || !Object.prototype.hasOwnProperty.call(raw, 'paid')) return;
+                    const dotColor = raw.paid ? [0, 170, 120] : [220, 50, 90];
+                    const cx = data.cell.x + (data.cell.width / 2);
+                    const cy = data.cell.y + (data.cell.height / 2);
+                    doc.setFillColor(...dotColor);
+                    doc.circle(cx, cy, 1.1, 'F');
+                },
                 willDrawPage: (data) => {
                     const pgNum = doc.internal.getNumberOfPages();
                     // Marca dagua e cabecalho ANTES do conteudo nas paginas adicionais
