@@ -231,18 +231,31 @@
 
         // Publica o comando de logout forcado para todos os usuarios no Firebase
         EvolutionApp.prototype.forceLogoutAll = async function() {
-            if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
             const btn = document.getElementById('btnForceLogoutAll');
+            const status = document.getElementById('forceLogoutStatus');
+            if (!db) {
+                if (status) { status.textContent = '✕ Firebase nao disponivel'; status.style.color = 'var(--danger)'; status.style.display = 'block'; }
+                return;
+            }
             if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+            if (status) { status.style.display = 'none'; }
             try {
+                const ts = Date.now();
                 await db.collection('config').doc('settings').set({
-                    forceLogoutBefore: Date.now()
+                    forceLogoutBefore: ts
                 }, { merge: true });
-                this.showToast('Todos os usuarios serao desconectados ao abrir o app!', 'success');
+                const hora = new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (status) {
+                    status.textContent = '✓ Comando enviado as ' + hora + '. Usuarios serao desconectados ao abrir o app.';
+                    status.style.color = 'var(--success)';
+                    status.style.display = 'block';
+                }
+                if (btn) { btn.style.background = 'var(--success)'; btn.textContent = '✓ Comando Enviado!'; }
+                this.showToast('Logout forcado enviado com sucesso!', 'success');
             } catch (e) {
-                this.showToast('Erro ao enviar comando', 'error');
-            } finally {
+                if (status) { status.textContent = '✕ Erro ao enviar. Tente novamente.'; status.style.color = 'var(--danger)'; status.style.display = 'block'; }
                 if (btn) { btn.disabled = false; btn.textContent = '⚡ Forcar Logout de Todos'; }
+                this.showToast('Erro ao enviar comando', 'error');
             }
         };
 
