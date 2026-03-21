@@ -157,6 +157,7 @@
             const trialDate = new Date();
             trialDate.setDate(trialDate.getDate() + 15);
 
+            const notifId = 'trial_' + userDocId + '_' + Date.now();
             const userData = {
                 name: pending.name,
                 code: pending.code,
@@ -167,7 +168,11 @@
                 docId: userDocId,
                 trialUsed: true,
                 vipTrialUntil: trialDate.toISOString(),
-                vipType: 'trial'
+                vipType: 'trial',
+                vipNotificationPending: true,
+                vipNotificationId: notifId,
+                vipNotificationType: 'gift',
+                vipNotificationUntil: trialDate.toISOString()
             };
 
             try {

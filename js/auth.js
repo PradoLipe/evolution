@@ -100,7 +100,6 @@
                 if (!this.currentUserId) return;
                 const idleMs = Date.now() - (this._lastUserActivityTs || Date.now());
                 if (idleMs >= this.getInactivityLimitMs()) {
-                    this.showToast('Sessao encerrada por inatividade (40 min).', 'warning');
                     this.logout();
                     return;
                 }
