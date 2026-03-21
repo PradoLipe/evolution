@@ -1,6 +1,8 @@
         EvolutionApp.prototype.updateSimFields = function() {
-            const turno = document.getElementById('simTurno').value;
+            const turnoEl = document.getElementById('simTurno');
             const container = document.getElementById('simCampos');
+            if (!turnoEl || !container) return;
+            const turno = turnoEl.value;
             if (turno === '15x23') {
                 container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="simP1" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="simP2" placeholder="0" oninput="app.calcularSimulacao()" inputmode="numeric"></div></div>`;
             } else {
@@ -10,9 +12,13 @@
         };
 
         EvolutionApp.prototype.calcularSimulacao = function() {
-            const turno = document.getElementById('simTurno').value;
-            const tipo = document.getElementById('simTipo').value;
-            const conf = document.getElementById('simConf').value;
+            const turnoEl = document.getElementById('simTurno');
+            const tipoEl = document.getElementById('simTipo');
+            const confEl = document.getElementById('simConf');
+            if (!turnoEl || !tipoEl || !confEl) return;
+            const turno = turnoEl.value;
+            const tipo = tipoEl.value;
+            const conf = confEl.value;
             let valores = turno === '15x23'
                 ? [document.getElementById('simP1')?.value || 0, document.getElementById('simP2')?.value || 0]
                 : [document.getElementById('simPT')?.value || 0];
@@ -41,8 +47,10 @@
         };
 
         EvolutionApp.prototype.adjustCalcFields = function() {
-            const turno = document.getElementById('calcTurno').value;
+            const turnoEl = document.getElementById('calcTurno');
             const container = document.getElementById('calcCampos');
+            if (!turnoEl || !container) return;
+            const turno = turnoEl.value;
             if (turno === '15x23') {
                 container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0" inputmode="numeric"></div></div>`;
             } else {
@@ -51,8 +59,10 @@
         };
 
         EvolutionApp.prototype.toggleRelatorioCampos = function() {
-            const turno = document.getElementById('relTurno').value;
+            const turnoEl = document.getElementById('relTurno');
             const container = document.getElementById('relCamposProducao');
+            if (!turnoEl || !container) return;
+            const turno = turnoEl.value;
             if (turno === '15x23') {
                 container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div></div>`;
             } else {

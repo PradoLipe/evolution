@@ -200,12 +200,18 @@
             const giftBox = document.getElementById('vipGiftMessageContainer');
             const until = userData.vipNotificationUntil ? new Date(userData.vipNotificationUntil) : null;
             const untilText = (until && !isNaN(until.getTime())) ? `Valido ate ${until.toLocaleDateString('pt-BR')}` : 'Acesso liberado';
-            const isGift = userData.vipNotificationType === 'gift';
+            const notifType = userData.vipNotificationType;
+            const isGift = notifType === 'gift';
+            const isTrial = notifType === 'trial';
 
-            if (title) title.textContent = isGift ? 'PRESENTE VIP RECEBIDO' : 'VIP CONFIRMADO';
+            if (title) {
+                title.textContent = isTrial ? 'BEM-VINDO AO EVOLUTION!' : (isGift ? 'PRESENTE VIP RECEBIDO' : 'VIP CONFIRMADO');
+            }
             if (dateEl) dateEl.textContent = untilText;
             if (giftBox) {
-                giftBox.textContent = isGift ? 'Seu acesso VIP foi liberado como presente. Aproveite todos os recursos premium.' : 'Seu pagamento foi confirmado e os recursos VIP ja estao disponiveis.';
+                giftBox.textContent = isTrial
+                    ? 'Voce ganhou 15 dias de acesso VIP gratis para testar todos os recursos premium. Aproveite!'
+                    : (isGift ? 'Seu acesso VIP foi liberado como presente. Aproveite todos os recursos premium.' : 'Seu pagamento foi confirmado e os recursos VIP ja estao disponiveis.');
                 giftBox.classList.remove('hidden');
             }
             safeStorage.setItem(seenKey, userData.vipNotificationId);

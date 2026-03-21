@@ -370,35 +370,12 @@
                 const d = decodeSession(s);
                 if (!d?.ts || d.ts <= Date.now() - 86400000) {
                     safeStorage.removeItem('evo_session_v516');
-                    // FIX 5: Avisa o usuario que a sessao expirou (evita confusao ao cair na tela de PIN)
-                    setTimeout(() => {
-                        const t = document.getElementById('toastContainer');
-                        if (t) {
-                            const d2 = document.createElement('div');
-                            d2.className = 'toast';
-                            d2.style.borderLeft = '3px solid var(--info)';
-                            d2.innerHTML = '<span style="color:var(--primary);font-weight:800;">•</span> Sessao expirada. Faca login novamente.';
-                            t.appendChild(d2);
-                            setTimeout(() => { try { d2.remove(); } catch(_) {} }, 4000);
-                        }
-                    }, 800);
                     return;
                 }
                 const inactivityLimit = this.getInactivityLimitMs();
                 const lastActivityTs = Number(d.lastActivityTs || d.ts || 0);
                 if (!lastActivityTs || lastActivityTs <= Date.now() - inactivityLimit) {
                     safeStorage.removeItem('evo_session_v516');
-                    setTimeout(() => {
-                        const t = document.getElementById('toastContainer');
-                        if (t) {
-                            const d3 = document.createElement('div');
-                            d3.className = 'toast';
-                            d3.style.borderLeft = '3px solid var(--warning)';
-                            d3.innerHTML = '<span style="color:var(--warning);font-weight:800;">•</span> Sessao encerrada por inatividade (40 min).';
-                            t.appendChild(d3);
-                            setTimeout(() => { try { d3.remove(); } catch(_) {} }, 4000);
-                        }
-                    }, 800);
                     return;
                 }
                 this.pendingSessionData = d;

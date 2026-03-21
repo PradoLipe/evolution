@@ -131,13 +131,11 @@
                 try {
                     const _d = decodeSession(_s);
                     if (!_d?.ts || _d.ts <= Date.now() - 86400000) {
-                        this.showToast('Sessao expirada. Faca login novamente.', 'warning');
                         this.logout();
                         return;
                     }
                     const _lastActivity = Number(_d?.lastActivityTs || _d?.ts || 0);
                     if (_lastActivity && _lastActivity <= Date.now() - (this.inactivityLimitMs || (40 * 60 * 1000))) {
-                        this.showToast('Sessao encerrada por inatividade (40 min).', 'warning');
                         this.logout();
                     }
                 } catch(e) {}

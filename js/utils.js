@@ -169,13 +169,9 @@
                     e.navio || '-',
                     e.turno || '-',
                     e.tipo === 'normal' ? 'Normal' : 'Feriado',
-                    {
-                        content: '',
-                        paid: isPaid,
-                        styles: { halign: 'center' }
-                    },
+                    String(e.conferentes || 1),
                     this.formatMoney(e.bruto),
-                    this.formatMoney(e.liquido)
+                    { content: this.formatMoney(e.liquido), paid: isPaid }
                 ]);
             });
 
@@ -342,32 +338,18 @@
             doc.text(`${Math.round(pctPago * 100)}% recebido`, marginL, barY + 8);
             doc.text(`${Math.round((1 - pctPago) * 100)}% pendente`, marginR, barY + 8, { align: 'right' });
 
-            // Legenda de status para a coluna com bolinhas
-            const legendY = 93;
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(6.8);
-            doc.setTextColor(80, 100, 140);
-            doc.text('Status:', marginL, legendY);
-            doc.setFillColor(220, 50, 90);
-            doc.circle(marginL + 18, legendY - 1, 1.1, 'F');
-            doc.setFont('helvetica', 'normal');
-            doc.text('Pendente', marginL + 21.5, legendY);
-            doc.setFillColor(0, 170, 120);
-            doc.circle(marginL + 45.5, legendY - 1, 1.1, 'F');
-            doc.text('Pago', marginL + 49, legendY);
-
             // Tabela principal
             doc.autoTable({
-                startY: 97,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', '', 'Bruto (R$)', 'Liquido (R$)']],
+                startY: 90,
+                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Liquido (R$)']],
                 body: tableBody,
                 theme: 'grid',
                 styles: {
                     fontSize: 8.2,
-                    cellPadding: { top: 3, right: 3, bottom: 3, left: 3 },
+                    cellPadding: { top: 3.2, right: 3, bottom: 3.2, left: 3 },
                     textColor: [24, 32, 52],
-                    lineColor: [215, 225, 240],
-                    lineWidth: 0.18
+                    lineColor: [220, 228, 242],
+                    lineWidth: 0.15
                 },
                 headStyles: {
                     fillColor: [10, 18, 46],
@@ -381,40 +363,30 @@
                 },
                 columnStyles: {
                     0: { cellWidth: 22 },
-                    1: { cellWidth: 52 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 17 },
-                    4: { halign: 'center', cellWidth: 7 },
-                    5: { halign: 'right', cellWidth: 31, fontStyle: 'normal' },
-                    6: { halign: 'right', cellWidth: 33, fontStyle: 'bold', textColor: [0, 140, 100] }
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 18 },
+                    3: { cellWidth: 18 },
+                    4: { cellWidth: 14, halign: 'center' },
+                    5: { halign: 'right', cellWidth: 30, fontStyle: 'normal' },
+                    6: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
                 },
-                // Rodape com total distribuido em 7 colunas
                 foot: [[
-                    { content: '', colSpan: 3, styles: { fillColor: [15, 25, 60] } },
-                    { content: 'TOTAL', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60], fontSize: 8 } },
-                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [15, 25, 60] } },
-                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [15, 25, 60] } }
+                    { content: 'TOTAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
                 ]],
                 didParseCell: (data) => {
+                    // Cor do valor liquido: verde = pago, vermelho = pendente
                     if (data.section !== 'body' || data.column.index !== 6) return;
-                    const raw = data.row?.raw;
-                    const statusCell = Array.isArray(raw) ? raw[4] : null;
-                    if (!statusCell || typeof statusCell !== 'object' || !Object.prototype.hasOwnProperty.call(statusCell, 'paid')) return;
-                    data.cell.styles.textColor = statusCell.paid ? [0, 140, 100] : [220, 50, 90];
-                },
-                didDrawCell: (data) => {
-                    if (data.section !== 'body' || data.column.index !== 4) return;
                     const raw = data.cell.raw;
-                    if (!raw || typeof raw !== 'object' || !Object.prototype.hasOwnProperty.call(raw, 'paid')) return;
-                    const dotColor = raw.paid ? [0, 170, 120] : [220, 50, 90];
-                    const cx = data.cell.x + (data.cell.width / 2);
-                    const cy = data.cell.y + (data.cell.height / 2);
-                    doc.setFillColor(...dotColor);
-                    doc.circle(cx, cy, 1.1, 'F');
+                    if (raw && typeof raw === 'object' && Object.prototype.hasOwnProperty.call(raw, 'paid')) {
+                        data.cell.text = [raw.content || ''];
+                        data.cell.styles.textColor = raw.paid ? [0, 140, 100] : [220, 50, 90];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
                 },
                 willDrawPage: (data) => {
                     const pgNum = doc.internal.getNumberOfPages();
-                    // Marca dagua e cabecalho ANTES do conteudo nas paginas adicionais
                     if (pgNum > 1) {
                         drawWatermark();
                         drawHeader();

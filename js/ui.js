@@ -61,15 +61,14 @@
             const avatarImg = document.getElementById('userAvatarImg');
             const avatarInitials = document.getElementById('userAvatarInitials');
 
-            avatarInitials.textContent = this.currentUser.substring(0, 2);
+            if (avatarInitials) avatarInitials.textContent = this.currentUser.substring(0, 2);
 
             if (finalAvatar) {
-                avatarImg.src = finalAvatar;
-                avatarImg.classList.remove('hidden');
-                avatarInitials.classList.add('hidden');
+                if (avatarImg) { avatarImg.src = finalAvatar; avatarImg.classList.remove('hidden'); }
+                if (avatarInitials) avatarInitials.classList.add('hidden');
             } else {
-                avatarImg.classList.add('hidden');
-                avatarInitials.classList.remove('hidden');
+                if (avatarImg) avatarImg.classList.add('hidden');
+                if (avatarInitials) avatarInitials.classList.remove('hidden');
             }
 
             // Avatar no modal de perfil + botão remover
@@ -387,14 +386,20 @@
         };
 
         EvolutionApp.prototype.changePage = function(delta) {
-            const totalPages = Math.ceil(
-                (this.currentFilter === 'pending'
-                    ? this.entries.filter(e => !e.pago)
-                    : this.currentFilter === 'paid'
-                        ? this.entries.filter(e => e.pago)
-                        : this.entries
-                ).length / this.itemsPerPage
-            ) || 1;
+            let filtered = this.entries;
+            if (this.currentFilter === 'pending') {
+                filtered = filtered.filter(e => !e.pago);
+            } else if (this.currentFilter === 'paid') {
+                filtered = filtered.filter(e => e.pago);
+            }
+            if (this.historyMonth && this.currentFilter !== 'pending') {
+                filtered = filtered.filter(e => {
+                    if (!e.data) return false;
+                    const parts = e.data.split('-');
+                    return parseInt(parts[1], 10) === this.historyMonth;
+                });
+            }
+            const totalPages = Math.ceil(filtered.length / this.itemsPerPage) || 1;
             this.currentPage = Math.min(Math.max(1, this.currentPage + delta), totalPages);
             this.renderHistory();
         };
@@ -465,6 +470,14 @@
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
 
             this.expandedHistoryId = null;
+            // Recalcular currentPage para nao apontar para pagina vazia
+            const remaining = this.currentFilter === 'pending'
+                ? this.entries.filter(e => !e.pago)
+                : this.currentFilter === 'paid'
+                    ? this.entries.filter(e => e.pago)
+                    : this.entries;
+            const maxPage = Math.ceil(remaining.length / this.itemsPerPage) || 1;
+            if (this.currentPage > maxPage) this.currentPage = maxPage;
             this.updateDashboard();
             this.renderHistory();
             this.renderChart();

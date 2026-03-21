@@ -171,7 +171,7 @@
                 vipType: 'trial',
                 vipNotificationPending: true,
                 vipNotificationId: notifId,
-                vipNotificationType: 'gift',
+                vipNotificationType: 'trial',
                 vipNotificationUntil: trialDate.toISOString()
             };
 
