@@ -124,6 +124,9 @@
             this.renderHistory();
             this.renderChart();
             this.loadMeta();
+
+            // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
+            this.showAnnouncementIfNeeded();
         };
 
         // ============================================

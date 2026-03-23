@@ -217,7 +217,31 @@
     </div>
 
     <!-- MAIN APP -->
+    <!-- AVISO ENCERRAMENTO GRATUITO - auto-remove apos 31/03/2026 -->
+    <div class="modal-overlay" id="announcementModal" onclick="app.closeModalOnOverlay(event, 'announcementModal')">
+        <div class="modal-content" style="text-align: center; border: 1px solid var(--border);">
+            <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--primary); letter-spacing: 1px;">Aviso Importante</h3></div>
+            <div class="modal-body" style="text-align: left; line-height: 1.7;">
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">Nos ultimos meses, o Evolution foi disponibilizado gratuitamente enquanto diversas melhorias eram implementadas. Durante esse periodo, o sistema evoluiu bastante com base no uso real — tornando-se uma ferramenta cada vez mais pratica e essencial para o dia a dia.</p>
+                <div style="background: rgba(255, 56, 96, 0.08); padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; border-left: 3px solid var(--danger);">
+                    <strong style="color: var(--danger); font-size: 0.9rem;">O acesso gratuito se encerra no dia 31/03.</strong>
+                </div>
+                <p style="color: var(--text); font-size: 0.85rem; margin-bottom: 14px;">A partir de abril, o Evolution passa a operar no formato VIP com mensalidade de <strong style="color: var(--primary);">R$ 25,00</strong> — para manter o sistema funcionando com suporte e atualizacoes constantes.</p>
+                <div style="background: rgba(0, 212, 255, 0.06); padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; border-left: 3px solid var(--primary);">
+                    <span style="color: var(--text); font-size: 0.82rem;">Caso prefira nao aderir, salve seus dados antes do prazo:<br><strong style="color: var(--primary);">Configuracoes → Baixar PDF</strong></span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Agradecemos a todos que fizeram parte dessa fase de evolucao do aplicativo.</p>
+                <p style="color: var(--text); font-weight: 800; font-size: 0.85rem;">Felipe Prado</p>
+            </div>
+            <button class="btn btn-primary" onclick="safeStorage.setItem('evo_announcement_confirmed','1'); app.closeModal('announcementModal')" style="width: 100%;">Confirmar</button>
+        </div>
+    </div>
+
     <div class="app-container hidden" id="mainApp">
+        <!-- BANNER AVISO - auto-remove apos 31/03/2026 -->
+        <div id="announcementBanner" class="announcement-banner hidden" onclick="app.openModal('announcementModal')">
+            <span>⚠️ Acesso gratuito encerra 31/03 — <strong>Saiba mais</strong></span>
+        </div>
         <header class="app-header">
             <div class="user-pill" onclick="app.openModal('profileModal')">
                 <div class="avatar" id="userAvatarContainer">

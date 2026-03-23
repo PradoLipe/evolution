@@ -2,8 +2,11 @@
         // CONFIGURACOES
         // ============================================
         EvolutionApp.prototype.exportData = function() {
-            this.closeModal('configModal');
-            if (!this.requireVip('O backup de dados e um recurso exclusivo para usuarios VIP.')) return;
+            if (!this.isAdmin && !this.isVip) {
+                this.closeModal('configModal');
+                setTimeout(() => this.requireVip('O backup de dados e um recurso exclusivo para usuarios VIP.'), 150);
+                return;
+            }
             const data = {
                 v: window.EVOLUTION_APP_VERSION || 'V5.37',
                 u: this.currentUser,
@@ -24,8 +27,11 @@
         };
 
         EvolutionApp.prototype.triggerImport = function() {
-            this.closeModal('configModal');
-            if (!this.requireVip('A importacao de dados e um recurso exclusivo para usuarios VIP.')) return;
+            if (!this.isAdmin && !this.isVip) {
+                this.closeModal('configModal');
+                setTimeout(() => this.requireVip('A importacao de dados e um recurso exclusivo para usuarios VIP.'), 150);
+                return;
+            }
             document.getElementById('importInput').click();
         };
 
@@ -75,7 +81,10 @@
         // ============================================
         EvolutionApp.prototype.openPdfOptions = function() {
             this.closeModal('configModal');
-            if (!this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.')) return;
+            if (!this.isAdmin && !this.isVip) {
+                setTimeout(() => this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.'), 150);
+                return;
+            }
             this.openModal('pdfOptionsModal');
             document.getElementById('pdfMonthPicker').value = this.selectedMonth;
         };
@@ -433,6 +442,31 @@
             if (msgEl) msgEl.textContent = featureMessage || 'Este recurso esta disponivel apenas para usuarios VIP.';
             this.openModal('vipRequiredModal');
             return false;
+        };
+
+        // ============================================
+        // AVISO ENCERRAMENTO GRATUITO (expira 31/03/2026)
+        // ============================================
+        EvolutionApp.prototype.showAnnouncementIfNeeded = function() {
+            // Data limite: apos 31/03/2026 nao mostra mais nada
+            const deadline = new Date('2026-04-01T00:00:00-03:00');
+            const now = new Date();
+            if (now >= deadline) {
+                // Prazo expirou — esconder tudo
+                const banner = document.getElementById('announcementBanner');
+                if (banner) banner.classList.add('hidden');
+                return;
+            }
+
+            // Banner sempre visivel ate 31/03
+            const banner = document.getElementById('announcementBanner');
+            if (banner) banner.classList.remove('hidden');
+
+            // Modal apenas 1 vez — apos confirmar, nunca mais aparece
+            const seenKey = 'evo_announcement_confirmed';
+            if (!safeStorage.getItem(seenKey)) {
+                setTimeout(() => this.openModal('announcementModal'), 600);
+            }
         };
 
         // ============================================
