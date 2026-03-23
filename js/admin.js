@@ -626,6 +626,14 @@
             const duration = document.getElementById('vipDurationSelect').value;
             const user = this.users[this.managingUser];
 
+            if (duration === 'custom') {
+                const customDays = parseInt(document.getElementById('vipCustomDaysInput').value, 10);
+                if (!customDays || customDays < 1) {
+                    this.showToast('Informe a quantidade de dias', 'error');
+                    return;
+                }
+            }
+
             const updateData = { vipType: type, trialUsed: true, vipTrialUntil: null };
             const now = new Date();
             const noticeId = `vip_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -637,6 +645,7 @@
                 updateData.vip = false;
                 let days = 0, months = 0;
                 if (duration === '15d') days = 15;
+                else if (duration === 'custom') days = parseInt(document.getElementById('vipCustomDaysInput').value, 10);
                 else months = parseInt(duration, 10);
                 now.setDate(now.getDate() + days);
                 now.setMonth(now.getMonth() + months);
@@ -661,6 +670,49 @@
                 } catch (e) {
                     console.error('Falha ao aplicar VIP:', e);
                     this.showToast('Erro ao enviar aviso VIP para o usuario', 'error');
+                }
+            }
+        };
+
+        EvolutionApp.prototype.removeVip = async function() {
+            if (!this.managingUser) return;
+            const user = this.users[this.managingUser];
+            const userName = user.name || this.managingUser;
+
+            const vipInfo = this.getVipInfo(user);
+            if (!vipInfo.active) {
+                this.showToast('Este usuario nao possui VIP ativo', 'error');
+                return;
+            }
+
+            this.openConfirmModal('removeVipConfirm', `Remover VIP de ${userName}?`, this.managingUser);
+        };
+
+        EvolutionApp.prototype.executeRemoveVip = async function(docId) {
+            const updateData = {
+                vip: false,
+                vipUntil: null,
+                vipTrialUntil: null,
+                vipType: null,
+                vipNotificationPending: false,
+                vipNotificationId: null,
+                vipNotificationType: null,
+                vipNotificationUntil: null,
+                vipNotificationCreatedAt: null
+            };
+
+            this.users[docId] = { ...this.users[docId], ...updateData };
+            this.saveUsersToCache();
+            this.renderUserList();
+            this.closeModal('userManagementModal');
+            this.showToast('VIP removido com sucesso!', 'success');
+
+            if (db) {
+                try {
+                    await db.collection('users').doc(docId).set(updateData, { merge: true });
+                } catch (e) {
+                    console.error('Falha ao remover VIP:', e);
+                    this.showToast('Erro ao remover VIP no servidor', 'error');
                 }
             }
         };

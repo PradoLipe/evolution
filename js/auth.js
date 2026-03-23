@@ -231,27 +231,47 @@
                 return;
             }
 
-            // Login bem-sucedido
             // Garantir que o flag isAdmin está correto (admin identificado pelo PIN)
             if (REMOTE_ADMIN_PIN && foundUser.code === REMOTE_ADMIN_PIN) {
                 foundUser.isAdmin = true;
                 foundUser.vip = true;
             }
+
+            // Verificar bloqueio de dispositivo para usuarios nao-VIP
+            if (!foundUser.isAdmin) {
+                const vipInfo = this.getVipInfo(foundUser);
+                if (!vipInfo.active && foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
+                    this.showToast('Acesso permitido apenas no dispositivo cadastrado. Contate o administrador para resetar.', 'error');
+                    return;
+                }
+            }
+
+            // Login bem-sucedido
             this.restoreUserSession(foundUser, {
                 user: foundUser.name,
                 code: foundUser.code,
                 docId: foundUser.docId
             });
 
-            // Registrar ultimo login
+            // Registrar ultimo login + deviceId do dispositivo atual (para nao-VIP)
             const loginTs = new Date().toISOString();
+            const loginUpdate = { lastLoginAt: loginTs };
+            if (!foundUser.isAdmin) {
+                const vipInfo = this.getVipInfo(foundUser);
+                if (!vipInfo.active) {
+                    loginUpdate.deviceId = this.deviceId;
+                    if (this.users[foundUser.docId]) {
+                        this.users[foundUser.docId].deviceId = this.deviceId;
+                    }
+                }
+            }
             if (this.users[foundUser.docId]) {
                 this.users[foundUser.docId].lastLoginAt = loginTs;
                 this.saveUsersToCache();
             }
             if (db) {
                 try {
-                    await db.collection('users').doc(foundUser.docId).set({ lastLoginAt: loginTs }, { merge: true });
+                    await db.collection('users').doc(foundUser.docId).set(loginUpdate, { merge: true });
                 } catch(e) {}
             }
 
@@ -404,6 +424,14 @@
                     safeStorage.removeItem('evo_session_v516');
                     return;
                 }
+                // Verificar bloqueio de dispositivo para nao-VIP na restauracao de sessao
+                if (cachedUser && !cachedUser.isAdmin) {
+                    const vipInfo = this.getVipInfo(cachedUser);
+                    if (!vipInfo.active && cachedUser.deviceId && cachedUser.deviceId !== this.deviceId) {
+                        safeStorage.removeItem('evo_session_v516');
+                        return;
+                    }
+                }
                 if (cachedUser && !cachedUser.blocked) {
                     this.restoreUserSession({ ...cachedUser, docId: cachedUser.docId || d.docId }, d);
                     return;
@@ -455,6 +483,14 @@
                     }
                 }
                 if (foundUser && !foundUser.blocked) {
+                    // Verificar bloqueio de dispositivo para nao-VIP
+                    if (!foundUser.isAdmin) {
+                        const vipInfo = this.getVipInfo(foundUser);
+                        if (!vipInfo.active && foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
+                            safeStorage.removeItem('evo_session_v516');
+                            return;
+                        }
+                    }
                     this.users[foundUser.docId] = foundUser;
                     this.saveUsersToCache();
                     this.restoreUserSession(foundUser, { ...d, docId: foundUser.docId });
@@ -476,6 +512,17 @@
             const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
             const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
             this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
+
+            // Registrar deviceId para usuarios nao-VIP (lock de dispositivo)
+            if (!this.isAdmin && !this.isVip && (!userData.deviceId || userData.deviceId === this.deviceId)) {
+                if (this.users[this.currentUserId]) {
+                    this.users[this.currentUserId].deviceId = this.deviceId;
+                    this.saveUsersToCache();
+                }
+                if (db) {
+                    db.collection('users').doc(this.currentUserId).set({ deviceId: this.deviceId }, { merge: true }).catch(() => {});
+                }
+            }
 
             // Salvar sessao (garante que TODOS os caminhos de login persistem a sessao,
             // incluindo o caminho rapido do admin que retorna cedo antes do save no login())

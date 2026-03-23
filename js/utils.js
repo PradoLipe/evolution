@@ -824,6 +824,8 @@
                     this.rejectUser(this.pendingAction.id);
                 } else if (this.pendingAction.type === 'deleteUser') {
                     this.deleteUser(this.pendingAction.id);
+                } else if (this.pendingAction.type === 'removeVipConfirm') {
+                    this.executeRemoveVip(this.pendingAction.id);
                 }
                 this.closeModal('confirmActionModal');
             };

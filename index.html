@@ -709,9 +709,15 @@
                     <label class="input-label">Conceder VIP</label>
                     <div class="input-row">
                         <select id="vipTypeSelect"><option value="gift">🎁 Brinde (Adm)</option><option value="paid">💰 Pago</option></select>
-                        <select id="vipDurationSelect"><option value="15d">15 Dias</option><option value="1">1 Mes</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="perm">👑 Permanente</option></select>
+                        <select id="vipDurationSelect" onchange="document.getElementById('vipCustomDaysRow').style.display = this.value === 'custom' ? 'flex' : 'none'"><option value="15d">15 Dias</option><option value="1">1 Mes</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="perm">👑 Permanente</option><option value="custom">📝 Dias Customizados</option></select>
                     </div>
-                    <button class="btn btn-primary" onclick="app.applyVip()" style="margin-top: 8px;">Aplicar VIP</button>
+                    <div id="vipCustomDaysRow" class="input-row" style="display: none; margin-top: 6px;">
+                        <input type="number" id="vipCustomDaysInput" min="1" max="3650" placeholder="Qtd de dias" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text); font-size: 0.85rem;">
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button class="btn btn-primary" onclick="app.applyVip()" style="flex: 1;">Aplicar VIP</button>
+                        <button class="btn btn-danger" onclick="app.removeVip()" style="flex: 1; background: rgba(255, 56, 96, 0.2);">Remover VIP</button>
+                    </div>
                 </div>
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 16px 0;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
