@@ -758,6 +758,22 @@
         </div>
     </div>
 
+    <!-- VIP REQUIRED MODAL -->
+    <div class="modal-overlay" id="vipRequiredModal" onclick="app.closeModalOnOverlay(event, 'vipRequiredModal')">
+        <div class="modal-content" style="text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);">
+            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(255, 215, 0, 0.3);"><h3 class="modal-title" style="color: var(--accent); letter-spacing: 2px;">Recurso VIP</h3></div>
+            <div class="modal-body">
+                <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
+                <p id="vipRequiredMessage" style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text); line-height: 1.6;">Este recurso esta disponivel apenas para usuarios VIP.</p>
+                <div style="background: rgba(255, 215, 0, 0.08); padding: 14px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                    <h2 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 6px;">ASSINE O VIP</h2>
+                    <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">Entre em contato com o administrador para adquirir seu acesso VIP e desbloquear todos os recursos premium.</span>
+                </div>
+                <button class="btn btn-glass" onclick="app.closeModal('vipRequiredModal')" style="border-color: var(--accent); color: var(--accent);">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="configModal" onclick="app.closeModalOnOverlay(event, 'configModal')">
         <div class="modal-content">

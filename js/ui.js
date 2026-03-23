@@ -166,11 +166,20 @@
                 safeStorage.setItem('evo_dashboard_month', monthVal);
             }
 
+            let allEntries = this.entries;
+            // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
+            if (!this.isAdmin && !this.isVip) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - 15);
+                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                allEntries = allEntries.filter(e => e.data && e.data >= cutoffStr);
+            }
+
             let filtered = [];
             if (mode === 'all') {
-                filtered = this.entries;
+                filtered = allEntries;
             } else if (mode === 'month' && monthVal) {
-                filtered = this.entries.filter(e => {
+                filtered = allEntries.filter(e => {
                     if (!e.data) return false;
                     const parts = e.data.split('-');
                     return parts.length === 3 && `${parts[0]}-${parts[1]}` === monthVal;
@@ -282,6 +291,14 @@
             if (!list) return;
 
             let filtered = [...this.entries];
+
+            // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
+            if (!this.isAdmin && !this.isVip) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - 15);
+                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
+            }
 
             if (this.currentFilter === 'pending') {
                 filtered = filtered.filter(e => !e.pago);
@@ -849,6 +866,17 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const monthInput = document.getElementById('calendarMonth');
             if (!monthInput) return;
             const monthVal = monthInput.value || '';
+
+            // Restricao VIP: nao-VIP so pode ver o mes atual
+            if (!this.isAdmin && !this.isVip) {
+                const currentMonth = getCurrentMonthStringManaus();
+                if (monthVal && monthVal !== currentMonth) {
+                    monthInput.value = currentMonth;
+                    this.requireVip('O calendario de meses anteriores e um recurso exclusivo para usuarios VIP. Apenas o mes atual esta disponivel.');
+                    return;
+                }
+            }
+
             safeStorage.setItem('evo_calendar_month', monthVal);
             // Sincroniza mes do calendario no Firestore para outros dispositivos
             if (db && this.currentUserId && monthVal) {
@@ -867,6 +895,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             this.syncCalendarMonthWithEntries();
             let monthStr = monthInput?.value || safeStorage.getItem('evo_calendar_month') || this.selectedMonth || getCurrentMonthStringManaus();
             if (!monthStr) monthStr = getCurrentMonthStringManaus();
+
+            // Restricao VIP: nao-VIP so pode ver o mes atual
+            if (!this.isAdmin && !this.isVip) {
+                monthStr = getCurrentMonthStringManaus();
+            }
+
             if (monthInput) monthInput.value = monthStr;
 
             const [year, month] = monthStr.split('-');

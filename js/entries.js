@@ -172,6 +172,22 @@
         // RELATORIO
         // ============================================
         EvolutionApp.prototype.generateReport = function() {
+            // Restricao VIP: nao-VIP pode gerar apenas 1 relatorio por semana
+            if (!this.isAdmin && !this.isVip) {
+                const lastReportKey = `evo_last_report_${this.currentUserId}`;
+                const lastReport = safeStorage.getItem(lastReportKey);
+                if (lastReport) {
+                    const lastDate = new Date(lastReport);
+                    const now = new Date();
+                    const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
+                    if (diffDays < 7) {
+                        const daysLeft = Math.ceil(7 - diffDays);
+                        this.requireVip(`Voce ja usou seu relatorio gratuito desta semana. Proximo disponivel em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}. Assine o VIP para relatorios ilimitados.`);
+                        return;
+                    }
+                }
+            }
+
             const navio = document.getElementById('relNavio').value.toUpperCase().trim();
             const dataInput = document.getElementById('relData').value;
             const turno = document.getElementById('relTurno').value;
@@ -206,6 +222,10 @@ TOTAL: ${(parseInt(p1, 10) || 0) + (parseInt(p2, 10) || 0)}
             }
             msg += `
 ${userName}`;
+            // Registrar timestamp do relatorio para controle de limite semanal (nao-VIP)
+            if (!this.isAdmin && !this.isVip) {
+                safeStorage.setItem(`evo_last_report_${this.currentUserId}`, new Date().toISOString());
+            }
             this.openReportPreview(msg);
         };
 

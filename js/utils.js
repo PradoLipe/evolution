@@ -2,6 +2,7 @@
         // CONFIGURACOES
         // ============================================
         EvolutionApp.prototype.exportData = function() {
+            if (!this.requireVip('O backup de dados e um recurso exclusivo para usuarios VIP.')) return;
             const data = {
                 v: window.EVOLUTION_APP_VERSION || 'V5.37',
                 u: this.currentUser,
@@ -22,10 +23,12 @@
         };
 
         EvolutionApp.prototype.triggerImport = function() {
+            if (!this.requireVip('A importacao de dados e um recurso exclusivo para usuarios VIP.')) return;
             document.getElementById('importInput').click();
         };
 
         EvolutionApp.prototype.importData = function(e) {
+            if (!this.isAdmin && !this.isVip) { e.target.value = ''; return; }
             const file = e.target.files[0];
             if (!file) return;
 
@@ -69,12 +72,14 @@
         // PDF
         // ============================================
         EvolutionApp.prototype.openPdfOptions = function() {
+            if (!this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.')) return;
             this.closeModal('configModal');
             this.openModal('pdfOptionsModal');
             document.getElementById('pdfMonthPicker').value = this.selectedMonth;
         };
 
         EvolutionApp.prototype.generatePdf = async function(type) {
+            if (!this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.')) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -415,6 +420,17 @@
             doc.save(`Evolution_${(this.currentUser || 'usuario').replace(/\s+/g, '_')}_${titlePeriod.replace(/\s+/g, '_')}.pdf`);
             this.closeModal('pdfOptionsModal');
             this.showToast('PDF gerado com sucesso!', 'success');
+        };
+
+        // ============================================
+        // VIP GATE - bloqueia recurso para nao-VIP
+        // ============================================
+        EvolutionApp.prototype.requireVip = function(featureMessage) {
+            if (this.isAdmin || this.isVip) return true;
+            const msgEl = document.getElementById('vipRequiredMessage');
+            if (msgEl) msgEl.textContent = featureMessage || 'Este recurso esta disponivel apenas para usuarios VIP.';
+            this.openModal('vipRequiredModal');
+            return false;
         };
 
         // ============================================
