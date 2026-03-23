@@ -59,9 +59,39 @@
             if (this._activityListenersBound) return;
             this._activityHandler = () => this.markUserActivity('interaction');
             this._visibilityHandler = () => {
-                if (document.visibilityState === 'visible') this.markUserActivity('visible', true);
+                if (document.visibilityState === 'visible') {
+                    // Verificar inatividade ANTES de atualizar o timestamp
+                    // Quando o celular dorme, setInterval pausa. Ao acordar, precisamos
+                    // checar se o tempo offline ultrapassou o limite de inatividade.
+                    const sessionRaw = safeStorage.getItem('evo_session_v516');
+                    if (sessionRaw) {
+                        try {
+                            const sd = decodeSession(sessionRaw);
+                            const lastActivity = Number(sd?.lastActivityTs || 0);
+                            if (lastActivity && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
+                                this.logout();
+                                return;
+                            }
+                        } catch (_) {}
+                    }
+                    this.markUserActivity('visible', true);
+                }
             };
-            this._focusHandler = () => this.markUserActivity('focus', true);
+            this._focusHandler = () => {
+                // Mesma verificacao para o evento focus
+                const sessionRaw = safeStorage.getItem('evo_session_v516');
+                if (sessionRaw) {
+                    try {
+                        const sd = decodeSession(sessionRaw);
+                        const lastActivity = Number(sd?.lastActivityTs || 0);
+                        if (lastActivity && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
+                            this.logout();
+                            return;
+                        }
+                    } catch (_) {}
+                }
+                this.markUserActivity('focus', true);
+            };
 
             ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
                 document.addEventListener(evt, this._activityHandler, { passive: true });

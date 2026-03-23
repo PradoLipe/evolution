@@ -2,6 +2,7 @@
         // CONFIGURACOES
         // ============================================
         EvolutionApp.prototype.exportData = function() {
+            this.closeModal('configModal');
             if (!this.requireVip('O backup de dados e um recurso exclusivo para usuarios VIP.')) return;
             const data = {
                 v: window.EVOLUTION_APP_VERSION || 'V5.37',
@@ -23,6 +24,7 @@
         };
 
         EvolutionApp.prototype.triggerImport = function() {
+            this.closeModal('configModal');
             if (!this.requireVip('A importacao de dados e um recurso exclusivo para usuarios VIP.')) return;
             document.getElementById('importInput').click();
         };
@@ -72,8 +74,8 @@
         // PDF
         // ============================================
         EvolutionApp.prototype.openPdfOptions = function() {
-            if (!this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.')) return;
             this.closeModal('configModal');
+            if (!this.requireVip('O download de PDF e um recurso exclusivo para usuarios VIP.')) return;
             this.openModal('pdfOptionsModal');
             document.getElementById('pdfMonthPicker').value = this.selectedMonth;
         };

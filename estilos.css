@@ -278,6 +278,7 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; padding: 20px; }
         .modal-overlay.active { display: flex; opacity: 1; }
         #deleteAvatarModal { z-index: 1200; }
+        #vipRequiredModal { z-index: 1100; }
         .modal-content { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .modal-overlay.active .modal-content { transform: scale(1); }
         .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--glass); backdrop-filter: blur(10px); z-index: 10; }

@@ -201,8 +201,13 @@
             const [y, m, d] = dataInput.split('-');
             const dataFormatada = `${d}/${m}/${y}`;
 
+            // Detectar domingo automaticamente
+            const diaSemana = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getDay();
+            const isDomingo = diaSemana === 0;
+            const turnoLabel = isDomingo ? `${turno} ( DOMINGO )` : turno;
+
             let msg = `*${navio}*
-Data: ${dataFormatada} - ${turno}
+Data: ${dataFormatada} - ${turnoLabel}
 Terno: ${terno}
 `;
             if (turno === '15x23') {
