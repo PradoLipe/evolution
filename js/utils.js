@@ -29,7 +29,7 @@
         EvolutionApp.prototype.triggerImport = function() {
             if (!this.isAdmin && !this.isVip) {
                 this.closeModal('configModal');
-                setTimeout(() => this.requireVip('A importacao de dados e um recurso exclusivo para usuarios VIP.'), 150);
+                setTimeout(() => this.requireVip('A importação de dados é um recurso exclusivo para usuários VIP.'), 150);
                 return;
             }
             document.getElementById('importInput').click();
@@ -104,14 +104,14 @@
 
             if (type === 'all') {
                 filtered = [...this.entries];
-                const monthNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
                 if (filtered.length > 0) {
                     const dates = filtered.map(e => e.data).filter(Boolean).sort();
                     const [fy, fm] = dates[0].split('-');
                     const [ly, lm] = dates[dates.length - 1].split('-');
-                    titlePeriod = `${monthNames[parseInt(fm,10)-1]} ${fy} ate ${monthNames[parseInt(lm,10)-1]} ${ly}`;
+                    titlePeriod = `${monthNames[parseInt(fm,10)-1]} ${fy} até ${monthNames[parseInt(lm,10)-1]} ${ly}`;
                 } else {
-                    titlePeriod = 'Historico Completo';
+                    titlePeriod = 'Histórico Completo';
                 }
             } else if (type === 'weekly') {
                 const today = getManausDate();
@@ -121,12 +121,12 @@
                     const d = new Date(e.data);
                     return d >= sevenDaysAgo && d <= today;
                 });
-                titlePeriod = `Semanal  •  ${sevenDaysAgo.toLocaleDateString('pt-BR')} ate ${today.toLocaleDateString('pt-BR')}`;
+                titlePeriod = `Semanal  •  ${sevenDaysAgo.toLocaleDateString('pt-BR')} até ${today.toLocaleDateString('pt-BR')}`;
             } else {
                 const picker = document.getElementById('pdfMonthPicker');
                 const monthVal = picker.value;
                 if (!monthVal) {
-                    this.showToast('Selecione um mes', 'error');
+                    this.showToast('Selecione um mês', 'error');
                     return;
                 }
                 const [y, m] = monthVal.split('-');
@@ -136,11 +136,12 @@
                     const parts = e.data.split('-');
                     return parts[0] === y && parts[1] === m;
                 });
-                titlePeriod = `${monthNames[parseInt(m, 10) - 1]} de ${y}`;
+                const monthNamesLong = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                titlePeriod = `${monthNamesLong[parseInt(m, 10) - 1]} de ${y}`;
             }
 
             if (filtered.length === 0) {
-                this.showToast('Nenhum dado no periodo', 'warning');
+                this.showToast('Nenhum dado no período', 'warning');
                 return;
             }
 
@@ -262,9 +263,9 @@
 
             // Metadados do documento (evita avisos de assinatura em leitores de PDF)
             doc.setProperties({
-                title: 'Relatorio EVOLUTION - ' + titlePeriod,
-                subject: 'Relatorio de Producao Portuaria',
-                author: this.currentUser || 'Usuario',
+                title: 'Relatório EVOLUTION - ' + titlePeriod,
+                subject: 'Relatório de Produção Portuária',
+                author: this.currentUser || 'Usuário',
                 creator: 'EVOLUTION'
             });
 
@@ -357,7 +358,7 @@
             // Tabela principal
             doc.autoTable({
                 startY: 90,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Liquido (R$)']],
+                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Líquido (R$)']],
                 body: tableBody,
                 theme: 'grid',
                 styles: {
@@ -508,7 +509,7 @@
                 document.body.removeChild(ta);
                 this.showToast(msg, 'success');
             } catch(e) {
-                this.showToast('Nao foi possivel copiar automaticamente', 'error');
+                this.showToast('Não foi possível copiar automaticamente', 'error');
             }
         };
 
@@ -779,7 +780,7 @@
             if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
             try {
                 await db.collection('config').doc('settings').set({ floodPercentage: value }, { merge: true });
-                this.showToast('Taxa de doacao salva!', 'success');
+                this.showToast('Taxa de doação salva!', 'success');
             } catch (e) {
                 this.showToast('Erro ao salvar taxa', 'error');
             }
@@ -878,6 +879,8 @@
                     this.deleteUser(this.pendingAction.id);
                 } else if (this.pendingAction.type === 'removeVipConfirm') {
                     this.executeRemoveVip(this.pendingAction.id);
+                } else if (this.pendingAction.type === 'removeNavio') {
+                    this.executeRemoveNavio(this.pendingAction.id);
                 }
                 this.closeModal('confirmActionModal');
             };

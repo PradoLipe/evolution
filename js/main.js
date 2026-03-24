@@ -141,19 +141,9 @@
                 } catch(e) {}
             }, 5 * 60 * 1000);
 
-            // FIX: Verificar inatividade ao voltar para o app (setInterval pausa quando celular dorme)
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState !== 'visible' || !this.currentUserId) return;
-                const _sv = safeStorage.getItem('evo_session_v516');
-                if (!_sv) return;
-                try {
-                    const _dv = decodeSession(_sv);
-                    const _lastAct = Number(_dv?.lastActivityTs || _dv?.ts || 0);
-                    if (_lastAct && (Date.now() - _lastAct) >= (this.inactivityLimitMs || (40 * 60 * 1000))) {
-                        this.logout();
-                    }
-                } catch(e) {}
-            });
+            // Verificacao de inatividade ao voltar para o app e feita por
+            // bindSessionActivityListeners() (chamado via startSessionWatch apos login).
+            // Listener duplicado removido para evitar duplo logout().
 
             // Restaurar tema salvo
             try {

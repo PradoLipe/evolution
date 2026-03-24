@@ -30,10 +30,10 @@
                 <h3 class="modal-title" style="color: var(--primary);">Instalar no iPhone</h3>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; text-align: center;">A Apple nao permite instalacao automatica. Siga os passos:</p>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; text-align: center;">A Apple não permite instalação automática. Siga os passos:</p>
                 <div class="ios-steps">
-                    <div class="ios-step"><div class="ios-step-icon">1</div><div>Toque no botao Compartilhar na barra inferior do Safari</div></div>
-                    <div class="ios-step"><div class="ios-step-icon">2</div><div>Role para baixo e toque em Adicionar a Tela de Inicio</div></div>
+                    <div class="ios-step"><div class="ios-step-icon">1</div><div>Toque no botão Compartilhar na barra inferior do Safari</div></div>
+                    <div class="ios-step"><div class="ios-step-icon">2</div><div>Role para baixo e toque em Adicionar à Tela de Início</div></div>
                     <div class="ios-step"><div class="ios-step-icon">3</div><div>Toque em Adicionar no canto superior direito</div></div>
                 </div>
                 <button class="btn btn-glass" onclick="app.closeModal('iosInstallModal')" style="width: 100%;">Entendi</button>
@@ -43,7 +43,7 @@
 
     <div class="modal-overlay" id="confirmActionModal" onclick="app.closeModalOnOverlay(event, 'confirmActionModal')">
         <div class="modal-content" style="text-align: center;">
-            <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" id="confirmActionTitle" style="color: var(--danger);">Confirmacao</h3></div>
+            <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" id="confirmActionTitle" style="color: var(--danger);">Confirmação</h3></div>
             <div class="modal-body">
                 <div style="font-size: 2.5rem; margin-bottom: 16px;" id="confirmActionIcon">⚠</div>
                 <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);" id="confirmActionText">Tem certeza?</p>
@@ -150,7 +150,7 @@
                     </svg>
                 </div>
                 <h1 class="login-title">EVOLUTION</h1>
-                <p class="login-subtitle">Controle e Registro de Producao</p>
+                <p class="login-subtitle">Controle e Registro de Produção</p>
             </div>
 
             <div class="login-mode-toggle">
@@ -184,12 +184,12 @@
                     <div id="registerForm">
                         <div class="input-tip">
                             <span class="input-tip-icon">💡</span>
-                            <span class="input-tip-text"><strong>Dica:</strong> O nome que voce cadastrar aqui sera usado para te identificar nos relatorios enviados via WhatsApp.</span>
+                            <span class="input-tip-text"><strong>Dica:</strong> O nome que você cadastrar aqui será usado para te identificar nos relatórios enviados via WhatsApp.</span>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Nome Completo</label>
-                            <input type="text" id="regName" placeholder="Seu nome (sera usado nos relatorios)" style="text-transform: uppercase;">
-                            <div class="input-hint">Este nome aparecera nos relatorios que voce gerar</div>
+                            <input type="text" id="regName" placeholder="Seu nome (será usado nos relatórios)" style="text-transform: uppercase;">
+                            <div class="input-hint">Este nome aparecerá nos relatórios que você gerar</div>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Senha (4 a 6 digitos)</label>
@@ -204,9 +204,9 @@
                     </div>
                     <div id="registerStatus" class="register-status hidden">
                         <div class="register-status-icon">⏳</div>
-                        <div class="register-status-title">Cadastro em Analise</div>
-                        <div class="register-status-text">Seu pedido foi enviado para aprovacao do administrador.<br>Voce recebera uma notificacao quando for aprovado.</div>
-                        <div style="margin-top: 12px;"><span class="pending-badge"><span class="pending-dot"></span>Aguardando Aprovacao</span></div>
+                        <div class="register-status-title">Cadastro em Análise</div>
+                        <div class="register-status-text">Seu pedido foi enviado para aprovação do administrador.<br>Você receberá uma notificação quando for aprovado.</div>
+                        <div style="margin-top: 12px;"><span class="pending-badge"><span class="pending-dot"></span>Aguardando Aprovação</span></div>
                         <button class="btn btn-glass" style="margin-top: 16px;" onclick="app.backToLogin()">Voltar para Login</button>
                     </div>
                 </div>
@@ -222,15 +222,15 @@
         <div class="modal-content" style="text-align: center; border: 1px solid var(--border);">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--primary); letter-spacing: 1px;">Aviso Importante</h3></div>
             <div class="modal-body" style="text-align: left; line-height: 1.7;">
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">Nos ultimos meses, o Evolution foi disponibilizado gratuitamente enquanto diversas melhorias eram implementadas. Durante esse periodo, o sistema evoluiu bastante com base no uso real — tornando-se uma ferramenta cada vez mais pratica e essencial para o dia a dia.</p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">Nos últimos meses, o Evolution foi disponibilizado gratuitamente enquanto diversas melhorias eram implementadas. Durante esse período, o sistema evoluiu bastante com base no uso real — tornando-se uma ferramenta cada vez mais prática e essencial para o dia a dia.</p>
                 <div style="background: rgba(255, 56, 96, 0.08); padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; border-left: 3px solid var(--danger);">
                     <strong style="color: var(--danger); font-size: 0.9rem;">O acesso gratuito se encerra no dia 31/03.</strong>
                 </div>
-                <p style="color: var(--text); font-size: 0.85rem; margin-bottom: 14px;">A partir de abril, o Evolution passa a operar no formato VIP com mensalidade de <strong style="color: var(--primary);">R$ 25,00</strong> — para manter o sistema funcionando com suporte e atualizacoes constantes.</p>
+                <p style="color: var(--text); font-size: 0.85rem; margin-bottom: 14px;">A partir de abril, o Evolution passa a operar no formato VIP com mensalidade de <strong style="color: var(--primary);">R$ 25,00</strong> — para manter o sistema funcionando com suporte e atualizações constantes.</p>
                 <div style="background: rgba(0, 212, 255, 0.06); padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; border-left: 3px solid var(--primary);">
-                    <span style="color: var(--text); font-size: 0.82rem;">Caso prefira nao aderir, salve seus dados antes do prazo:<br><strong style="color: var(--primary);">Configuracoes → Baixar PDF</strong></span>
+                    <span style="color: var(--text); font-size: 0.82rem;">Caso prefira não aderir, salve seus dados antes do prazo:<br><strong style="color: var(--primary);">Configurações → Baixar PDF</strong></span>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Agradecemos a todos que fizeram parte dessa fase de evolucao do aplicativo.</p>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Agradecemos a todos que fizeram parte dessa fase de evolução do aplicativo.</p>
                 <p style="color: var(--text); font-weight: 800; font-size: 0.85rem;">Felipe Prado</p>
             </div>
             <button class="btn btn-primary" onclick="safeStorage.setItem('evo_announcement_confirmed','1'); app.closeModal('announcementModal')" style="width: 100%;">Confirmar</button>
@@ -325,7 +325,7 @@
                 <div class="section-header" onclick="app.toggleSection('secCal')">
                     <div class="section-title-group">
                         <div class="section-icon">📅</div>
-                        <div class="section-titles"><h3>Calendario</h3><p>Resumo mensal de operacoes</p></div>
+                        <div class="section-titles"><h3>Calendário</h3><p>Resumo mensal de operações</p></div>
                     </div>
                     <div class="section-arrow">▼</div>
                 </div>
@@ -336,7 +336,7 @@
                             <input type="month" id="calendarMonth" class="calendar-month-input" onchange="app.handleCalendarMonthChange()">
                         </div>
                         <div class="calendar-summary" id="calendarSummary">
-                            <div class="calendar-summary-card total"><div class="calendar-summary-label">Servicos</div><div class="calendar-summary-value" id="calendarTotalServicos">0</div></div>
+                            <div class="calendar-summary-card total"><div class="calendar-summary-label">Serviços</div><div class="calendar-summary-value" id="calendarTotalServicos">0</div></div>
                             <div class="calendar-summary-card paid"><div class="calendar-summary-label">Pagos</div><div class="calendar-summary-value" id="calendarTotalPagos">0</div></div>
                             <div class="calendar-summary-card pending"><div class="calendar-summary-label">Pendentes</div><div class="calendar-summary-value" id="calendarTotalPendentes">0</div></div>
                         </div>
@@ -413,7 +413,7 @@
                             </div>
                         </div>
                         <div class="sim-result">
-                            <div class="sim-result-label">Projecao por Conferente</div>
+                            <div class="sim-result-label">Projeção por Conferente</div>
                             <div class="sim-result-value" id="simResult">R$ 0,00</div>
                             <div class="sim-result-detail" id="simDetalhe">Bruto: R$ 0,00 | Liquido: R$ 0,00</div>
                         </div>
@@ -426,7 +426,7 @@
                 <div class="section-header" onclick="app.toggleSection('secNew'); app.suggestDefaultTurno()">
                     <div class="section-title-group">
                         <div class="section-icon">➕</div>
-                        <div class="section-titles"><h3>Registrar Producao</h3><p>Adicionar ao historico</p></div>
+                        <div class="section-titles"><h3>Registrar Produção</h3><p>Adicionar ao histórico</p></div>
                     </div>
                     <div class="section-arrow">▼</div>
                 </div>
@@ -465,7 +465,7 @@
                 <div class="section-header" onclick="app.toggleSection('secRel')">
                     <div class="section-title-group">
                         <div class="section-icon">📋</div>
-                        <div class="section-titles"><h3>Gerar Relatorio</h3><p>Formato para envio</p></div>
+                        <div class="section-titles"><h3>Gerar Relatório</h3><p>Formato para envio</p></div>
                     </div>
                     <div class="section-arrow">▼</div>
                 </div>
@@ -483,7 +483,7 @@
                                 <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatorio</button>
+                        <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatório</button>
                     </div>
                 </div>
             </div>
@@ -493,7 +493,7 @@
                 <div class="section-header" onclick="app.toggleSection('secHist')">
                     <div class="section-title-group">
                         <div class="section-icon">📊</div>
-                        <div class="section-titles"><h3>Historico</h3><p id="histSubtitle">Aguardando pagamento</p></div>
+                        <div class="section-titles"><h3>Histórico</h3><p id="histSubtitle">Aguardando pagamento</p></div>
                     </div>
                     <div class="section-arrow">▼</div>
                 </div>
@@ -572,19 +572,19 @@
         <div class="modal-content">
             <div class="modal-header"><h3 class="modal-title">Baixar PDF</h3><button class="modal-close" onclick="app.closeModal('pdfOptionsModal')">✕</button></div>
             <div class="modal-body">
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Selecione o periodo para gerar o relatorio profissional em PDF.</p>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Selecione o período para gerar o relatório profissional em PDF.</p>
                 <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-                    <button class="btn btn-primary" onclick="app.generatePdf('weekly')">📅 Relatorio Semanal (7 dias)</button>
+                    <button class="btn btn-primary" onclick="app.generatePdf('weekly')">📅 Relatório Semanal (7 dias)</button>
                     <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
                     <div class="input-group">
-                        <label class="input-label" style="text-align: center;">Ou selecione um mes especifico</label>
+                        <label class="input-label" style="text-align: center;">Ou selecione um mês específico</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="month" id="pdfMonthPicker" class="input-modern" style="background: var(--surface-elevated); color: var(--text); border-color: var(--primary);">
                             <button class="btn btn-glass" onclick="app.generatePdf('monthly')">Baixar</button>
                         </div>
                     </div>
                     <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
-                    <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);">📋 Todos os Registros (Historico Completo)</button>
+                    <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);">📋 Todos os Registros (Histórico Completo)</button>
                 </div>
             </div>
         </div>
@@ -594,15 +594,15 @@
     <div class="modal-overlay" id="reportPreviewModal" onclick="app.closeModalOnOverlay(event, 'reportPreviewModal')">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Pre-visualizacao</h3>
+                <h3 class="modal-title">Pré-visualização</h3>
                 <button class="modal-close" onclick="app.closeModal('reportPreviewModal')">&times;</button>
             </div>
             <div class="modal-body report-preview-body">
                 <div class="report-preview-meta">
-                    <div class="report-preview-title">Relatorio para WhatsApp</div>
-                    <div class="report-preview-sub" id="reportPreviewSubtitle">Aguardando geracao...</div>
+                    <div class="report-preview-title">Relatório para WhatsApp</div>
+                    <div class="report-preview-sub" id="reportPreviewSubtitle">Aguardando geração...</div>
                 </div>
-                <textarea class="report-preview-text" id="reportPreviewText" oninput="app.onReportPreviewInput()" spellcheck="false" placeholder="Digite ou ajuste o texto do relatorio aqui..."></textarea>
+                <textarea class="report-preview-text" id="reportPreviewText" oninput="app.onReportPreviewInput()" spellcheck="false" placeholder="Digite ou ajuste o texto do relatório aqui..."></textarea>
                 <div class="report-preview-actions">
                     <button class="btn btn-glass" onclick="app.copyReportText()">Copiar</button>
                     <button class="btn btn-primary" onclick="app.shareReportText()">Compartilhar</button>
@@ -683,7 +683,7 @@
                     <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admMessages')"><span>📢 Mensagens do Sistema</span><span>▼</span></button>
                     <div id="admMessages" class="admin-toggle-content">
                         <div class="input-group"><label class="input-label">Texto do Aviso</label><textarea id="msgContent" rows="3" style="width: 100%; padding: 10px; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); resize: none;"></textarea></div>
-                        <div class="input-group"><label class="input-label">Tipo de Exibicao</label><select id="msgType" onchange="app.toggleMsgDates()"><option value="once">Uma vez (Ao logar)</option><option value="always">Sempre (Todo login)</option><option value="period">Por Periodo</option></select></div>
+                        <div class="input-group"><label class="input-label">Tipo de Exibição</label><select id="msgType" onchange="app.toggleMsgDates()"><option value="once">Uma vez (Ao logar)</option><option value="always">Sempre (Todo login)</option><option value="period">Por Período</option></select></div>
                         <div id="msgDates" class="input-row" style="display: none;"><input type="date" id="msgStart"><input type="date" id="msgEnd"></div>
                         <button class="btn btn-primary" style="margin-bottom: 8px;" onclick="app.publishMessage()">Publicar Aviso</button>
                         <button class="btn btn-danger" onclick="app.deleteMessage()">Remover Aviso Atual</button>
@@ -691,20 +691,20 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admFlood')"><span>💸 Taxa de Doacao (Flood)</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admFlood')"><span>💸 Taxa de Doação (Flood)</span><span>▼</span></button>
                     <div id="admFlood" class="admin-toggle-content">
-                        <div class="input-group"><label class="input-label">Probabilidade de exibir mensagem (%)</label><input type="number" id="floodPercentage" min="0" max="100" value="40" placeholder="40"><div class="input-hint">Valor de 0 a 100. Define a % de chance de exibir a mensagem pedindo doacao.</div></div>
+                        <div class="input-group"><label class="input-label">Probabilidade de exibir mensagem (%)</label><input type="number" id="floodPercentage" min="0" max="100" value="40" placeholder="40"><div class="input-hint">Valor de 0 a 100. Define a % de chance de exibir a mensagem pedindo doação.</div></div>
                         <button class="btn btn-success" onclick="app.saveFloodRate()">Salvar Taxa</button>
                     </div>
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutencao / Atualizacao</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutenção / Atualização</span><span>▼</span></button>
                     <div id="admForceLogout" class="admin-toggle-content">
                         <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
-                            Use este botao para <strong style="color:var(--warning);">desconectar todos os usuarios</strong> imediatamente.
-                            Na proxima vez que abrirem o app, serao obrigados a fazer login novamente —
-                            garantindo que estao na versao mais recente e que todos os dados locais sejam sincronizados com o banco de dados.
+                            Use este botão para <strong style="color:var(--warning);">desconectar todos os usuários</strong> imediatamente.
+                            Na próxima vez que abrirem o app, serão obrigados a fazer login novamente —
+                            garantindo que estão na versão mais recente e que todos os dados locais sejam sincronizados com o banco de dados.
                         </p>
                         <button id="btnForceLogoutAll" class="btn btn-danger" onclick="app.forceLogoutAll()" style="width:100%;">
                             ⚡ Forcar Logout de Todos
@@ -801,7 +801,7 @@
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="configModal" onclick="app.closeModalOnOverlay(event, 'configModal')">
         <div class="modal-content">
-            <div class="modal-header"><h3 class="modal-title">Configuracoes</h3><button class="modal-close" onclick="app.closeModal('configModal')">✕</button></div>
+            <div class="modal-header"><h3 class="modal-title">Configurações</h3><button class="modal-close" onclick="app.closeModal('configModal')">✕</button></div>
             <div class="modal-body">
                 <div class="meta-editor" id="metaEditor" style="display: none;">
                     <label>Meta de Recebimento (Liquido)</label>
@@ -812,6 +812,16 @@
                     <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px;">A meta comeca a contabilizar a partir do momento em que for salva.</div>
                     <button class="btn btn-primary" onclick="app.saveMeta()" style="margin-top: 12px;">Salvar Meta</button>
                     <div id="cancelMetaContainer"></div>
+                </div>
+                <div class="config-toggle-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:12px;border-bottom:1px solid var(--border);">
+                    <div>
+                        <div style="font-size:0.75rem;font-weight:700;color:var(--text);">Resumo ao entrar</div>
+                        <div style="font-size:0.6rem;color:var(--text-muted);margin-top:2px;">Exibir aviso de pendências ao abrir</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePendingSummary" checked onchange="app.togglePendingSummarySetting(this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
                 <div class="config-buttons-grid">
                     <button class="btn btn-glass" onclick="app.exportData()">↓ Exportar</button>
@@ -840,8 +850,54 @@
                     <div style="font-size: 0.7rem; color: var(--primary); margin-top: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Chave PIX - Felipe Prado</div>
                 </div>
                 <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px;">Toque na chave para copiar</p>
-                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 16px; font-style: italic;">Realize uma contribuicao para remover estes avisos automaticos e manter o app atualizado.</p>
-                <button class="btn btn-glass" onclick="app.closeModal('pixModal')" style="margin-top: 20px;">Agora nao</button>
+                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 16px; font-style: italic;">Realize uma contribuição para remover estes avisos automáticos e manter o app atualizado.</p>
+                <button class="btn btn-glass" onclick="app.closeModal('pixModal')" style="margin-top: 20px;">Agora não</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PENDING SUMMARY OVERLAY -->
+    <div class="pending-overlay hidden" id="pendingSummaryOverlay">
+        <div class="pending-overlay-backdrop" onclick="app.dismissPendingSummary()"></div>
+        <div class="pending-overlay-card" id="pendingSummaryCard">
+            <div class="pending-overlay-border"></div>
+            <div class="pending-overlay-inner">
+                <div class="pending-overlay-header">
+                    <div class="pending-overlay-greeting">
+                        <div class="pending-overlay-hello" id="pendingSummaryHello">Bom dia</div>
+                        <div class="pending-overlay-name" id="pendingSummaryName">Usuario</div>
+                    </div>
+                    <button class="pending-overlay-close" onclick="app.dismissPendingSummary()">✕</button>
+                </div>
+                <div class="pending-overlay-body" id="pendingSummaryBody">
+                    <div class="pending-overlay-main">
+                        <div class="pending-overlay-count-row">
+                            <span class="pending-overlay-number" id="pendingSummaryCount">0</span>
+                            <span class="pending-overlay-count-label" id="pendingSummaryLabel">serviços pendentes</span>
+                        </div>
+                        <div class="pending-overlay-value" id="pendingSummaryValue">R$ 0,00</div>
+                        <div class="pending-overlay-sublabel">a receber</div>
+                    </div>
+                    <div class="pending-overlay-details">
+                        <div class="pending-overlay-detail">
+                            <span class="pending-overlay-detail-label">Mais recente</span>
+                            <span class="pending-overlay-detail-value" id="pendingSummaryRecent">-</span>
+                        </div>
+                        <div class="pending-overlay-detail-div"></div>
+                        <div class="pending-overlay-detail">
+                            <span class="pending-overlay-detail-label">Mais antigo</span>
+                            <span class="pending-overlay-detail-value" id="pendingSummaryOldest">-</span>
+                        </div>
+                    </div>
+                    <button class="pending-overlay-action" onclick="app.dismissPendingSummary(); setTimeout(function(){ app.setFilter('pending'); document.getElementById('secHist')?.scrollIntoView({behavior:'smooth'}); }, 350);">
+                        Ver pendentes
+                    </button>
+                </div>
+                <!-- Estado sem pendencias -->
+                <div class="pending-overlay-clear hidden" id="pendingSummaryClear">
+                    <div class="pending-overlay-clear-icon">✓</div>
+                    <div class="pending-overlay-clear-text">Tudo em dia! Nenhum serviço pendente.</div>
+                </div>
             </div>
         </div>
     </div>

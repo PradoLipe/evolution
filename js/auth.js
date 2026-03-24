@@ -193,7 +193,7 @@
                 this.pinValue = '';
                 this.updatePinDisplay();
             }, 500);
-            this.showToast(msg || 'PIN incorreto ou usuario nao aprovado', 'error');
+            this.showToast(msg || 'PIN incorreto ou usuário não aprovado', 'error');
         };
 
         EvolutionApp.prototype.login = async function() {
@@ -248,16 +248,16 @@
             if (!foundUser) {
                 const pending = this.pendingUsers.find(p => p.code === enteredPin);
                 if (pending) {
-                    this.showToast('Seu cadastro esta aguardando aprovacao', 'warning');
+                    this.showToast('Seu cadastro está aguardando aprovação', 'warning');
                 } else {
-                    this.showPinError('PIN nao encontrado');
+                    this.showPinError('PIN não encontrado');
                 }
                 return;
             }
 
             // Verificar se esta bloqueado
             if (foundUser.blocked && !foundUser.isAdmin) {
-                this.showToast('Usuario bloqueado', 'error');
+                this.showToast('Usuário bloqueado', 'error');
                 return;
             }
 
@@ -332,22 +332,22 @@
             const codeConfirm = document.getElementById('regCodeConfirm').value.trim();
 
             if (!name || name.length < 3) {
-                this.showToast('Digite um nome valido (minimo 3 caracteres)', 'error');
+                this.showToast('Digite um nome válido (mínimo 3 caracteres)', 'error');
                 return;
             }
             if (!code || !/^\d{4,6}$/.test(code)) {
-                this.showToast('A senha deve ter de 4 a 6 digitos numericos', 'error');
+                this.showToast('A senha deve ter de 4 a 6 dígitos numéricos', 'error');
                 return;
             }
             if (code !== codeConfirm) {
-                this.showToast('As senhas nao coincidem', 'error');
+                this.showToast('As senhas não coincidem', 'error');
                 return;
             }
 
             // Verificar se PIN ja existe
             const existing = Object.values(this.users).find(u => u.code === code);
             if (existing) {
-                this.showToast('Este PIN ja esta em uso', 'error');
+                this.showToast('Este PIN já está em uso', 'error');
                 return;
             }
 
@@ -366,7 +366,7 @@
                 this.savePendingUserLocally(registration);
                 document.getElementById('registerForm').classList.add('hidden');
                 document.getElementById('registerStatus').classList.remove('hidden');
-                this.showToast('Cadastro enviado para aprovacao!', 'success');
+                this.showToast('Cadastro enviado para aprovação!', 'success');
             } catch (error) {
                 this.savePendingUserLocally(registration);
                 document.getElementById('registerForm').classList.add('hidden');

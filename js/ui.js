@@ -125,8 +125,109 @@
             this.renderChart();
             this.loadMeta();
 
+            // Restaurar estado do toggle de resumo de pendências
+            const toggleSummary = document.getElementById('togglePendingSummary');
+            if (toggleSummary) toggleSummary.checked = safeStorage.getItem('evo_pending_summary_disabled') !== 'true';
+
+            // Resumo de pendências ao abrir (showOnLogin=true)
+            this.renderPendingSummary(true);
+
             // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
             this.showAnnouncementIfNeeded();
+        };
+
+        // ============================================
+        // RESUMO DE PENDENCIAS
+        // ============================================
+        // showOnLogin=true apenas no login; false para atualizacoes silenciosas (ex: togglePago)
+        EvolutionApp.prototype.renderPendingSummary = function(showOnLogin) {
+            const overlay = document.getElementById('pendingSummaryOverlay');
+            if (!overlay) return;
+
+            // Verificar se o usuario desabilitou o informativo
+            if (safeStorage.getItem('evo_pending_summary_disabled') === 'true') return;
+
+            // Se nao e chamada de login e o overlay ja esta fechado, apenas atualiza os dados sem reabrir
+            const isVisible = !overlay.classList.contains('hidden');
+            if (!showOnLogin && !isVisible) return;
+
+            const pending = (this.entries || []).filter(e => e && !e.pago);
+            const totalLiq = pending.reduce((s, e) => s + (Number(e.liquido) || 0), 0);
+
+            // Saudação por horário (Manaus)
+            const hora = getManausDate().getHours();
+            let saudacao = 'Boa noite';
+            if (hora >= 5 && hora < 12) saudacao = 'Bom dia';
+            else if (hora >= 12 && hora < 18) saudacao = 'Boa tarde';
+
+            const helloEl = document.getElementById('pendingSummaryHello');
+            const nameEl = document.getElementById('pendingSummaryName');
+            if (helloEl) helloEl.textContent = saudacao;
+            if (nameEl) nameEl.textContent = this.currentUser || 'Usuário';
+
+            const bodyEl = document.getElementById('pendingSummaryBody');
+            const clearEl = document.getElementById('pendingSummaryClear');
+
+            if (pending.length === 0) {
+                // Tudo em dia
+                if (bodyEl) bodyEl.classList.add('hidden');
+                if (clearEl) clearEl.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+                return;
+            }
+
+            // Tem pendências
+            if (bodyEl) bodyEl.classList.remove('hidden');
+            if (clearEl) clearEl.classList.add('hidden');
+
+            // Contagem e valor
+            const countEl = document.getElementById('pendingSummaryCount');
+            const valueEl = document.getElementById('pendingSummaryValue');
+            const labelEl = document.getElementById('pendingSummaryLabel');
+            if (countEl) countEl.textContent = pending.length;
+            if (valueEl) valueEl.textContent = this.formatMoney(totalLiq);
+            if (labelEl) labelEl.textContent = pending.length === 1 ? 'serviço pendente' : 'serviços pendentes';
+
+            // Datas: mais recente e mais antigo
+            const sorted = pending.filter(e => e.data).sort((a, b) => String(a.data).localeCompare(String(b.data)));
+            const recentEl = document.getElementById('pendingSummaryRecent');
+            const oldestEl = document.getElementById('pendingSummaryOldest');
+
+            if (sorted.length > 0) {
+                const hoje = getManausDate();
+                const formatAgo = (dateStr) => {
+                    const [y, m, d] = dateStr.split('-').map(Number);
+                    const target = new Date(y, m - 1, d);
+                    const diffMs = hoje.getTime() - target.getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    if (diffDays === 0) return 'Hoje';
+                    if (diffDays === 1) return 'Ontem';
+                    return `${diffDays} dias atrás`;
+                };
+                const oldest = sorted[0];
+                const recent = sorted[sorted.length - 1];
+                if (oldestEl) oldestEl.textContent = formatAgo(oldest.data);
+                if (recentEl) recentEl.textContent = formatAgo(recent.data);
+            } else {
+                if (recentEl) recentEl.textContent = '-';
+                if (oldestEl) oldestEl.textContent = '-';
+            }
+
+            overlay.classList.remove('hidden');
+        };
+
+        EvolutionApp.prototype.dismissPendingSummary = function() {
+            const overlay = document.getElementById('pendingSummaryOverlay');
+            if (!overlay) return;
+            overlay.classList.add('dismissing');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('dismissing');
+            }, 350);
+        };
+
+        EvolutionApp.prototype.togglePendingSummarySetting = function(enabled) {
+            safeStorage.setItem('evo_pending_summary_disabled', enabled ? 'false' : 'true');
         };
 
         // ============================================
@@ -208,8 +309,8 @@
             document.getElementById('dashLiq').textContent = this.formatMoney(tl);
             document.getElementById('dashPend').textContent = this.formatMoney(p);
             document.getElementById('dashPago').textContent = this.formatMoney(pg);
-            document.getElementById('countPend').textContent = `${cp} servico${cp !== 1 ? 's' : ''}`;
-            document.getElementById('countPago').textContent = `${cpg} servico${cpg !== 1 ? 's' : ''}`;
+            document.getElementById('countPend').textContent = `${cp} serviço${cp !== 1 ? 's' : ''}`;
+            document.getElementById('countPago').textContent = `${cpg} serviço${cpg !== 1 ? 's' : ''}`;
 
             this.updateMetaProgress();
         };
@@ -310,6 +411,7 @@
                 filtered = filtered.filter(e => e.pago);
                 if (this.historyMonth) {
                     filtered = filtered.filter(e => {
+                        if (!e.data) return false;
                         const parts = e.data.split('-');
                         const month = parseInt(parts[1], 10);
                         return month === this.historyMonth;
@@ -323,6 +425,7 @@
             } else {
                 if (this.historyMonth) {
                     filtered = filtered.filter(e => {
+                        if (!e.data) return false;
                         const parts = e.data.split('-');
                         const month = parseInt(parts[1], 10);
                         return month === this.historyMonth;
@@ -406,7 +509,14 @@
         };
 
         EvolutionApp.prototype.changePage = function(delta) {
-            let filtered = this.entries;
+            let filtered = [...this.entries];
+            // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
+            if (!this.isAdmin && !this.isVip) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - 15);
+                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
+            }
             if (this.currentFilter === 'pending') {
                 filtered = filtered.filter(e => !e.pago);
             } else if (this.currentFilter === 'paid') {
@@ -471,6 +581,10 @@
             this.renderHistory();
             // allowCelebration=true: única ação que pode disparar a celebração de meta
             if (e.pago) this.updateMetaProgress(true);
+            // Atualizar calendario imediatamente ao alterar status de pagamento
+            if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+            // Atualizar resumo de pendencias
+            this.renderPendingSummary();
             this.persistData();
 
             this.showToast(e.pago ? '✓ Marcado como pago' : '↩ Marcado como pendente', 'success');
@@ -503,13 +617,14 @@
             this.renderChart();
             this.updateMetaProgress();
             if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+            this.renderPendingSummary();
             this.hideNavioSuggestions('calcNavio');
             this.hideNavioSuggestions('relNavio');
 
             // Cancela timer anterior se existir
             if (this._undoTimer) clearTimeout(this._undoTimer);
 
-            this.showUndoToast('Registro excluido', () => {
+            this.showUndoToast('Registro excluído', () => {
                 // Restaurar registro
                 if (this._undoEntry) {
                     // Remover do tombstone para nao bloquear restauracao
@@ -529,6 +644,7 @@
                     this.renderChart();
                     this.updateMetaProgress();
                     if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                    this.renderPendingSummary();
                     this.showToast('Registro restaurado', 'success');
                     if (this._undoTimer) clearTimeout(this._undoTimer);
                 }
@@ -704,6 +820,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 this.updateMetaProgress();
                 // Atualizar calendario e sugestoes
                 if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                this.renderPendingSummary();
                 // Sugerir turno mais utilizado novamente
                 this.suggestDefaultTurno();
                 // Atualizar caixas de sugestoes (esconder ja que o usuario nao esta digitando)
@@ -827,17 +944,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                     });
                     let pressTimer;
                     const start = () => { pressTimer = setTimeout(() => {
-                        if (confirm(`Remover "${itemData.name}" das sugestoes?`)) {
-                            if (!this.removedNavioSuggestions) this.removedNavioSuggestions = new Set();
-                            this.removedNavioSuggestions.add(itemData.name);
-                            // FIX: Limita a 500 entradas para evitar crescimento ilimitado de memoria
-                            if (this.removedNavioSuggestions.size > 500) {
-                                const _arr = Array.from(this.removedNavioSuggestions);
-                                this.removedNavioSuggestions = new Set(_arr.slice(-500));
-                            }
-                            safeStorage.setItem('evo_removed_navio', JSON.stringify(Array.from(this.removedNavioSuggestions)));
-                            this.showNavioSuggestions(fieldId);
-                        }
+                        this._pendingRemoveNavio = { name: itemData.name, fieldId };
+                        this.openConfirmModal('removeNavio', `Remover "${itemData.name}" das sugestoes?`, itemData.name);
                     }, 2000); };
                     const cancel = () => clearTimeout(pressTimer);
                     item.addEventListener('touchstart', start, { passive: true });
@@ -850,6 +958,20 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             } catch (err) {
                 console.error('Erro sugestoes navio:', err);
             }
+        };
+
+        EvolutionApp.prototype.executeRemoveNavio = function(navioName) {
+            if (!navioName) return;
+            if (!this.removedNavioSuggestions) this.removedNavioSuggestions = new Set();
+            this.removedNavioSuggestions.add(navioName);
+            if (this.removedNavioSuggestions.size > 500) {
+                const _arr = Array.from(this.removedNavioSuggestions);
+                this.removedNavioSuggestions = new Set(_arr.slice(-500));
+            }
+            safeStorage.setItem('evo_removed_navio', JSON.stringify(Array.from(this.removedNavioSuggestions)));
+            const fieldId = this._pendingRemoveNavio?.fieldId;
+            if (fieldId) this.showNavioSuggestions(fieldId);
+            this._pendingRemoveNavio = null;
         };
 
         EvolutionApp.prototype.syncCalendarMonthWithEntries = function(forceBestMonth = false) {
@@ -875,7 +997,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 const currentMonth = getCurrentMonthStringManaus();
                 if (monthVal && monthVal !== currentMonth) {
                     monthInput.value = currentMonth;
-                    this.requireVip('O calendario de meses anteriores e um recurso exclusivo para usuarios VIP. Apenas o mes atual esta disponivel.');
+                    this.requireVip('O calendário de meses anteriores é um recurso exclusivo para usuários VIP. Apenas o mês atual está disponível.');
                     return;
                 }
             }
@@ -1047,7 +1169,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const v = parseFloat(rawValue);
 
             if (!v || v <= 0) {
-                this.showToast('Digite um valor valido', 'error');
+                this.showToast('Digite um valor válido', 'error');
                 return;
             }
 

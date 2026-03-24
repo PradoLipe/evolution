@@ -96,7 +96,7 @@
             // FIX 4: Validar producao zerada
             const totalProducao = valores.reduce((s, v) => s + (parseInt(v) || 0), 0);
             if (totalProducao <= 0) {
-                this.showToast('Informe a producao antes de salvar', 'error');
+                this.showToast('Informe a produção antes de salvar', 'error');
                 if (btn) btn.disabled = false;
                 return;
             }
@@ -145,6 +145,8 @@
             this.showToast('Registro salvo!', 'success');
             // atualizar calendario e sugestoes apos salvar
             if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+            // Atualizar resumo de pendencias
+            if (typeof this.renderPendingSummary === 'function') this.renderPendingSummary();
             // Atualizar sugestoes apos salvar
             this.showNavioSuggestions('calcNavio');
             this.showNavioSuggestions('relNavio');
@@ -182,7 +184,7 @@
                     const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
                     if (diffDays < 7) {
                         const daysLeft = Math.ceil(7 - diffDays);
-                        this.requireVip(`Voce ja usou seu relatorio gratuito desta semana. Proximo disponivel em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}. Assine o VIP para relatorios ilimitados.`);
+                        this.requireVip(`Você já usou seu relatório gratuito desta semana. Próximo disponível em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''}. Assine o VIP para relatórios ilimitados.`);
                         return;
                     }
                 }
@@ -253,7 +255,7 @@ ${userName}`;
         EvolutionApp.prototype.onReportPreviewInput = function() {
             const currentText = this.getReportPreviewText();
             const subEl = document.getElementById('reportPreviewSubtitle');
-            if (subEl) subEl.textContent = currentText.trim() ? 'Relatorio editado e pronto para enviar' : 'Digite o relatorio para continuar';
+            if (subEl) subEl.textContent = currentText.trim() ? 'Relatório editado e pronto para enviar' : 'Digite o relatório para continuar';
         };
 
         EvolutionApp.prototype.clearReportPreview = function() {
@@ -267,7 +269,7 @@ ${userName}`;
         EvolutionApp.prototype.copyReportText = function() {
             const currentText = this.getReportPreviewText();
             if (!currentText.trim()) {
-                this.showToast('Gere um relatorio primeiro', 'warning');
+                this.showToast('Gere um relatório primeiro', 'warning');
                 return;
             }
             this.copyToClipboard(currentText, 'Relatorio copiado!');
@@ -276,7 +278,7 @@ ${userName}`;
         EvolutionApp.prototype.shareReportText = async function() {
             const currentText = this.getReportPreviewText();
             if (!currentText.trim()) {
-                this.showToast('Gere um relatorio primeiro', 'warning');
+                this.showToast('Gere um relatório primeiro', 'warning');
                 return;
             }
             if (navigator.share) {

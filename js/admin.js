@@ -150,7 +150,7 @@
 
             const existing = Object.values(this.users).find(u => u.code === pending.code);
             if (existing) {
-                this.showToast(`PIN ${pending.code} ja em uso`, 'error');
+                this.showToast(`PIN ${pending.code} já em uso`, 'error');
                 return;
             }
 
@@ -187,7 +187,7 @@
                 this.saveUsersToCache();
                 this.renderPendingUsers();
                 this.renderUserList();
-                this.showToast(`Usuario ${pending.name} aprovado!`, 'success');
+                this.showToast(`Usuário ${pending.name} aprovado!`, 'success');
             } catch (e) {
                 console.error('Falha ao aprovar usuario no Firebase:', e);
                 this.showToast('Falhou validar no Firebase. Verifique internet/permissoes e tente de novo.', 'error');
@@ -197,7 +197,7 @@
         EvolutionApp.prototype.rejectUser = async function(docId) {
             const pending = this.pendingUsers.find(p => (p.docId === docId) || (p.code === docId));
             if (!pending) {
-                this.showToast('Pedido nao encontrado', 'error');
+                this.showToast('Pedido não encontrado', 'error');
                 return;
             }
             const pendingDocId = pending.docId || docId;
@@ -225,7 +225,7 @@
                 const sd = decodeSession(sessionRaw);
                 if (sd && sd.ts && Number(sd.ts) < Number(forceTs)) {
                     this._forceLogoutPending = true;
-                    this.showToast('Sessao encerrada. Faca login novamente.', 'warning');
+                    this.showToast('Sessão encerrada. Faça login novamente.', 'warning');
                     setTimeout(() => {
                         this.logout();
                         window.location.reload(true);
@@ -239,7 +239,7 @@
             const btn = document.getElementById('btnForceLogoutAll');
             const status = document.getElementById('forceLogoutStatus');
             if (!db) {
-                if (status) { status.textContent = '✕ Firebase nao disponivel'; status.style.color = 'var(--danger)'; status.style.display = 'block'; }
+                if (status) { status.textContent = '✕ Firebase não disponível'; status.style.color = 'var(--danger)'; status.style.display = 'block'; }
                 return;
             }
             if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
@@ -251,7 +251,7 @@
                 }, { merge: true });
                 const hora = new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 if (status) {
-                    status.textContent = '✓ Comando enviado as ' + hora + '. Usuarios serao desconectados ao abrir o app.';
+                    status.textContent = '✓ Comando enviado às ' + hora + '. Usuários serão desconectados ao abrir o app.';
                     status.style.color = 'var(--success)';
                     status.style.display = 'block';
                 }
@@ -433,6 +433,7 @@
                         this.updateMetaProgress();
                         // Atualizar calendario quando registros mudarem via Firebase
                         if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                        if (typeof this.renderPendingSummary === 'function') this.renderPendingSummary();
                     }
 
                     if (pendingMonths.size > 0) {
@@ -505,6 +506,19 @@
             const container = document.getElementById('userList');
             if (!container) return;
 
+            // Delegacao de eventos (evita onclick inline com dados do usuario)
+            if (!this._userListDelegationBound) {
+                container.addEventListener('click', (ev) => {
+                    const btn = ev.target.closest('button[data-action="manage"][data-uid]');
+                    if (!btn) return;
+                    const uid = btn.getAttribute('data-uid') || '';
+                    if (uid) this.openUserManagement(uid);
+                });
+                this._userListDelegationBound = true;
+            }
+
+            const esc = (s) => this.escHtml(s);
+
             const userArray = Object.values(this.users).filter(u => u && u.name).sort((a, b) => {
                 if (a.name === 'FELIPE PRADO') return -1;
                 if (b.name === 'FELIPE PRADO') return 1;
@@ -541,14 +555,14 @@
                 return `
                     <div class="user-item">
                         <div class="user-item-info">
-                            <span class="user-item-name">${this.escHtml(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
-                            <span class="user-item-code">PIN: ${this.escHtml(u.code)}</span>
+                            <span class="user-item-name">${esc(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
+                            <span class="user-item-code">PIN: ${esc(u.code)}</span>
                             <span class="user-last-seen">${presence.label}</span>
                             ${vipDaysText}
                         </div>
                         <div class="user-item-status">
                             <div class="status-indicator ${statusClass}"></div>
-                            ${!u.isAdmin ? `<button class="btn-icon" onclick="app.openUserManagement('${this.escHtml(uid)}')">⚙</button>` : ''}
+                            ${!u.isAdmin ? `<button class="btn-icon" data-action="manage" data-uid="${esc(uid)}">⚙</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -566,7 +580,7 @@
             }
 
             if (Object.values(this.users).some(u => u.code === code)) {
-                this.showToast('PIN ja existe', 'error');
+                this.showToast('PIN já existe', 'error');
                 return;
             }
 
@@ -592,7 +606,7 @@
                 } catch (e) {}
             }
 
-            this.showToast(`Usuario ${name} adicionado!`, 'success');
+            this.showToast(`Usuário ${name} adicionado!`, 'success');
         };
 
         EvolutionApp.prototype.openUserManagement = function(docId) {
@@ -606,7 +620,7 @@
             const lastLoginEl = document.getElementById('manageUserLastLoginText');
             if (lastLoginEl) {
                 const loginText = this.formatAdminDateTime(user.lastLoginAt);
-                lastLoginEl.textContent = loginText ? `Ultimo acesso: ${loginText}` : 'Ultimo acesso: sem registro';
+                lastLoginEl.textContent = loginText ? `Último acesso: ${loginText}` : 'Último acesso: sem registro';
             }
 
             const lastSeenEl = document.getElementById('manageUserLastSeenText');
@@ -635,7 +649,6 @@
             }
 
             const updateData = { vipType: type, trialUsed: true, vipTrialUntil: null };
-            const now = new Date();
             const noticeId = `vip_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
             if (duration === 'perm') {
@@ -643,13 +656,14 @@
                 updateData.vipUntil = null;
             } else {
                 updateData.vip = false;
+                const vipEnd = new Date();
                 let days = 0, months = 0;
                 if (duration === '15d') days = 15;
                 else if (duration === 'custom') days = parseInt(document.getElementById('vipCustomDaysInput').value, 10);
                 else months = parseInt(duration, 10);
-                now.setDate(now.getDate() + days);
-                now.setMonth(now.getMonth() + months);
-                updateData.vipUntil = now.toISOString();
+                if (days > 0) vipEnd.setDate(vipEnd.getDate() + days);
+                if (months > 0) vipEnd.setMonth(vipEnd.getMonth() + months);
+                updateData.vipUntil = vipEnd.toISOString();
             }
 
             updateData.vipNotificationId = noticeId;
@@ -669,7 +683,7 @@
                     await db.collection('users').doc(this.managingUser).set(updateData, { merge: true });
                 } catch (e) {
                     console.error('Falha ao aplicar VIP:', e);
-                    this.showToast('Erro ao enviar aviso VIP para o usuario', 'error');
+                    this.showToast('Erro ao enviar aviso VIP para o usuário', 'error');
                 }
             }
         };
@@ -681,7 +695,7 @@
 
             const vipInfo = this.getVipInfo(user);
             if (!vipInfo.active) {
-                this.showToast('Este usuario nao possui VIP ativo', 'error');
+                this.showToast('Este usuário não possui VIP ativo', 'error');
                 return;
             }
 
@@ -760,7 +774,7 @@
                 } catch (e) {}
             }
 
-            this.showToast('Usuario excluido', 'success');
+            this.showToast('Usuário excluído', 'success');
             this.closeModal('confirmActionModal');
         };
 
