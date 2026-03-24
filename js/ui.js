@@ -140,6 +140,26 @@
         // RESUMO DE PENDENCIAS
         // ============================================
         // showOnLogin=true apenas no login; false para atualizacoes silenciosas (ex: togglePago)
+        // Retorna a chave do periodo atual do dia para o usuario logado.
+        // Periodos: manha (05-11h), tarde (12-17h), noite (18-04h).
+        EvolutionApp.prototype._getPendingSummaryPeriodKey = function() {
+            if (!this.currentUserId) return null;
+            const now = getManausDate();
+            const dateStr = formatDateManaus(now);
+            const hour = now.getHours();
+            let period;
+            if (hour >= 5 && hour < 12) period = 'manha';
+            else if (hour >= 12 && hour < 18) period = 'tarde';
+            else period = 'noite';
+            return `evo_psum_seen_${this.currentUserId}_${dateStr}_${period}`;
+        };
+
+        // Marca o periodo atual como ja exibido (chamado ao fechar ou ver pendentes).
+        EvolutionApp.prototype._markPendingSummaryPeriodSeen = function() {
+            const key = this._getPendingSummaryPeriodKey();
+            if (key) safeStorage.setItem(key, '1');
+        };
+
         EvolutionApp.prototype.renderPendingSummary = function(showOnLogin) {
             const overlay = document.getElementById('pendingSummaryOverlay');
             if (!overlay) return;
@@ -150,6 +170,13 @@
             // Se nao e chamada de login e o overlay ja esta fechado, apenas atualiza os dados sem reabrir
             const isVisible = !overlay.classList.contains('hidden');
             if (!showOnLogin && !isVisible) return;
+
+            // Limite de uma exibicao por periodo do dia (manha/tarde/noite).
+            // Se ja foi exibido neste periodo, nao reabre — mesmo no login.
+            if (showOnLogin) {
+                const periodKey = this._getPendingSummaryPeriodKey();
+                if (periodKey && safeStorage.getItem(periodKey) === '1') return;
+            }
 
             const pending = (this.entries || []).filter(e => e && !e.pago);
             const totalLiq = pending.reduce((s, e) => s + (Number(e.liquido) || 0), 0);
@@ -219,6 +246,8 @@
         EvolutionApp.prototype.dismissPendingSummary = function() {
             const overlay = document.getElementById('pendingSummaryOverlay');
             if (!overlay) return;
+            // Marca periodo como visto para nao reabrir ate o proximo periodo
+            this._markPendingSummaryPeriodSeen();
             overlay.classList.add('dismissing');
             setTimeout(() => {
                 overlay.classList.add('hidden');
