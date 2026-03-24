@@ -8,9 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.37 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.40 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDAsIDIxMiwgMjU1LCAwLjEpIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZvbnQtc2l6ZT0iMjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCI+RTwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMGQ0ZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3MDAwZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L3N2Zz4=">
-    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="estilos.css?v=5.40">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -535,7 +535,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand">EVOLUTION V5.37</div>
+            <div class="footer-brand">EVOLUTION V5.40</div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -902,14 +902,104 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/firebase-sync.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/entries.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/init.js"></script>
+    <!-- Banner de atualização disponível -->
+    <div id="swUpdateBanner" style="
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        background: linear-gradient(135deg, #0a0e27, #1a1f3e);
+        border: 1px solid #00d4ff;
+        border-radius: 14px;
+        padding: 14px 20px;
+        box-shadow: 0 4px 30px rgba(0, 212, 255, 0.3);
+        display: none;
+        align-items: center;
+        gap: 14px;
+        font-family: sans-serif;
+        max-width: 90vw;
+        animation: swBannerIn 0.4s ease;
+    ">
+        <span style="font-size: 1.3rem;">🚀</span>
+        <div>
+            <div style="color: #00d4ff; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Nova versão disponível</div>
+            <div style="color: #a0aec0; font-size: 0.7rem; margin-top: 2px;">Toque em Atualizar para usar a versão mais recente</div>
+        </div>
+        <button onclick="window.location.reload()" style="
+            background: linear-gradient(135deg, #00d4ff, #7000ff);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        ">Atualizar</button>
+    </div>
+    <style>
+        @keyframes swBannerIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+    </style>
+
+    <script src="js/config.js?v=5.40"></script>
+    <script src="js/main.js?v=5.40"></script>
+    <script src="js/auth.js?v=5.40"></script>
+    <script src="js/firebase-sync.js?v=5.40"></script>
+    <script src="js/ui.js?v=5.40"></script>
+    <script src="js/entries.js?v=5.40"></script>
+    <script src="js/admin.js?v=5.40"></script>
+    <script src="js/utils.js?v=5.40"></script>
+    <script src="js/init.js?v=5.40"></script>
+
+    <script>
+        // Registra o Service Worker para controle de cache e atualizações automáticas
+        if ('serviceWorker' in navigator) {
+            // Flag: se já havia SW controlando a página antes de carregar
+            const hadController = !!navigator.serviceWorker.controller;
+
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => {
+                    // Verifica se há uma atualização pendente logo ao carregar
+                    reg.update();
+
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', () => {
+                            // Novo SW instalado e ativado — recarrega silenciosamente
+                            // O banner será mostrado via postMessage do SW
+                        });
+                    });
+                })
+                .catch(err => console.warn('[SW] Registro falhou:', err));
+
+            // Recebe mensagem do SW quando uma nova versão foi ativada
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    // Só mostra banner se já havia versão anterior (não é primeira instalação)
+                    if (hadController) {
+                        const banner = document.getElementById('swUpdateBanner');
+                        if (banner) {
+                            banner.style.display = 'flex';
+                        }
+                    }
+                }
+            });
+
+            // Detecta quando o controlador muda (novo SW assumiu controle)
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (hadController) {
+                    // Novo SW assumiu — recarrega automaticamente para garantir assets frescos
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
 </body>
 </html>
