@@ -587,6 +587,12 @@
                 if (cachedForceTs) this._checkForceLogout(Number(cachedForceTs));
             } catch (_) {}
 
+            // Bloquear usuários não-VIP a partir de 01/04/2026
+            if (!this.isAdmin && !this.isVip && new Date() >= new Date('2026-03-29T00:00:00')) {
+                if (window.TurtleBlock) window.TurtleBlock.show();
+                return;
+            }
+
             // Mostrar app
             this.showMainApp();
             this.startSessionWatch();

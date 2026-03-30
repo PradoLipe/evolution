@@ -1,9 +1,9 @@
     // ============================================
-    // EVOLUTION V5.40 - CODIGO COMPLETO E FUNCIONAL
+    // EVOLUTION V5.41 - CODIGO COMPLETO E FUNCIONAL
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.40';
+    window.EVOLUTION_APP_VERSION = 'V5.41';
 
 // Configuracao Firebase
     const firebaseConfig = {

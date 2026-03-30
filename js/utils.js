@@ -258,7 +258,6 @@
                 doc.setTextColor(80, 100, 130);
                 doc.text('EVOLUTION  |  ' + (this.currentUser || 'Usuario').toUpperCase(), marginL, pageH - 5);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Pag. ${pageNum}`, marginR, pageH - 5, { align: 'right' });
             };
 
             // Metadados do documento (evita avisos de assinatura em leitores de PDF)
@@ -289,7 +288,7 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.setTextColor(80, 100, 140);
-            doc.text('Operador Portuario  |  ' + titlePeriod, 21, 48);
+            doc.text('Conferente / Planista  |  ' + titlePeriod, 21, 48);
             // Registros no canto direito
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(9);

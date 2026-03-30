@@ -1,11 +1,11 @@
-$port = if ($env:PORT) { [int]$env:PORT } else { 8080 }
+$port = if ($env:PORT) { [int]$env:PORT } else { 3456 }
 $listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://localhost:$port/")
+$listener.Prefixes.Add("http://127.0.0.1:$port/")
 try { $listener.Start() } catch {
     Write-Error "Failed to start listener on port $port"
     exit 1
 }
-Write-Host "Server running on http://localhost:$port/"
+Write-Host "Server running on http://127.0.0.1:$port/"
 [Console]::Out.Flush()
 $root = $PSScriptRoot
 if (-not $root) { $root = Split-Path -Parent $MyInvocation.MyCommand.Path }
