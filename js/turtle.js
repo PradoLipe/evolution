@@ -202,14 +202,25 @@
         screen.classList.remove('turtle-screen-hidden');
         document.body.style.overflow = 'hidden';
 
-        setTimeout(function () { showMessage("Calma... tô carregando...", false); }, 1200);
-        setTimeout(scheduleNextMessage, 12000);
-
-        startFakeProgress();
-
-        // Garantir autoplay no iOS — tenta iniciar, se falhar aguarda toque
+        // Sorteia o vídeo uma vez por sessão
         var vid = getEl('turtleChar');
         if (vid) {
+            var videos = ['turtle.mp4', 'turtle2.mp4'];
+            var chosen = videos[Math.floor(Math.random() * videos.length)];
+            vid.src = chosen;
+            vid.load();
+
+            // Garante bolha visível no momento do reinício do vídeo
+            vid.addEventListener('ended', function () {
+                if (!isTalking) {
+                    var picked = pickMessage();
+                    showMessage(picked.text, picked.golden);
+                }
+                vid.currentTime = 0;
+                vid.play();
+            });
+
+            // Autoplay — iOS fallback
             var playPromise = vid.play();
             if (playPromise !== undefined) {
                 playPromise.catch(function () {
@@ -220,6 +231,9 @@
                 });
             }
         }
+
+        setTimeout(scheduleNextMessage, 5000);
+        startFakeProgress();
     }
 
     function hide() {
