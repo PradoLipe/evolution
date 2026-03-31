@@ -32,6 +32,8 @@
     // ── Estado ────────────────────────────────────────────────────────────────
     var msgTimer = null;
     var bubbleHideTimer = null;
+    var progressInterval = null;
+    var vidEndedHandler = null;
     var usedMessages = [];
     var usedGolden = [];
     var isTalking = false;
@@ -185,7 +187,7 @@
                 bar.style.width = '99%';
                 pct.textContent = '99%';
                 if (label) label.textContent = 'Quase lá';
-                setInterval(function () {
+                progressInterval = setInterval(function () {
                     bar.style.opacity = bar.style.opacity === '0.35' ? '1' : '0.35';
                 }, 1100);
             }
@@ -210,15 +212,20 @@
             vid.src = chosen;
             vid.load();
 
+            // Remove listener anterior para evitar acúmulo entre sessões
+            if (vidEndedHandler) {
+                vid.removeEventListener('ended', vidEndedHandler);
+            }
             // Garante bolha visível no momento do reinício do vídeo
-            vid.addEventListener('ended', function () {
+            vidEndedHandler = function () {
                 if (!isTalking) {
                     var picked = pickMessage();
                     showMessage(picked.text, picked.golden);
                 }
                 vid.currentTime = 0;
                 vid.play();
-            });
+            };
+            vid.addEventListener('ended', vidEndedHandler);
 
             // Autoplay — iOS fallback
             var playPromise = vid.play();
@@ -239,8 +246,43 @@
     function hide() {
         var screen = getEl('turtleBlockScreen');
         if (screen) screen.classList.add('turtle-screen-hidden');
+
+        // Limpa todos os timers e intervalos
         if (msgTimer)        { clearTimeout(msgTimer);        msgTimer        = null; }
         if (bubbleHideTimer) { clearTimeout(bubbleHideTimer); bubbleHideTimer = null; }
+        if (progressInterval){ clearInterval(progressInterval); progressInterval = null; }
+
+        // Remove listener do vídeo
+        var vid = getEl('turtleChar');
+        if (vid && vidEndedHandler) {
+            vid.removeEventListener('ended', vidEndedHandler);
+            vidEndedHandler = null;
+            vid.pause();
+        }
+
+        // Reseta estado
+        isTalking  = false;
+        bubbleSide = 'right';
+
+        // Reseta bolha
+        var bubble = getEl('turtleBubble');
+        if (bubble) {
+            bubble.classList.add('turtle-bubble-hidden');
+            bubble.classList.remove('turtle-bubble-in', 'turtle-bubble-out');
+            bubble.style.borderColor = '';
+            bubble.style.boxShadow   = '';
+            bubble.style.color       = '';
+            bubble.removeAttribute('data-side');
+        }
+
+        // Reseta barra de progresso para próxima sessão
+        var bar   = getEl('turtleProgressBar');
+        var pct   = getEl('turtleProgressPct');
+        var label = getEl('turtleLoadingText');
+        if (bar)   { bar.style.width = '0%'; bar.style.opacity = '1'; }
+        if (pct)   pct.textContent = '0%';
+        if (label) label.textContent = 'Carregando suas informações';
+
         document.body.style.overflow = '';
     }
 
