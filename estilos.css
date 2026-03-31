@@ -464,38 +464,15 @@
             100% { transform: translateX(-10%); }
         }
 
-        /* Personagem tartaruga */
+        /* Vídeo da tartaruga — tela cheia */
         #turtleChar {
             position: absolute;
-            font-size: 3.8rem;
-            line-height: 1;
-            cursor: default;
-            user-select: none;
-            transform-origin: center center;
-            transition: transform 0.12s ease;
-            filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.35));
-            animation: turtle-walk 3.5s steps(2, end) infinite;
-            will-change: left, top;
-        }
-        @keyframes turtle-walk {
-            0%   { margin-top: 0; }
-            50%  { margin-top: -5px; }
-            100% { margin-top: 0; }
-        }
-        #turtleChar.turtle-talking {
-            animation: turtle-talk 0.3s ease-in-out infinite alternate;
-            filter: drop-shadow(0 0 18px rgba(0, 212, 255, 0.7));
-        }
-        @keyframes turtle-talk {
-            from { transform: scaleX(var(--turtle-sx, 1)) rotate(-4deg); }
-            to   { transform: scaleX(var(--turtle-sx, 1)) rotate(4deg); }
-        }
-        #turtleChar.turtle-bounce {
-            animation: turtle-boing 0.2s ease-out;
-        }
-        @keyframes turtle-boing {
-            0%   { filter: drop-shadow(0 0 20px rgba(255, 200, 0, 0.9)); }
-            100% { filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.35)); }
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            display: block;
         }
 
         /* Bolha de fala */
@@ -517,12 +494,12 @@
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,212,255,0.08);
             z-index: 1000000;
         }
-        /* Setinha da bolha (dinâmica via JS) */
+        /* Seta padrão: aponta para baixo (bolha acima do vídeo) */
         #turtleBubble::after {
             content: '';
             position: absolute;
             bottom: -9px;
-            left: var(--arrow-left, 20px);
+            left: var(--arrow-left, 50%);
             width: 0; height: 0;
             border-left: 9px solid transparent;
             border-right: 9px solid transparent;
@@ -532,12 +509,46 @@
             content: '';
             position: absolute;
             bottom: -7px;
-            left: calc(var(--arrow-left, 20px) + 1px);
+            left: calc(var(--arrow-left, 50%) + 1px);
             width: 0; height: 0;
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
             border-top: 8px solid rgba(10, 15, 40, 0.92);
             z-index: 1;
+        }
+        /* Seta apontando para esquerda (bolha à direita do vídeo) */
+        #turtleBubble[data-side="right"]::after {
+            bottom: auto; top: 18px;
+            left: -9px;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-right: 9px solid rgba(0, 212, 255, 0.45);
+            border-left: none;
+        }
+        #turtleBubble[data-side="right"]::before {
+            bottom: auto; top: 19px;
+            left: -7px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid rgba(10, 15, 40, 0.92);
+            border-left: none;
+        }
+        /* Seta apontando para direita (bolha à esquerda do vídeo) */
+        #turtleBubble[data-side="left"]::after {
+            bottom: auto; top: 18px;
+            left: auto; right: -9px;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-left: 9px solid rgba(0, 212, 255, 0.45);
+            border-right: none;
+        }
+        #turtleBubble[data-side="left"]::before {
+            bottom: auto; top: 19px;
+            left: auto; right: -7px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid rgba(10, 15, 40, 0.92);
+            border-right: none;
         }
         #turtleBubble.turtle-bubble-hidden { display: none; }
         #turtleBubble.turtle-bubble-in {
@@ -559,6 +570,7 @@
         /* Caixa de loading falso */
         .turtle-loading-box {
             position: absolute;
+            z-index: 10;
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
@@ -612,11 +624,3 @@
             letter-spacing: 0.05em;
         }
 
-        /* Objetos rápidos (coelho, foguete, raio) */
-        .turtle-speeder {
-            position: absolute;
-            font-size: 2.2rem;
-            z-index: 20;
-            pointer-events: none;
-            filter: drop-shadow(0 0 8px rgba(255,215,0,0.7));
-        }

@@ -815,6 +815,7 @@
         // LOGOUT
         // ============================================
         EvolutionApp.prototype.logout = function() {
+            if (window.TurtleBlock) window.TurtleBlock.hide();
             const prevUserId = this.currentUserId;
             if (typeof this.stopSessionWatch === 'function') {
                 this.stopSessionWatch();
