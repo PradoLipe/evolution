@@ -33,6 +33,7 @@
     var msgTimer = null;
     var bubbleHideTimer = null;
     var progressInterval = null;
+    var progressToken = 0; // invalida ticks de sessões anteriores
     var vidEndedHandler = null;
     var usedMessages = [];
     var usedGolden = [];
@@ -164,10 +165,15 @@
         var label = getEl('turtleLoadingText');
         if (!bar || !pct) return;
 
+        // Token desta sessão — se mudar, os ticks antigos se cancelam sozinhos
+        var myToken = ++progressToken;
+
         var current  = 0;
         var labelIdx = 0;
 
         function tick() {
+            if (myToken !== progressToken) return; // sessão encerrada, para
+
             var remaining = 99 - current;
             var step = remaining * (0.005 + Math.random() * 0.008);
             step = Math.max(0.05, Math.min(step, 1.8));
@@ -188,6 +194,7 @@
                 pct.textContent = '99%';
                 if (label) label.textContent = 'Quase lá';
                 progressInterval = setInterval(function () {
+                    if (myToken !== progressToken) { clearInterval(progressInterval); return; }
                     bar.style.opacity = bar.style.opacity === '0.35' ? '1' : '0.35';
                 }, 1100);
             }
