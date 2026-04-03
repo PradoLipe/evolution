@@ -889,9 +889,15 @@
         };
 
         EvolutionApp.prototype.sendFinancasTour = async function() {
-            if (!this.managingUser) return;
+            if (!this.managingUser) {
+                this.showToast('Nenhum usuário selecionado', 'error');
+                return;
+            }
             const user = this.users[this.managingUser];
-            if (!user) return;
+            if (!user) {
+                this.showToast('Usuário não encontrado', 'error');
+                return;
+            }
 
             const vipInfo = this.getVipInfo(user);
             if (!vipInfo.active && !user.isAdmin) {
@@ -899,22 +905,31 @@
                 return;
             }
 
-            if (user.tourFinancas === 'seen') {
-                this.showToast('⚠️ Este usuário já visualizou o tour. Reenviando mesmo assim...', 'warning');
-            }
+            const jaViu = user.tourFinancas === 'seen';
+
+            // Feedback imediato no botão
+            const btnSend = document.getElementById('btnSendTour');
+            if (btnSend) { btnSend.disabled = true; btnSend.textContent = '⏳ Enviando...'; }
 
             this.users[this.managingUser].tourFinancas = 'pending';
             this.saveUsersToCache();
             this._updateTourStatusUI(this.users[this.managingUser]);
 
-            if (db) {
-                try {
-                    await db.collection('users').doc(this.managingUser).set({ tourFinancas: 'pending' }, { merge: true });
-                    this.showToast('Tour enviado! Aparecerá no próximo login.', 'success');
-                } catch (e) {
-                    this.showToast('Erro ao salvar no servidor', 'error');
+            if (!db) {
+                this.showToast('Sem conexão com servidor', 'error');
+                if (btnSend) { btnSend.disabled = false; }
+                return;
+            }
+
+            try {
+                await db.collection('users').doc(this.managingUser).set({ tourFinancas: 'pending' }, { merge: true });
+                if (jaViu) {
+                    this.showToast('⚠️ Usuário já tinha visto o tour — reenviado com sucesso!', 'warning');
+                } else {
+                    this.showToast('✅ Tour enviado! O usuário verá assim que o app atualizar.', 'success');
                 }
-            } else {
-                this.showToast('Tour salvo localmente', 'info');
+            } catch (e) {
+                this.showToast('Erro ao salvar no servidor: ' + (e.message || e), 'error');
+                if (btnSend) { btnSend.disabled = false; btnSend.textContent = '🗺 Enviar Tour'; }
             }
         };

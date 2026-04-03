@@ -238,4 +238,13 @@
                 this.scheduleHistorySync('vip-activated', 600);
             }
             this.checkVipNotification(userData);
+
+            // Tour de Finanças em tempo real: exibe imediatamente quando admin envia
+            if (userData.tourFinancas === 'pending') {
+                const overlay = document.getElementById('financasTourOverlay');
+                const jaAberto = overlay && overlay.style.display !== 'none';
+                if (!jaAberto) {
+                    setTimeout(() => this.showFinancasTour(), 800);
+                }
+            }
         };
