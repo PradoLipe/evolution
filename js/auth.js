@@ -223,7 +223,7 @@
             // Buscar usuario pelo PIN
             let foundUser = null;
 
-            // Verificar no cache local
+            // Verificar no cache local (fallback para modo offline)
             for (const [id, user] of Object.entries(this.users)) {
                 if (user.code === enteredPin) {
                     foundUser = { ...user, docId: id };
@@ -231,14 +231,25 @@
                 }
             }
 
-            // Se nao encontrou localmente, buscar no Firebase
-            if (!foundUser && this.firebaseReady && db) {
+            // Sempre buscar no Firebase quando disponivel para garantir dados atualizados
+            // (ex: status VIP alterado pelo admin nao reflete no cache local ate uma nova consulta)
+            if (this.firebaseReady && db) {
                 try {
-                    const q = await db.collection('users').where('code', '==', enteredPin).get();
-                    if (!q.empty) {
-                        const doc = q.docs[0];
-                        foundUser = { ...doc.data(), docId: doc.id };
-                        this.users[doc.id] = foundUser;
+                    let fbUser = null;
+                    if (foundUser?.docId) {
+                        const doc = await db.collection('users').doc(foundUser.docId).get();
+                        if (doc.exists) fbUser = { ...doc.data(), docId: doc.id };
+                    }
+                    if (!fbUser) {
+                        const q = await db.collection('users').where('code', '==', enteredPin).get();
+                        if (!q.empty) {
+                            const doc = q.docs[0];
+                            fbUser = { ...doc.data(), docId: doc.id };
+                        }
+                    }
+                    if (fbUser) {
+                        foundUser = fbUser;
+                        this.users[fbUser.docId] = fbUser;
                         this.saveUsersToCache();
                     }
                 } catch (e) {}
@@ -600,6 +611,11 @@
             this.setDashboardMode(this.dashboardMode, false);
             this.restoreHistoryPrefs();
             this.checkVipNotification(userData);
+
+            // Tour de Finanças: exibe se admin marcou como pendente
+            if (userData.tourFinancas === 'pending') {
+                setTimeout(() => this.showFinancasTour(), 2200);
+            }
             this.renderCalendar();
 
             // Setup listeners

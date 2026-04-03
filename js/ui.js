@@ -1518,3 +1518,37 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             svg.innerHTML = html;
         };
+
+        // ============================================
+        // TOUR DE FINANCAS - EXIBICAO
+        // ============================================
+        EvolutionApp.prototype.showFinancasTour = function() {
+            const overlay = document.getElementById('financasTourOverlay');
+            if (!overlay) return;
+            overlay.style.display = 'flex';
+            const btn = document.getElementById('btnFinance');
+            if (btn) btn.classList.add('tour-highlight');
+        };
+
+        EvolutionApp.prototype.markTourSeen = async function(goToFinancas) {
+            const overlay = document.getElementById('financasTourOverlay');
+            if (overlay) overlay.style.display = 'none';
+            const btn = document.getElementById('btnFinance');
+            if (btn) btn.classList.remove('tour-highlight');
+
+            if (this.currentUserId) {
+                if (this.users[this.currentUserId]) {
+                    this.users[this.currentUserId].tourFinancas = 'seen';
+                    this.saveUsersToCache();
+                }
+                if (db) {
+                    try {
+                        await db.collection('users').doc(this.currentUserId).set({ tourFinancas: 'seen' }, { merge: true });
+                    } catch (e) {}
+                }
+            }
+
+            if (goToFinancas) {
+                window.location.href = 'financas.html';
+            }
+        };
