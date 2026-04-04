@@ -51,6 +51,8 @@
             this._activityHandler = null;
             this._visibilityHandler = null;
             this._focusHandler = null;
+            this._openModalCount = 0;
+            this._clickOutsideNavioHandler = null;
 
             this.init();
         }
@@ -159,12 +161,14 @@
                 this.removedNavioSuggestions = new Set();
             }
             // Event listeners para mostrar sugestoes de navio
-            document.addEventListener('click', (event) => {
+            // Guardamos referencia para poder remover no logout
+            this._clickOutsideNavioHandler = (event) => {
                 if (!event.target.closest('.navio-suggestions')) {
                     this.hideNavioSuggestions('calcNavio');
                     this.hideNavioSuggestions('relNavio');
                 }
-            });
+            };
+            document.addEventListener('click', this._clickOutsideNavioHandler);
             // Inicializar calendario
             this.syncCalendarMonthWithEntries();
             this.renderCalendar();

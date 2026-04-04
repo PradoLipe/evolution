@@ -2,7 +2,7 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '5.47';
+const APP_VERSION = '5.48';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
 
 const LOCAL_ASSETS = [
@@ -71,7 +71,7 @@ self.addEventListener('fetch', event => {
         .then(response => {
           if (response && response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone)).catch(err => console.warn('[SW] cache.put falhou:', err));
           }
           return response;
         })
@@ -85,7 +85,7 @@ self.addEventListener('fetch', event => {
         return fetch(event.request).then(response => {
           if (response && response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone)).catch(err => console.warn('[SW] cache.put CDN falhou:', err));
           }
           return response;
         });

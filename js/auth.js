@@ -41,7 +41,7 @@
                 db.collection('users').doc(this.currentUserId).set({
                     lastSeenAt: seenIso,
                     lastSeenSource: source
-                }, { merge: true }).catch(() => {});
+                }, { merge: true }).catch((e) => { console.warn('[sync] lastSeen falhou:', e?.code || e?.message || e); });
             }
         };
 
@@ -68,7 +68,7 @@
                         try {
                             const sd = decodeSession(sessionRaw);
                             const lastActivity = Number(sd?.lastActivityTs || 0);
-                            if (lastActivity && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
+                            if (lastActivity > 0 && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
                                 this.logout();
                                 return;
                             }
@@ -84,7 +84,7 @@
                     try {
                         const sd = decodeSession(sessionRaw);
                         const lastActivity = Number(sd?.lastActivityTs || 0);
-                        if (lastActivity && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
+                        if (lastActivity > 0 && (Date.now() - lastActivity) >= this.getInactivityLimitMs()) {
                             this.logout();
                             return;
                         }
@@ -561,7 +561,7 @@
                     this.saveUsersToCache();
                 }
                 if (db) {
-                    db.collection('users').doc(this.currentUserId).set({ deviceId: this.deviceId }, { merge: true }).catch(() => {});
+                    db.collection('users').doc(this.currentUserId).set({ deviceId: this.deviceId }, { merge: true }).catch((e) => { console.warn('[sync] deviceId falhou:', e?.code || e?.message || e); });
                 }
             }
 

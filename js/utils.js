@@ -828,7 +828,7 @@
                 db.collection('users').doc(prevUserId).set({
                     lastSeenAt: new Date().toISOString(),
                     lastSeenSource: 'logout'
-                }, { merge: true }).catch(() => {});
+                }, { merge: true }).catch((e) => { console.warn('[sync] logout lastSeen falhou:', e?.code || e?.message || e); });
             }
             clearTimeout(this.historySyncTimer);
 
@@ -836,6 +836,12 @@
             if (this.unsubscribeUsers) { this.unsubscribeUsers(); this.unsubscribeUsers = null; }
             if (this.unsubscribeEntries) { this.unsubscribeEntries(); this.unsubscribeEntries = null; }
             if (this.unsubscribePending) { this.unsubscribePending(); this.unsubscribePending = null; }
+
+            // Remover event listeners globais registrados no init
+            if (this._clickOutsideNavioHandler) {
+                document.removeEventListener('click', this._clickOutsideNavioHandler);
+                this._clickOutsideNavioHandler = null;
+            }
 
             // Fechar TODOS os modais abertos (eles sao position:fixed e ficam visiveis
             // mesmo apos mainApp ser ocultado, causando o bug de "tela nao muda")

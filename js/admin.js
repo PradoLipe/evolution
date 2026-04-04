@@ -130,11 +130,11 @@
                     <div class="pending-item">
                         <div class="pending-info">
                             <span class="pending-name">${safeName}</span>
-                            <span class="pending-date">PIN: ${safeCode} â€¢ ${dateTxt}</span>
+                            <span class=”pending-date”>PIN: ${safeCode} &bull; ${dateTxt}</span>
                         </div>
-                        <div class="pending-actions">
-                            <button class="btn-tiny btn-approve" data-action="approve" data-docid="${esc(docId)}" title="Aprovar">âœ“</button>
-                            <button class="btn-tiny btn-reject" data-action="reject" data-docid="${esc(docId)}" title="Rejeitar">âœ•</button>
+                        <div class=”pending-actions”>
+                            <button class=”btn-tiny btn-approve” data-action=”approve” data-docid=”${esc(docId)}” title=”Aprovar”>&#10003;</button>
+                            <button class=”btn-tiny btn-reject” data-action=”reject” data-docid=”${esc(docId)}” title=”Rejeitar”>&#10005;</button>
                         </div>
                     </div>
                 `;

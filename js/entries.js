@@ -144,7 +144,7 @@
 
             this.showToast('Registro salvo!', 'success');
             // atualizar calendario e sugestoes apos salvar
-            if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+            if (typeof this.syncCalendarMonthWithEntries === 'function' && typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
             // Atualizar resumo de pendencias
             if (typeof this.renderPendingSummary === 'function') this.renderPendingSummary();
             // Atualizar sugestoes apos salvar
