@@ -117,6 +117,8 @@
             const btnAdmin = document.getElementById('btnAdmin');
             if (btnAdmin) {
                 btnAdmin.classList.toggle('hidden', !this.isAdmin);
+                const adminSep = document.getElementById('adminSep');
+                if (adminSep) adminSep.classList.toggle('hidden', !this.isAdmin);
             }
 
             // Atualizar dashboard

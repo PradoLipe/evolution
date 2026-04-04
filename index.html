@@ -273,10 +273,11 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')">🛡</button>
-                <button class="icon-btn" id="btnFinance" onclick="window.location.href='financas.html'" title="Financeiro" style="background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.25);color:var(--primary);">💰</button>
-                <button class="icon-btn" onclick="app.toggleTheme()">◐</button>
-                <button class="icon-btn" onclick="app.openModal('configModal')">⚙</button>
+                <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')" title="Admin">🛡</button>
+                <div class="header-actions-sep hidden" id="adminSep"></div>
+                <button class="icon-btn" id="btnFinance" onclick="window.location.href='financas.html'" title="Financeiro" style="background:rgba(0,212,255,0.08);color:var(--primary);">💰</button>
+                <button class="icon-btn" onclick="app.toggleTheme()" title="Tema">◐</button>
+                <button class="icon-btn" onclick="app.openModal('configModal')" title="Config">⚙</button>
             </div>
         </header>
 
