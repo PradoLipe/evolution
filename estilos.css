@@ -109,7 +109,7 @@
         .user-info span.status-text { font-size: 0.6rem; color: var(--success); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
         .status-dot { width: 5px; height: 5px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .header-actions { display: flex; gap: 8px; }
+        .header-actions { display: grid; grid-template-columns: repeat(2, 36px); gap: 6px; }
         .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 1rem; }
         .icon-btn:active { transform: scale(0.95); background: var(--primary); color: white; }
         .icon-btn.admin-btn { background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: var(--accent); }

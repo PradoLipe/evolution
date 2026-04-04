@@ -935,6 +935,25 @@ function parseMoney(str) {
     const n = parseFloat(cleaned);
     return isNaN(n) ? 0 : Math.round(n * 100);
 }
+function formatBudgetInput(el) {
+    const pos = el.selectionStart;
+    const oldLen = el.value.length;
+    let raw = el.value.replace(/[^\d,]/g, '');
+    const commaIdx = raw.indexOf(',');
+    let intPart, decPart;
+    if (commaIdx !== -1) {
+        intPart = raw.slice(0, commaIdx);
+        decPart = raw.slice(commaIdx + 1, commaIdx + 3);
+    } else {
+        intPart = raw;
+        decPart = null;
+    }
+    intPart = intPart.replace(/^0+(\d)/, '$1') || '';
+    const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    el.value = decPart !== null ? intFormatted + ',' + decPart : intFormatted;
+    const newLen = el.value.length;
+    el.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+}
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const [y,m,d] = dateStr.split('-');
@@ -2081,9 +2100,10 @@ class FinanceApp {
             `<div class="budget-setting-row">
                 <div class="budget-setting-icon">${c.icon}</div>
                 <div class="budget-setting-name">${c.label}</div>
-                <input type="number" class="budget-setting-input" id="budget_${c.id}"
-                    value="${budgets[c.id] ? (budgets[c.id]/100).toFixed(2) : ''}"
-                    placeholder="Sem limite" inputmode="decimal" step="0.01" min="0">
+                <input type="text" class="budget-setting-input" id="budget_${c.id}"
+                    value="${budgets[c.id] ? moneyToStr(budgets[c.id]) : ''}"
+                    placeholder="Sem limite" inputmode="numeric"
+                    oninput="formatBudgetInput(this)">
             </div>`
         ).join('');
         document.getElementById('budgetModal').classList.add('open');
