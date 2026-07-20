@@ -136,6 +136,8 @@
 
             // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
             this.showAnnouncementIfNeeded();
+            // Novidades V5.50 / homenagem Espanha (expira automaticamente apos 03/08/2026)
+            this.showUpdateAnnouncementIfNeeded();
         };
 
         // ============================================

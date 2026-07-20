@@ -153,6 +153,15 @@
                 if (savedTheme === 'light') document.body.classList.add('light-mode');
             } catch(e) {}
 
+            // Homenagem temporaria a Espanha (campea da Copa do Mundo): cores do app
+            // mudam para vermelho/amarelo por 2 semanas e voltam ao normal sozinhas depois.
+            try {
+                const tributeStart = new Date('2026-07-20T00:00:00');
+                const tributeEnd = new Date('2026-08-03T23:59:59');
+                const now = new Date();
+                document.body.classList.toggle('tribute-es', now >= tributeStart && now <= tributeEnd);
+            } catch(e) {}
+
             // Carregar lista de navios removidos das sugestoes
             try {
                 const removed = safeStorage.getItem('evo_removed_navio');

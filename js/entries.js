@@ -287,8 +287,13 @@ ${userName}`;
                         title: 'Relatorio EVOLUTION',
                         text: currentText
                     });
+                    // Compartilhamento concluido: fecha a tela de edicao e volta para a tela principal
+                    this.closeModal('reportPreviewModal');
                     return;
-                } catch (e) {}
+                } catch (e) {
+                    // Usuario cancelou o compartilhamento: mantem a tela de edicao aberta, sem copiar
+                    if (e && e.name === 'AbortError') return;
+                }
             }
             this.copyReportText();
             this.showToast('Copiado para compartilhar', 'info');

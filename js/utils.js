@@ -156,6 +156,19 @@
             const _mNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
             const tableBody = [];
             let _lastMk = null;
+            let _monthBruto = 0;
+            let _monthLiquido = 0;
+            const monthlyTotals = [];
+            const pushMonthSubtotal = (mk) => {
+                const [ym, mm] = mk.split('-');
+                const mLabel = (_mNames[parseInt(mm, 10) - 1] + ' ' + ym).toUpperCase();
+                monthlyTotals.push({ label: mLabel, bruto: _monthBruto, liquido: _monthLiquido });
+                tableBody.push([
+                    { content: `Subtotal ${mLabel}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
+                    { content: this.formatMoney(_monthBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 130, 180], fillColor: [235, 242, 250], fontSize: 7.5 } },
+                    { content: this.formatMoney(_monthLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 150, 110], fillColor: [235, 242, 250], fontSize: 7.5 } }
+                ]);
+            };
             filtered.forEach((e) => {
                 totalBruto += Number(e.bruto) || 0;
                 totalLiquido += Number(e.liquido) || 0;
@@ -163,7 +176,13 @@
                 if (type === 'all' && e.data) {
                     const mk = e.data.substring(0, 7);
                     if (mk !== _lastMk) {
+                        // Fecha o mes anterior com seu subtotal, antes de iniciar o proximo
+                        if (_lastMk !== null) {
+                            pushMonthSubtotal(_lastMk);
+                        }
                         _lastMk = mk;
+                        _monthBruto = 0;
+                        _monthLiquido = 0;
                         const [ym, mm] = mk.split('-');
                         const mLabel = (_mNames[parseInt(mm, 10) - 1] + ' ' + ym).toUpperCase();
                         tableBody.push([{
@@ -179,6 +198,8 @@
                             }
                         }]);
                     }
+                    _monthBruto += Number(e.bruto) || 0;
+                    _monthLiquido += Number(e.liquido) || 0;
                 }
                 const isPaid = !!e.pago;
                 tableBody.push([
@@ -191,6 +212,10 @@
                     { content: this.formatMoney(e.liquido), paid: isPaid }
                 ]);
             });
+            // Subtotal do ultimo mes do periodo
+            if (type === 'all' && _lastMk !== null) {
+                pushMonthSubtotal(_lastMk);
+            }
 
             const totalPago = filtered.filter(e => e.pago).reduce((sum, e) => sum + (Number(e.liquido) || 0), 0);
             const totalPendente = totalLiquido - totalPago;
@@ -386,11 +411,17 @@
                     5: { halign: 'right', cellWidth: 30, fontStyle: 'normal' },
                     6: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
                 },
-                foot: [[
-                    { content: 'TOTAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
-                ]],
+                showFoot: type === 'all' ? 'lastPage' : 'everyPage',
+                foot: [
+                    [
+                        { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                        { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                        { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
+                    ],
+                    [
+                        { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
+                    ]
+                ],
                 didParseCell: (data) => {
                     // Cor do valor liquido: verde = pago, vermelho = pendente
                     if (data.section !== 'body' || data.column.index !== 6) return;
@@ -466,6 +497,26 @@
             const seenKey = 'evo_announcement_confirmed';
             if (!safeStorage.getItem(seenKey)) {
                 setTimeout(() => this.openModal('announcementModal'), 600);
+            }
+        };
+
+        // ============================================
+        // NOVIDADES V5.50 (expira junto com a homenagem, 03/08/2026)
+        // ============================================
+        EvolutionApp.prototype.showUpdateAnnouncementIfNeeded = function() {
+            const deadline = new Date('2026-08-03T23:59:59-03:00');
+            const now = new Date();
+            const banner = document.getElementById('updateBannerV550');
+            if (now >= deadline) {
+                if (banner) banner.classList.add('hidden');
+                return;
+            }
+
+            if (banner) banner.classList.remove('hidden');
+
+            const seenKey = 'evo_update_v550_confirmed';
+            if (!safeStorage.getItem(seenKey)) {
+                setTimeout(() => this.openModal('updateModalV550'), 900);
             }
         };
 
