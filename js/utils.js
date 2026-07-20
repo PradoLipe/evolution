@@ -493,11 +493,16 @@
             const banner = document.getElementById('announcementBanner');
             if (banner) banner.classList.remove('hidden');
 
-            // Modal apenas 1 vez — apos confirmar, nunca mais aparece
-            const seenKey = 'evo_announcement_confirmed';
+            // Modal apenas 1 vez por usuario — apos confirmar, nunca mais aparece para ele
+            const seenKey = `evo_announcement_confirmed_${this.currentUserId}`;
             if (!safeStorage.getItem(seenKey)) {
                 setTimeout(() => this.openModal('announcementModal'), 600);
             }
+        };
+
+        EvolutionApp.prototype.confirmAnnouncement = function() {
+            safeStorage.setItem(`evo_announcement_confirmed_${this.currentUserId}`, '1');
+            this.closeModal('announcementModal');
         };
 
         // ============================================
@@ -514,10 +519,17 @@
 
             if (banner) banner.classList.remove('hidden');
 
-            const seenKey = 'evo_update_v550_confirmed';
+            // Modal apenas 1 vez por usuario — se o dispositivo for compartilhado por varios
+            // usuarios, cada um precisa ver a mensagem no seu proprio login
+            const seenKey = `evo_update_v550_confirmed_${this.currentUserId}`;
             if (!safeStorage.getItem(seenKey)) {
                 setTimeout(() => this.openModal('updateModalV550'), 900);
             }
+        };
+
+        EvolutionApp.prototype.confirmUpdateV550 = function() {
+            safeStorage.setItem(`evo_update_v550_confirmed_${this.currentUserId}`, '1');
+            this.closeModal('updateModalV550');
         };
 
         // ============================================

@@ -291,38 +291,49 @@
                 }
             } catch (e) {}
 
-            // BUG FIX: Carregar e exibir mensagem do sistema (era funcionalidade sem implementacao)
+            // A mensagem do sistema e checada por usuario a cada login (ver checkSystemMessage,
+            // chamada em restoreUserSession) para garantir que currentUserId ja esta definido.
+        };
+
+        // ============================================
+        // MENSAGEM DO SISTEMA (publicada pelo admin)
+        // BUG FIX: antes so era checada 1x no carregamento da pagina, via fetchAdminSettings,
+        // ou seja ANTES do login (currentUserId ainda null) — nunca era re-checada no login
+        // real do usuario. Por isso a mensagem nao aparecia de forma confiavel. Agora e chamada
+        // diretamente em restoreUserSession, sempre com o currentUserId correto.
+        // ============================================
+        EvolutionApp.prototype.checkSystemMessage = async function() {
+            if (!db || !this.currentUserId) return;
             try {
                 const msgDoc = await db.collection('config').doc('message').get();
-                if (msgDoc.exists) {
-                    const msgData = msgDoc.data();
-                    if (!msgData || !msgData.content) return;
-                    const now = new Date();
-                    let shouldShow = false;
-                    const seenKey = `evo_msg_seen_${this.currentUserId}`;
-                    if (msgData.type === 'always') {
-                        shouldShow = true;
-                    } else if (msgData.type === 'once') {
-                        shouldShow = safeStorage.getItem(seenKey) !== msgData.createdAt;
-                    } else if (msgData.type === 'period' && msgData.startDate && msgData.endDate) {
-                        const start = new Date(msgData.startDate);
-                        const end = new Date(msgData.endDate + 'T23:59:59');
-                        shouldShow = now >= start && now <= end;
-                    }
-                    if (shouldShow) {
-                        document.getElementById('sysMsgContent').textContent = msgData.content;
-                        // FIX 11: So exibe mensagem apos o mainApp estar visivel
-                        const showMsg = () => {
-                            const mainApp = document.getElementById('mainApp');
-                            if (mainApp && !mainApp.classList.contains('hidden')) {
-                                this.openModal('messageModal');
-                            } else {
-                                setTimeout(showMsg, 500);
-                            }
-                        };
-                        setTimeout(showMsg, 1500);
-                        if (msgData.type === 'once') safeStorage.setItem(seenKey, msgData.createdAt || '');
-                    }
+                if (!msgDoc.exists) return;
+                const msgData = msgDoc.data();
+                if (!msgData || !msgData.content) return;
+                const now = new Date();
+                let shouldShow = false;
+                const seenKey = `evo_msg_seen_${this.currentUserId}`;
+                if (msgData.type === 'always') {
+                    shouldShow = true;
+                } else if (msgData.type === 'once') {
+                    shouldShow = safeStorage.getItem(seenKey) !== msgData.createdAt;
+                } else if (msgData.type === 'period' && msgData.startDate && msgData.endDate) {
+                    const start = new Date(msgData.startDate);
+                    const end = new Date(msgData.endDate + 'T23:59:59');
+                    shouldShow = now >= start && now <= end;
+                }
+                if (shouldShow) {
+                    document.getElementById('sysMsgContent').textContent = msgData.content;
+                    // So exibe mensagem apos o mainApp estar visivel
+                    const showMsg = () => {
+                        const mainApp = document.getElementById('mainApp');
+                        if (mainApp && !mainApp.classList.contains('hidden')) {
+                            this.openModal('messageModal');
+                        } else {
+                            setTimeout(showMsg, 500);
+                        }
+                    };
+                    setTimeout(showMsg, 1500);
+                    if (msgData.type === 'once') safeStorage.setItem(seenKey, msgData.createdAt || '');
                 }
             } catch (e) {}
         };

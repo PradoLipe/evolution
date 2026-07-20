@@ -611,6 +611,7 @@
             this.setDashboardMode(this.dashboardMode, false);
             this.restoreHistoryPrefs();
             this.checkVipNotification(userData);
+            this.checkSystemMessage();
 
             // Tour de Finanças: exibe se admin marcou como pendente
             if (userData.tourFinancas === 'pending') {

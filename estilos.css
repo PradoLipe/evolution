@@ -103,9 +103,19 @@
         .announcement-banner { background: rgba(255, 56, 96, 0.12); border-bottom: 1px solid rgba(255, 56, 96, 0.3); padding: 10px 16px; text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--danger); cursor: pointer; transition: background 0.3s ease; letter-spacing: 0.3px; }
         .announcement-banner:active { background: rgba(255, 56, 96, 0.2); }
         .announcement-banner strong { text-decoration: underline; }
-        .update-banner { background: rgba(var(--primary-rgb), 0.12); border-bottom: 1px solid rgba(var(--primary-rgb), 0.3); padding: 10px 16px; text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--primary); cursor: pointer; transition: background 0.3s ease; letter-spacing: 0.3px; }
-        .update-banner:active { background: rgba(var(--primary-rgb), 0.2); }
-        .update-banner strong { text-decoration: underline; }
+        .update-banner {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: linear-gradient(110deg, rgba(var(--primary-rgb), 0.16) 30%, rgba(var(--primary-rgb), 0.28) 50%, rgba(var(--primary-rgb), 0.16) 70%);
+            background-size: 200% 100%; animation: holoShimmer 4s linear infinite;
+            border-bottom: 1px solid rgba(var(--primary-rgb), 0.35);
+            padding: 11px 16px; text-align: center; font-size: 0.78rem; font-weight: 700;
+            color: var(--text); cursor: pointer; transition: transform 0.15s ease, background 0.3s ease;
+            letter-spacing: 0.2px;
+        }
+        .update-banner:active { transform: scale(0.99); }
+        .update-banner-icon { font-size: 1rem; filter: drop-shadow(0 0 6px rgba(var(--primary-rgb), 0.6)); animation: pulse-gold 2s infinite; flex-shrink: 0; }
+        .update-banner-text { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+        .update-banner strong { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
         .user-pill { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 50px; cursor: pointer; transition: all 0.3s ease; }
         .user-pill:active { transform: scale(0.98); }
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; color: white; position: relative; overflow: hidden; }

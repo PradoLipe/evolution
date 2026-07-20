@@ -252,7 +252,7 @@
                 <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Agradecemos a todos que fizeram parte dessa fase de evolução do aplicativo.</p>
                 <p style="color: var(--text); font-weight: 800; font-size: 0.85rem;">Felipe Prado</p>
             </div>
-            <button class="btn btn-primary" onclick="safeStorage.setItem('evo_announcement_confirmed','1'); app.closeModal('announcementModal')" style="width: 100%;">Confirmar</button>
+            <button class="btn btn-primary" onclick="app.confirmAnnouncement()" style="width: 100%;">Confirmar</button>
         </div>
     </div>
 
@@ -272,7 +272,7 @@
                 <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Mais uma vez, muito obrigado a todos que confiam no app e fazem parte de tudo isso.</p>
                 <p style="color: var(--text); font-weight: 800; font-size: 0.85rem;">Felipe Prado</p>
             </div>
-            <button class="btn btn-primary" onclick="safeStorage.setItem('evo_update_v550_confirmed','1'); app.closeModal('updateModalV550')" style="width: 100%;">Confirmar</button>
+            <button class="btn btn-primary" onclick="app.confirmUpdateV550()" style="width: 100%;">Confirmar</button>
         </div>
     </div>
 
@@ -283,7 +283,8 @@
         </div>
         <!-- BANNER NOVIDADES V5.50 - auto-remove apos 03/08/2026 -->
         <div id="updateBannerV550" class="update-banner hidden" onclick="app.openModal('updateModalV550')">
-            <span>🇪🇸🏆 Novidades no PDF e homenagem à Espanha — <strong>Ver mais</strong></span>
+            <span class="update-banner-icon">🏆</span>
+            <span class="update-banner-text">Espanha é a Campeã do Mundo 2026! <strong>Ver mais</strong></span>
         </div>
         <header class="app-header">
             <div class="user-pill" onclick="app.openModal('profileModal')">
