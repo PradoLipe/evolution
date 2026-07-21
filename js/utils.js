@@ -154,55 +154,17 @@
             }
 
             const _mNames = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-            const tableBody = [];
-            let _lastMk = null;
-            let _monthBruto = 0;
-            let _monthLiquido = 0;
-            const monthlyTotals = [];
-            const pushMonthSubtotal = (mk) => {
-                const [ym, mm] = mk.split('-');
-                const mLabel = (_mNames[parseInt(mm, 10) - 1] + ' ' + ym).toUpperCase();
-                monthlyTotals.push({ label: mLabel, bruto: _monthBruto, liquido: _monthLiquido });
-                tableBody.push([
-                    { content: `Subtotal ${mLabel}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
-                    { content: this.formatMoney(_monthBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 130, 180], fillColor: [235, 242, 250], fontSize: 7.5 } },
-                    { content: this.formatMoney(_monthLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 150, 110], fillColor: [235, 242, 250], fontSize: 7.5 } }
-                ]);
+
+            // Rotulo de mes a partir da chave "YYYY-MM" (com fallback defensivo para dados sem data)
+            const monthLabel = (mk) => {
+                const parts = (mk || '').split('-');
+                const mi = parseInt(parts[1], 10) - 1;
+                if (!parts[0] || isNaN(mi) || mi < 0 || mi > 11) return 'SEM DATA';
+                return (_mNames[mi] + ' ' + parts[0]).toUpperCase();
             };
-            filtered.forEach((e) => {
-                totalBruto += Number(e.bruto) || 0;
-                totalLiquido += Number(e.liquido) || 0;
-                // Separador de mes para tipo 'all'
-                if (type === 'all' && e.data) {
-                    const mk = e.data.substring(0, 7);
-                    if (mk !== _lastMk) {
-                        // Fecha o mes anterior com seu subtotal, antes de iniciar o proximo
-                        if (_lastMk !== null) {
-                            pushMonthSubtotal(_lastMk);
-                        }
-                        _lastMk = mk;
-                        _monthBruto = 0;
-                        _monthLiquido = 0;
-                        const [ym, mm] = mk.split('-');
-                        const mLabel = (_mNames[parseInt(mm, 10) - 1] + ' ' + ym).toUpperCase();
-                        tableBody.push([{
-                            content: mLabel,
-                            colSpan: 7,
-                            styles: {
-                                fillColor: [10, 18, 46],
-                                textColor: [0, 212, 255],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                halign: 'center',
-                                cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
-                            }
-                        }]);
-                    }
-                    _monthBruto += Number(e.bruto) || 0;
-                    _monthLiquido += Number(e.liquido) || 0;
-                }
+            const entryRow = (e) => {
                 const isPaid = !!e.pago;
-                tableBody.push([
+                return [
                     e.dataF || e.data || '-',
                     e.navio || '-',
                     e.turno || '-',
@@ -210,11 +172,43 @@
                     String(e.conferentes || 1),
                     this.formatMoney(e.bruto),
                     { content: this.formatMoney(e.liquido), paid: isPaid }
-                ]);
-            });
-            // Subtotal do ultimo mes do periodo
-            if (type === 'all' && _lastMk !== null) {
-                pushMonthSubtotal(_lastMk);
+                ];
+            };
+            const monthHeaderRow = (mk) => ([{
+                content: monthLabel(mk),
+                colSpan: 7,
+                styles: { fillColor: [10, 18, 46], textColor: [0, 212, 255], fontStyle: 'bold', fontSize: 9, halign: 'center', cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } }
+            }]);
+            const monthSubtotalRow = (mk, bruto, liquido) => ([
+                { content: `Subtotal ${monthLabel(mk)}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
+                { content: this.formatMoney(bruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 130, 180], fillColor: [235, 242, 250], fontSize: 7.5 } },
+                { content: this.formatMoney(liquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 150, 110], fillColor: [235, 242, 250], fontSize: 7.5 } }
+            ]);
+
+            // Para 'all': agrupa por mes (cada grupo vira uma pagina propria na tabela).
+            // Para os demais tipos: lista simples, sem separadores (comportamento inalterado).
+            const tableBody = [];
+            const monthGroups = [];
+            if (type === 'all') {
+                let current = null;
+                filtered.forEach((e) => {
+                    totalBruto += Number(e.bruto) || 0;
+                    totalLiquido += Number(e.liquido) || 0;
+                    const mk = e.data ? e.data.substring(0, 7) : (current ? current.key : '');
+                    if (!current || current.key !== mk) {
+                        current = { key: mk, rows: [], bruto: 0, liquido: 0 };
+                        monthGroups.push(current);
+                    }
+                    current.bruto += Number(e.bruto) || 0;
+                    current.liquido += Number(e.liquido) || 0;
+                    current.rows.push(entryRow(e));
+                });
+            } else {
+                filtered.forEach((e) => {
+                    totalBruto += Number(e.bruto) || 0;
+                    totalLiquido += Number(e.liquido) || 0;
+                    tableBody.push(entryRow(e));
+                });
             }
 
             const totalPago = filtered.filter(e => e.pago).reduce((sum, e) => sum + (Number(e.liquido) || 0), 0);
@@ -379,12 +373,11 @@
             doc.text(`${Math.round(pctPago * 100)}% recebido`, marginL, barY + 8);
             doc.text(`${Math.round((1 - pctPago) * 100)}% pendente`, marginR, barY + 8, { align: 'right' });
 
-            // Tabela principal
-            doc.autoTable({
-                startY: 90,
-                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Líquido (R$)']],
-                body: tableBody,
+            // Configuracao compartilhada por todas as tabelas (uma unica tabela para
+            // weekly/month; uma tabela por mes, cada qual em sua propria pagina, para 'all')
+            const commonTableOpts = {
                 theme: 'grid',
+                head: [['Data', 'Navio', 'Turno', 'Tipo', 'Conf.', 'Bruto (R$)', 'Líquido (R$)']],
                 styles: {
                     fontSize: 8.2,
                     cellPadding: { top: 3.2, right: 3, bottom: 3.2, left: 3 },
@@ -411,17 +404,9 @@
                     5: { halign: 'right', cellWidth: 30, fontStyle: 'normal' },
                     6: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
                 },
-                showFoot: type === 'all' ? 'lastPage' : 'everyPage',
-                foot: [
-                    [
-                        { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
-                        { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
-                        { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
-                    ],
-                    [
-                        { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
-                    ]
-                ],
+                // Reserva o espaco do cabecalho (0-30mm) em toda pagina que a tabela tocar,
+                // para o didDrawPage poder repintar o cabecalho sem sobrepor linhas da tabela.
+                margin: { top: 34 },
                 didParseCell: (data) => {
                     // Cor do valor liquido: verde = pago, vermelho = pendente
                     if (data.section !== 'body' || data.column.index !== 6) return;
@@ -432,18 +417,239 @@
                         data.cell.styles.fontStyle = 'bold';
                     }
                 },
-                willDrawPage: (data) => {
-                    const pgNum = doc.internal.getNumberOfPages();
-                    if (pgNum > 1) {
-                        drawWatermark();
-                        drawHeader();
-                    }
-                },
+                // NOTA: "willDrawPage" nunca dispara nesta versao do jspdf-autotable (3.5.28) —
+                // testado e confirmado. Por isso o cabecalho e redesenhado aqui no didDrawPage,
+                // que e o unico hook de pagina que de fato roda em toda pagina da tabela.
                 didDrawPage: (data) => {
                     const pgNum = doc.internal.getNumberOfPages();
+                    drawHeader();
                     drawFooter(pgNum, '?');
                 }
-            });
+            };
+
+            const footRows = [
+                [
+                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
+                ],
+                [
+                    { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
+                ]
+            ];
+
+            if (type === 'all') {
+                // Uma tabela por mes: cada mes comeca em pagina propria (addPage antes de cada
+                // grupo, exceto o primeiro que segue direto na pagina 1). Se um mes tiver muitos
+                // registros, a propria tabela continua paginando normalmente (didDrawPage cuida
+                // do cabecalho nessas paginas extras).
+                monthGroups.forEach((grp, i) => {
+                    if (i > 0) doc.addPage();
+                    const isLast = i === monthGroups.length - 1;
+                    doc.autoTable({
+                        ...commonTableOpts,
+                        startY: i === 0 ? 90 : 36,
+                        body: [monthHeaderRow(grp.key), ...grp.rows, monthSubtotalRow(grp.key, grp.bruto, grp.liquido)],
+                        ...(isLast ? { showFoot: 'lastPage', foot: footRows } : {})
+                    });
+                });
+            } else {
+                doc.autoTable({
+                    ...commonTableOpts,
+                    startY: 90,
+                    body: tableBody,
+                    showFoot: 'everyPage',
+                    foot: footRows
+                });
+            }
+
+            // ============================================================
+            // PAGINA FINAL: RESUMO VISUAL DO PERIODO
+            // Gerada SOMENTE no download do periodo completo (type === 'all').
+            // Relatorios semanal e mensal NAO recebem esta pagina.
+            // Substitui os subtotais discretos por destaques grandes + graficos.
+            // ============================================================
+            if (type === 'all' && filtered.some(e => !!e.data)) {
+                const _mAbbr = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+                const _mLong = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+                // -- Agregacao por mes a partir dos registros do periodo --
+                const _aggMap = new Map();
+                filtered.forEach((e) => {
+                    if (!e.data) return;
+                    const mk = e.data.substring(0, 7);
+                    let a = _aggMap.get(mk);
+                    if (!a) { a = { key: mk, liquido: 0, bruto: 0, count: 0, dias: new Set() }; _aggMap.set(mk, a); }
+                    a.liquido += Number(e.liquido) || 0;
+                    a.bruto += Number(e.bruto) || 0;
+                    a.count += 1;
+                    a.dias.add(e.data);
+                });
+                const monthsArr = [..._aggMap.values()].sort((a, b) => (a.key < b.key ? -1 : 1));
+                monthsArr.forEach((m) => {
+                    const [yy, mm] = m.key.split('-');
+                    const mi = parseInt(mm, 10) - 1;
+                    m.label = _mAbbr[mi] + '/' + yy.slice(2);
+                    m.fullLabel = _mLong[mi] + ' ' + yy;
+                });
+
+                // Destaques
+                const bestMoney = monthsArr.reduce((b, m) => (m.liquido > b.liquido ? m : b), monthsArr[0]);
+                const mostWork  = monthsArr.reduce((b, m) => (m.count   > b.count   ? m : b), monthsArr[0]);
+                const leastWork = monthsArr.reduce((b, m) => (m.count   < b.count   ? m : b), monthsArr[0]);
+                const bestMoneyIdx = monthsArr.indexOf(bestMoney);
+                const mostWorkIdx  = monthsArr.indexOf(mostWork);
+                const totalTurnos  = monthsArr.reduce((s, m) => s + m.count, 0);
+                const mediaMensal  = totalLiquido / monthsArr.length;
+
+                // Formata valor em centavos de forma compacta (para topo das barras)
+                const moneyShort = (cents) => {
+                    const v = (cents || 0) / 100;
+                    if (Math.abs(v) >= 1000) {
+                        const k = Math.round((v / 1000) * 10) / 10;
+                        return k.toLocaleString('pt-BR') + 'k';
+                    }
+                    return String(Math.round(v));
+                };
+
+                // -- HELPER: desenha um grafico de barras verticais --
+                const drawBarChart = (x, y, w, h, title, data, barColor, valFmt, highlightIdx) => {
+                    doc.setFillColor(250, 252, 255);
+                    doc.setDrawColor(224, 232, 245);
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(x, y, w, h, 3, 3, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9);
+                    doc.setTextColor(15, 25, 50);
+                    doc.text(title, x + 6, y + 9);
+
+                    const padL = 8, padR = 8, padTop = 16, padBottom = 12;
+                    const plotX = x + padL, plotW = w - padL - padR;
+                    const plotTop = y + padTop, plotBottom = y + h - padBottom, plotH = plotBottom - plotTop;
+                    const n = data.length;
+                    const maxVal = Math.max(...data.map(d => d.value), 1);
+
+                    // Linhas de grade
+                    doc.setDrawColor(232, 238, 248);
+                    doc.setLineWidth(0.15);
+                    for (let g = 1; g <= 3; g++) {
+                        const gy = plotBottom - (plotH * g / 3);
+                        doc.line(plotX, gy, plotX + plotW, gy);
+                    }
+                    // Base
+                    doc.setDrawColor(200, 212, 230);
+                    doc.setLineWidth(0.3);
+                    doc.line(plotX, plotBottom, plotX + plotW, plotBottom);
+
+                    const slot = plotW / n;
+                    const barW = Math.min(slot * 0.62, 16);
+                    const fs = n > 16 ? 4 : (n > 10 ? 4.6 : 5.4);
+                    const labelStep = n > 20 ? 2 : 1;
+                    data.forEach((d, i) => {
+                        const cx = plotX + slot * i + slot / 2;
+                        const bh = maxVal > 0 ? (d.value / maxVal) * plotH : 0;
+                        const bx = cx - barW / 2, by = plotBottom - bh;
+                        doc.setFillColor(...(i === highlightIdx ? [255, 184, 0] : barColor));
+                        doc.roundedRect(bx, by, barW, Math.max(bh, 0.6), 1, 1, 'F');
+                        // Valor no topo da barra
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(fs);
+                        doc.setTextColor(70, 90, 120);
+                        doc.text(valFmt(d.value), cx, by - 1.5, { align: 'center' });
+                        // Rotulo do mes
+                        if (i % labelStep === 0) {
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(120, 138, 165);
+                            doc.text(d.label, cx, plotBottom + 4.5, { align: 'center' });
+                        }
+                    });
+                };
+
+                // -- Monta a pagina --
+                doc.addPage();
+                drawWatermark();
+                drawHeader();
+
+                // Titulo da secao
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(13);
+                doc.setTextColor(15, 25, 50);
+                doc.text('RESUMO DO PERIODO', marginL, 40);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(100, 120, 150);
+                doc.text('Analise visual do periodo completo  •  ' + monthsArr.length + ' ' + (monthsArr.length === 1 ? 'mes' : 'meses'), marginL, 46);
+
+                // -- Cards de destaque --
+                const hcY = 52, hcH = 30, hcGap = 4;
+                const hcW = (marginR - marginL - 2 * hcGap) / 3;
+                const drawHighlight = (x, accent, bg, label, bigText, subText) => {
+                    doc.setFillColor(...bg);
+                    doc.setDrawColor(...accent.map(v => Math.min(255, v + 50)));
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(x, hcY, hcW, hcH, 3, 3, 'FD');
+                    doc.setFillColor(...accent);
+                    doc.roundedRect(x, hcY, hcW, 3, 1.5, 1.5, 'F');
+                    doc.rect(x, hcY + 1.5, hcW, 1.5, 'F');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(6);
+                    doc.setTextColor(...accent);
+                    doc.text(label, x + 4, hcY + 9, { maxWidth: hcW - 8 });
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.setTextColor(15, 25, 50);
+                    doc.text(bigText, x + 4, hcY + 18, { maxWidth: hcW - 8 });
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(90, 110, 140);
+                    doc.text(subText, x + 4, hcY + 25, { maxWidth: hcW - 8 });
+                };
+                drawHighlight(marginL, [0, 170, 120], [240, 253, 248],
+                    'MES QUE MAIS FATUROU', bestMoney.fullLabel, this.formatMoney(bestMoney.liquido));
+                drawHighlight(marginL + hcW + hcGap, [0, 160, 210], [240, 251, 255],
+                    'MES QUE MAIS TRABALHOU', mostWork.fullLabel, mostWork.count + ' turnos  •  ' + mostWork.dias.size + ' dias');
+                drawHighlight(marginL + 2 * (hcW + hcGap), [255, 140, 40], [255, 248, 240],
+                    'MES QUE MENOS TRABALHOU', leastWork.fullLabel, leastWork.count + ' turnos  •  ' + leastWork.dias.size + ' dias');
+
+                // -- Grafico 1: faturamento liquido por mes --
+                drawBarChart(marginL, 88, marginR - marginL, 80,
+                    'FATURAMENTO LIQUIDO POR MES',
+                    monthsArr.map(m => ({ label: m.label, value: m.liquido })),
+                    [0, 180, 216], moneyShort, bestMoneyIdx);
+
+                // -- Grafico 2: turnos trabalhados por mes --
+                drawBarChart(marginL, 174, marginR - marginL, 80,
+                    'TURNOS TRABALHADOS POR MES',
+                    monthsArr.map(m => ({ label: m.label, value: m.count })),
+                    [112, 90, 230], (v) => String(v), mostWorkIdx);
+
+                // -- Faixa de estatisticas gerais --
+                const isY = 260, isH = 18, isGap = 3;
+                const isW = (marginR - marginL - 3 * isGap) / 4;
+                const statBoxes = [
+                    { label: 'TOTAL LIQUIDO',    val: this.formatMoney(totalLiquido),              c: [0, 150, 110] },
+                    { label: 'MEDIA POR MES',    val: this.formatMoney(Math.round(mediaMensal)),   c: [0, 160, 210] },
+                    { label: 'TOTAL DE TURNOS',  val: String(totalTurnos),                         c: [112, 90, 230] },
+                    { label: 'MESES NO PERIODO', val: String(monthsArr.length),                    c: [255, 140, 40] }
+                ];
+                statBoxes.forEach((s, i) => {
+                    const sx = marginL + i * (isW + isGap);
+                    doc.setFillColor(248, 250, 253);
+                    doc.setDrawColor(224, 232, 245);
+                    doc.setLineWidth(0.25);
+                    doc.roundedRect(sx, isY, isW, isH, 2.5, 2.5, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(5.6);
+                    doc.setTextColor(...s.c);
+                    doc.text(s.label, sx + 3, isY + 6);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9);
+                    doc.setTextColor(15, 25, 50);
+                    doc.text(s.val, sx + 3, isY + 13, { maxWidth: isW - 5 });
+                });
+
+                drawFooter(0, '?');
+            }
 
             // Atualizando rodape da pagina 1 com total correto de paginas
             const totalPages = doc.internal.getNumberOfPages();

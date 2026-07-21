@@ -251,6 +251,15 @@
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; }
         input, select { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; -webkit-appearance: none; appearance: none; }
+        .input-with-calc { display: flex; gap: 8px; align-items: center; }
+        .input-with-calc input { flex: 1; }
+        .calc-helper-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 1.15rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; touch-action: manipulation; }
+        .calc-helper-btn:active { background: var(--primary); border-color: var(--primary); transform: scale(0.94); }
+        .calc-helper-parcel { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 6px 4px 12px; }
+        .calc-helper-parcel-input { flex: 1; width: auto; min-width: 0; background: transparent; border: none; padding: 8px 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+        .calc-helper-parcel-input:focus { background: rgba(255, 255, 255, 0.05); border-radius: 6px; }
+        .calc-helper-parcel-remove { width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(255, 56, 96, 0.1); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; flex-shrink: 0; }
+        .calc-helper-empty { font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 8px 0; }
 
         /* ==========================
          * Calendario de operacoes

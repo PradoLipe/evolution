@@ -52,9 +52,9 @@
             if (!turnoEl || !container) return;
             const turno = turnoEl.value;
             if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0" inputmode="numeric"></div></div>`;
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div></div>`;
             } else {
-                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><input type="number" id="calcPT" placeholder="0" inputmode="numeric"></div>`;
+                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="calcPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcPT')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>`;
             }
         };
 
@@ -64,10 +64,73 @@
             if (!turnoEl || !container) return;
             const turno = turnoEl.value;
             if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0" inputmode="numeric"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div></div>`;
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div></div>`;
             } else {
-                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><input type="number" id="relPT" placeholder="0" inputmode="numeric"></div>`;
+                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="relPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relPT')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>`;
             }
+        };
+
+        // ============================================
+        // SOMAR PRODUTIVIDADE (calculadora auxiliar)
+        // ============================================
+        EvolutionApp.prototype.openCalcHelper = function(targetId) {
+            this._calcHelperTarget = targetId;
+            this._calcHelperParcels = [];
+            const input = document.getElementById('calcHelperInput');
+            if (input) input.value = '';
+            this._renderCalcHelper();
+            this.openModal('calcHelperModal');
+            setTimeout(() => { const el = document.getElementById('calcHelperInput'); if (el) el.focus(); }, 300);
+        };
+
+        EvolutionApp.prototype.addCalcHelperParcel = function() {
+            const input = document.getElementById('calcHelperInput');
+            if (!input) return;
+            const val = parseInt(input.value, 10);
+            if (!val || val <= 0) return;
+            if (!this._calcHelperParcels) this._calcHelperParcels = [];
+            this._calcHelperParcels.push(val);
+            input.value = '';
+            this._renderCalcHelper();
+            input.focus();
+        };
+
+        EvolutionApp.prototype.removeCalcHelperParcel = function(idx) {
+            if (!this._calcHelperParcels) return;
+            this._calcHelperParcels.splice(idx, 1);
+            this._renderCalcHelper();
+        };
+
+        EvolutionApp.prototype.updateCalcHelperParcel = function(idx, val) {
+            if (!this._calcHelperParcels) return;
+            const n = parseInt(val, 10);
+            this._calcHelperParcels[idx] = isNaN(n) ? 0 : n;
+            this._updateCalcHelperTotal();
+        };
+
+        EvolutionApp.prototype._updateCalcHelperTotal = function() {
+            const totalEl = document.getElementById('calcHelperTotal');
+            const parcels = this._calcHelperParcels || [];
+            if (totalEl) totalEl.textContent = String(parcels.reduce((s, v) => s + v, 0));
+        };
+
+        EvolutionApp.prototype._renderCalcHelper = function() {
+            const list = document.getElementById('calcHelperList');
+            const parcels = this._calcHelperParcels || [];
+            if (list) {
+                list.innerHTML = parcels.length
+                    ? parcels.map((v, i) => `<div class="calc-helper-parcel"><input type="number" class="calc-helper-parcel-input" value="${v}" inputmode="numeric" onclick="event.stopPropagation()" oninput="app.updateCalcHelperParcel(${i}, this.value)"><button type="button" class="calc-helper-parcel-remove" onclick="app.removeCalcHelperParcel(${i})" title="Remover" aria-label="Remover">&times;</button></div>`).join('')
+                    : `<div class="calc-helper-empty">Nenhuma parcela adicionada</div>`;
+            }
+            this._updateCalcHelperTotal();
+        };
+
+        EvolutionApp.prototype.applyCalcHelper = function() {
+            const targetId = this._calcHelperTarget;
+            const target = targetId ? document.getElementById(targetId) : null;
+            const total = (this._calcHelperParcels || []).reduce((s, v) => s + v, 0);
+            if (target) target.value = total;
+            this.closeModal('calcHelperModal');
         };
 
         // ============================================

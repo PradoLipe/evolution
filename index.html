@@ -502,8 +502,8 @@
                         </div>
                         <div id="calcCampos">
                             <div class="input-row">
-                                <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="calcP1" placeholder="0" inputmode="numeric"></div>
-                                <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="calcP2" placeholder="0" inputmode="numeric"></div>
+                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
+                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
                             </div>
                         </div>
                         <button class="btn btn-success" id="btnSaveEntry" onclick="app.saveEntry()" style="margin-top: 4px;">Salvar Registro</button>
@@ -530,8 +530,8 @@
                         </div>
                         <div id="relCamposProducao">
                             <div class="input-row">
-                                <div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="relP1" placeholder="0" inputmode="numeric"></div>
-                                <div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="relP2" placeholder="0" inputmode="numeric"></div>
+                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
+                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
                             </div>
                         </div>
                         <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatório</button>
@@ -659,6 +659,28 @@
                     <button class="btn btn-glass" onclick="app.copyReportText()">Copiar</button>
                     <button class="btn btn-primary" onclick="app.shareReportText()">Compartilhar</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CALC HELPER MODAL (Somar Produtividade) -->
+    <div class="modal-overlay" id="calcHelperModal" onclick="app.closeModalOnOverlay(event, 'calcHelperModal')">
+        <div class="modal-content" style="max-width: 340px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Somar Produtividade</h3>
+                <button class="modal-close" onclick="app.closeModal('calcHelperModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-with-calc" style="margin-bottom: 14px;">
+                    <input type="number" id="calcHelperInput" placeholder="0" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();app.addCalcHelperParcel();}">
+                    <button type="button" class="calc-helper-btn" onclick="app.addCalcHelperParcel()" title="Adicionar" aria-label="Adicionar">+</button>
+                </div>
+                <div id="calcHelperList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;"></div>
+                <div style="display: flex; align-items: baseline; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); margin-bottom: 16px;">
+                    <span class="input-label" style="margin-bottom: 0;">Total</span>
+                    <span id="calcHelperTotal" style="font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 800; color: var(--success);">0</span>
+                </div>
+                <button class="btn btn-primary" onclick="app.applyCalcHelper()">Usar este valor</button>
             </div>
         </div>
     </div>
