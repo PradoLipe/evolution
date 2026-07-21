@@ -493,14 +493,17 @@
                     m.fullLabel = _mLong[mi] + ' ' + yy;
                 });
 
-                // Destaques
+                // Destaques (baseados em DIAS distintos trabalhados, nao no numero de registros)
                 const bestMoney = monthsArr.reduce((b, m) => (m.liquido > b.liquido ? m : b), monthsArr[0]);
-                const mostWork  = monthsArr.reduce((b, m) => (m.count   > b.count   ? m : b), monthsArr[0]);
-                const leastWork = monthsArr.reduce((b, m) => (m.count   < b.count   ? m : b), monthsArr[0]);
+                const mostWork  = monthsArr.reduce((b, m) => (m.dias.size > b.dias.size ? m : b), monthsArr[0]);
+                const leastWork = monthsArr.reduce((b, m) => (m.dias.size < b.dias.size ? m : b), monthsArr[0]);
                 const bestMoneyIdx = monthsArr.indexOf(bestMoney);
                 const mostWorkIdx  = monthsArr.indexOf(mostWork);
-                const totalTurnos  = monthsArr.reduce((s, m) => s + m.count, 0);
+                // Soma de dias distintos de cada mes = total de dias trabalhados no periodo
+                const totalDias    = monthsArr.reduce((s, m) => s + m.dias.size, 0);
                 const mediaMensal  = totalLiquido / monthsArr.length;
+                // Formata "N dia(s)" com plural correto
+                const diasLabel = (n) => n + (n === 1 ? ' dia trabalhado' : ' dias trabalhados');
 
                 // Formata valor em centavos de forma compacta (para topo das barras)
                 const moneyShort = (cents) => {
@@ -607,9 +610,9 @@
                 drawHighlight(marginL, [0, 170, 120], [240, 253, 248],
                     'MES QUE MAIS FATUROU', bestMoney.fullLabel, this.formatMoney(bestMoney.liquido));
                 drawHighlight(marginL + hcW + hcGap, [0, 160, 210], [240, 251, 255],
-                    'MES QUE MAIS TRABALHOU', mostWork.fullLabel, mostWork.count + ' serviços  •  ' + mostWork.dias.size + ' dias');
+                    'MES QUE MAIS TRABALHOU', mostWork.fullLabel, diasLabel(mostWork.dias.size));
                 drawHighlight(marginL + 2 * (hcW + hcGap), [255, 140, 40], [255, 248, 240],
-                    'MES QUE MENOS TRABALHOU', leastWork.fullLabel, leastWork.count + ' serviços  •  ' + leastWork.dias.size + ' dias');
+                    'MES QUE MENOS TRABALHOU', leastWork.fullLabel, diasLabel(leastWork.dias.size));
 
                 // -- Grafico 1: faturamento liquido por mes --
                 drawBarChart(marginL, 88, marginR - marginL, 80,
@@ -617,10 +620,10 @@
                     monthsArr.map(m => ({ label: m.label, value: m.liquido })),
                     [0, 180, 216], moneyShort, bestMoneyIdx);
 
-                // -- Grafico 2: servicos trabalhados por mes --
+                // -- Grafico 2: dias trabalhados por mes (dias distintos, nao numero de registros) --
                 drawBarChart(marginL, 174, marginR - marginL, 80,
-                    'SERVIÇOS TRABALHADOS POR MES',
-                    monthsArr.map(m => ({ label: m.label, value: m.count })),
+                    'DIAS TRABALHADOS POR MES',
+                    monthsArr.map(m => ({ label: m.label, value: m.dias.size })),
                     [112, 90, 230], (v) => String(v), mostWorkIdx);
 
                 // -- Faixa de estatisticas gerais --
@@ -629,7 +632,7 @@
                 const statBoxes = [
                     { label: 'TOTAL LIQUIDO',    val: this.formatMoney(totalLiquido),              c: [0, 150, 110] },
                     { label: 'MEDIA POR MES',    val: this.formatMoney(Math.round(mediaMensal)),   c: [0, 160, 210] },
-                    { label: 'TOTAL DE SERVIÇOS', val: String(totalTurnos),                        c: [112, 90, 230] },
+                    { label: 'TOTAL DE DIAS',    val: String(totalDias),                           c: [112, 90, 230] },
                     { label: 'MESES NO PERIODO', val: String(monthsArr.length),                    c: [255, 140, 40] }
                 ];
                 statBoxes.forEach((s, i) => {
