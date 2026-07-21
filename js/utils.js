@@ -607,9 +607,9 @@
                 drawHighlight(marginL, [0, 170, 120], [240, 253, 248],
                     'MES QUE MAIS FATUROU', bestMoney.fullLabel, this.formatMoney(bestMoney.liquido));
                 drawHighlight(marginL + hcW + hcGap, [0, 160, 210], [240, 251, 255],
-                    'MES QUE MAIS TRABALHOU', mostWork.fullLabel, mostWork.count + ' turnos  •  ' + mostWork.dias.size + ' dias');
+                    'MES QUE MAIS TRABALHOU', mostWork.fullLabel, mostWork.count + ' serviços  •  ' + mostWork.dias.size + ' dias');
                 drawHighlight(marginL + 2 * (hcW + hcGap), [255, 140, 40], [255, 248, 240],
-                    'MES QUE MENOS TRABALHOU', leastWork.fullLabel, leastWork.count + ' turnos  •  ' + leastWork.dias.size + ' dias');
+                    'MES QUE MENOS TRABALHOU', leastWork.fullLabel, leastWork.count + ' serviços  •  ' + leastWork.dias.size + ' dias');
 
                 // -- Grafico 1: faturamento liquido por mes --
                 drawBarChart(marginL, 88, marginR - marginL, 80,
@@ -617,9 +617,9 @@
                     monthsArr.map(m => ({ label: m.label, value: m.liquido })),
                     [0, 180, 216], moneyShort, bestMoneyIdx);
 
-                // -- Grafico 2: turnos trabalhados por mes --
+                // -- Grafico 2: servicos trabalhados por mes --
                 drawBarChart(marginL, 174, marginR - marginL, 80,
-                    'TURNOS TRABALHADOS POR MES',
+                    'SERVIÇOS TRABALHADOS POR MES',
                     monthsArr.map(m => ({ label: m.label, value: m.count })),
                     [112, 90, 230], (v) => String(v), mostWorkIdx);
 
@@ -629,7 +629,7 @@
                 const statBoxes = [
                     { label: 'TOTAL LIQUIDO',    val: this.formatMoney(totalLiquido),              c: [0, 150, 110] },
                     { label: 'MEDIA POR MES',    val: this.formatMoney(Math.round(mediaMensal)),   c: [0, 160, 210] },
-                    { label: 'TOTAL DE TURNOS',  val: String(totalTurnos),                         c: [112, 90, 230] },
+                    { label: 'TOTAL DE SERVIÇOS', val: String(totalTurnos),                        c: [112, 90, 230] },
                     { label: 'MESES NO PERIODO', val: String(monthsArr.length),                    c: [255, 140, 40] }
                 ];
                 statBoxes.forEach((s, i) => {
