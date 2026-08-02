@@ -2,7 +2,7 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '5.52';
+const APP_VERSION = '5.53';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
 
 const LOCAL_ASSETS = [
@@ -19,7 +19,7 @@ const LOCAL_ASSETS = [
   './js/utils.js',
   './js/turtle.js',
   './js/init.js',
-  './ESPANHA-CAMPEA.webp',
+  './NAVIO.jpg',
 ];
 
 // INSTALL: pré-cacheia todos os assets locais e ativa imediatamente

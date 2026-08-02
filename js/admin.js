@@ -236,6 +236,7 @@
 
         // Publica o comando de logout forcado para todos os usuarios no Firebase
         EvolutionApp.prototype.forceLogoutAll = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const btn = document.getElementById('btnForceLogoutAll');
             const status = document.getElementById('forceLogoutStatus');
             if (!db) {
@@ -317,7 +318,9 @@
                 } else if (msgData.type === 'once') {
                     shouldShow = safeStorage.getItem(seenKey) !== msgData.createdAt;
                 } else if (msgData.type === 'period' && msgData.startDate && msgData.endDate) {
-                    const start = new Date(msgData.startDate);
+                    // Ambos parseados em horario local (mesmo metodo) para nao criar um
+                    // desvio de fuso entre o inicio e o fim do periodo.
+                    const start = new Date(msgData.startDate + 'T00:00:00');
                     const end = new Date(msgData.endDate + 'T23:59:59');
                     shouldShow = now >= start && now <= end;
                 }
@@ -580,6 +583,7 @@
             }).join('');
         };
         EvolutionApp.prototype.addNewUser = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const nameInput = document.getElementById('newUserName');
             const codeInput = document.getElementById('newUserCode');
             const name = nameInput.value.toUpperCase().trim();
@@ -648,6 +652,7 @@
         };
 
         EvolutionApp.prototype.applyVip = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!this.managingUser) return;
             const type = document.getElementById('vipTypeSelect').value;
             const duration = document.getElementById('vipDurationSelect').value;
@@ -716,6 +721,7 @@
         };
 
         EvolutionApp.prototype.executeRemoveVip = async function(docId) {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const updateData = {
                 vip: false,
                 vipUntil: null,
@@ -745,6 +751,7 @@
         };
 
         EvolutionApp.prototype.toggleBlockFromModal = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!this.managingUser) return;
             const user = this.users[this.managingUser];
             const newStatus = !user.blocked;
@@ -760,6 +767,7 @@
         };
 
         EvolutionApp.prototype.resetDeviceFromModal = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!this.managingUser) return;
             this.users[this.managingUser].deviceId = null;
             this.saveUsersToCache();
@@ -772,6 +780,7 @@
         };
 
         EvolutionApp.prototype.deleteUser = async function(docId) {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!docId || docId === this.currentUserId) {
                 this.showToast('Nao pode excluir a si mesmo', 'error');
                 return;
@@ -805,6 +814,7 @@
         };
 
         EvolutionApp.prototype.saveRates = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const newRates = {
                 '07x15': {
                     normal: parseFloat(document.getElementById('rate_07x15_normal').value) || 5.73,

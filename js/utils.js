@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.52',
+                v: window.EVOLUTION_APP_VERSION || 'V5.53',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.52');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.53');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -117,10 +117,11 @@
                 const today = getManausDate();
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
-                filtered = this.entries.filter(e => {
-                    const d = new Date(e.data);
-                    return d >= sevenDaysAgo && d <= today;
-                });
+                // Compara como strings "YYYY-MM-DD" (horario local de Manaus) em vez de
+                // epoch, para nao misturar a data UTC de e.data com o epoch deslocado de getManausDate.
+                const todayStr = formatDateManaus(today);
+                const sevenDaysAgoStr = formatDateManaus(sevenDaysAgo);
+                filtered = this.entries.filter(e => e.data && e.data >= sevenDaysAgoStr && e.data <= todayStr);
                 titlePeriod = `Semanal  •  ${sevenDaysAgo.toLocaleDateString('pt-BR')} até ${today.toLocaleDateString('pt-BR')}`;
             } else {
                 const picker = document.getElementById('pdfMonthPicker');
@@ -170,8 +171,8 @@
                     e.turno || '-',
                     e.tipo === 'normal' ? 'Normal' : 'Feriado',
                     String(e.conferentes || 1),
-                    this.formatMoney(e.bruto),
-                    { content: this.formatMoney(e.liquido), paid: isPaid }
+                    this.formatMoney(Number(e.bruto) || 0),
+                    { content: this.formatMoney(Number(e.liquido) || 0), paid: isPaid }
                 ];
             };
             // Linha do MES: vai no TOPO da tabela (dentro do head), acima do cabecalho
@@ -181,7 +182,7 @@
             const monthHeadRow = (mk) => ([{
                 content: monthLabel(mk),
                 colSpan: 7,
-                styles: { fillColor: [10, 18, 46], textColor: [0, 212, 255], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
+                styles: { fillColor: [13, 17, 23], textColor: [37, 99, 235], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
             }]);
             const monthSubtotalRow = (mk, bruto, liquido) => ([
                 { content: `Subtotal ${monthLabel(mk)}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
@@ -223,13 +224,13 @@
             // -- HELPER: Desenha cabecalho em cada pagina --
             const drawHeader = () => {
                 // Fundo escuro do topo
-                doc.setFillColor(8, 12, 34);
+                doc.setFillColor(13, 17, 23);
                 doc.rect(0, 0, pageW, 30, 'F');
                 // Faixa lateral ciano
-                doc.setFillColor(0, 212, 255);
+                doc.setFillColor(37, 99, 235);
                 doc.rect(0, 0, 3, 30, 'F');
                 // Linha inferior do header
-                doc.setDrawColor(0, 212, 255);
+                doc.setDrawColor(37, 99, 235);
                 doc.setLineWidth(0.4);
                 doc.line(0, 30, pageW, 30);
 
@@ -241,7 +242,7 @@
                 // Subtitulo
                 doc.setFontSize(7.5);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(0, 212, 255);
+                doc.setTextColor(37, 99, 235);
                 doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
                 // Versao
                 doc.setFontSize(6.5);
@@ -301,7 +302,7 @@
             doc.setLineWidth(0.3);
             doc.roundedRect(marginL, 34, marginR - marginL, 18, 3, 3, 'FD');
             // Faixa colorida esquerda do bloco
-            doc.setFillColor(0, 212, 255);
+            doc.setFillColor(37, 99, 235);
             doc.roundedRect(marginL, 34, 3, 18, 1.5, 1.5, 'F');
 
             doc.setFont('helvetica', 'bold');
@@ -333,7 +334,7 @@
                 { title: 'BRUTO TOTAL',   value: this.formatMoney(totalBruto),    accent: [0, 180, 216],   bg: [240, 252, 255] },
                 { title: 'LIQUIDO TOTAL', value: this.formatMoney(totalLiquido),   accent: [255, 184, 0],   bg: [255, 252, 235] },
                 { title: 'JA RECEBIDO',   value: this.formatMoney(totalPago),      accent: [0, 210, 160],   bg: [240, 255, 250] },
-                { title: 'PENDENTE',      value: this.formatMoney(totalPendente),  accent: [255, 56, 96],   bg: [255, 242, 245] }
+                { title: 'PENDENTE',      value: this.formatMoney(totalPendente),  accent: [239, 68, 68],   bg: [255, 242, 245] }
             ];
 
             cardDefs.forEach((card, i) => {
@@ -390,7 +391,7 @@
                     lineWidth: 0.15
                 },
                 headStyles: {
-                    fillColor: [10, 18, 46],
+                    fillColor: [13, 17, 23],
                     textColor: [220, 235, 255],
                     fontStyle: 'bold',
                     fontSize: 8,
@@ -433,9 +434,9 @@
 
             const footRows = [
                 [
-                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 212, 255], fillColor: [10, 18, 46], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [200, 220, 255], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [10, 18, 46], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
+                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [37, 99, 235], fillColor: [13, 17, 23], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [255, 214, 195], fillColor: [13, 17, 23], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [13, 17, 23], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
                 ],
                 [
                     { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
@@ -721,33 +722,6 @@
         };
 
         // ============================================
-        // NOVIDADES V5.50 (expira junto com a homenagem, 03/08/2026)
-        // ============================================
-        EvolutionApp.prototype.showUpdateAnnouncementIfNeeded = function() {
-            const deadline = new Date('2026-08-03T23:59:59-03:00');
-            const now = new Date();
-            const banner = document.getElementById('updateBannerV550');
-            if (now >= deadline) {
-                if (banner) banner.classList.add('hidden');
-                return;
-            }
-
-            if (banner) banner.classList.remove('hidden');
-
-            // Modal apenas 1 vez por usuario — se o dispositivo for compartilhado por varios
-            // usuarios, cada um precisa ver a mensagem no seu proprio login
-            const seenKey = `evo_update_v550_confirmed_${this.currentUserId}`;
-            if (!safeStorage.getItem(seenKey)) {
-                setTimeout(() => this.openModal('updateModalV550'), 900);
-            }
-        };
-
-        EvolutionApp.prototype.confirmUpdateV550 = function() {
-            safeStorage.setItem(`evo_update_v550_confirmed_${this.currentUserId}`, '1');
-            this.closeModal('updateModalV550');
-        };
-
-        // ============================================
         // UTILITARIOS
         // ============================================
         EvolutionApp.prototype.escHtml = function(str) {
@@ -1009,6 +983,7 @@
         };
 
         EvolutionApp.prototype.publishMessage = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const content = document.getElementById('msgContent')?.value?.trim();
             const type = document.getElementById('msgType')?.value || 'once';
             if (!content) {
@@ -1038,6 +1013,7 @@
         };
 
         EvolutionApp.prototype.deleteMessage = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!db) { this.showToast('Firebase nao disponivel', 'error'); return; }
             try {
                 await db.collection('config').doc('message').delete();
@@ -1048,6 +1024,7 @@
         };
 
         EvolutionApp.prototype.saveFloodRate = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const input = document.getElementById('floodPercentage');
             const value = parseInt(input?.value ?? '40');
             if (isNaN(value) || value < 0 || value > 100) {

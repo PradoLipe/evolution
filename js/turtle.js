@@ -110,9 +110,9 @@
         bubble.classList.add('turtle-bubble-in');
 
         if (golden) {
-            bubble.style.borderColor = '#FFD700';
+            bubble.style.borderColor = '#D4AF37';
             bubble.style.boxShadow   = '0 0 16px rgba(255, 215, 0, 0.6)';
-            bubble.style.color       = '#FFE066';
+            bubble.style.color       = '#E8D48A';
         } else {
             bubble.style.borderColor = '';
             bubble.style.boxShadow   = '';

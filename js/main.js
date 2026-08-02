@@ -66,6 +66,18 @@
             return id;
         }
 
+        // Retenta o login anonimo do Firebase com backoff, em vez de desistir
+        // silenciosamente na primeira falha (ex: blip de rede) e deixar o app
+        // travado em modo offline ate um reload manual.
+        _trySignInAnonymously(attempt) {
+            if (!auth) return;
+            auth.signInAnonymously().catch(() => {
+                if (attempt >= 5) return;
+                const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
+                setTimeout(() => this._trySignInAnonymously(attempt + 1), delay);
+            });
+        }
+
         async init() {
             // Inicializar Firebase
             try {
@@ -90,7 +102,7 @@
                             this.resumeSessionAfterFirebase();
                         }
                     } else {
-                        auth.signInAnonymously().catch(() => {});
+                        this._trySignInAnonymously(0);
                     }
                 });
             } catch (e) {
@@ -151,15 +163,6 @@
             try {
                 const savedTheme = safeStorage.getItem('evo_theme_v516');
                 if (savedTheme === 'light') document.body.classList.add('light-mode');
-            } catch(e) {}
-
-            // Homenagem temporaria a Espanha (campea da Copa do Mundo): cores do app
-            // mudam para vermelho/amarelo por 2 semanas e voltam ao normal sozinhas depois.
-            try {
-                const tributeStart = new Date('2026-07-20T00:00:00');
-                const tributeEnd = new Date('2026-08-03T23:59:59');
-                const now = new Date();
-                document.body.classList.toggle('tribute-es', now >= tributeStart && now <= tributeEnd);
             } catch(e) {}
 
             // Carregar lista de navios removidos das sugestoes

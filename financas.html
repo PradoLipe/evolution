@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0e27">
+    <meta name="theme-color" content="#14100d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Finan&ccedil;as | Felipe Prado Systems</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzBhMGUyNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPvCfkqA8L3RleHQ+PC9zdmc+">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjMwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPvCfkqA8L3RleHQ+PC9zdmc+">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -17,13 +17,13 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 :root {
-    --primary:#00d4ff; --primary-glow:rgba(0,212,255,0.4); --secondary:#7000ff;
+    --primary:#ff7a45; --primary-rgb:255,122,69; --primary-glow:rgba(255,122,69,0.4); --secondary:#8b5cf6;
     --accent:#ffd700; --danger:#ff3860; --success:#00d9a6; --warning:#ffb800;
-    --info:#00b4d8; --bg:#0a0e27; --surface:rgba(255,255,255,0.03);
-    --surface-elevated:rgba(255,255,255,0.06); --glass:rgba(20,25,50,0.7);
-    --border:rgba(255,255,255,0.08); --text:#f0f2ff; --text-secondary:#8b92b4;
-    --text-muted:#4a5070;
-    --gradient-primary:linear-gradient(135deg,#00d4ff 0%,#7000ff 100%);
+    --info:#00b4d8; --bg:#14100d; --surface:rgba(255,255,255,0.03);
+    --surface-elevated:rgba(255,255,255,0.06); --glass:rgba(30,24,20,0.7);
+    --border:rgba(255,255,255,0.08); --text:#f5f1ec; --text-secondary:#a39a8f;
+    --text-muted:#574f47;
+    --gradient-primary:linear-gradient(135deg,#ff7a45 0%,#8b5cf6 100%);
     --gradient-success:linear-gradient(135deg,#00d9a6 0%,#00b4d8 100%);
     --gradient-gold:linear-gradient(135deg,#ffd700 0%,#ffb800 100%);
     --gradient-orange:linear-gradient(135deg,#ff8c00 0%,#ff3860 100%);
@@ -35,28 +35,28 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 
 /* Ambient */
 .ambient-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;pointer-events:none}
-.ambient-bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 20%,rgba(0,212,255,0.04) 0%,transparent 50%),radial-gradient(circle at 70% 80%,rgba(112,0,255,0.04) 0%,transparent 50%);animation:rotate 60s linear infinite}
+.ambient-bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 20%,rgba(255,122,69,0.04) 0%,transparent 50%),radial-gradient(circle at 70% 80%,rgba(139,92,246,0.04) 0%,transparent 50%);animation:rotate 60s linear infinite}
 @keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 /* Layout */
 .app-container{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:80px}
 
 /* Loading */
-#loadingScreen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at center,#151b3d 0%,#0a0e27 100%);z-index:9999;gap:20px;transition:opacity 0.5s,visibility 0.5s}
+#loadingScreen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at center,#241c16 0%,#14100d 100%);z-index:9999;gap:20px;transition:opacity 0.5s,visibility 0.5s}
 #loadingScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
 .loader-ring{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadingScreen p{font-size:0.75rem;color:var(--text-secondary);letter-spacing:2px;text-transform:uppercase;font-weight:600}
 
 /* Header */
-.app-header{position:sticky;top:0;z-index:100;padding:12px 16px;background:rgba(10,14,39,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.back-btn{height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(0,212,255,0.5);background:rgba(0,212,255,0.08);color:var(--primary);display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;white-space:nowrap;animation:backBtnPulse 2.4s ease-in-out infinite;}
-@keyframes backBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0.0),0 0 8px rgba(0,212,255,0.15)}50%{box-shadow:0 0 0 4px rgba(0,212,255,0.12),0 0 18px rgba(0,212,255,0.35)}}
+.app-header{position:sticky;top:0;z-index:100;padding:12px 16px;background:rgba(20,16,13,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.back-btn{height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,122,69,0.5);background:rgba(255,122,69,0.08);color:var(--primary);display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;white-space:nowrap;animation:backBtnPulse 2.4s ease-in-out infinite;}
+@keyframes backBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,122,69,0.0),0 0 8px rgba(255,122,69,0.15)}50%{box-shadow:0 0 0 4px rgba(255,122,69,0.12),0 0 18px rgba(255,122,69,0.35)}}
 .back-btn:active{background:var(--primary);color:white;border-color:var(--primary);animation:none}
 .back-btn-label{font-size:0.65rem;font-weight:700;letter-spacing:0.3px;color:var(--primary);transition:color 0.2s}
 .back-btn:active .back-btn-label{color:white}
 .header-center{flex:1;display:flex;align-items:center;gap:10px}
-.header-logo-wrap{width:36px;height:36px;border-radius:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.header-logo-wrap{width:36px;height:36px;border-radius:10px;background:rgba(255,122,69,0.1);border:1px solid rgba(255,122,69,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .header-title-text{font-size:1rem;font-weight:800;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header-subtitle{font-size:0.6rem;color:var(--text-secondary);font-weight:600;letter-spacing:0.5px}
 .header-month-nav{display:flex;align-items:center;gap:4px;margin-left:auto}
@@ -70,7 +70,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .screen.active{display:flex;flex-direction:column;gap:12px}
 
 /* Bottom Nav */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(10,14,39,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:200;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(20,16,13,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:200;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 0.25s;border-radius:12px;margin:0 4px;position:relative}
 .nav-btn.active{color:var(--primary)}
 .nav-btn.active::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--primary);border-radius:2px}
@@ -88,9 +88,9 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 @keyframes toastOut{from{opacity:1}to{opacity:0}}
 
 /* ===== SALDO CARD PREMIUM ===== */
-.saldo-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid rgba(0,212,255,0.15);border-radius:24px;padding:24px 24px 20px;position:relative;overflow:hidden}
+.saldo-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid rgba(255,122,69,0.15);border-radius:24px;padding:24px 24px 20px;position:relative;overflow:hidden}
 .saldo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-primary)}
-.saldo-card::after{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,rgba(0,212,255,0.08) 0%,transparent 70%);pointer-events:none}
+.saldo-card::after{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,122,69,0.08) 0%,transparent 70%);pointer-events:none}
 .saldo-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .saldo-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-secondary);font-weight:700}
 .saldo-eye-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
@@ -138,8 +138,8 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .daily-bar-badge.over{background:rgba(255,56,96,0.12);color:var(--danger)}
 
 /* ===== EVO IMPORT ===== */
-.evo-import-card{background:linear-gradient(135deg,rgba(0,212,255,0.08) 0%,rgba(112,0,255,0.08) 100%);border:1px solid rgba(0,212,255,0.2);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px}
-.evo-import-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.evo-import-card{background:linear-gradient(135deg,rgba(255,122,69,0.08) 0%,rgba(139,92,246,0.08) 100%);border:1px solid rgba(255,122,69,0.2);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.evo-import-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,122,69,0.1);border:1px solid rgba(255,122,69,0.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .evo-import-info{flex:1}
 .evo-import-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--primary);font-weight:700;margin-bottom:3px}
 .evo-import-value{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--text)}
@@ -167,7 +167,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-weight:700;display:flex;align-items:center;gap:6px}
 .card-title-icon{font-size:1rem}
-.card-action{font-size:0.65rem;color:var(--primary);font-weight:700;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid rgba(0,212,255,0.2);background:rgba(0,212,255,0.06);transition:all 0.2s}
+.card-action{font-size:0.65rem;color:var(--primary);font-weight:700;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,122,69,0.2);background:rgba(255,122,69,0.06);transition:all 0.2s}
 .card-action:active{background:var(--primary);color:white}
 
 /* Recent Transactions on Dashboard */
@@ -189,14 +189,14 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
 /* FAB */
-.fab{position:fixed;bottom:90px;right:50%;transform:translateX(calc(50% - 16px - 220px));width:56px;height:56px;border-radius:50%;background:var(--gradient-primary);border:none;color:white;font-size:1.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(0,212,255,0.4);z-index:150;transition:all 0.3s}
+.fab{position:fixed;bottom:90px;right:50%;transform:translateX(calc(50% - 16px - 220px));width:56px;height:56px;border-radius:50%;background:var(--gradient-primary);border:none;color:white;font-size:1.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(255,122,69,0.4);z-index:150;transition:all 0.3s}
 .fab:active{transform:translateX(calc(50% - 16px - 220px)) scale(0.9)}
 @media(max-width:480px){.fab{right:16px;transform:none}.fab:active{transform:scale(0.9)}}
 
 /* ===== TRANSACTIONS ===== */
 .search-bar{position:relative;margin-bottom:8px}
 .search-bar input{width:100%;padding:11px 14px 11px 38px;background:var(--glass);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.82rem;font-family:'Inter',sans-serif;outline:none;transition:all 0.3s}
-.search-bar input:focus{border-color:var(--primary);background:rgba(0,212,255,0.05)}
+.search-bar input:focus{border-color:var(--primary);background:rgba(255,122,69,0.05)}
 .search-bar input::placeholder{color:var(--text-muted)}
 .search-bar-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.9rem;color:var(--text-muted);pointer-events:none}
 .filter-tabs{display:flex;gap:6px;margin-bottom:4px}
@@ -216,7 +216,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .tx-item:active{transform:scale(0.98)}
 .tx-item.receita{border-left:3px solid var(--success)}
 .tx-item.despesa{border-left:3px solid var(--danger)}
-.tx-item.evo-import{border-left:3px solid var(--primary);background:linear-gradient(90deg,rgba(0,212,255,0.05) 0%,transparent 100%)}
+.tx-item.evo-import{border-left:3px solid var(--primary);background:linear-gradient(90deg,rgba(255,122,69,0.05) 0%,transparent 100%)}
 .tx-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:var(--surface);border:1px solid var(--border)}
 .tx-info{flex:1;min-width:0}
 .tx-desc{font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
@@ -272,7 +272,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .insight-cards{display:flex;flex-direction:column;gap:8px}
 .insight-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;gap:12px;align-items:flex-start}
 .insight-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.insight-icon.tip{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2)}
+.insight-icon.tip{background:rgba(255,122,69,0.1);border:1px solid rgba(255,122,69,0.2)}
 .insight-icon.alert{background:rgba(255,56,96,0.1);border:1px solid rgba(255,56,96,0.2)}
 .insight-icon.success{background:rgba(0,217,166,0.1);border:1px solid rgba(0,217,166,0.2)}
 .insight-icon.warn{background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.2)}
@@ -303,7 +303,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .meta-pct{font-family:'JetBrains Mono',monospace;font-size:0.75rem;font-weight:700;color:var(--accent);min-width:38px;text-align:right}
 .meta-values{display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
 .meta-add-btn{width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--radius);background:transparent;color:var(--text-secondary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
-.meta-add-btn:active{border-color:var(--primary);color:var(--primary);background:rgba(0,212,255,0.05)}
+.meta-add-btn:active{border-color:var(--primary);color:var(--primary);background:rgba(255,122,69,0.05)}
 
 /* Empty state */
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
@@ -314,7 +314,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 /* ===== MODALS ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity 0.3s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal-sheet{background:rgba(15,19,45,0.98);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
+.modal-sheet{background:rgba(24,19,15,0.98);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
 .modal-overlay.open .modal-sheet{transform:translateY(0)}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;flex-shrink:0}
 .modal-title{font-size:1rem;font-weight:800;margin-bottom:20px;text-align:center}
@@ -326,7 +326,7 @@ body{font-family:'Sora','Inter',-apple-system,BlinkMacSystemFont,sans-serif;back
 .form-group{margin-bottom:16px}
 .form-label{display:block;font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-weight:700;margin-bottom:8px}
 input,select,textarea{width:100%;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;outline:none;-webkit-appearance:none;appearance:none}
-input:focus,select:focus,textarea:focus{border-color:var(--primary);background:rgba(0,212,255,0.05)}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);background:rgba(255,122,69,0.05)}
 select option{background:#0f132d;color:var(--text)}
 .type-toggle{display:flex;gap:8px;margin-bottom:16px}
 .type-btn{flex:1;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-secondary);font-size:0.75rem;font-weight:700;cursor:pointer;text-align:center;transition:all 0.2s;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
@@ -335,10 +335,10 @@ select option{background:#0f132d;color:var(--text)}
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .cat-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;font-size:0.55rem;color:var(--text-secondary);font-weight:700;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.3px}
 .cat-btn .cat-emoji{font-size:1.3rem;line-height:1}
-.cat-btn.active{border-color:var(--primary);background:rgba(0,212,255,0.1);color:var(--primary)}
+.cat-btn.active{border-color:var(--primary);background:rgba(255,122,69,0.1);color:var(--primary)}
 .btn{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;letter-spacing:0.3px}
 .btn:active{transform:scale(0.98)}
-.btn-primary{background:var(--gradient-primary);color:white;box-shadow:0 4px 20px rgba(0,212,255,0.3)}
+.btn-primary{background:var(--gradient-primary);color:white;box-shadow:0 4px 20px rgba(255,122,69,0.3)}
 .btn-danger{background:rgba(255,56,96,0.1);border:1px solid rgba(255,56,96,0.3);color:var(--danger)}
 .btn-glass{background:var(--surface);border:1px solid var(--border);color:var(--text)}
 .btn-success{background:rgba(0,217,166,0.1);border:1px solid rgba(0,217,166,0.3);color:var(--success)}
@@ -346,7 +346,7 @@ select option{background:#0f132d;color:var(--text)}
 .btn-row .btn{flex:1}
 .installment-row{display:flex;gap:10px}
 .installment-row .form-group{flex:1}
-.recurring-tag{display:inline-flex;align-items:center;gap:4px;font-size:0.6rem;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(0,212,255,0.1);color:var(--primary);border:1px solid rgba(0,212,255,0.2)}
+.recurring-tag{display:inline-flex;align-items:center;gap:4px;font-size:0.6rem;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(255,122,69,0.1);color:var(--primary);border:1px solid rgba(255,122,69,0.2)}
 .budget-setting-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
 .budget-setting-row:last-child{border-bottom:none}
 .budget-setting-icon{font-size:1.2rem;width:30px;text-align:center;flex-shrink:0}
@@ -982,29 +982,29 @@ function addMonths(ym, n) {
 const EXPENSE_CATS = [
     {id:'alimentacao',label:'Alimenta\u00e7\u00e3o',icon:'\uD83C\uDF54',color:'#ff8c00'},
     {id:'transporte',label:'Transporte',icon:'\uD83D\uDE97',color:'#00b4d8'},
-    {id:'moradia',label:'Moradia',icon:'\uD83C\uDFE0',color:'#7000ff'},
+    {id:'moradia',label:'Moradia',icon:'\uD83C\uDFE0',color:'#8b5cf6'},
     {id:'saude',label:'Sa\u00fade',icon:'\uD83D\uDC8A',color:'#00d9a6'},
-    {id:'educacao',label:'Educa\u00e7\u00e3o',icon:'\uD83D\uDCDA',color:'#00d4ff'},
+    {id:'educacao',label:'Educa\u00e7\u00e3o',icon:'\uD83D\uDCDA',color:'#ff7a45'},
     {id:'lazer',label:'Lazer',icon:'\uD83C\uDFAD',color:'#ffd700'},
     {id:'vestuario',label:'Vestu\u00e1rio',icon:'\uD83D\uDC55',color:'#ff3860'},
     {id:'contas',label:'Contas',icon:'\uD83D\uDCA1',color:'#ffb800'},
     {id:'investimentos',label:'Invest.',icon:'\uD83D\uDCB0',color:'#00d9a6'},
-    {id:'cartao',label:'Cart\u00e3o',icon:'\uD83D\uDCB3',color:'#7000ff'},
-    {id:'outros',label:'Outros',icon:'\uD83D\uDCE6',color:'#8b92b4'},
+    {id:'cartao',label:'Cart\u00e3o',icon:'\uD83D\uDCB3',color:'#8b5cf6'},
+    {id:'outros',label:'Outros',icon:'\uD83D\uDCE6',color:'#a39a8f'},
 ];
 const INCOME_CATS = [
-    {id:'evolution',label:'Porto',icon:'\u2693',color:'#00d4ff'},
+    {id:'evolution',label:'Porto',icon:'\u2693',color:'#ff7a45'},
     {id:'salario',label:'Sal\u00e1rio',icon:'\uD83D\uDCBC',color:'#00d9a6'},
-    {id:'freelance',label:'Freelance',icon:'\uD83D\uDCBB',color:'#7000ff'},
+    {id:'freelance',label:'Freelance',icon:'\uD83D\uDCBB',color:'#8b5cf6'},
     {id:'bonus',label:'B\u00f4nus',icon:'\uD83C\uDFC6',color:'#ffd700'},
-    {id:'outros_rec',label:'Outros',icon:'\uD83D\uDCB5',color:'#8b92b4'},
+    {id:'outros_rec',label:'Outros',icon:'\uD83D\uDCB5',color:'#a39a8f'},
 ];
 
 const GOAL_EMOJIS = ['\uD83C\uDFE0','\u2708\uFE0F','\uD83D\uDE97','\uD83D\uDCBB','\uD83C\uDF93','\uD83D\uDCB0','\uD83C\uDFC6','\u2764\uFE0F','\uD83D\uDEE1\uFE0F','\uD83C\uDF1F','\uD83D\uDCF1','\uD83C\uDFD6\uFE0F'];
 
 function getCat(type, id) {
     const list = type === 'receita' ? INCOME_CATS : EXPENSE_CATS;
-    return list.find(c => c.id === id) || {id:'outros',label:'Outros',icon:'\uD83D\uDCE6',color:'#8b92b4'};
+    return list.find(c => c.id === id) || {id:'outros',label:'Outros',icon:'\uD83D\uDCE6',color:'#a39a8f'};
 }
 
 // ============================================================
@@ -1022,6 +1022,7 @@ class FinanceApp {
         this.data = {};
         this.evolutionCache = {};
         this.editingTxId = null;
+        this.editingTxMonth = null;
         this.deletingTxId = null;
         this.currentTxType = 'despesa';
         this.currentTxCat = 'alimentacao';
@@ -1081,7 +1082,12 @@ class FinanceApp {
     getBudgets(month) { return this.getMonthData(month).budgets; }
 
     async loadMonth(month) {
-        if (this.data[month]) return;
+        if (this.data[month]) {
+            // Mes ja em cache nesta sessao: resincroniza so os ganhos do Evolution
+            // (podem ter sido lancados depois do primeiro carregamento).
+            await this.syncEvolution(month);
+            return;
+        }
         this.data[month] = { transactions: [], budgets: {} };
         if (!this.db || !this.userId) return;
         try {
@@ -1492,7 +1498,7 @@ class FinanceApp {
                     legend: { display: false },
                     tooltip: {
                         callbacks: { label: ctx => ` ${ctx.label}: ${formatMoney(Math.round(ctx.raw * 100))} (${Math.round(ctx.raw*100/total*100)}%)` },
-                        backgroundColor: 'rgba(15,19,45,0.95)', titleColor: '#f0f2ff', bodyColor: '#8b92b4', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1
+                        backgroundColor: 'rgba(24,19,15,0.95)', titleColor: '#f5f1ec', bodyColor: '#a39a8f', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1
                     }
                 }
             }
@@ -1512,16 +1518,16 @@ class FinanceApp {
         if (this.charts.line) this.charts.line.destroy();
         const ctx = canvas.getContext('2d');
         const grad = ctx.createLinearGradient(0, 0, 0, 160);
-        grad.addColorStop(0, 'rgba(0,212,255,0.3)'); grad.addColorStop(1, 'rgba(0,212,255,0)');
+        grad.addColorStop(0, 'rgba(255,122,69,0.3)'); grad.addColorStop(1, 'rgba(255,122,69,0)');
         this.charts.line = new Chart(ctx, {
             type: 'line',
-            data: { labels, datasets: [{ label: 'Saldo', data: values, borderColor: '#00d4ff', backgroundColor: grad, borderWidth: 2.5, pointBackgroundColor: '#0a0e27', pointBorderColor: '#00d4ff', pointBorderWidth: 2, pointRadius: 4, tension: 0.4, fill: true, spanGaps: true }] },
+            data: { labels, datasets: [{ label: 'Saldo', data: values, borderColor: '#ff7a45', backgroundColor: grad, borderWidth: 2.5, pointBackgroundColor: '#14100d', pointBorderColor: '#ff7a45', pointBorderWidth: 2, pointRadius: 4, tension: 0.4, fill: true, spanGaps: true }] },
             options: {
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${formatMoney(Math.round(ctx.raw * 100))}` }, backgroundColor: 'rgba(15,19,45,0.95)', titleColor: '#f0f2ff', bodyColor: '#8b92b4', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${formatMoney(Math.round(ctx.raw * 100))}` }, backgroundColor: 'rgba(24,19,15,0.95)', titleColor: '#f5f1ec', bodyColor: '#a39a8f', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 } },
                 scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5070', font: { size: 10 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5070', font: { size: 10 }, callback: v => `R$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1).replace('.',',')+  'k' : String(v)}` } }
+                    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#574f47', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#574f47', font: { size: 10 }, callback: v => `R$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1).replace('.',',')+  'k' : String(v)}` } }
                 }
             }
         });
@@ -1594,7 +1600,7 @@ class FinanceApp {
                 const sign = t.type === 'receita' ? '+' : '-';
                 const badge = t.installments > 1 ? `<span class="tx-badge">${t.currentInstallment}/${t.installments}x</span>` : '';
                 const recurBadge = t.isRecurring ? `<span class="recurring-tag">\u21BB recorrente</span>` : '';
-                const evoBadge = t.isEvolutionImport ? `<span class="recurring-tag" style="border-color:rgba(0,212,255,0.2)">\u2693 Auto</span>` : '';
+                const evoBadge = t.isEvolutionImport ? `<span class="recurring-tag" style="border-color:rgba(255,122,69,0.2)">\u2693 Auto</span>` : '';
                 html += `<div class="tx-item ${t.type} ${t.isEvolutionImport ? 'evo-import' : ''} fade-in" onclick="finance.editTx('${t.id}','${this.currentMonth}')">
                     <div class="tx-icon" style="background:${cat.color}22;border-color:${cat.color}44">${cat.icon}</div>
                     <div class="tx-info">
@@ -1791,12 +1797,12 @@ class FinanceApp {
             ]},
             options: {
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: true, labels: { color: '#8b92b4', font: { size: 11 }, boxWidth: 10, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${formatMoney(Math.round(ctx.raw * 100))}` }, backgroundColor: 'rgba(15,19,45,0.95)', titleColor: '#f0f2ff', bodyColor: '#8b92b4', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 }
+                plugins: { legend: { display: true, labels: { color: '#a39a8f', font: { size: 11 }, boxWidth: 10, padding: 12 } },
+                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${formatMoney(Math.round(ctx.raw * 100))}` }, backgroundColor: 'rgba(24,19,15,0.95)', titleColor: '#f5f1ec', bodyColor: '#a39a8f', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5070', font: { size: 10 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5070', font: { size: 10 }, callback: v => `R$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1).replace('.',',')+  'k' : String(v)}` } }
+                    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#574f47', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#574f47', font: { size: 10 }, callback: v => `R$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1).replace('.',',')+  'k' : String(v)}` } }
                 }
             }
         });
@@ -1863,7 +1869,7 @@ class FinanceApp {
                         </div>
                     </div>
                     <div style="display:flex;gap:6px">
-                        <button style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(0,212,255,0.08);color:var(--primary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem" onclick="finance.openGoalUpdate('${g.id}')">\u270F</button>
+                        <button style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(255,122,69,0.08);color:var(--primary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem" onclick="finance.openGoalUpdate('${g.id}')">\u270F</button>
                         <button class="meta-delete-btn" onclick="finance.deleteGoal('${g.id}')">\uD83D\uDDD1</button>
                     </div>
                 </div>
@@ -1895,7 +1901,7 @@ class FinanceApp {
 
     _buildGoalEmojiGrid() {
         document.getElementById('goalEmojiGrid').innerHTML = GOAL_EMOJIS.map(e =>
-            `<button onclick="finance._selectGoalEmoji('${e}', this)" style="width:38px;height:38px;border-radius:10px;border:1px solid ${e === this.selectedGoalEmoji ? 'var(--primary)' : 'var(--border)'};background:${e === this.selectedGoalEmoji ? 'rgba(0,212,255,0.1)' : 'var(--surface)'};font-size:1.2rem;cursor:pointer;transition:all 0.2s">${e}</button>`
+            `<button onclick="finance._selectGoalEmoji('${e}', this)" style="width:38px;height:38px;border-radius:10px;border:1px solid ${e === this.selectedGoalEmoji ? 'var(--primary)' : 'var(--border)'};background:${e === this.selectedGoalEmoji ? 'rgba(255,122,69,0.1)' : 'var(--surface)'};font-size:1.2rem;cursor:pointer;transition:all 0.2s">${e}</button>`
         ).join('');
     }
 
@@ -1962,6 +1968,7 @@ class FinanceApp {
     // ---- Transaction Modal ----
     openAddTransaction(type) {
         this.editingTxId = null;
+        this.editingTxMonth = null;
         this.currentTxType = type || 'despesa';
         document.getElementById('txModalTitle').textContent = 'Nova Transa\u00e7\u00e3o';
         document.getElementById('txAmount').value = '';
@@ -1979,6 +1986,7 @@ class FinanceApp {
         const tx = this.getTransactions(month).find(t => t.id === id);
         if (!tx || tx.isEvolutionImport) return;
         this.editingTxId = id;
+        this.editingTxMonth = month;
         this.currentTxType = tx.type;
         this.currentTxCat = tx.category;
         document.getElementById('txModalTitle').textContent = 'Editar Transa\u00e7\u00e3o';
@@ -2007,7 +2015,7 @@ class FinanceApp {
         const toggle = document.getElementById('recurringToggle');
         const knob = document.getElementById('recurringKnob');
         if (on) {
-            card.style.borderColor = 'var(--primary)'; card.style.background = 'rgba(0,212,255,0.07)';
+            card.style.borderColor = 'var(--primary)'; card.style.background = 'rgba(255,122,69,0.07)';
             toggle.style.background = 'var(--primary)'; knob.style.left = '22px';
         } else {
             card.style.borderColor = 'var(--border)'; card.style.background = 'var(--surface)';
@@ -2054,10 +2062,26 @@ class FinanceApp {
         const isRecurring = document.getElementById('txRecurring').checked;
         const month = date.substring(0, 7);
         if (this.editingTxId) {
-            await this.updateTx(this.editingTxId, this.currentMonth, {
-                type: this.currentTxType, category: this.currentTxCat, description: desc, amount, date, month: this.currentMonth,
+            const originalMonth = this.editingTxMonth || this.currentMonth;
+            const updates = {
+                type: this.currentTxType, category: this.currentTxCat, description: desc, amount, date, month,
+                installments, currentInstallment,
                 isRecurring: isRecurring && this.currentTxType === 'despesa'
-            });
+            };
+            if (month !== originalMonth) {
+                // Data editada para outro mes: move a transacao do bucket antigo para o novo
+                const txs = this.getTransactions(originalMonth);
+                const idx = txs.findIndex(t => t.id === this.editingTxId);
+                if (idx !== -1) {
+                    const [tx] = txs.splice(idx, 1);
+                    await this.saveMonth(originalMonth);
+                    if (!this.data[month]) await this.loadMonth(month);
+                    this.getMonthData(month).transactions.push({ ...tx, ...updates });
+                    await this.saveMonth(month);
+                }
+            } else {
+                await this.updateTx(this.editingTxId, originalMonth, updates);
+            }
             this.showToast('Transa\u00e7\u00e3o atualizada', 'success');
         } else {
             if (!this.data[month]) await this.loadMonth(month);
@@ -2166,7 +2190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const finance = new FinanceApp();
 finance.init().catch(e => {
     console.error(e);
-    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center;padding:40px;color:#ff3860"><div style="font-size:2rem;margin-bottom:12px">\u26A0\uFE0F</div><div style="font-weight:700;margin-bottom:8px">Erro ao carregar</div><div style="font-size:0.8rem;color:#8b92b4;margin-bottom:20px">Verifique sua conex\u00e3o e tente novamente</div><button onclick="window.location.reload()" style="padding:10px 24px;background:var(--gradient-primary);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer">Tentar novamente</button></div>';
+    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center;padding:40px;color:#ff3860"><div style="font-size:2rem;margin-bottom:12px">\u26A0\uFE0F</div><div style="font-weight:700;margin-bottom:8px">Erro ao carregar</div><div style="font-size:0.8rem;color:#a39a8f;margin-bottom:20px">Verifique sua conex\u00e3o e tente novamente</div><button onclick="window.location.reload()" style="padding:10px 24px;background:var(--gradient-primary);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer">Tentar novamente</button></div>';
 });
 </script>
 </body>

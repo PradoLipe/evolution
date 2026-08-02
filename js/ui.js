@@ -136,8 +136,6 @@
 
             // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
             this.showAnnouncementIfNeeded();
-            // Novidades V5.50 / homenagem Espanha (expira automaticamente apos 03/08/2026)
-            this.showUpdateAnnouncementIfNeeded();
         };
 
         // ============================================
@@ -306,9 +304,9 @@
             let allEntries = this.entries;
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
             if (!this.isAdmin && !this.isVip) {
-                const cutoff = new Date();
+                const cutoff = getManausDate();
                 cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                const cutoffStr = formatDateManaus(cutoff);
                 allEntries = allEntries.filter(e => e.data && e.data >= cutoffStr);
             }
 
@@ -365,10 +363,11 @@
             if (f === 'all' || f === 'paid') {
                 monthSelector.style.display = 'block';
                 const savedMonth = safeStorage.getItem('evo_history_month');
-                if (savedMonth) {
-                    this.historyMonth = parseInt(savedMonth);
+                if (savedMonth && /^\d{4}-\d{2}$/.test(savedMonth)) {
+                    this.historyMonth = savedMonth;
                     monthSelect.value = savedMonth;
-                } else if (!monthSelect.value) {
+                } else {
+                    if (savedMonth) safeStorage.removeItem('evo_history_month'); // formato antigo (so mes, sem ano)
                     this.historyMonth = null;
                 }
             } else {
@@ -383,11 +382,11 @@
         };
 
         EvolutionApp.prototype.setMonth = function(month) {
-            this.historyMonth = month ? parseInt(month) : null;
+            this.historyMonth = month || null;
             this.currentPage = 1;
 
             if (this.historyMonth) {
-                safeStorage.setItem('evo_history_month', String(this.historyMonth));
+                safeStorage.setItem('evo_history_month', this.historyMonth);
             } else {
                 safeStorage.removeItem('evo_history_month');
             }
@@ -399,8 +398,9 @@
         EvolutionApp.prototype.updateHistSubtitle = function() {
             const meses = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             if (this.historyMonth) {
+                const [y, m] = this.historyMonth.split('-');
                 const prefixo = this.currentFilter === 'paid' ? 'Recebidos de ' : 'Registros de ';
-                document.getElementById('histSubtitle').textContent = prefixo + meses[this.historyMonth];
+                document.getElementById('histSubtitle').textContent = `${prefixo}${meses[parseInt(m, 10)]} de ${y}`;
             } else {
                 const subs = { all: 'Todos os registros', pending: 'Aguardando pagamento', paid: 'Valores recebidos' };
                 document.getElementById('histSubtitle').textContent = subs[this.currentFilter] || 'Todos os registros';
@@ -414,10 +414,10 @@
             if (savedFilter && savedFilter !== 'pending') {
                 this.setFilter(savedFilter);
             }
-            if (savedMonth) {
+            if (savedMonth && /^\d{4}-\d{2}$/.test(savedMonth)) {
                 const monthSelect = document.getElementById('monthSelect');
                 if (monthSelect) monthSelect.value = savedMonth;
-                this.historyMonth = parseInt(savedMonth);
+                this.historyMonth = savedMonth;
                 this.updateHistSubtitle();
                 this.renderHistory();
             }
@@ -431,9 +431,9 @@
 
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
             if (!this.isAdmin && !this.isVip) {
-                const cutoff = new Date();
+                const cutoff = getManausDate();
                 cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                const cutoffStr = formatDateManaus(cutoff);
                 filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
             }
 
@@ -443,26 +443,23 @@
             } else if (this.currentFilter === 'paid') {
                 filtered = filtered.filter(e => e.pago);
                 if (this.historyMonth) {
-                    filtered = filtered.filter(e => {
-                        if (!e.data) return false;
-                        const parts = e.data.split('-');
-                        const month = parseInt(parts[1], 10);
-                        return month === this.historyMonth;
-                    });
+                    filtered = filtered.filter(e => e.data && e.data.substring(0, 7) === this.historyMonth);
                 }
+                // Ordena pelo ultimo marcado como pago primeiro (paymentDate); entradas sem
+                // paymentDate valido (dado antigo/corrompido) caem por ultimo, nunca no topo.
                 filtered.sort((a, b) => {
-                    const dateA = a.paymentDate ? new Date(a.paymentDate) : new Date(a.data);
-                    const dateB = b.paymentDate ? new Date(b.paymentDate) : new Date(b.data);
-                    return dateB - dateA;
+                    const tsA = a.paymentDate ? new Date(a.paymentDate).getTime() : NaN;
+                    const tsB = b.paymentDate ? new Date(b.paymentDate).getTime() : NaN;
+                    const validA = !isNaN(tsA);
+                    const validB = !isNaN(tsB);
+                    if (validA && validB) return tsB - tsA;
+                    if (validA) return -1;
+                    if (validB) return 1;
+                    return (new Date(b.data) - new Date(a.data));
                 });
             } else {
                 if (this.historyMonth) {
-                    filtered = filtered.filter(e => {
-                        if (!e.data) return false;
-                        const parts = e.data.split('-');
-                        const month = parseInt(parts[1], 10);
-                        return month === this.historyMonth;
-                    });
+                    filtered = filtered.filter(e => e.data && e.data.substring(0, 7) === this.historyMonth);
                 }
                 filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
             }
@@ -545,9 +542,9 @@
             let filtered = [...this.entries];
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
             if (!this.isAdmin && !this.isVip) {
-                const cutoff = new Date();
+                const cutoff = getManausDate();
                 cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = cutoff.toISOString().substring(0, 10);
+                const cutoffStr = formatDateManaus(cutoff);
                 filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
             }
             if (this.currentFilter === 'pending') {
@@ -556,11 +553,7 @@
                 filtered = filtered.filter(e => e.pago);
             }
             if (this.historyMonth && this.currentFilter !== 'pending') {
-                filtered = filtered.filter(e => {
-                    if (!e.data) return false;
-                    const parts = e.data.split('-');
-                    return parseInt(parts[1], 10) === this.historyMonth;
-                });
+                filtered = filtered.filter(e => e.data && e.data.substring(0, 7) === this.historyMonth);
             }
             const totalPages = Math.ceil(filtered.length / this.itemsPerPage) || 1;
             this.currentPage = Math.min(Math.max(1, this.currentPage + delta), totalPages);
@@ -1354,11 +1347,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         };
 
         EvolutionApp.prototype.formatMetaInput = function(input) {
-            let value = input.value.replace(/[^\d]/g, '');
-            if (value) {
-                const num = parseInt(value);
-                input.value = num.toLocaleString('pt-BR');
+            const digits = input.value.replace(/[^\d]/g, '');
+            if (!digits) {
+                input.value = '';
+                return;
             }
+            const cents = parseInt(digits, 10);
+            input.value = (cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
         EvolutionApp.prototype.triggerGoalCelebration = function() {
@@ -1366,7 +1361,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const container = document.getElementById('goalCelebrationContainer');
             container.innerHTML = '<div class="goal-celebration" id="celebrationOverlay"></div>';
             const overlay = document.getElementById('celebrationOverlay');
-            const colors = ['#00d4ff', '#00d9a6', '#ffd700', '#ff3860', '#7000ff', '#ffb800'];
+            const colors = ['#2563eb', '#00d9a6', '#d4af37', '#ef4444', '#1e3a8a', '#ffb800'];
 
             for (let i = 0; i < 100; i++) {
                 const firework = document.createElement('div');
@@ -1514,7 +1509,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             const cL = path(cP), pL = path(pP);
 
-            let html = `<defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.4"/><stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0"/></linearGradient></defs>`;
+            let html = `<defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.4"/><stop offset="100%" style="stop-color:#2563eb;stop-opacity:0"/></linearGradient></defs>`;
             html += `<path class="chart-area-path" d="${cL} L ${cP[cP.length - 1].x} ${h - p} L ${cP[0].x} ${h - p} Z"/>`;
             html += `<path class="chart-line-prev" d="${pL}"/>`;
             html += `<path class="chart-line-path" d="${cL}"/>`;

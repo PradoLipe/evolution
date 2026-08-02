@@ -260,6 +260,8 @@
                 const pending = this.pendingUsers.find(p => p.code === enteredPin);
                 if (pending) {
                     this.showToast('Seu cadastro está aguardando aprovação', 'warning');
+                    this.pinValue = '';
+                    this.updatePinDisplay();
                 } else {
                     this.showPinError('PIN não encontrado');
                 }
@@ -269,6 +271,8 @@
             // Verificar se esta bloqueado
             if (foundUser.blocked && !foundUser.isAdmin) {
                 this.showToast('Usuário bloqueado', 'error');
+                this.pinValue = '';
+                this.updatePinDisplay();
                 return;
             }
 
@@ -283,6 +287,8 @@
                 const vipInfo = this.getVipInfo(foundUser);
                 if (!vipInfo.active && foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
                     this.showToast('Acesso permitido apenas no dispositivo cadastrado. Contate o administrador para resetar.', 'error');
+                    this.pinValue = '';
+                    this.updatePinDisplay();
                     return;
                 }
             }
@@ -599,7 +605,7 @@
             } catch (_) {}
 
             // Bloquear usuários não-VIP a partir de 01/04/2026
-            if (!this.isAdmin && !this.isVip && new Date() >= new Date('2026-03-29T00:00:00')) {
+            if (!this.isAdmin && !this.isVip && new Date() >= new Date('2026-04-01T00:00:00-03:00')) {
                 safeStorage.removeItem('evo_session_v516');
                 if (window.TurtleBlock) window.TurtleBlock.show();
                 return;
