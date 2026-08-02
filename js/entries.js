@@ -136,16 +136,14 @@
         // ============================================
         // SALVAR REGISTRO
         // ============================================
-        EvolutionApp.prototype.saveEntry = async function() {
-            const btn = document.getElementById('btnSaveEntry');
-            if (btn) btn.disabled = true;
-
+        // ETAPA 1: valida os dados e abre a pre-visualizacao (confirmar / editar).
+        // NAO grava nada ainda — a gravacao so acontece em confirmSaveEntry().
+        EvolutionApp.prototype.saveEntry = function() {
             const navio = document.getElementById('calcNavio').value.toUpperCase().trim();
             const dataInput = document.getElementById('calcData').value;
 
             if (!navio || !dataInput) {
                 this.showToast('Preencha todos os campos', 'error');
-                if (btn) btn.disabled = false;
                 return;
             }
 
@@ -160,7 +158,6 @@
             const totalProducao = valores.reduce((s, v) => s + (parseInt(v) || 0), 0);
             if (totalProducao <= 0) {
                 this.showToast('Informe a produção antes de salvar', 'error');
-                if (btn) btn.disabled = false;
                 return;
             }
 
@@ -185,8 +182,62 @@
                 timestamp: new Date().toISOString()
             };
 
+            // Guarda como pendente e mostra a pre-visualizacao para o usuario
+            // confirmar ou voltar a editar.
+            this._pendingEntry = entry;
+            this.renderEntryPreview(entry);
+            this.openModal('entryPreviewModal');
+        };
+
+        // Monta o cartao de pre-visualizacao com os dados do registro pendente.
+        EvolutionApp.prototype.renderEntryPreview = function(entry) {
+            const card = document.getElementById('entryPreviewCard');
+            if (!card) return;
+            card.innerHTML = `
+                <div class="epc-top">
+                    <div>
+                        <div class="epc-ship">${this.escHtml(entry.navio)}</div>
+                        <div class="epc-meta">${this.escHtml(entry.dataF)} • ${this.escHtml(entry.turno)}</div>
+                    </div>
+                    <div>
+                        <div class="epc-liquid">${this.formatMoney(entry.liquido)}</div>
+                        <div class="epc-bruto">Bruto ${this.formatMoney(entry.bruto)}</div>
+                    </div>
+                </div>
+                <div class="epc-grid">
+                    <div><span>Tipo</span><b>${entry.tipo === 'normal' ? 'Normal' : 'Feriado'}</b></div>
+                    <div><span>Conf.</span><b>${this.escHtml(String(entry.conferentes))}</b></div>
+                    <div><span>Data</span><b>${this.escHtml(entry.dataF)}</b></div>
+                    <div><span>Turno</span><b>${this.escHtml(entry.turno)}</b></div>
+                </div>
+            `;
+        };
+
+        // Botao "Editar": apenas fecha o preview. Os campos do formulario continuam
+        // preenchidos, entao o usuario pode ajustar e salvar de novo.
+        EvolutionApp.prototype.editPendingEntry = function() {
+            this.closeModal('entryPreviewModal');
+        };
+
+        // ETAPA 2: o usuario confirmou — agora sim grava no historico e dispara as
+        // animacoes de recompensa (moedas + cartao voando para o historico).
+        EvolutionApp.prototype.confirmSaveEntry = function() {
+            const entry = this._pendingEntry;
+            if (!entry) return;                 // nada pendente (ou ja confirmado)
+            this._pendingEntry = null;          // evita gravacao dupla em clique duplo
+
+            const btn = document.getElementById('btnConfirmEntry');
+            if (btn) btn.disabled = true;
+
+            // Captura a posicao do cartao do preview ANTES de fechar o modal,
+            // para a animacao partir exatamente de onde ele estava.
+            let fromRect = null;
+            const cardEl = document.getElementById('entryPreviewCard');
+            if (cardEl) fromRect = cardEl.getBoundingClientRect();
+
+            // --- Gravacao real (mesma logica de antes) ---
             this.entries.unshift(entry);
-            this.learnNavioName(navio);
+            this.learnNavioName(entry.navio);
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
 
             this.updateDashboard();
@@ -194,16 +245,22 @@
             this.renderChart();
             this.updateMetaProgress();
 
-            document.getElementById('calcNavio').value = '';
-            // FIX 2: Limpar campos de producao para evitar registro duplicado acidental
+            // FIX 2: Limpar campos para evitar registro duplicado acidental
+            const _navio = document.getElementById('calcNavio');
             const _calcPT = document.getElementById('calcPT');
             const _calcP1 = document.getElementById('calcP1');
             const _calcP2 = document.getElementById('calcP2');
+            if (_navio) _navio.value = '';
             if (_calcPT) _calcPT.value = '';
             if (_calcP1) _calcP1.value = '';
             if (_calcP2) _calcP2.value = '';
-            this.triggerMoneyAnimation();
+
             this.persistData();
+
+            // Fecha o preview e celebra
+            this.closeModal('entryPreviewModal');
+            if (typeof this.triggerHaptic === 'function') this.triggerHaptic('success');
+            this.celebrateEntrySaved(entry, fromRect);
 
             this.showToast('Registro salvo!', 'success');
             // atualizar calendario e sugestoes apos salvar
@@ -214,9 +271,97 @@
             this.showNavioSuggestions('calcNavio');
             this.showNavioSuggestions('relNavio');
 
-            setTimeout(() => { if (btn) btn.disabled = false; }, 1500);
+            setTimeout(() => { if (btn) btn.disabled = false; }, 800);
         };
 
+        // Orquestra as animacoes de recompensa. Envolto em try/catch: uma falha de
+        // animacao NUNCA pode quebrar o fluxo de salvar.
+        EvolutionApp.prototype.celebrateEntrySaved = function(entry, fromRect) {
+            try {
+                this.flyEntryToHistory(entry, fromRect);
+                this.triggerMoneyBurst(fromRect);
+                this.floatEarnedValue(entry, fromRect);
+            } catch (e) { /* silencioso de proposito */ }
+        };
+
+        // Cartao com o resumo do registro "voando" da posicao do preview em direcao
+        // ao Historico (que fica mais abaixo no app). Quando pousa, o Historico pisca.
+        EvolutionApp.prototype.flyEntryToHistory = function(entry, fromRect) {
+            const startX = fromRect ? fromRect.left + fromRect.width / 2 : window.innerWidth / 2;
+            const startY = fromRect ? fromRect.top + fromRect.height / 2 : window.innerHeight / 2;
+
+            const sec = document.getElementById('secHist');
+            let targetX = window.innerWidth / 2;
+            let targetY = window.innerHeight - 40;
+            if (sec) {
+                const r = sec.getBoundingClientRect();
+                targetX = r.left + r.width / 2;
+                targetY = r.top + 46;
+                // Se o Historico esta abaixo da area visivel, mira no rodape da tela
+                // (o cartao "desce" na direcao dele mesmo assim).
+                if (targetY > window.innerHeight - 20) targetY = window.innerHeight - 30;
+                if (targetY < 20) targetY = 20;
+            }
+
+            const fly = document.createElement('div');
+            fly.className = 'entry-fly-card';
+            fly.innerHTML = `<div class="efc-ship">${this.escHtml(entry.navio)}</div><div class="efc-val">${this.formatMoney(entry.liquido)}</div>`;
+            fly.style.left = startX + 'px';
+            fly.style.top = startY + 'px';
+            fly.style.setProperty('--dx', (targetX - startX) + 'px');
+            fly.style.setProperty('--dy', (targetY - startY) + 'px');
+            document.body.appendChild(fly);
+            setTimeout(() => { if (fly.parentNode) fly.parentNode.removeChild(fly); }, 1200);
+
+            // Pulso de "pouso" no Historico, sincronizado com a chegada do cartao.
+            setTimeout(() => {
+                if (sec) {
+                    sec.classList.add('history-landing');
+                    setTimeout(() => sec.classList.remove('history-landing'), 950);
+                }
+            }, 900);
+        };
+
+        // Explosao de moedas/emojis a partir do ponto de origem (dopamina!).
+        EvolutionApp.prototype.triggerMoneyBurst = function(fromRect) {
+            const emojis = ['💸', '💰', '💵', '🤑', '💎', '🪙', '✨'];
+            const cx = fromRect ? fromRect.left + fromRect.width / 2 : window.innerWidth / 2;
+            const cy = fromRect ? fromRect.top + fromRect.height / 2 : window.innerHeight / 2;
+            const N = 26;
+            for (let i = 0; i < N; i++) {
+                const p = document.createElement('div');
+                p.className = 'coin-particle';
+                p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                p.style.left = cx + 'px';
+                p.style.top = cy + 'px';
+                const ang = (Math.PI * 2) * (i / N) + Math.random() * 0.5;
+                const dist = 120 + Math.random() * 220;
+                const tx = Math.cos(ang) * dist;
+                const ty = Math.sin(ang) * dist + 120; // gravidade puxa para baixo
+                p.style.setProperty('--tx', tx + 'px');
+                p.style.setProperty('--ty', ty + 'px');
+                p.style.setProperty('--rot', `${(Math.random() - 0.5) * 720}deg`);
+                p.style.fontSize = (18 + Math.random() * 18) + 'px';
+                p.style.animationDelay = (Math.random() * 0.12) + 's';
+                document.body.appendChild(p);
+                setTimeout(() => { if (p.parentNode) p.parentNode.removeChild(p); }, 1400);
+            }
+        };
+
+        // Valor liquido "+R$ X,XX" subindo e sumindo, para reforcar a recompensa.
+        EvolutionApp.prototype.floatEarnedValue = function(entry, fromRect) {
+            const el = document.createElement('div');
+            el.className = 'payment-float-value';
+            el.textContent = '+ ' + this.formatMoney(entry.liquido);
+            const cx = fromRect ? fromRect.left + fromRect.width / 2 : window.innerWidth / 2;
+            const cy = fromRect ? fromRect.top : window.innerHeight / 2;
+            el.style.left = cx + 'px';
+            el.style.top = cy + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1600);
+        };
+
+        // Mantido por compatibilidade — nao e mais chamado no fluxo principal.
         EvolutionApp.prototype.triggerMoneyAnimation = function() {
             const emojis = ['💸', '💰', '💵', '🤑', '💎'];
             for (let i = 0; i < 20; i++) {

@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.51',
+                v: window.EVOLUTION_APP_VERSION || 'V5.52',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.51');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.52');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -174,10 +174,14 @@
                     { content: this.formatMoney(e.liquido), paid: isPaid }
                 ];
             };
-            const monthHeaderRow = (mk) => ([{
+            // Linha do MES: vai no TOPO da tabela (dentro do head), acima do cabecalho
+            // de colunas (Data, Navio...). Como fica no head, ela se repete em toda pagina
+            // que aquele mes ocupar. Antes esta linha ficava no corpo, abaixo do cabecalho
+            // de colunas ("invertido"); agora e o cabecalho principal do mes.
+            const monthHeadRow = (mk) => ([{
                 content: monthLabel(mk),
                 colSpan: 7,
-                styles: { fillColor: [10, 18, 46], textColor: [0, 212, 255], fontStyle: 'bold', fontSize: 9, halign: 'center', cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } }
+                styles: { fillColor: [10, 18, 46], textColor: [0, 212, 255], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
             }]);
             const monthSubtotalRow = (mk, bruto, liquido) => ([
                 { content: `Subtotal ${monthLabel(mk)}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
@@ -449,7 +453,9 @@
                     doc.autoTable({
                         ...commonTableOpts,
                         startY: i === 0 ? 90 : 36,
-                        body: [monthHeaderRow(grp.key), ...grp.rows, monthSubtotalRow(grp.key, grp.bruto, grp.liquido)],
+                        // Cabecalho em duas linhas: 1a) o MES (topo), 2a) as colunas.
+                        head: [monthHeadRow(grp.key), commonTableOpts.head[0]],
+                        body: [...grp.rows, monthSubtotalRow(grp.key, grp.bruto, grp.liquido)],
                         ...(isLast ? { showFoot: 'lastPage', foot: footRows } : {})
                     });
                 });

@@ -33,6 +33,30 @@
         @keyframes flyAndFade { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 10% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot)); opacity: 0; } }
         .payment-float-value { position: fixed; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: var(--success); font-size: 2rem; pointer-events: none; z-index: 10000; text-shadow: 0 2px 20px rgba(0, 217, 166, 0.5); animation: floatUpFade 1.5s ease-out forwards; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--success); backdrop-filter: blur(4px); }
         @keyframes floatUpFade { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 20% { transform: translate(-50%, -40px) scale(1.1); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(-50%, -150px) scale(1); opacity: 0; } }
+        /* ===== Confirmacao de registro + animacoes de recompensa ===== */
+        .entry-preview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px 14px 18px; text-align: left; position: relative; overflow: hidden; }
+        .entry-preview-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--gradient-success); }
+        .epc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .epc-ship { font-size: 1rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text); word-break: break-word; }
+        .epc-meta { font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px; }
+        .epc-liquid { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.15rem; color: var(--success); text-align: right; white-space: nowrap; }
+        .epc-bruto { font-size: 0.66rem; color: var(--text-secondary); text-align: right; margin-top: 3px; white-space: nowrap; }
+        .epc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 13px; }
+        .epc-grid > div { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 6px 3px; text-align: center; }
+        .epc-grid span { display: block; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); }
+        .epc-grid b { display: block; font-size: 0.76rem; color: var(--text); margin-top: 3px; }
+        /* Cartao que "voa" do preview ate o Historico */
+        .entry-fly-card { position: fixed; z-index: 10001; pointer-events: none; will-change: transform, opacity; background: var(--glass); border: 1px solid var(--success); border-radius: 14px; padding: 9px 14px; min-width: 110px; text-align: center; box-shadow: 0 12px 34px rgba(0,217,166,0.4), 0 0 0 1px rgba(0,217,166,0.18); backdrop-filter: blur(6px); animation: entryFlyToHistory 1.05s cubic-bezier(0.55, 0, 0.35, 1) forwards; }
+        .entry-fly-card .efc-ship { font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text); opacity: 0.85; }
+        .entry-fly-card .efc-val { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1rem; color: var(--success); margin-top: 1px; }
+        @keyframes entryFlyToHistory { 0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; } 16% { transform: translate(-50%, calc(-50% - 26px)) scale(1.08); opacity: 1; } 72% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.26); opacity: 0; } }
+        /* Explosao de moedas */
+        .coin-particle { position: fixed; pointer-events: none; z-index: 10000; font-size: 26px; will-change: transform, opacity; animation: coinBurst 1.15s cubic-bezier(0.15, 0.6, 0.25, 1) forwards; }
+        @keyframes coinBurst { 0% { transform: translate(-50%, -50%) scale(0.2) rotate(0deg); opacity: 0; } 12% { transform: translate(-50%, -50%) scale(1.2) rotate(0deg); opacity: 1; } 100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.85) rotate(var(--rot)); opacity: 0; } }
+        /* Pulso no Historico quando o cartao "pousa" */
+        .section.history-landing { animation: historyLandPulse 0.9s ease-out; }
+        @keyframes historyLandPulse { 0% { box-shadow: 0 0 0 0 rgba(0,217,166,0); } 30% { box-shadow: 0 0 0 3px rgba(0,217,166,0.5), 0 0 30px rgba(0,217,166,0.35); } 100% { box-shadow: 0 0 0 0 rgba(0,217,166,0); } }
+        @media (prefers-reduced-motion: reduce) { .entry-fly-card, .coin-particle, .payment-float-value { animation-duration: 0.35s; } .section.history-landing { animation: none; } }
         .goal-celebration { position: fixed; inset: 0; pointer-events: none; z-index: 99999; overflow: hidden; }
         .firework { position: absolute; width: 4px; height: 4px; border-radius: 50%; animation: firework 2.5s ease-out forwards; }
         @keyframes firework { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--fx), var(--fy)) scale(0); opacity: 0; } }
