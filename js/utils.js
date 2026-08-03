@@ -182,7 +182,7 @@
             const monthHeadRow = (mk) => ([{
                 content: monthLabel(mk),
                 colSpan: 7,
-                styles: { fillColor: [13, 17, 23], textColor: [37, 99, 235], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
+                styles: { fillColor: [24, 35, 64], textColor: [212, 175, 55], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
             }]);
             const monthSubtotalRow = (mk, bruto, liquido) => ([
                 { content: `Subtotal ${monthLabel(mk)}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
@@ -224,7 +224,7 @@
             // -- HELPER: Desenha cabecalho em cada pagina --
             const drawHeader = () => {
                 // Fundo escuro do topo
-                doc.setFillColor(13, 17, 23);
+                doc.setFillColor(24, 35, 64);
                 doc.rect(0, 0, pageW, 30, 'F');
                 // Faixa lateral ciano
                 doc.setFillColor(37, 99, 235);
@@ -242,7 +242,7 @@
                 // Subtitulo
                 doc.setFontSize(7.5);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(37, 99, 235);
+                doc.setTextColor(170, 195, 230);
                 doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
                 // Versao
                 doc.setFontSize(6.5);
@@ -391,7 +391,7 @@
                     lineWidth: 0.15
                 },
                 headStyles: {
-                    fillColor: [13, 17, 23],
+                    fillColor: [24, 35, 64],
                     textColor: [220, 235, 255],
                     fontStyle: 'bold',
                     fontSize: 8,
@@ -434,9 +434,9 @@
 
             const footRows = [
                 [
-                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [37, 99, 235], fillColor: [13, 17, 23], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [255, 214, 195], fillColor: [13, 17, 23], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [13, 17, 23], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
+                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [212, 175, 55], fillColor: [24, 35, 64], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [226, 232, 240], fillColor: [24, 35, 64], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [24, 35, 64], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
                 ],
                 [
                     { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
