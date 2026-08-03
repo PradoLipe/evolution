@@ -1006,7 +1006,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const savedManualMonth = safeStorage.getItem('evo_calendar_month');
             let targetMonth = savedManualMonth || monthInput.value || this.selectedMonth || getCurrentMonthStringManaus();
             const hasEntries = Array.isArray(this.entries) && this.entries.length > 0;
-            if (hasEntries && (!savedManualMonth || forceBestMonth || !monthInput.value)) {
+            if (hasEntries && (!savedManualMonth || !monthInput.value)) {
                 const sorted = [...this.entries].filter(e => e?.data).sort((a, b) => String(b.data).localeCompare(String(a.data)));
                 if (sorted[0]?.data) targetMonth = sorted[0].data.substring(0, 7);
             }
@@ -1511,6 +1511,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             const weekColor = g >= 0 ? 'var(--success)' : 'var(--danger)';
             const weekColorHex = g >= 0 ? '#00d9a6' : '#ef4444';
+
+            document.getElementById('chartTotalCurr').style.color = weekColor;
 
             let html = `<defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:${weekColorHex};stop-opacity:0.4"/><stop offset="100%" style="stop-color:${weekColorHex};stop-opacity:0"/></linearGradient></defs>`;
             html += `<path class="chart-area-path" d="${cL} L ${cP[cP.length - 1].x} ${h - p} L ${cP[0].x} ${h - p} Z"/>`;

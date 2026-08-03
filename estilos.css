@@ -416,11 +416,11 @@
         .rate-subtitle { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
         .app-footer { margin-top: auto; padding: 20px 16px; text-align: center; border-top: 1px solid var(--border); background: var(--surface); }
         .footer-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; }
-        .footer-brand .ltr { display: inline; animation: letterGlow 4.2s linear infinite; }
+        .footer-brand .ltr { display: inline; animation: letterGlow 8.4s ease-in-out infinite; }
         @keyframes letterGlow {
             0% { color: #fff6dc; text-shadow: 0 0 6px var(--accent), 0 0 16px var(--accent); }
             18% { color: #fff6dc; text-shadow: 0 0 6px var(--accent), 0 0 16px var(--accent); }
-            40%, 100% { color: var(--accent); text-shadow: none; }
+            50%, 100% { color: var(--accent); text-shadow: none; }
         }
         @media (prefers-reduced-motion: reduce) { .footer-brand .ltr { animation: none; } }
         .footer-copy { font-size: 0.65rem; color: var(--text-secondary); font-weight: 500; line-height: 1.5; }
