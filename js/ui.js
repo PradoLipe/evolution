@@ -1509,11 +1509,14 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
             const cL = path(cP), pL = path(pP);
 
-            let html = `<defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.4"/><stop offset="100%" style="stop-color:#2563eb;stop-opacity:0"/></linearGradient></defs>`;
+            const weekColor = g >= 0 ? 'var(--success)' : 'var(--danger)';
+            const weekColorHex = g >= 0 ? '#00d9a6' : '#ef4444';
+
+            let html = `<defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:${weekColorHex};stop-opacity:0.4"/><stop offset="100%" style="stop-color:${weekColorHex};stop-opacity:0"/></linearGradient></defs>`;
             html += `<path class="chart-area-path" d="${cL} L ${cP[cP.length - 1].x} ${h - p} L ${cP[0].x} ${h - p} Z"/>`;
             html += `<path class="chart-line-prev" d="${pL}"/>`;
-            html += `<path class="chart-line-path" d="${cL}"/>`;
-            cP.forEach(pt => html += `<circle class="chart-point" cx="${pt.x}" cy="${pt.y}" r="4"/>`);
+            html += `<path class="chart-line-path" d="${cL}" style="stroke:${weekColor};filter:drop-shadow(0 0 8px ${weekColorHex})"/>`;
+            cP.forEach(pt => html += `<circle class="chart-point" cx="${pt.x}" cy="${pt.y}" r="4" style="stroke:${weekColor}"/>`);
 
             svg.innerHTML = html;
         };
