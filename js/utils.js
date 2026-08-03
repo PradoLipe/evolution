@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.58',
+                v: window.EVOLUTION_APP_VERSION || 'V5.59',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.58');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.59');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -1108,7 +1108,6 @@
 
             // Limpar sessao e estado
             safeStorage.removeItem('evo_session_v516');
-            safeStorage.removeItem('evo_calendar_month');
             this.pendingSessionData = null;
             this.currentUser = null;
             this.currentUserCode = null;
