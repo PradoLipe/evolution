@@ -1006,7 +1006,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const savedManualMonth = safeStorage.getItem('evo_calendar_month');
             let targetMonth = savedManualMonth || monthInput.value || this.selectedMonth || getCurrentMonthStringManaus();
             const hasEntries = Array.isArray(this.entries) && this.entries.length > 0;
-            if (hasEntries && (!savedManualMonth || !monthInput.value)) {
+            if (hasEntries && !savedManualMonth && !monthInput.value) {
                 const sorted = [...this.entries].filter(e => e?.data).sort((a, b) => String(b.data).localeCompare(String(a.data)));
                 if (sorted[0]?.data) targetMonth = sorted[0].data.substring(0, 7);
             }
