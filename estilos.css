@@ -423,31 +423,42 @@
         .rate-type-label .dot.feriado { background: var(--warning); }
         .rate-subtitle { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
         .app-footer { margin-top: auto; padding: 20px 16px; text-align: center; border-top: 1px solid var(--border); background: var(--surface); }
-        .footer-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; }
-        /* v5.61 — correcao do brilho no iOS (iPhone 15 Pro e afins):
-           1) `display:inline` + `will-change` fazia o WebKit nao repintar as letras;
-           2) o WebKit nao interpola `text-shadow` de/para `none` — as sombras agora
-              existem sempre, apenas com alpha 0 no repouso;
-           3) `both` fixa o estado durante o animation-delay de cada letra. */
-        .footer-brand .ltr { display: inline-block; color: #d4af37; text-shadow: 0 0 6px rgba(212, 175, 55, 0), 0 0 16px rgba(212, 175, 55, 0); animation: letterGlow 8.4s ease-in-out infinite both; }
-        @keyframes letterGlow {
-            0%   { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
-            18%  { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
-            50%, 100% { color: #d4af37; text-shadow: 0 0 6px rgba(212, 175, 55, 0), 0 0 16px rgba(212, 175, 55, 0); }
-        }
-        /* Com "Reduzir Movimento" ligado (comum no iPhone) o brilho antes sumia por
-           completo. Como aqui nao ha deslocamento, mantemos so um pulso de cor suave. */
-        @media (prefers-reduced-motion: reduce) {
-            .footer-brand .ltr { animation-name: letterGlowSoft; animation-duration: 10s; }
-        }
-        @keyframes letterGlowSoft {
-            0%, 18% { color: #fff6dc; }
-            50%, 100% { color: #d4af37; }
-        }
-        /* Fallback ativado por JS quando o iOS congela as animacoes CSS
-           (Modo de Pouca Energia): o brilho passa a ser pintado via classe. */
-        .footer-brand.js-glow .ltr { animation: none; transition: color 0.5s ease, text-shadow 0.5s ease; }
-        .footer-brand.js-glow .ltr.lit { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
+        .footer-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; position: relative; }
+
+        /* ============================================================
+           v5.62 — A VIAGEM DO RODAPE
+           A cada login um cargueiro cruza o rodape e vai deixando as letras de
+           EVOLUTION V5.62 acesas na sua esteira. Depois que a travessia termina,
+           o brilho vira um vaivem continuo entre as letras.
+
+           Quem move o navio, a espuma e as letras e o requestAnimationFrame em
+           js/main.js — nao ha @keyframes aqui de proposito. O Safari do iPhone
+           suspende animacoes CSS no Modo de Pouca Energia (era a causa do brilho
+           travado no v5.61), mas o rAF continua rodando. O CSS abaixo so descreve
+           a aparencia de cada estado.
+
+           Notas de WebKit mantidas do v5.61:
+           1) `display:inline-block` — com `inline` o WebKit nao repintava as letras;
+           2) as sombras existem sempre, so com alpha 0 no repouso, porque o WebKit
+              nao interpola `text-shadow` de/para `none`.
+           ============================================================ */
+        .footer-brand .ltr { display: inline-block; color: #d4af37; text-shadow: 0 0 6px rgba(212, 175, 55, 0), 0 0 16px rgba(212, 175, 55, 0); transition: color 0.5s ease, text-shadow 0.5s ease, opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .footer-brand .ltr.lit { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
+
+        /* Estado "ainda nao entregue pelo navio". So vale enquanto a classe
+           .voyage existir — se o JS nunca rodar, o rodape fica visivel e estatico. */
+        .footer-brand.voyage .ltr { opacity: 0; transform: translateY(3px) scale(0.78); }
+        .footer-brand.voyage .ltr.revealed { opacity: 1; transform: none; }
+
+        /* Camada do navio: sobreposta a linha do texto, sem capturar toques.
+           letter-spacing precisa ser zerado para nao deslocar as particulas. */
+        .brand-voyage { position: absolute; left: 0; right: 0; top: 50%; height: 30px; margin-top: -15px; pointer-events: none; letter-spacing: 0; }
+        .brand-voyage .ship { position: absolute; top: 3px; left: 0; width: 47px; height: 22px; opacity: 0; transition: opacity 0.6s ease; }
+        .brand-voyage .ship svg { display: block; width: 100%; height: 100%; color: var(--accent); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5)); }
+        .brand-voyage .pt { position: absolute; top: 0; left: 0; border-radius: 50%; }
+        .brand-voyage .pt.foam { background: #fff6dc; }
+        .brand-voyage .pt.smoke { background: rgba(212, 175, 55, 0.5); }
+        .brand-voyage .pt.spark { background: #fff6dc; box-shadow: 0 0 4px rgba(212, 175, 55, 0.9); }
         .footer-copy { font-size: 0.65rem; color: var(--text-secondary); font-weight: 500; line-height: 1.5; }
         .footer-divider { width: 30px; height: 2px; background: var(--gradient-primary); margin: 8px auto; border-radius: 2px; opacity: 0.5; }
         .hidden { display: none !important; }

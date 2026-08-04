@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.61',
+                v: window.EVOLUTION_APP_VERSION || 'V5.62',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.61');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.62');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
