@@ -195,7 +195,7 @@
     // ============================================
     // A VIAGEM DO RODAPE (v5.62)
     // A cada login um cargueiro cruza o rodape e vai "entregando" as letras de
-    // EVOLUTION V5.63: cada uma acende no instante em que o casco passa por ela.
+    // EVOLUTION V5.64: cada uma acende no instante em que o casco passa por ela.
     // Terminada a travessia o navio some e o brilho vira um vaivem continuo.
     //
     // Tudo e movido por requestAnimationFrame, e nao por @keyframes, porque o
@@ -320,7 +320,7 @@
         // ---- letras ----
         // O timer que apaga a faisca vai para sparkTimers, e nao para idleTimers:
         // stopIdle() limpa os do repouso, e antes cancelava por engano os das
-        // ultimas letras entregues — a versao "V5.63" ficava acesa ate a varredura
+        // ultimas letras entregues — a versao "V5.64" ficava acesa ate a varredura
         // de repouso passar por ela, muito depois das demais.
         function ignite(el) {
             el.classList.add('revealed', 'lit');
@@ -516,13 +516,14 @@
             rafId = requestAnimationFrame(frame);
         }
 
-        // ---- apresentacao no login (v5.63) ----
-        // Depois do login o rodape nasce fora da tela e a viagem passava
-        // despercebida. Aqui o app e rolado ate o fim antes de o navio zarpar,
-        // encostando o rodape na base da tela. Em telas grandes os cards de
-        // Total ficam visiveis logo acima; em telas pequenas eles caem fora do
-        // corte, mas a animacao aparece inteira em qualquer aparelho.
-        // Nao ha volta automatica ao topo: quem quiser o painel sobe a tela.
+        // ---- apresentacao no login (v5.64) ----
+        // O app abre normalmente, no topo. A v5.63 rolava a tela ate o rodape
+        // para forcar o usuario a ver a viagem, mas so ficava bom em tela cheia;
+        // essa rolagem foi removida.
+        //
+        // O que ficou: a viagem espera qualquer modal de abertura sair da frente.
+        // O resumo de pendencias abre uma vez por periodo do dia e cobre a tela
+        // inteira — animar atras dele desperdicaria a travessia.
 
         // Quem pode estar cobrindo a tela logo apos o login.
         const BLOCKERS = '.modal-overlay.active, #pendingSummaryOverlay:not(.hidden)';
@@ -537,57 +538,15 @@
             if (!ensure()) return;
             presenting = true;
 
-            // O resumo de pendencias abre uma vez por periodo do dia e cobre tudo.
-            // Animar atras dele desperdicaria a viagem — justamente o que essa
-            // apresentacao veio resolver. Entao espera ele sair da frente.
             if (blocked()) {
                 if ((tries || 0) < 600) setTimeout(() => presentOnLogin((tries || 0) + 1), 300);
                 else presenting = false;
                 return;
             }
 
-            const aim = scrollFooterToBottom();
-
-            setTimeout(() => {
-                // Se a rolagem suave nao pegou — nao suportada, interrompida, ou o
-                // navegador simplesmente ignorou — encosta na marra. Sem isso a
-                // apresentacao inteira viraria nada em alguns aparelhos.
-                if (aim && Math.abs(aim.sc.scrollTop - aim.target) > 4) aim.sc.scrollTop = aim.target;
-                presenting = false;
-                play(0);
-            }, 700);
-        }
-
-        // Descobre quem realmente rola: um ancestral com overflow proprio ou,
-        // no caso normal deste app, o proprio documento.
-        function scrollerOf(el) {
-            let n = el.parentElement;
-            while (n && n !== document.body && n !== document.documentElement) {
-                const oy = getComputedStyle(n).overflowY;
-                if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) return n;
-                n = n.parentElement;
-            }
-            return document.scrollingElement || document.documentElement;
-        }
-
-        // Alinha a base do rodape com a base da area visivel. Em telas grandes
-        // isso deixa os cards de Total logo acima; em telas pequenas os cards
-        // ficam fora do corte, mas o rodape aparece inteiro em qualquer uma.
-        function scrollFooterToBottom() {
-            const foot = brand.parentElement;
-            const sc = scrollerOf(foot);
-            const isDoc = sc === document.scrollingElement || sc === document.documentElement;
-            const viewH = isDoc ? window.innerHeight : sc.clientHeight;
-            const viewBottom = isDoc ? window.innerHeight : sc.getBoundingClientRect().bottom;
-            const delta = foot.getBoundingClientRect().bottom - viewBottom;
-            const max = Math.max(0, sc.scrollHeight - viewH);
-            const target = Math.max(0, Math.min(max, Math.round(sc.scrollTop + delta)));
-            try {
-                sc.scrollTo({ top: target, behavior: reduceMotion() ? 'auto' : 'smooth' });
-            } catch (e) {
-                sc.scrollTop = target;
-            }
-            return { sc, target };
+            // Pequena folga depois que o modal sai, para a viagem nao comecar
+            // junto com a animacao de fechamento dele.
+            setTimeout(() => { presenting = false; play(0); }, 350);
         }
 
         window.EvoFooterVoyage = {
