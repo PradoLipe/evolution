@@ -151,10 +151,11 @@
             // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
             this.showAnnouncementIfNeeded();
 
-            // A viagem do rodape: o navio cruza e vai deixando "EVOLUTION V5.62".
-            // Roda a cada login. O rAF so mede a largura depois que o layout do
-            // mainApp assentar, por isso o pequeno atraso.
-            setTimeout(() => { try { window.EvoFooterVoyage?.play(); } catch (e) {} }, 400);
+            // A viagem do rodape: o app rola ate o fim e o navio cruza deixando
+            // "EVOLUTION V5.63". Roda a cada login, e espera sozinha qualquer
+            // modal de abertura sair da frente. O atraso da ao layout do mainApp
+            // tempo de assentar antes da medicao.
+            setTimeout(() => { try { window.EvoFooterVoyage?.presentOnLogin(); } catch (e) {} }, 400);
         };
 
         // ============================================
