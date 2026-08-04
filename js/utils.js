@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V5.60',
+                v: window.EVOLUTION_APP_VERSION || 'V5.61',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,19 +94,39 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.60');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V5.61');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
             const marginR = 196;
+
+            // -- PALETA CLARA DO PDF (v5.61) --
+            // O azul-marinho escuro (24,35,64) usado no topo, no cabecalho da tabela e
+            // nos totais ficava chamativo demais no papel/leitor. Aqui ele da lugar a
+            // faixas claras com texto azul-escuro. Vale SOMENTE para o PDF — o tema do
+            // app permanece intacto.
+            const PDF = {
+                bandBg:   [232, 240, 251],  // faixa do topo e cabecalho de colunas
+                bandBg2:  [216, 229, 246],  // faixa do TOTAL GERAL (um tom mais firme)
+                softBg:   [243, 247, 253],  // faixa do resumo final
+                monthBg:  [226, 236, 249],  // faixa do nome do mes (meses comuns)
+                goldBg:   [253, 245, 216],  // faixa do mes que mais faturou
+                gold:     [161, 119, 6],    // dourado legivel sobre fundo claro
+                accent:   [37, 99, 235],
+                textDark: [23, 51, 106],
+                textMid:  [88, 112, 152],
+                textSoft: [98, 121, 160]
+            };
 
             let filtered = [], titlePeriod = '', totalBruto = 0, totalLiquido = 0;
 
             if (type === 'all') {
                 filtered = [...this.entries];
                 const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-                if (filtered.length > 0) {
-                    const dates = filtered.map(e => e.data).filter(Boolean).sort();
+                // Usa o 1o/ultimo registro COM data. Antes bastava haver registros para
+                // entrar aqui, e um historico inteiro sem data quebrava no split.
+                const dates = filtered.map(e => e.data).filter(Boolean).sort();
+                if (dates.length > 0) {
                     const [fy, fm] = dates[0].split('-');
                     const [ly, lm] = dates[dates.length - 1].split('-');
                     titlePeriod = `${monthNames[parseInt(fm,10)-1]} ${fy} até ${monthNames[parseInt(lm,10)-1]} ${ly}`;
@@ -175,15 +195,29 @@
                     { content: this.formatMoney(Number(e.liquido) || 0), paid: isPaid }
                 ];
             };
+            // Mes com maior faturamento liquido do periodo — unico que recebe o dourado
+            // no titulo da folha. Preenchido apos o agrupamento (ver abaixo).
+            let bestMonthKey = null;
+
             // Linha do MES: vai no TOPO da tabela (dentro do head), acima do cabecalho
             // de colunas (Data, Navio...). Como fica no head, ela se repete em toda pagina
             // que aquele mes ocupar. Antes esta linha ficava no corpo, abaixo do cabecalho
             // de colunas ("invertido"); agora e o cabecalho principal do mes.
-            const monthHeadRow = (mk) => ([{
-                content: monthLabel(mk),
-                colSpan: 7,
-                styles: { fillColor: [24, 35, 64], textColor: [212, 175, 55], fontStyle: 'bold', fontSize: 10.5, halign: 'center', cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 } }
-            }]);
+            const monthHeadRow = (mk) => {
+                const isBest = !!mk && mk === bestMonthKey;
+                return [{
+                    content: monthLabel(mk),
+                    colSpan: 7,
+                    styles: {
+                        fillColor: isBest ? PDF.goldBg : PDF.monthBg,
+                        textColor: isBest ? PDF.gold : PDF.textDark,
+                        fontStyle: 'bold',
+                        fontSize: 10.5,
+                        halign: 'center',
+                        cellPadding: { top: 4.5, right: 3, bottom: 4.5, left: 3 }
+                    }
+                }];
+            };
             const monthSubtotalRow = (mk, bruto, liquido) => ([
                 { content: `Subtotal ${monthLabel(mk)}`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [80, 100, 140], fillColor: [235, 242, 250], fontSize: 7.5, cellPadding: { top: 3, right: 6, bottom: 3, left: 3 } } },
                 { content: this.formatMoney(bruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 130, 180], fillColor: [235, 242, 250], fontSize: 7.5 } },
@@ -201,13 +235,27 @@
                     totalLiquido += Number(e.liquido) || 0;
                     const mk = e.data ? e.data.substring(0, 7) : (current ? current.key : '');
                     if (!current || current.key !== mk) {
-                        current = { key: mk, rows: [], bruto: 0, liquido: 0 };
+                        current = { key: mk, items: [], rows: [], bruto: 0, liquido: 0 };
                         monthGroups.push(current);
                     }
                     current.bruto += Number(e.bruto) || 0;
                     current.liquido += Number(e.liquido) || 0;
-                    current.rows.push(entryRow(e));
+                    current.items.push(e);
                 });
+                // Dentro de cada folha de mes: primeiro os servicos PAGOS (que sao os mais
+                // antigos) e so depois os PENDENTES; cada bloco em ordem cronologica.
+                monthGroups.forEach((grp) => {
+                    grp.items.sort((a, b) => {
+                        const pa = a.pago ? 0 : 1, pb = b.pago ? 0 : 1;
+                        if (pa !== pb) return pa - pb;
+                        return String(a.data || '').localeCompare(String(b.data || ''));
+                    });
+                    grp.rows = grp.items.map(entryRow);
+                });
+                // Mes de maior faturamento liquido — recebe o titulo dourado
+                if (monthGroups.length) {
+                    bestMonthKey = monthGroups.reduce((b, g) => (g.liquido > b.liquido ? g : b), monthGroups[0]).key;
+                }
             } else {
                 filtered.forEach((e) => {
                     totalBruto += Number(e.bruto) || 0;
@@ -223,39 +271,39 @@
 
             // -- HELPER: Desenha cabecalho em cada pagina --
             const drawHeader = () => {
-                // Fundo escuro do topo
-                doc.setFillColor(24, 35, 64);
+                // Faixa clara do topo (antes era azul-marinho escuro)
+                doc.setFillColor(...PDF.bandBg);
                 doc.rect(0, 0, pageW, 30, 'F');
-                // Faixa lateral ciano
-                doc.setFillColor(37, 99, 235);
+                // Faixa lateral azul
+                doc.setFillColor(...PDF.accent);
                 doc.rect(0, 0, 3, 30, 'F');
                 // Linha inferior do header
-                doc.setDrawColor(37, 99, 235);
+                doc.setDrawColor(...PDF.accent);
                 doc.setLineWidth(0.4);
                 doc.line(0, 30, pageW, 30);
 
                 // Titulo EVOLUTION
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(20);
-                doc.setTextColor(255, 255, 255);
+                doc.setTextColor(...PDF.textDark);
                 doc.text('EVOLUTION', 9, 13);
                 // Subtitulo
                 doc.setFontSize(7.5);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(170, 195, 230);
+                doc.setTextColor(...PDF.textMid);
                 doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
                 // Versao
                 doc.setFontSize(6.5);
-                doc.setTextColor(120, 140, 180);
+                doc.setTextColor(...PDF.textSoft);
                 doc.text(APP_VERSION, 9, 25);
                 // Data geracao (direita)
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7);
-                doc.setTextColor(180, 200, 220);
+                doc.setTextColor(...PDF.textMid);
                 doc.text('Gerado em:', marginR, 16, { align: 'right' });
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(7.5);
-                doc.setTextColor(255, 255, 255);
+                doc.setTextColor(...PDF.textDark);
                 doc.text(generatedAt, marginR, 22, { align: 'right' });
             };
 
@@ -391,8 +439,8 @@
                     lineWidth: 0.15
                 },
                 headStyles: {
-                    fillColor: [24, 35, 64],
-                    textColor: [220, 235, 255],
+                    fillColor: PDF.bandBg,
+                    textColor: PDF.textDark,
                     fontStyle: 'bold',
                     fontSize: 8,
                     cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
@@ -434,12 +482,12 @@
 
             const footRows = [
                 [
-                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: [212, 175, 55], fillColor: [24, 35, 64], fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [226, 232, 240], fillColor: [24, 35, 64], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
-                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 220, 170], fillColor: [24, 35, 64], cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
+                    { content: 'TOTAL GERAL', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', textColor: PDF.textDark, fillColor: PDF.bandBg2, fontSize: 9, cellPadding: { top: 4, right: 6, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalBruto), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 110, 160], fillColor: PDF.bandBg2, cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } },
+                    { content: this.formatMoney(totalLiquido), styles: { halign: 'right', fontStyle: 'bold', textColor: [0, 130, 95], fillColor: PDF.bandBg2, cellPadding: { top: 4, right: 3, bottom: 4, left: 3 } } }
                 ],
                 [
-                    { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: [220, 235, 255], fillColor: [15, 25, 55], fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
+                    { content: `Resumo: ${filtered.length} registros  •  ${qtdPago} pagos  •  ${qtdPendente} pendentes  •  Recebido ${this.formatMoney(totalPago)}  •  Pendente ${this.formatMoney(totalPendente)}`, colSpan: 7, styles: { halign: 'center', fontStyle: 'bold', textColor: PDF.textMid, fillColor: PDF.softBg, fontSize: 7, cellPadding: { top: 3, right: 3, bottom: 3, left: 3 } } }
                 ]
             ];
 
@@ -808,6 +856,9 @@
             toast.appendChild(undoBtn);
             container.appendChild(toast);
             setTimeout(() => { try { toast.remove(); } catch(_) {} }, 5000);
+            // Devolve o elemento para que quem chamou possa retirar o toast da tela
+            // assim que a acao deixar de ser desfazivel (ver _finalizePendingDelete).
+            return toast;
         };
 
         // ============================================
@@ -853,7 +904,9 @@
                             await storageRef.put(blob, { contentType: 'image/jpeg' });
                             const downloadURL = await storageRef.getDownloadURL();
                             // Salva apenas a URL (pequena) no Firestore - sem pressao no documento
-                            await db.collection('users').doc(this.currentUserId).update({ avatar: downloadURL });
+                            // FIX 15: set/merge em vez de update — update falha com
+                            // "No document to update" se o doc do usuario ainda nao existir
+                            await db.collection('users').doc(this.currentUserId).set({ avatar: downloadURL }, { merge: true });
                             // Atualiza cache local com a URL para que outros dispositivos carreguem direto
                             this.users[this.currentUserId].avatar = downloadURL;
                             this.saveUsersToCache();
@@ -883,7 +936,8 @@
             this.showMainApp();
             if (db) {
                 try {
-                    await db.collection('users').doc(this.currentUserId).update({ avatar: null });
+                    // FIX 15: set/merge em vez de update (ver handleAvatarChange)
+                    await db.collection('users').doc(this.currentUserId).set({ avatar: null }, { merge: true });
                 } catch (e) {
                     console.error('Falha ao remover avatar no Firestore:', e);
                 }
@@ -912,49 +966,59 @@
         // ============================================
         EvolutionApp.prototype.openModal = function(id) {
             const m = document.getElementById(id);
-            if (m) {
-                m.classList.add('active');
-                // FIX 9: Conta modais abertos para nao restaurar scroll prematuramente
-                this._openModalCount = (this._openModalCount || 0) + 1;
-                document.body.style.overflow = 'hidden';
+            if (!m) return;
 
-                // Atualizacoes ao abrir modais
-                if (id === 'profileModal') {
-                    this.updateVipUI();
-                }
-                if (id === 'adminModal' && this.isAdmin) {
-                    this.loadPendingUsers();
-                    this.renderUserList();
-                }
-                // FIX: Sempre abre configModal com metaEditor recolhido (estado limpo)
-                if (id === 'configModal') {
-                    const me = document.getElementById('metaEditor');
-                    const cc = document.getElementById('cancelMetaContainer');
-                    if (me) me.style.display = 'none';
-                    if (cc) cc.innerHTML = '';
-                }
+            // FIX 9: Conta modais abertos para nao restaurar scroll prematuramente
+            // FIX 10: so conta se o modal ainda NAO estava aberto. Abrir duas vezes o
+            // mesmo modal inflava o contador e deixava o scroll da pagina travado.
+            if (!m.classList.contains('active')) {
+                this._openModalCount = (this._openModalCount || 0) + 1;
+            }
+            m.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Atualizacoes ao abrir modais
+            if (id === 'profileModal') {
+                this.updateVipUI();
+            }
+            if (id === 'adminModal' && this.isAdmin) {
+                this.loadPendingUsers();
+                this.renderUserList();
+            }
+            // FIX: Sempre abre configModal com metaEditor recolhido (estado limpo)
+            if (id === 'configModal') {
+                const me = document.getElementById('metaEditor');
+                const cc = document.getElementById('cancelMetaContainer');
+                if (me) me.style.display = 'none';
+                if (cc) cc.innerHTML = '';
             }
         };
 
         EvolutionApp.prototype.closeModal = function(id) {
             const m = document.getElementById(id);
-            if (m) {
-                m.classList.remove('active');
+            if (!m) return;
+
+            // FIX 10: so desconta se o modal estava realmente aberto. Fechar um modal ja
+            // fechado (ex: executeRemoveVip fecha o userManagementModal que openConfirmModal
+            // ja tinha fechado) zerava o contador cedo demais.
+            const estavaAberto = m.classList.contains('active');
+            m.classList.remove('active');
+            if (estavaAberto) {
                 // FIX 9: So restaura overflow quando TODOS os modais estiverem fechados
                 this._openModalCount = Math.max(0, (this._openModalCount || 1) - 1);
-                if (this._openModalCount === 0) {
-                    document.body.style.overflow = '';
-                }
-                if (id === 'reportPreviewModal' && typeof this.clearReportPreview === 'function') {
-                    this.clearReportPreview();
-                }
-                // FIX: Recolhe metaEditor ao fechar configModal (qualquer forma de fechar)
-                if (id === 'configModal') {
-                    const me = document.getElementById('metaEditor');
-                    const cc = document.getElementById('cancelMetaContainer');
-                    if (me) me.style.display = 'none';
-                    if (cc) cc.innerHTML = '';
-                }
+            }
+            if ((this._openModalCount || 0) === 0) {
+                document.body.style.overflow = '';
+            }
+            if (id === 'reportPreviewModal' && typeof this.clearReportPreview === 'function') {
+                this.clearReportPreview();
+            }
+            // FIX: Recolhe metaEditor ao fechar configModal (qualquer forma de fechar)
+            if (id === 'configModal') {
+                const me = document.getElementById('metaEditor');
+                const cc = document.getElementById('cancelMetaContainer');
+                if (me) me.style.display = 'none';
+                if (cc) cc.innerHTML = '';
             }
         };
 
@@ -1071,6 +1135,10 @@
         // ============================================
         EvolutionApp.prototype.logout = function() {
             if (window.TurtleBlock) window.TurtleBlock.hide();
+            // FIX 5: se o usuario sair dentro dos 5s do "Desfazer", confirma a exclusao
+            // pendente antes de limpar a sessao — senao ela nunca era enfileirada para o
+            // Firebase e o registro voltava em outro aparelho.
+            if (typeof this._finalizePendingDelete === 'function') this._finalizePendingDelete();
             const prevUserId = this.currentUserId;
             if (typeof this.stopSessionWatch === 'function') {
                 this.stopSessionWatch();

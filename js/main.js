@@ -172,15 +172,11 @@
             } catch (err) {
                 this.removedNavioSuggestions = new Set();
             }
-            // Event listeners para mostrar sugestoes de navio
-            // Guardamos referencia para poder remover no logout
-            this._clickOutsideNavioHandler = (event) => {
-                if (!event.target.closest('.navio-suggestions')) {
-                    this.hideNavioSuggestions('calcNavio');
-                    this.hideNavioSuggestions('relNavio');
-                }
-            };
-            document.addEventListener('click', this._clickOutsideNavioHandler);
+            // Event listeners para mostrar sugestoes de navio.
+            // FIX 8: registro movido para bindNavioOutsideClick() (ui.js), que tambem e
+            // chamado em restoreUserSession — logout() remove o listener e ele precisava
+            // ser recriado no login seguinte.
+            this.bindNavioOutsideClick();
             // Inicializar calendario
             this.syncCalendarMonthWithEntries();
             this.renderCalendar();
@@ -195,3 +191,55 @@
             document.getElementById('importInput')?.addEventListener('change', (e) => this.importData(e));
         }
     }
+
+    // ============================================
+    // BRILHO DO RODAPE — REDE DE SEGURANCA PARA iOS (v5.61)
+    // O brilho que percorre "EVOLUTION V5.61" e feito em CSS. No iPhone, porem,
+    // o Safari congela animacoes CSS quando o Modo de Pouca Energia esta ligado —
+    // as letras ficavam douradas e paradas. Aqui a cor da primeira letra e
+    // amostrada ao longo de um ciclo completo; se ela nunca mudar, a animacao
+    // esta parada e o brilho passa a ser pintado por JS.
+    // ============================================
+    (function watchFooterGlow() {
+        const CYCLE_STEP = 2800;   // 3 amostras cobrem 5.6s de um ciclo de 8.4s
+        const STAGGER = 600;       // intervalo entre letras (igual ao CSS)
+        const LIT_MS = 1400;       // tempo que cada letra fica acesa
+
+        function startJsGlow(brand, letters) {
+            brand.classList.add('js-glow');
+            let i = 0;
+            setInterval(() => {
+                const el = letters[i % letters.length];
+                i++;
+                el.classList.add('lit');
+                setTimeout(() => el.classList.remove('lit'), LIT_MS);
+            }, STAGGER);
+        }
+
+        function check() {
+            const brand = document.getElementById('footerBrand');
+            if (!brand) return;
+            const letters = Array.prototype.slice.call(brand.querySelectorAll('.ltr'));
+            if (!letters.length) return;
+            const first = letters[0];
+            // Enquanto o rodape estiver oculto (tela de login) a animacao nao roda:
+            // esperar antes de concluir qualquer coisa.
+            if (!first.offsetParent) { setTimeout(check, 1500); return; }
+
+            const samples = [];
+            const take = () => {
+                samples.push(getComputedStyle(first).color);
+                if (samples.length < 3) { setTimeout(take, CYCLE_STEP); return; }
+                if (samples[0] === samples[1] && samples[1] === samples[2]) {
+                    startJsGlow(brand, letters);
+                }
+            };
+            take();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setTimeout(check, 800));
+        } else {
+            setTimeout(check, 800);
+        }
+    })();

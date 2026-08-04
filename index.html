@@ -8,9 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.60 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.61 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.60">
+    <link rel="stylesheet" href="estilos.css?v=5.61">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -292,7 +292,7 @@
             <div class="header-actions">
                 <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')" title="Admin">🛡</button>
                 <div class="header-actions-sep hidden" id="adminSep"></div>
-                <button class="icon-btn" id="btnFinance" onclick="window.location.href='financas.html'" title="Financeiro" style="background:rgba(255,122,69,0.08);color:var(--primary);">💰</button>
+                <button class="icon-btn finance-locked" id="btnFinance" onclick="app.openFinanceMaintenance()" title="Finanças em manutenção" aria-label="Finanças em manutenção"><span class="finance-icon" aria-hidden="true">💰</span><span class="finance-lock" aria-hidden="true">🔒</span></button>
                 <button class="icon-btn" onclick="app.toggleTheme()" title="Tema">◐</button>
                 <button class="icon-btn" onclick="app.openModal('configModal')" title="Config">⚙</button>
             </div>
@@ -564,7 +564,7 @@
         </main>
 
         <footer class="app-footer">
-            <div class="footer-brand"><span class="ltr" style="animation-delay:0s">E</span><span class="ltr" style="animation-delay:.6s">V</span><span class="ltr" style="animation-delay:1.2s">O</span><span class="ltr" style="animation-delay:1.8s">L</span><span class="ltr" style="animation-delay:2.4s">U</span><span class="ltr" style="animation-delay:3s">T</span><span class="ltr" style="animation-delay:3.6s">I</span><span class="ltr" style="animation-delay:4.2s">O</span><span class="ltr" style="animation-delay:4.8s">N</span> <span class="ltr" style="animation-delay:5.4s">V</span><span class="ltr" style="animation-delay:6s">5</span><span class="ltr" style="animation-delay:6.6s">.</span><span class="ltr" style="animation-delay:7.2s">6</span><span class="ltr" style="animation-delay:7.8s">0</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr" style="animation-delay:0s">E</span><span class="ltr" style="animation-delay:.6s">V</span><span class="ltr" style="animation-delay:1.2s">O</span><span class="ltr" style="animation-delay:1.8s">L</span><span class="ltr" style="animation-delay:2.4s">U</span><span class="ltr" style="animation-delay:3s">T</span><span class="ltr" style="animation-delay:3.6s">I</span><span class="ltr" style="animation-delay:4.2s">O</span><span class="ltr" style="animation-delay:4.8s">N</span> <span class="ltr" style="animation-delay:5.4s">V</span><span class="ltr" style="animation-delay:6s">5</span><span class="ltr" style="animation-delay:6.6s">.</span><span class="ltr" style="animation-delay:7.2s">6</span><span class="ltr" style="animation-delay:7.8s">1</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -787,7 +787,7 @@
                         <select id="vipDurationSelect" onchange="document.getElementById('vipCustomDaysRow').style.display = this.value === 'custom' ? 'flex' : 'none'"><option value="15d">15 Dias</option><option value="1">1 Mes</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="perm">👑 Permanente</option><option value="custom">📝 Dias Customizados</option></select>
                     </div>
                     <div id="vipCustomDaysRow" class="input-row" style="display: none; margin-top: 6px;">
-                        <input type="number" id="vipCustomDaysInput" min="1" max="3650" placeholder="Qtd de dias" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text); font-size: 0.85rem;">
+                        <input type="number" id="vipCustomDaysInput" min="1" max="3650" placeholder="Qtd de dias" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 0.85rem;">
                     </div>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
                         <button class="btn btn-primary" onclick="app.applyVip()" style="flex: 1;">Aplicar VIP</button>
@@ -928,7 +928,7 @@
             </p>
             <div style="display:flex;gap:10px;">
                 <button class="btn btn-glass" onclick="app.markTourSeen(false)" style="flex:1;font-size:0.82rem;color:var(--text-muted);">Fechar</button>
-                <button class="btn btn-primary" onclick="app.markTourSeen(true)" style="flex:2;font-size:0.85rem;font-weight:700;background:linear-gradient(90deg,#2563eb,#1e3a8a);border:none;">💰 Abrir Finanças Agora</button>
+                <button class="btn btn-primary" onclick="app.markTourSeen(true)" style="flex:2;font-size:0.85rem;font-weight:700;background:linear-gradient(90deg,#2563eb,#1e3a8a);border:none;">💰 Status do Finanças</button>
             </div>
         </div>
     </div>
@@ -945,6 +945,21 @@
                     <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">Entre em contato com o administrador para adquirir seu acesso VIP e desbloquear todos os recursos premium.</span>
                 </div>
                 <button class="btn btn-glass" onclick="app.closeModal('vipRequiredModal')" style="border-color: var(--accent); color: var(--accent);">Entendi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINANCAS EM MANUTENCAO MODAL -->
+    <div class="modal-overlay" id="financeMaintenanceModal" onclick="app.closeModalOnOverlay(event, 'financeMaintenanceModal')">
+        <div class="modal-content" style="text-align: center; border: 2px solid var(--warning); box-shadow: 0 0 30px rgba(255, 184, 0, 0.15);">
+            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(255, 184, 0, 0.3);"><h3 class="modal-title" style="color: var(--warning); letter-spacing: 2px;">Em Manutenção</h3></div>
+            <div class="modal-body">
+                <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
+                <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text); line-height: 1.6;">O módulo de <strong>Finanças</strong> está passando por manutenção e ficou temporariamente indisponível.</p>
+                <div style="background: rgba(255, 184, 0, 0.08); padding: 14px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 184, 0, 0.2);">
+                    <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">Estamos trabalhando para deixar tudo em ordem. Seus registros de produção continuam normais e não são afetados.</span>
+                </div>
+                <button class="btn btn-glass" onclick="app.closeModal('financeMaintenanceModal')" style="border-color: var(--warning); color: var(--warning);">Entendi</button>
             </div>
         </div>
     </div>
@@ -1055,7 +1070,6 @@
 
     <!-- Banner de atualização disponível -->
     <div id="swUpdateBanner" style="
-        display: none;
         position: fixed;
         bottom: 20px;
         left: 50%;
@@ -1098,16 +1112,16 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.60"></script>
-    <script src="js/main.js?v=5.60"></script>
-    <script src="js/auth.js?v=5.60"></script>
-    <script src="js/firebase-sync.js?v=5.60"></script>
-    <script src="js/ui.js?v=5.60"></script>
-    <script src="js/entries.js?v=5.60"></script>
-    <script src="js/admin.js?v=5.60"></script>
-    <script src="js/utils.js?v=5.60"></script>
-    <script src="js/turtle.js?v=5.60"></script>
-    <script src="js/init.js?v=5.60"></script>
+    <script src="js/config.js?v=5.61"></script>
+    <script src="js/main.js?v=5.61"></script>
+    <script src="js/auth.js?v=5.61"></script>
+    <script src="js/firebase-sync.js?v=5.61"></script>
+    <script src="js/ui.js?v=5.61"></script>
+    <script src="js/entries.js?v=5.61"></script>
+    <script src="js/admin.js?v=5.61"></script>
+    <script src="js/utils.js?v=5.61"></script>
+    <script src="js/turtle.js?v=5.61"></script>
+    <script src="js/init.js?v=5.61"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas

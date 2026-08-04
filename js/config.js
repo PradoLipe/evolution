@@ -3,7 +3,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.60';
+    window.EVOLUTION_APP_VERSION = 'V5.61';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -18,7 +18,6 @@
     // Variaveis globais
     let db = null, auth = null, storage = null;
     let REMOTE_ADMIN_PIN = null;
-    const LEGACY_ADMIN_ID = "002451-FELIPE_PRADO";
 
     // Taxas padrao
     const DEFAULT_TAXAS = {
@@ -86,7 +85,13 @@
                 out += String.fromCharCode(json.charCodeAt(i) ^ key.charCodeAt(i % key.length));
             }
             return btoa(out);
-        } catch(e) { return btoa(JSON.stringify(obj)); }
+        } catch(e) {
+            // FIX 16: o fallback tambem pode estourar (nome com emoji ou caractere
+            // fora de Latin-1 quebra o btoa). Antes a excecao subia e derrubava o
+            // login inteiro. Agora devolve string vazia: a sessao nao e lembrada,
+            // mas o login funciona normalmente.
+            try { return btoa(JSON.stringify(obj)); } catch(_) { return ''; }
+        }
     }
     function decodeSession(str) {
         try {

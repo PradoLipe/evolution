@@ -31,6 +31,7 @@
 
     // ── Estado ────────────────────────────────────────────────────────────────
     var msgTimer = null;
+    var startMsgTimer = null; // agendamento inicial disparado por show()
     var bubbleHideTimer = null;
     var progressInterval = null;
     var progressToken = 0; // invalida ticks de sessões anteriores
@@ -246,7 +247,9 @@
             }
         }
 
-        setTimeout(scheduleNextMessage, 5000);
+        // Guarda a referencia para que hide() consiga cancelar tambem este agendamento
+        // inicial (antes ele escapava e reiniciava o ciclo de mensagens com a tela oculta)
+        startMsgTimer = setTimeout(scheduleNextMessage, 5000);
         startFakeProgress();
     }
 
@@ -254,7 +257,12 @@
         var screen = getEl('turtleBlockScreen');
         if (screen) screen.classList.add('turtle-screen-hidden');
 
+        // FIX 19: invalida o token da barra de progresso. A cadeia de setTimeout do tick()
+        // so para quando o token muda — sem isso ela seguia rodando indefinidamente.
+        progressToken++;
+
         // Limpa todos os timers e intervalos
+        if (startMsgTimer)   { clearTimeout(startMsgTimer);   startMsgTimer   = null; }
         if (msgTimer)        { clearTimeout(msgTimer);        msgTimer        = null; }
         if (bubbleHideTimer) { clearTimeout(bubbleHideTimer); bubbleHideTimer = null; }
         if (progressInterval){ clearInterval(progressInterval); progressInterval = null; }

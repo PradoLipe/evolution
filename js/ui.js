@@ -37,6 +37,20 @@
             }
         };
 
+        // FIX 12: fonte unica da restricao VIP de 15 dias.
+        // Antes a regra estava copiada em updateDashboard/renderHistory/changePage, mas
+        // FALTAVA em renderPendingSummary e renderChart — o resumo de pendencias mostrava
+        // valores que nao apareciam no dashboard nem no historico.
+        // Sempre devolve um array NOVO (chamadores fazem .sort(), que mutaria this.entries).
+        EvolutionApp.prototype.getVisibleEntries = function() {
+            const all = (Array.isArray(this.entries) ? this.entries : []).filter(Boolean);
+            if (this.isAdmin || this.isVip) return all;
+            const cutoff = getManausDate();
+            cutoff.setDate(cutoff.getDate() - 15);
+            const cutoffStr = formatDateManaus(cutoff);
+            return all.filter(e => e.data && e.data >= cutoffStr);
+        };
+
         // ============================================
         // INTERFACE PRINCIPAL
         // ============================================
@@ -180,7 +194,8 @@
                 if (periodKey && safeStorage.getItem(periodKey) === '1') return;
             }
 
-            const pending = (this.entries || []).filter(e => e && !e.pago);
+            // FIX 12: usa o mesmo recorte do dashboard/historico (nao-VIP: 15 dias)
+            const pending = this.getVisibleEntries().filter(e => !e.pago);
             const totalLiq = pending.reduce((s, e) => s + (Number(e.liquido) || 0), 0);
 
             // Saudação por horário (Manaus)
@@ -301,14 +316,8 @@
                 safeStorage.setItem('evo_dashboard_month', monthVal);
             }
 
-            let allEntries = this.entries;
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
-            if (!this.isAdmin && !this.isVip) {
-                const cutoff = getManausDate();
-                cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = formatDateManaus(cutoff);
-                allEntries = allEntries.filter(e => e.data && e.data >= cutoffStr);
-            }
+            const allEntries = this.getVisibleEntries();
 
             let filtered = [];
             if (mode === 'all') {
@@ -427,15 +436,8 @@
             const list = document.getElementById('histList');
             if (!list) return;
 
-            let filtered = [...this.entries];
-
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
-            if (!this.isAdmin && !this.isVip) {
-                const cutoff = getManausDate();
-                cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = formatDateManaus(cutoff);
-                filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
-            }
+            let filtered = this.getVisibleEntries();
 
             if (this.currentFilter === 'pending') {
                 filtered = filtered.filter(e => !e.pago);
@@ -470,6 +472,11 @@
             }
 
             const totalPages = Math.ceil(filtered.length / this.itemsPerPage);
+            // FIX 4: se a lista encolheu (ex: marcar varios como pagos estando na
+            // ultima pagina), currentPage podia apontar para uma pagina inexistente
+            // e o historico aparecia vazio com "Pagina 3 de 2".
+            if (this.currentPage > totalPages) this.currentPage = totalPages;
+            if (this.currentPage < 1) this.currentPage = 1;
             const start = (this.currentPage - 1) * this.itemsPerPage;
             const paged = filtered.slice(start, start + this.itemsPerPage);
 
@@ -539,14 +546,8 @@
         };
 
         EvolutionApp.prototype.changePage = function(delta) {
-            let filtered = [...this.entries];
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
-            if (!this.isAdmin && !this.isVip) {
-                const cutoff = getManausDate();
-                cutoff.setDate(cutoff.getDate() - 15);
-                const cutoffStr = formatDateManaus(cutoff);
-                filtered = filtered.filter(e => e.data && e.data >= cutoffStr);
-            }
+            let filtered = this.getVisibleEntries();
             if (this.currentFilter === 'pending') {
                 filtered = filtered.filter(e => !e.pago);
             } else if (this.currentFilter === 'paid') {
@@ -603,10 +604,13 @@
             }
 
             safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-            this.updateDashboard();
-            this.renderHistory();
+            // FIX 3: esta chamada precisa vir ANTES de updateDashboard(). O dashboard
+            // chama updateMetaProgress() sem argumento (allowCelebration=false), o que
+            // ja marcava metaGoalReached=true e impedia a celebracao de disparar aqui.
             // allowCelebration=true: única ação que pode disparar a celebração de meta
             if (e.pago) this.updateMetaProgress(true);
+            this.updateDashboard();
+            this.renderHistory();
             // Atualizar calendario imediatamente ao alterar status de pagamento
             if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
             // Atualizar resumo de pendencias
@@ -616,13 +620,48 @@
             this.showToast(e.pago ? '✓ Marcado como pago' : '↩ Marcado como pendente', 'success');
         };
 
+        // FIX 5 + FIX 6: confirma definitivamente a exclusao que estava aguardando o
+        // "Desfazer" e sincroniza com o Firebase.
+        // Antes: (a) uma segunda exclusao dentro dos 5s cancelava o timer da primeira,
+        // que nunca chegava ao Firebase; (b) o mes do registro excluido nao entrava na
+        // lista de sincronizacao quando ele era o ULTIMO registro daquele mes, entao o
+        // documento remoto ficava com o registro e ele voltava em outro aparelho.
+        EvolutionApp.prototype._finalizePendingDelete = function() {
+            if (this._undoTimer) { clearTimeout(this._undoTimer); this._undoTimer = null; }
+            const deleted = this._undoEntry;
+            if (!deleted) return;
+            this._undoEntry = null;
+            // Retira da tela o toast desta exclusao — a partir daqui ela ja foi confirmada
+            // e o botao "Desfazer" nao teria mais efeito.
+            if (this._undoToastEl) { try { this._undoToastEl.remove(); } catch(_) {} this._undoToastEl = null; }
+
+            const monthsToSync = new Set([
+                ...this.collectEntryMonths(),
+                getCurrentMonthStringManaus()
+            ]);
+            // Mes do registro excluido, mesmo que nao reste nenhum registro nele
+            if (deleted.data && deleted.data.length >= 7) {
+                monthsToSync.add(deleted.data.substring(0, 7));
+            }
+            this.markHistoryMonthsPending([...monthsToSync]);
+            this.persistData();
+        };
+
         EvolutionApp.prototype.deleteEntry = function(id) {
             const entry = this.entries.find(e => String(e.id) === String(id));
             if (!entry) return;
 
-            // Guarda para possivel undo
-            this._undoEntry = { ...entry };
-            this._undoIndex = this.entries.findIndex(e => String(e.id) === String(id));
+            // Se havia outra exclusao aguardando o "Desfazer", confirma ela agora em vez
+            // de simplesmente cancelar o timer dela (senao aquela exclusao nunca subia).
+            this._finalizePendingDelete();
+
+            // Guarda para possivel undo. As copias ficam tambem em variaveis locais para
+            // que o toast DESTA exclusao sempre restaure ESTE registro — antes o callback
+            // lia this._undoEntry no momento do clique e podia restaurar outro registro.
+            const undoEntry = { ...entry };
+            const undoIndex = this.entries.findIndex(e => String(e.id) === String(id));
+            this._undoEntry = undoEntry;
+            this._undoIndex = undoIndex;
 
             // Registrar no tombstone imediatamente (evita ressurreicao do Firebase)
             this.addDeletedId(id);
@@ -647,46 +686,36 @@
             this.hideNavioSuggestions('calcNavio');
             this.hideNavioSuggestions('relNavio');
 
-            // Cancela timer anterior se existir
-            if (this._undoTimer) clearTimeout(this._undoTimer);
+            this._undoToastEl = this.showUndoToast('Registro excluído', () => {
+                // So restaura se ESTA exclusao ainda for a pendente. Se ela ja foi
+                // confirmada (5s) ou substituida por outra, o botao nao faz nada.
+                if (this._undoEntry !== undoEntry) return;
+                if (this._undoTimer) { clearTimeout(this._undoTimer); this._undoTimer = null; }
+                this._undoEntry = null;
+                this._undoToastEl = null;
 
-            this.showUndoToast('Registro excluído', () => {
-                // Restaurar registro
-                if (this._undoEntry) {
-                    // Remover do tombstone para nao bloquear restauracao
-                    try {
-                        const ids = this.getDeletedIds();
-                        ids.delete(String(this._undoEntry.id));
-                        const arr = [...ids].slice(-2000);
-                        safeStorage.setItem(this.getDeletedIdsKey(), JSON.stringify(arr));
-                    } catch(_) {}
-                    // Reinserir na posicao original
-                    const idx = Math.min(this._undoIndex || 0, this.entries.length);
-                    this.entries.splice(idx, 0, this._undoEntry);
-                    safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
-                    this._undoEntry = null;
-                    this.updateDashboard();
-                    this.renderHistory();
-                    this.renderChart();
-                    this.updateMetaProgress();
-                    if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
-                    this.renderPendingSummary();
-                    this.showToast('Registro restaurado', 'success');
-                    if (this._undoTimer) clearTimeout(this._undoTimer);
-                }
+                // Remover do tombstone para nao bloquear restauracao
+                try {
+                    const ids = this.getDeletedIds();
+                    ids.delete(String(undoEntry.id));
+                    const arr = [...ids].slice(-2000);
+                    safeStorage.setItem(this.getDeletedIdsKey(), JSON.stringify(arr));
+                } catch(_) {}
+                // Reinserir na posicao original
+                const idx = Math.min(undoIndex >= 0 ? undoIndex : 0, this.entries.length);
+                this.entries.splice(idx, 0, undoEntry);
+                safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
+                this.updateDashboard();
+                this.renderHistory();
+                this.renderChart();
+                this.updateMetaProgress();
+                if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
+                this.renderPendingSummary();
+                this.showToast('Registro restaurado', 'success');
             });
 
             // Apos 5s confirma a exclusao e sincroniza
-            this._undoTimer = setTimeout(() => {
-                if (this._undoEntry) {
-                    const allMonths = this.collectEntryMonths();
-                    const currentMonth = getCurrentMonthStringManaus();
-                    const monthsToSync = new Set([...allMonths, currentMonth]);
-                    this.markHistoryMonthsPending([...monthsToSync]);
-                    this.persistData();
-                    this._undoEntry = null;
-                }
-            }, 5000);
+            this._undoTimer = setTimeout(() => this._finalizePendingDelete(), 5000);
         };
 
         EvolutionApp.prototype.executeDelete = function() {
@@ -719,6 +748,18 @@ Liquido: ${this.formatMoney(e.liquido)}`;
          */
         EvolutionApp.prototype.suggestDefaultTurno = function() {
             try {
+                // FIX 9: esta funcao e chamada pelo mesmo clique que abre E fecha a secao.
+                // Sem as guardas abaixo ela trocava o turno tambem ao FECHAR e, ao trocar,
+                // adjustCalcFields() recria o HTML e apaga a producao ja digitada.
+                const sec = document.getElementById('secNew');
+                if (sec && !sec.classList.contains('expanded')) return;
+                const navioVal = document.getElementById('calcNavio')?.value || '';
+                const jaPreencheu = navioVal.trim() !== '' || ['calcP1', 'calcP2', 'calcPT'].some(fid => {
+                    const el = document.getElementById(fid);
+                    return el && String(el.value || '').trim() !== '';
+                });
+                if (jaPreencheu) return;
+
                 const freq = {};
                 (this.entries || []).forEach(e => {
                     if (!e || !e.turno) return;
@@ -838,6 +879,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                     bruto: res.bruto,
                     liquido: res.liquido
                 };
+                // FIX 23: alimenta as sugestoes tambem quando o navio e alterado na edicao
+                this.learnNavioName(navio);
                 safeStorage.setItem(`evo_data_${this.currentUserId}`, JSON.stringify(this.entries));
                 // Atualizar dashboards e listas
                 this.updateDashboard();
@@ -875,6 +918,21 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 this.learnedNavios = new Set(arr.slice(-500));
             }
             safeStorage.setItem(`evo_learned_navios_${this.currentUserId}`, JSON.stringify(Array.from(this.learnedNavios)));
+        };
+
+        // FIX 8: registra o listener que fecha as sugestoes ao clicar fora.
+        // logout() remove esse listener, mas ele so era criado em init() — que roda uma
+        // unica vez. Depois de sair e entrar de novo na mesma aba, as sugestoes ficavam
+        // presas na tela. Idempotente: pode ser chamado quantas vezes for.
+        EvolutionApp.prototype.bindNavioOutsideClick = function() {
+            if (this._clickOutsideNavioHandler) return;
+            this._clickOutsideNavioHandler = (event) => {
+                if (!event.target.closest('.navio-suggestions')) {
+                    this.hideNavioSuggestions('calcNavio');
+                    this.hideNavioSuggestions('relNavio');
+                }
+            };
+            document.addEventListener('click', this._clickOutsideNavioHandler);
         };
 
         EvolutionApp.prototype.hideNavioSuggestions = function(fieldId) {
@@ -1455,13 +1513,15 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const days = 7;
             const today = getManausDate();
             let cPts = [], cTot = 0, pPts = [], pTot = 0;
+            // FIX 12: usa o mesmo recorte do dashboard/historico (nao-VIP: 15 dias)
+            const visible = this.getVisibleEntries();
 
             for (let i = days - 1; i >= 0; i--) {
                 const d = new Date(today);
                 d.setDate(today.getDate() - i);
                 // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
                 const ds = formatDateManaus(d);
-                const v = this.entries.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
+                const v = visible.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
                 cTot += v;
                 cPts.push({ val: v / 100 });
             }
@@ -1471,7 +1531,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 d.setDate(today.getDate() - (i + days));
                 // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
                 const ds = formatDateManaus(d);
-                const v = this.entries.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
+                const v = visible.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
                 pTot += v;
                 pPts.push({ val: v / 100 });
             }
@@ -1552,7 +1612,16 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 }
             }
 
+            // v5.61: Financas esta em manutencao e sera removido do app. Em vez de
+            // navegar para financas.html, informa o usuario.
             if (goToFinancas) {
-                window.location.href = 'financas.html';
+                setTimeout(() => this.openFinanceMaintenance(), 200);
             }
+        };
+
+        // ============================================
+        // FINANCAS EM MANUTENCAO (v5.61)
+        // ============================================
+        EvolutionApp.prototype.openFinanceMaintenance = function() {
+            this.openModal('financeMaintenanceModal');
         };

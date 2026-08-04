@@ -138,6 +138,14 @@
         .icon-btn:active { transform: scale(0.92); background: var(--primary); color: white; }
         .icon-btn:hover { background: rgba(255,255,255,0.07); }
         .icon-btn.admin-btn { background: rgba(212, 175, 55, 0.12); color: var(--accent); }
+        /* v5.61 — Financas bloqueado: cadeado sobreposto ao icone + aparencia apagada */
+        .icon-btn.finance-locked { position: relative; overflow: visible; background: rgba(255, 184, 0, 0.08); }
+        .icon-btn.finance-locked:active { background: rgba(255, 184, 0, 0.2); }
+        /* apaga so a moeda — o cadeado continua nitido por cima */
+        .icon-btn.finance-locked .finance-icon { filter: grayscale(0.6); opacity: 0.6; }
+        .icon-btn.finance-locked .finance-lock { position: absolute; right: -3px; bottom: -3px; font-size: 0.6rem; line-height: 1; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); pointer-events: none; }
+        .icon-btn.finance-locked::before { content: ''; position: absolute; inset: -2px; border-radius: 10px; border: 1px solid rgba(255, 184, 0, 0.35); animation: financeLockPulse 2.6s ease-in-out infinite; }
+        @keyframes financeLockPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
         .header-actions-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
         .quick-links-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
         .quick-link-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; background: var(--surface-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
@@ -416,13 +424,30 @@
         .rate-subtitle { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
         .app-footer { margin-top: auto; padding: 20px 16px; text-align: center; border-top: 1px solid var(--border); background: var(--surface); }
         .footer-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; }
-        .footer-brand .ltr { display: inline; animation: letterGlow 8.4s ease-in-out infinite; will-change: color, text-shadow; }
+        /* v5.61 — correcao do brilho no iOS (iPhone 15 Pro e afins):
+           1) `display:inline` + `will-change` fazia o WebKit nao repintar as letras;
+           2) o WebKit nao interpola `text-shadow` de/para `none` — as sombras agora
+              existem sempre, apenas com alpha 0 no repouso;
+           3) `both` fixa o estado durante o animation-delay de cada letra. */
+        .footer-brand .ltr { display: inline-block; color: #d4af37; text-shadow: 0 0 6px rgba(212, 175, 55, 0), 0 0 16px rgba(212, 175, 55, 0); animation: letterGlow 8.4s ease-in-out infinite both; }
         @keyframes letterGlow {
-            0% { color: #fff6dc; text-shadow: 0 0 6px #d4af37, 0 0 16px #d4af37; }
-            18% { color: #fff6dc; text-shadow: 0 0 6px #d4af37, 0 0 16px #d4af37; }
-            50%, 100% { color: #d4af37; text-shadow: none; }
+            0%   { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
+            18%  { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
+            50%, 100% { color: #d4af37; text-shadow: 0 0 6px rgba(212, 175, 55, 0), 0 0 16px rgba(212, 175, 55, 0); }
         }
-        @media (prefers-reduced-motion: reduce) { .footer-brand .ltr { animation: none; } }
+        /* Com "Reduzir Movimento" ligado (comum no iPhone) o brilho antes sumia por
+           completo. Como aqui nao ha deslocamento, mantemos so um pulso de cor suave. */
+        @media (prefers-reduced-motion: reduce) {
+            .footer-brand .ltr { animation-name: letterGlowSoft; animation-duration: 10s; }
+        }
+        @keyframes letterGlowSoft {
+            0%, 18% { color: #fff6dc; }
+            50%, 100% { color: #d4af37; }
+        }
+        /* Fallback ativado por JS quando o iOS congela as animacoes CSS
+           (Modo de Pouca Energia): o brilho passa a ser pintado via classe. */
+        .footer-brand.js-glow .ltr { animation: none; transition: color 0.5s ease, text-shadow 0.5s ease; }
+        .footer-brand.js-glow .ltr.lit { color: #fff6dc; text-shadow: 0 0 6px rgba(212, 175, 55, 1), 0 0 16px rgba(212, 175, 55, 1); }
         .footer-copy { font-size: 0.65rem; color: var(--text-secondary); font-weight: 500; line-height: 1.5; }
         .footer-divider { width: 30px; height: 2px; background: var(--gradient-primary); margin: 8px auto; border-radius: 2px; opacity: 0.5; }
         .hidden { display: none !important; }

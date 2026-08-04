@@ -707,6 +707,8 @@
         };
 
         EvolutionApp.prototype.removeVip = async function() {
+            // FIX 24: mesma guarda das demais acoes administrativas
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!this.managingUser) return;
             const user = this.users[this.managingUser];
             const userName = user.name || this.managingUser;
@@ -761,7 +763,9 @@
             this.renderUserList();
             if (db) {
                 try {
-                    await db.collection('users').doc(this.managingUser).update({ blocked: newStatus });
+                    // FIX 15: set/merge em vez de update — update falha com
+                    // "No document to update" se o doc do usuario ainda nao existir
+                    await db.collection('users').doc(this.managingUser).set({ blocked: newStatus }, { merge: true });
                 } catch (e) {}
             }
         };
@@ -774,7 +778,8 @@
             this.showToast('Dispositivo resetado', 'success');
             if (db) {
                 try {
-                    await db.collection('users').doc(this.managingUser).update({ deviceId: null });
+                    // FIX 15: set/merge em vez de update (ver toggleBlockFromModal)
+                    await db.collection('users').doc(this.managingUser).set({ deviceId: null }, { merge: true });
                 } catch (e) {}
             }
         };

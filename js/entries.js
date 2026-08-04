@@ -437,11 +437,20 @@ TOTAL: ${(parseInt(p1, 10) || 0) + (parseInt(p2, 10) || 0)}
             }
             msg += `
 ${userName}`;
-            // Registrar timestamp do relatorio para controle de limite semanal (nao-VIP)
-            if (!this.isAdmin && !this.isVip) {
-                safeStorage.setItem(`evo_last_report_${this.currentUserId}`, new Date().toISOString());
-            }
+            // FIX 11: a cota semanal do nao-VIP era gasta AQUI, antes de o usuario usar o
+            // relatorio. Se ele fechasse a pre-visualizacao sem copiar/compartilhar, perdia
+            // a semana. Agora so marca como pendente; a cota e consumida em
+            // _consumeReportQuota(), chamado ao copiar ou compartilhar de fato.
+            this._reportQuotaPending = (!this.isAdmin && !this.isVip);
             this.openReportPreview(msg);
+        };
+
+        // Consome a cota semanal do nao-VIP — chamado apenas quando o relatorio e
+        // efetivamente copiado ou compartilhado.
+        EvolutionApp.prototype._consumeReportQuota = function() {
+            if (!this._reportQuotaPending || !this.currentUserId) return;
+            this._reportQuotaPending = false;
+            safeStorage.setItem(`evo_last_report_${this.currentUserId}`, new Date().toISOString());
         };
 
         EvolutionApp.prototype.openReportPreview = function(msg) {
@@ -467,6 +476,8 @@ ${userName}`;
         };
 
         EvolutionApp.prototype.clearReportPreview = function() {
+            // FIX 11: fechar a pre-visualizacao sem usar o relatorio nao gasta a cota
+            this._reportQuotaPending = false;
             this._reportText = '';
             const textEl = document.getElementById('reportPreviewText');
             const subEl = document.getElementById('reportPreviewSubtitle');
@@ -480,6 +491,7 @@ ${userName}`;
                 this.showToast('Gere um relatório primeiro', 'warning');
                 return;
             }
+            this._consumeReportQuota(); // FIX 11
             this.copyToClipboard(currentText, 'Relatorio copiado!');
         };
 
@@ -495,6 +507,7 @@ ${userName}`;
                         title: 'Relatorio EVOLUTION',
                         text: currentText
                     });
+                    this._consumeReportQuota(); // FIX 11
                     // Compartilhamento concluido: fecha a tela de edicao e volta para a tela principal
                     this.closeModal('reportPreviewModal');
                     return;

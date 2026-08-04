@@ -101,6 +101,13 @@
             if (!navigator.onLine) return false;
             if (!this.firebaseReady || !db) return false;
 
+            // Congela o dono dos dados AGORA. Esta funcao tem varios await; se o usuario
+            // sair (ou for deslogado por inatividade) no meio do envio, this.currentUserId
+            // vira null e as gravacoes seguintes estouravam
+            // "CollectionReference.doc() cannot be called with an empty path",
+            // deixando o mes marcado como pendente com erro.
+            const userId = this.currentUserId;
+
             this.loadHistoryQueue();
             const pendingMonths = Object.keys(this.pendingHistoryQueue || {});
             if (pendingMonths.length === 0) return true;
@@ -117,7 +124,7 @@
             for (const month of pendingMonths) {
                 try {
                     const localEntries = Array.isArray(grouped[month]) ? grouped[month] : [];
-                    const ref = db.collection('users').doc(this.currentUserId).collection('data').doc(`history_${month}`);
+                    const ref = db.collection('users').doc(userId).collection('data').doc(`history_${month}`);
                     const snap = await ref.get();
                     let remoteEntries = [];
                     if (snap.exists) {
@@ -173,7 +180,7 @@
             this.saveHistoryQueue();
             if (syncedAnyMonth) {
                 try {
-                    await db.collection('users').doc(this.currentUserId).set({
+                    await db.collection('users').doc(userId).set({
                         lastSyncAt: new Date().toISOString(),
                         historyBackup: {
                             count: Array.isArray(this.entries) ? this.entries.length : 0,
