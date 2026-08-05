@@ -1,11 +1,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         :root {
             --primary: #2563eb; --primary-rgb: 37, 99, 235; --primary-glow: rgba(var(--primary-rgb), 0.4); --secondary: #1e3a8a; --accent: #d4af37;
+            --primary-active: #1d4ed8; --primary-active-rgb: 29, 78, 216;
             --danger: #ef4444; --success: #00d9a6; --warning: #ffb800; --info: #00b4d8; --bg: #121826;
             --surface: rgba(255, 255, 255, 0.03); --surface-elevated: rgba(255, 255, 255, 0.06);
             --glass: rgba(20, 27, 43, 0.74); --border: rgba(255, 255, 255, 0.08); --text: #eef2f7;
             --text-secondary: #8a94a6; --text-muted: #3f4753;
             --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+            --gradient-selected: linear-gradient(135deg, #3a5bc4 0%, #2a4488 100%);
             --gradient-success: linear-gradient(135deg, #00d9a6 0%, #00b4d8 100%);
             --gradient-gold: linear-gradient(135deg, #d4af37 0%, #ffb800 100%);
             --gradient-orange: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
@@ -204,7 +206,7 @@
         .segmented-control-mini { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; position: relative; height: 36px; }
         .segment-btn-mini { flex: 1; border: none; background: transparent; color: var(--text-secondary); font-size: 0.7rem; font-weight: 600; border-radius: 8px; cursor: pointer; z-index: 2; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 4px; text-transform: none; letter-spacing: 0; position: relative; padding: 0 4px; }
         .segment-btn-mini.active { color: white; }
-        .segment-highlight-mini { position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px); background: var(--gradient-primary); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3); }
+        .segment-highlight-mini { position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px); background: var(--gradient-selected); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 1px 4px rgba(var(--primary-rgb), 0.18); }
         .segmented-control-mini[data-state="month"] .segment-highlight-mini { transform: translateX(100%); }
         .month-selector-inline { display: flex; align-items: center; gap: 8px; max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease; padding: 0 4px; }
         .month-selector-inline.visible { max-height: 40px; opacity: 1; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 4px; }
@@ -239,7 +241,7 @@
         .section-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.03) 0%, transparent 100%); transition: background 0.2s ease; }
         .section-title-group { display: flex; align-items: center; gap: 10px; }
         .section-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.3s ease; }
-        .section.expanded .section-icon { background: var(--gradient-primary); border-color: transparent; color: white; }
+        .section.expanded .section-icon { background: var(--surface-elevated); }
         .section-titles h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 1px; }
         .section-titles p { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; }
         .section-arrow { width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; color: var(--text-secondary); font-size: 0.7rem; }
@@ -368,7 +370,7 @@
         .status-badge.pending { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
         .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
         .filter-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-secondary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; font-family: 'Inter', sans-serif; }
-        .filter-tab.active { background: var(--primary); color: var(--bg); box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3); }
+        .filter-tab.active { background: var(--gradient-selected); color: #fff; box-shadow: 0 1px 4px rgba(var(--primary-rgb), 0.18); }
         .month-selector { margin-bottom: 12px; }
         .month-selector select, .month-selector input[type="month"] { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; transition: all 0.3s ease; color-scheme: dark; }
         .month-selector select:focus, .month-selector input[type="month"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15); }
