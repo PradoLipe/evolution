@@ -140,14 +140,6 @@
         .icon-btn:active { transform: scale(0.92); background: var(--primary); color: white; }
         .icon-btn:hover { background: rgba(255,255,255,0.07); }
         .icon-btn.admin-btn { background: rgba(212, 175, 55, 0.12); color: var(--accent); }
-        /* v5.61 — Financas bloqueado: cadeado sobreposto ao icone + aparencia apagada */
-        .icon-btn.finance-locked { position: relative; overflow: visible; background: rgba(255, 184, 0, 0.08); }
-        .icon-btn.finance-locked:active { background: rgba(255, 184, 0, 0.2); }
-        /* apaga so a moeda — o cadeado continua nitido por cima */
-        .icon-btn.finance-locked .finance-icon { filter: grayscale(0.6); opacity: 0.6; }
-        .icon-btn.finance-locked .finance-lock { position: absolute; right: -3px; bottom: -3px; font-size: 0.6rem; line-height: 1; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); pointer-events: none; }
-        .icon-btn.finance-locked::before { content: ''; position: absolute; inset: -2px; border-radius: 10px; border: 1px solid rgba(255, 184, 0, 0.35); animation: financeLockPulse 2.6s ease-in-out infinite; }
-        @keyframes financeLockPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
         .header-actions-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
         .quick-links-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
         .quick-link-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; background: var(--surface-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
@@ -159,7 +151,7 @@
         .pending-overlay.hidden { display: none; }
         .pending-overlay.dismissing .pending-overlay-card { animation: pendingCardOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards; }
         .pending-overlay.dismissing .pending-overlay-backdrop { animation: pendingBdOut 0.35s ease forwards; }
-        .pending-overlay-backdrop { position: absolute; inset: 0; background: rgba(8, 11, 18, 0.55); backdrop-filter: blur(6px); animation: pendingBdIn 0.3s ease both; }
+        .pending-overlay-backdrop { position: absolute; inset: 0; background: rgba(6, 9, 15, 0.82); backdrop-filter: blur(10px); animation: pendingBdIn 0.3s ease both; }
         @keyframes pendingBdIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pendingBdOut { from { opacity: 1; } to { opacity: 0; } }
         .pending-overlay-card { position: relative; width: 100%; max-width: 380px; border-radius: 20px; padding: 2px; background: transparent; animation: pendingCardIn 0.45s cubic-bezier(0.4, 0, 0.2, 1) both; z-index: 1; }
@@ -168,31 +160,39 @@
         .pending-overlay-border { position: absolute; inset: 0; border-radius: 20px; padding: 2px; background: conic-gradient(from var(--border-angle, 0deg), transparent 0%, rgba(var(--primary-rgb), 0.6) 10%, rgba(212, 175, 55, 0.4) 20%, transparent 30%, transparent 70%, rgba(var(--primary-rgb), 0.4) 80%, rgba(255, 255, 255, 0.6) 90%, transparent 100%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: borderSpin 3s linear infinite; pointer-events: none; }
         @property --border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
         @keyframes borderSpin { from { --border-angle: 0deg; } to { --border-angle: 360deg; } }
-        .pending-overlay-inner { background: var(--glass); backdrop-filter: blur(20px); border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }
+        /* v5.66 — o cartao do resumo agora e opaco. Antes usava var(--glass) semi-transparente
+           sobre um backdrop leve, entao o conteudo do app aparecia por tras e "sujava" os
+           numeros. Todas as legendas que usavam --text-muted (#3f4753) foram trocadas por
+           tons legiveis: aquele cinza quase se confundia com o fundo escuro. */
+        .pending-overlay-inner { background: #171f31; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); }
+        body.light-mode .pending-overlay-inner { background: #ffffff; border-color: rgba(0, 0, 0, 0.1); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18); }
         .pending-overlay-header { display: flex; align-items: center; gap: 12px; padding: 18px 18px 0; }
         .pending-overlay-greeting { flex: 1; }
-        .pending-overlay-hello { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 700; }
-        .pending-overlay-name { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .pending-overlay-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; flex-shrink: 0; }
+        .pending-overlay-hello { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); font-weight: 700; }
+        .pending-overlay-name { font-size: 1rem; font-weight: 800; color: var(--text); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pending-overlay-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; flex-shrink: 0; }
         .pending-overlay-close:active { background: var(--danger); color: white; border-color: var(--danger); transform: scale(0.9); }
         .pending-overlay-body { padding: 18px; }
         .pending-overlay-main { text-align: center; margin-bottom: 14px; }
         .pending-overlay-count-row { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 4px; }
-        .pending-overlay-number { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; font-weight: 800; color: var(--danger); line-height: 1; }
-        .pending-overlay-count-label { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
-        .pending-overlay-value { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-top: 6px; }
-        .pending-overlay-sublabel { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px; }
-        .pending-overlay-details { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 0; margin-bottom: 14px; }
+        .pending-overlay-number { font-family: 'JetBrains Mono', monospace; font-size: 2.4rem; font-weight: 800; color: #ff6b6b; line-height: 1; }
+        body.light-mode .pending-overlay-number { color: #d92d2d; }
+        .pending-overlay-count-label { font-size: 0.78rem; color: var(--text); font-weight: 600; }
+        .pending-overlay-value { font-family: 'JetBrains Mono', monospace; font-size: 1.45rem; font-weight: 800; color: #f0c14b; margin-top: 6px; }
+        body.light-mode .pending-overlay-value { color: #8a6a10; }
+        .pending-overlay-sublabel { font-size: 0.64rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px; }
+        .pending-overlay-details { display: flex; align-items: center; background: var(--surface-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 0; margin-bottom: 14px; }
         .pending-overlay-detail { flex: 1; text-align: center; }
-        .pending-overlay-detail-label { display: block; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
-        .pending-overlay-detail-value { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text); }
+        .pending-overlay-detail-label { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px; }
+        .pending-overlay-detail-value { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text); }
         .pending-overlay-detail-div { width: 1px; height: 30px; background: var(--border); flex-shrink: 0; }
-        .pending-overlay-action { width: 100%; padding: 12px; border: 1px solid rgba(var(--primary-rgb), 0.3); background: rgba(var(--primary-rgb), 0.08); color: var(--primary); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
+        .pending-overlay-action { width: 100%; padding: 13px; border: 1px solid rgba(var(--primary-rgb), 0.55); background: rgba(var(--primary-rgb), 0.16); color: #7ba7ff; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
+        body.light-mode .pending-overlay-action { color: var(--primary); background: rgba(var(--primary-rgb), 0.1); }
         .pending-overlay-action:active { background: var(--primary); color: white; transform: scale(0.98); }
         .pending-overlay-clear { text-align: center; padding: 20px 18px 24px; }
         .pending-overlay-clear.hidden { display: none; }
         .pending-overlay-clear-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 217, 166, 0.12); border: 2px solid rgba(0, 217, 166, 0.35); color: var(--success); display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
-        .pending-overlay-clear-text { font-size: 0.8rem; color: var(--success); font-weight: 700; }
+        .pending-overlay-clear-text { font-size: 0.85rem; color: var(--success); font-weight: 700; }
         /* Toggle Switch */
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -707,26 +707,4 @@
             color: rgba(var(--primary-rgb),0.45);
             letter-spacing: 0.05em;
         }
-
-/* ============================================
-   TOUR DE FINANCAS
-   ============================================ */
-@keyframes tourBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-}
-@keyframes tourPulse {
-    0%, 100% { box-shadow: 0 0 0 3px var(--primary), 0 0 20px rgba(var(--primary-rgb),0.5); }
-    50% { box-shadow: 0 0 0 7px rgba(var(--primary-rgb),0.25), 0 0 35px rgba(var(--primary-rgb),0.7); }
-}
-.tour-highlight {
-    box-shadow: 0 0 0 3px var(--primary), 0 0 20px rgba(var(--primary-rgb),0.5) !important;
-    animation: tourPulse 1.4s ease-in-out infinite !important;
-    position: relative;
-    z-index: 9991 !important;
-}
-.tour-bounce-arrow {
-    animation: tourBounce 0.9s ease-in-out infinite;
-    display: inline-block;
-}
 

@@ -282,6 +282,25 @@
             safeStorage.setItem('evo_pending_summary_disabled', enabled ? 'false' : 'true');
         };
 
+        // v5.66: "Ver pendentes" so filtrava e rolava a tela; a section do Historico
+        // continuava fechada, entao o usuario chegava no rodape sem ver nada.
+        // Agora a section e aberta de fato antes da rolagem.
+        EvolutionApp.prototype.goToPendentes = function() {
+            this.dismissPendingSummary();
+            setTimeout(() => {
+                this.setFilter('pending');
+                const sec = document.getElementById('secHist');
+                if (!sec) return;
+                // Mesma regra do toggleSection: so uma section aberta por vez.
+                document.querySelectorAll('.section.expanded').forEach(s => {
+                    if (s !== sec) s.classList.remove('expanded');
+                });
+                sec.classList.add('expanded');
+                // Espera a altura da section assentar para a rolagem parar no lugar certo.
+                setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+            }, 350);
+        };
+
         // ============================================
         // DASHBOARD
         // ============================================
@@ -1587,47 +1606,4 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             cP.forEach(pt => html += `<circle class="chart-point" cx="${pt.x}" cy="${pt.y}" r="4" style="stroke:${weekColor}"/>`);
 
             svg.innerHTML = html;
-        };
-
-        // ============================================
-        // TOUR DE FINANCAS - EXIBICAO
-        // ============================================
-        EvolutionApp.prototype.showFinancasTour = function() {
-            const overlay = document.getElementById('financasTourOverlay');
-            if (!overlay) return;
-            overlay.style.display = 'flex';
-            const btn = document.getElementById('btnFinance');
-            if (btn) btn.classList.add('tour-highlight');
-        };
-
-        EvolutionApp.prototype.markTourSeen = async function(goToFinancas) {
-            const overlay = document.getElementById('financasTourOverlay');
-            if (overlay) overlay.style.display = 'none';
-            const btn = document.getElementById('btnFinance');
-            if (btn) btn.classList.remove('tour-highlight');
-
-            if (this.currentUserId) {
-                if (this.users[this.currentUserId]) {
-                    this.users[this.currentUserId].tourFinancas = 'seen';
-                    this.saveUsersToCache();
-                }
-                if (db) {
-                    try {
-                        await db.collection('users').doc(this.currentUserId).set({ tourFinancas: 'seen' }, { merge: true });
-                    } catch (e) {}
-                }
-            }
-
-            // v5.61: Financas esta em manutencao e sera removido do app. Em vez de
-            // navegar para financas.html, informa o usuario.
-            if (goToFinancas) {
-                setTimeout(() => this.openFinanceMaintenance(), 200);
-            }
-        };
-
-        // ============================================
-        // FINANCAS EM MANUTENCAO (v5.61)
-        // ============================================
-        EvolutionApp.prototype.openFinanceMaintenance = function() {
-            this.openModal('financeMaintenanceModal');
         };

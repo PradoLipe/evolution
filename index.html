@@ -8,9 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.65 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.66 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.65">
+    <link rel="stylesheet" href="estilos.css?v=5.66">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -292,7 +292,6 @@
             <div class="header-actions">
                 <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')" title="Admin">🛡</button>
                 <div class="header-actions-sep hidden" id="adminSep"></div>
-                <button class="icon-btn finance-locked" id="btnFinance" onclick="app.openFinanceMaintenance()" title="Finanças em manutenção" aria-label="Finanças em manutenção"><span class="finance-icon" aria-hidden="true">💰</span><span class="finance-lock" aria-hidden="true">🔒</span></button>
                 <button class="icon-btn" onclick="app.toggleTheme()" title="Tema">◐</button>
                 <button class="icon-btn" onclick="app.openModal('configModal')" title="Config">⚙</button>
             </div>
@@ -566,7 +565,7 @@
         <footer class="app-footer">
             <!-- O navio e as particulas de espuma sao criados por js/main.js (footerVoyage).
                  Sem JS o rodape aparece normal e estatico, nunca vazio. -->
-            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">6</span><span class="ltr">5</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">6</span><span class="ltr">6</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -802,12 +801,6 @@
                     <button class="btn btn-glass" onclick="app.resetDeviceFromModal()">Reset Device</button>
                 </div>
                 <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2);">🗑 Excluir Usuario</button>
-                <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
-                <div class="input-group">
-                    <label class="input-label">🗺 Tour de Finanças</label>
-                    <div id="tourFinancasStatus" style="font-size:0.78rem;padding:8px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);margin-bottom:10px;color:var(--text-secondary);text-align:center;">—</div>
-                    <button id="btnSendTour" class="btn btn-glass" onclick="app.sendFinancasTour()" style="width:100%;font-size:0.85rem;">🗺 Enviar Tour</button>
-                </div>
             </div>
         </div>
     </div>
@@ -841,100 +834,6 @@
         </div>
     </div>
 
-    <!-- FINANCAS TOUR OVERLAY -->
-    <style>
-        @keyframes tourGlow {
-            0%,100% { box-shadow: 0 0 30px rgba(255,122,69,0.15), 0 0 0 0 rgba(255,122,69,0); }
-            50% { box-shadow: 0 0 60px rgba(255,122,69,0.35), 0 0 0 8px rgba(255,122,69,0.05); }
-        }
-        @keyframes tourBadgePulse {
-            0%,100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-        @keyframes tourShine {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        @keyframes tourFadeUp {
-            from { opacity:0; transform: translateY(18px); }
-            to   { opacity:1; transform: translateY(0); }
-        }
-        #financasTourCard { animation: tourFadeUp 0.45s ease both, tourGlow 3s ease-in-out 0.5s infinite; }
-        #tourUpdateBadge  { animation: tourBadgePulse 2s ease-in-out infinite; }
-    </style>
-    <div id="financasTourOverlay" style="display:none;position:fixed;inset:0;z-index:9990;background:rgba(8,11,18,0.75);backdrop-filter:blur(6px);flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:60px 0 28px;">
-        <div style="width:100%;display:flex;justify-content:flex-end;padding-right:56px;margin-bottom:8px;pointer-events:none;">
-            <span class="tour-bounce-arrow" style="font-size:2rem;line-height:1;">⬆</span>
-        </div>
-        <div id="financasTourCard" style="background:rgba(20,16,13,0.99);border:1.5px solid rgba(255,122,69,0.4);border-radius:22px;padding:26px 20px 22px;max-width:340px;width:calc(100% - 32px);">
-
-            <!-- Badge de atualização -->
-            <div id="tourUpdateBadge" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,rgba(255,122,69,0.18),rgba(139,92,246,0.18));border:1px solid rgba(255,122,69,0.3);border-radius:20px;padding:4px 12px;font-size:0.68rem;font-weight:800;letter-spacing:1px;color:var(--primary);text-transform:uppercase;margin-bottom:14px;">
-                <span>⚡</span> Nova Atualização
-            </div>
-
-            <!-- Título principal -->
-            <h2 style="font-size:1.25rem;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:10px;">
-                Obrigado por ser VIP. <br>
-                <span style="background:linear-gradient(90deg,#2563eb,#1e3a8a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">O Evolution evoluiu.</span>
-            </h2>
-
-            <!-- Mensagem de agradecimento -->
-            <p style="color:var(--text-secondary);font-size:0.82rem;line-height:1.65;margin-bottom:18px;">
-                Como forma de reconhecimento a todos que acreditaram no app, o Evolution passou por uma <strong style="color:var(--text);">enorme atualização</strong> e agora conta com um módulo de Finanças totalmente integrado — exclusivo para VIPs como você.
-            </p>
-
-            <!-- Divisor -->
-            <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:16px;"></div>
-            <p style="color:var(--text-muted);font-size:0.7rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;">O que você pode fazer</p>
-
-            <!-- Feature 1 -->
-            <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;padding:11px;background:rgba(0,217,166,0.06);border:1px solid rgba(0,217,166,0.15);border-radius:12px;">
-                <span style="font-size:1.3rem;line-height:1;flex-shrink:0;margin-top:1px;">➕</span>
-                <div>
-                    <p style="color:var(--success);font-size:0.8rem;font-weight:700;margin-bottom:2px;">Lançar Receitas e Despesas</p>
-                    <p style="color:var(--text-secondary);font-size:0.74rem;line-height:1.55;">Registre entradas e saídas com nome, categoria e valor. O saldo é atualizado na hora.</p>
-                </div>
-            </div>
-
-            <!-- Feature 2 -->
-            <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;padding:11px;background:rgba(255,122,69,0.06);border:1px solid rgba(255,122,69,0.15);border-radius:12px;">
-                <span style="font-size:1.3rem;line-height:1;flex-shrink:0;margin-top:1px;">📊</span>
-                <div>
-                    <p style="color:var(--primary);font-size:0.8rem;font-weight:700;margin-bottom:2px;">Saldo Mensal em Tempo Real</p>
-                    <p style="color:var(--text-secondary);font-size:0.74rem;line-height:1.55;">Resumo do mês: total de entradas, saídas e quanto sobrou. Navegue por qualquer mês.</p>
-                </div>
-            </div>
-
-            <!-- Feature 3 -->
-            <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;padding:11px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.18);border-radius:12px;">
-                <span style="font-size:1.3rem;line-height:1;flex-shrink:0;margin-top:1px;">🏷</span>
-                <div>
-                    <p style="color:#1e3a8a;font-size:0.8rem;font-weight:700;margin-bottom:2px;">Categorias Inteligentes</p>
-                    <p style="color:var(--text-secondary);font-size:0.74rem;line-height:1.55;">Classifique cada gasto (alimentação, combustível, salário…) e saiba exatamente para onde o dinheiro vai.</p>
-                </div>
-            </div>
-
-            <!-- Feature 4 -->
-            <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:20px;padding:11px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;">
-                <span style="font-size:1.3rem;line-height:1;flex-shrink:0;margin-top:1px;">📈</span>
-                <div>
-                    <p style="color:var(--accent);font-size:0.8rem;font-weight:700;margin-bottom:2px;">Gráficos e Histórico</p>
-                    <p style="color:var(--text-secondary);font-size:0.74rem;line-height:1.55;">Visualize tudo em gráficos por categoria e acesse o histórico completo dos seus lançamentos.</p>
-                </div>
-            </div>
-
-            <!-- Rodapé e botões -->
-            <p style="text-align:center;font-size:0.71rem;color:var(--text-muted);margin-bottom:14px;">
-                Acesse quando quiser pelo botão <strong style="color:var(--primary);">💰</strong> no canto superior direito
-            </p>
-            <div style="display:flex;gap:10px;">
-                <button class="btn btn-glass" onclick="app.markTourSeen(false)" style="flex:1;font-size:0.82rem;color:var(--text-muted);">Fechar</button>
-                <button class="btn btn-primary" onclick="app.markTourSeen(true)" style="flex:2;font-size:0.85rem;font-weight:700;background:linear-gradient(90deg,#2563eb,#1e3a8a);border:none;">💰 Status do Finanças</button>
-            </div>
-        </div>
-    </div>
-
     <!-- VIP REQUIRED MODAL -->
     <div class="modal-overlay" id="vipRequiredModal" onclick="app.closeModalOnOverlay(event, 'vipRequiredModal')">
         <div class="modal-content" style="text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);">
@@ -947,21 +846,6 @@
                     <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">Entre em contato com o administrador para adquirir seu acesso VIP e desbloquear todos os recursos premium.</span>
                 </div>
                 <button class="btn btn-glass" onclick="app.closeModal('vipRequiredModal')" style="border-color: var(--accent); color: var(--accent);">Entendi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FINANCAS EM MANUTENCAO MODAL -->
-    <div class="modal-overlay" id="financeMaintenanceModal" onclick="app.closeModalOnOverlay(event, 'financeMaintenanceModal')">
-        <div class="modal-content" style="text-align: center; border: 2px solid var(--warning); box-shadow: 0 0 30px rgba(255, 184, 0, 0.15);">
-            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(255, 184, 0, 0.3);"><h3 class="modal-title" style="color: var(--warning); letter-spacing: 2px;">Em Manutenção</h3></div>
-            <div class="modal-body">
-                <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
-                <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text); line-height: 1.6;">O módulo de <strong>Finanças</strong> está passando por manutenção e ficou temporariamente indisponível.</p>
-                <div style="background: rgba(255, 184, 0, 0.08); padding: 14px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255, 184, 0, 0.2);">
-                    <span style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">Estamos trabalhando para deixar tudo em ordem. Seus registros de produção continuam normais e não são afetados.</span>
-                </div>
-                <button class="btn btn-glass" onclick="app.closeModal('financeMaintenanceModal')" style="border-color: var(--warning); color: var(--warning);">Entendi</button>
             </div>
         </div>
     </div>
@@ -1057,7 +941,7 @@
                             <span class="pending-overlay-detail-value" id="pendingSummaryOldest">-</span>
                         </div>
                     </div>
-                    <button class="pending-overlay-action" onclick="app.dismissPendingSummary(); setTimeout(function(){ app.setFilter('pending'); document.getElementById('secHist')?.scrollIntoView({behavior:'smooth'}); }, 350);">
+                    <button class="pending-overlay-action" onclick="app.goToPendentes()">
                         Ver pendentes
                     </button>
                 </div>
@@ -1114,16 +998,16 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.65"></script>
-    <script src="js/main.js?v=5.65"></script>
-    <script src="js/auth.js?v=5.65"></script>
-    <script src="js/firebase-sync.js?v=5.65"></script>
-    <script src="js/ui.js?v=5.65"></script>
-    <script src="js/entries.js?v=5.65"></script>
-    <script src="js/admin.js?v=5.65"></script>
-    <script src="js/utils.js?v=5.65"></script>
-    <script src="js/turtle.js?v=5.65"></script>
-    <script src="js/init.js?v=5.65"></script>
+    <script src="js/config.js?v=5.66"></script>
+    <script src="js/main.js?v=5.66"></script>
+    <script src="js/auth.js?v=5.66"></script>
+    <script src="js/firebase-sync.js?v=5.66"></script>
+    <script src="js/ui.js?v=5.66"></script>
+    <script src="js/entries.js?v=5.66"></script>
+    <script src="js/admin.js?v=5.66"></script>
+    <script src="js/utils.js?v=5.66"></script>
+    <script src="js/turtle.js?v=5.66"></script>
+    <script src="js/init.js?v=5.66"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas

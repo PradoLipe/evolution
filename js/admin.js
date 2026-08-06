@@ -644,8 +644,6 @@
                 lastSeenEl.textContent = presence.label;
             }
 
-            this._updateTourStatusUI(user);
-
             const btnBlock = document.getElementById('btnBlockUser');
             btnBlock.textContent = user.blocked ? 'Desbloquear' : 'Bloquear';
             this.openModal('userManagementModal');
@@ -864,98 +862,4 @@
             this.showToast('Atualizando...', 'info');
             this.loadPendingUsers();
             this.syncUsersFromFirebase();
-        };
-
-        // ============================================
-        // TOUR DE FINANCAS - ADMIN
-        // ============================================
-        EvolutionApp.prototype._updateTourStatusUI = function(user) {
-            const statusEl = document.getElementById('tourFinancasStatus');
-            const btnSend = document.getElementById('btnSendTour');
-            if (!statusEl || !btnSend) return;
-
-            const tour = user.tourFinancas;
-            const vipInfo = this.getVipInfo(user);
-            const isVip = vipInfo.active || user.isAdmin;
-
-            if (!isVip) {
-                statusEl.textContent = '🔒 Apenas usuarios VIP';
-                statusEl.style.color = 'var(--text-muted)';
-                btnSend.disabled = true;
-                btnSend.style.opacity = '0.4';
-                return;
-            }
-
-            if (tour === 'seen') {
-                statusEl.innerHTML = '✅ <strong style="color:var(--success)">Visualizado</strong> — usuário já completou o tour';
-                btnSend.disabled = false;
-                btnSend.style.opacity = '1';
-                btnSend.style.background = 'rgba(255,184,0,0.15)';
-                btnSend.style.borderColor = 'rgba(255,184,0,0.4)';
-                btnSend.style.color = 'var(--warning)';
-                btnSend.textContent = '⚠️ Reenviar Tour';
-            } else if (tour === 'pending') {
-                statusEl.innerHTML = '⏳ <strong style="color:var(--warning)">Pendente</strong> — aparecerá no próximo login';
-                btnSend.disabled = false;
-                btnSend.style.opacity = '1';
-                btnSend.style.background = '';
-                btnSend.style.borderColor = '';
-                btnSend.style.color = '';
-                btnSend.textContent = '🗺 Reenviar Tour';
-            } else {
-                statusEl.innerHTML = '— Tour não enviado';
-                statusEl.style.color = 'var(--text-muted)';
-                btnSend.disabled = false;
-                btnSend.style.opacity = '1';
-                btnSend.style.background = '';
-                btnSend.style.borderColor = '';
-                btnSend.style.color = '';
-                btnSend.textContent = '🗺 Enviar Tour';
-            }
-        };
-
-        EvolutionApp.prototype.sendFinancasTour = async function() {
-            if (!this.managingUser) {
-                this.showToast('Nenhum usuário selecionado', 'error');
-                return;
-            }
-            const user = this.users[this.managingUser];
-            if (!user) {
-                this.showToast('Usuário não encontrado', 'error');
-                return;
-            }
-
-            const vipInfo = this.getVipInfo(user);
-            if (!vipInfo.active && !user.isAdmin) {
-                this.showToast('Apenas usuários VIP podem receber o tour', 'error');
-                return;
-            }
-
-            const jaViu = user.tourFinancas === 'seen';
-
-            // Feedback imediato no botão
-            const btnSend = document.getElementById('btnSendTour');
-            if (btnSend) { btnSend.disabled = true; btnSend.textContent = '⏳ Enviando...'; }
-
-            this.users[this.managingUser].tourFinancas = 'pending';
-            this.saveUsersToCache();
-            this._updateTourStatusUI(this.users[this.managingUser]);
-
-            if (!db) {
-                this.showToast('Sem conexão com servidor', 'error');
-                if (btnSend) { btnSend.disabled = false; }
-                return;
-            }
-
-            try {
-                await db.collection('users').doc(this.managingUser).set({ tourFinancas: 'pending' }, { merge: true });
-                if (jaViu) {
-                    this.showToast('⚠️ Usuário já tinha visto o tour — reenviado com sucesso!', 'warning');
-                } else {
-                    this.showToast('✅ Tour enviado! O usuário verá assim que o app atualizar.', 'success');
-                }
-            } catch (e) {
-                this.showToast('Erro ao salvar no servidor: ' + (e.message || e), 'error');
-                if (btnSend) { btnSend.disabled = false; btnSend.textContent = '🗺 Enviar Tour'; }
-            }
         };

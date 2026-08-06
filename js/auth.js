@@ -618,11 +618,6 @@
             this.restoreHistoryPrefs();
             this.checkVipNotification(userData);
             this.checkSystemMessage();
-
-            // Tour de Finanças: exibe se admin marcou como pendente
-            if (userData.tourFinancas === 'pending') {
-                setTimeout(() => this.showFinancasTour(), 2200);
-            }
             this.renderCalendar();
 
             // FIX 8: recria o listener de clique-fora das sugestoes de navio (logout() o remove)
@@ -633,7 +628,7 @@
                 // FIX 7: reassina o listener da colecao de usuarios se ele foi cancelado
                 // por um logout anterior. auth.onAuthStateChanged so dispara uma vez por
                 // carregamento da pagina, entao apos sair e entrar de novo na mesma aba o
-                // app parava de receber VIP/aviso VIP/tour em tempo real ate um F5.
+                // app parava de receber VIP/aviso VIP em tempo real ate um F5.
                 if (db && !this.unsubscribeUsers) this.syncUsersFromFirebase();
                 if (this.isAdmin || this.isVip) {
                     this.setupEntriesListener(this.currentUserId);

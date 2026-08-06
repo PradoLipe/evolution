@@ -529,9 +529,7 @@
         const BLOCKERS = '.modal-overlay.active, #pendingSummaryOverlay:not(.hidden)';
 
         function blocked() {
-            if (document.querySelector(BLOCKERS)) return true;
-            const tour = document.getElementById('financasTourOverlay');
-            return !!(tour && tour.style.display && tour.style.display !== 'none');
+            return !!document.querySelector(BLOCKERS);
         }
 
         function presentOnLogin(tries) {
