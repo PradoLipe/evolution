@@ -3,7 +3,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.70';
+    window.EVOLUTION_APP_VERSION = 'V5.71';
 
 // Configuracao Firebase
     const firebaseConfig = {

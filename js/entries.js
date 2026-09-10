@@ -42,9 +42,7 @@
             if (britaOption) {
                 britaOption.hidden = !this.portSettings?.britaVisible;
                 britaOption.disabled = false;
-                britaOption.textContent = this.portSettings?.britaEnabled
-                    ? 'BrIta'
-                    : 'BrIta (em atualização)';
+                britaOption.textContent = 'BrIta';
             }
             if (!this.portSettings?.britaVisible && select.value === 'brita') select.value = 'brmao';
         };

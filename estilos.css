@@ -266,7 +266,8 @@
         .chart-growth.negative { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
         .input-group { margin-bottom: 16px; }
         .port-selector-group { max-width: 190px; }
-        .port-selector-compact { padding: 9px 10px; font-size: 0.78rem; }
+        .port-selector-group select.port-selector-compact { padding: 9px 34px 9px 10px; font-size: 0.78rem; font-weight: 700; color: #fff; background-color: #1e3a8a; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; border-color: rgba(37, 99, 235, 0.7); cursor: pointer; color-scheme: dark; }
+        .port-selector-compact option { background: #1e3a8a; color: #fff; }
         .input-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; }
         input, select { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; -webkit-appearance: none; appearance: none; }
         .input-with-calc { display: flex; gap: 8px; align-items: center; }
