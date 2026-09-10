@@ -8,9 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.66 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.69 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.66">
+    <link rel="stylesheet" href="estilos.css?v=5.69">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -83,6 +83,10 @@
                     <label class="input-label">Navio</label>
                     <input type="text" id="editNavio" style="text-transform: uppercase;">
                 </div>
+                <div class="input-group">
+                    <label class="input-label">Porto</label>
+                    <select id="editPorto"><option value="brmao">BrMao</option><option value="brita">BrIta</option></select>
+                </div>
                 <div class="input-row">
                     <div class="input-group"><label class="input-label">Data</label><input type="date" id="editData"></div>
                     <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="editQtdConf" min="1" step="1"></div>
@@ -101,6 +105,22 @@
                     <button class="btn btn-glass" onclick="app.closeModal('editModal')">Cancelar</button>
                     <button class="btn btn-primary" onclick="app.saveEditedEntry()">Salvar</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso exibido enquanto o BrIta ainda aguarda liberacao -->
+    <div class="modal-overlay" id="britaNoticeModal" onclick="app.closeModalOnOverlay(event, 'britaNoticeModal')">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 class="modal-title" style="color: var(--accent);">BrIta em atualização</h3>
+            </div>
+            <div class="modal-body">
+                <div style="font-size: 2.3rem; margin-bottom: 14px;">⏳</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+                    A opção BrIta está em fase de implantação. O desenvolvimento aguarda a confirmação da operação em outro porto e a validação dos valores aplicáveis. Assim que essas informações forem confirmadas, o administrador liberará o uso desta opção.
+                </p>
+                <button class="btn btn-primary" onclick="app.closeModal('britaNoticeModal')">Entendi</button>
             </div>
         </div>
     </div>
@@ -474,6 +494,14 @@
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
+                        <div class="input-group">
+                            <label class="input-label">Porto</label>
+                            <select id="calcPorto" onchange="app.handlePortChange('calcPorto')">
+                                <option value="brmao">BrMao</option>
+                                <option value="brita">BrIta (em atualização)</option>
+                            </select>
+                            <div class="input-hint">A opção BrIta será liberada após a confirmação dos valores da operação.</div>
+                        </div>
                         <div class="input-group navio-suggestions">
                             <label class="input-label">Navio</label>
                             <div class="navio-input-wrapper">
@@ -541,13 +569,22 @@
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
+                        <div class="payment-summary-notice hidden" id="paymentSummaryNotice" role="button" tabindex="0" onclick="app.openPaymentSummary()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openPaymentSummary();}">
+                            <div class="payment-summary-visual"><span class="payment-summary-ship">🚢</span><span class="payment-summary-plus">+</span></div>
+                            <div class="payment-summary-copy">
+                                <div class="payment-summary-title" id="paymentSummaryTitle">Pagamentos de hoje</div>
+                                <div class="payment-summary-meta"><strong id="paymentSummaryCount">0 navios</strong> • <span id="paymentSummaryGross">R$ 0,00</span> bruto • <span id="paymentSummaryNet">R$ 0,00</span> líquido</div>
+                            </div>
+                            <span class="payment-summary-arrow">›</span>
+                        </div>
                         <div class="filter-tabs">
                             <button class="filter-tab" onclick="app.setFilter('all')" id="filter-all">Todos</button>
                             <button class="filter-tab active" onclick="app.setFilter('pending')" id="filter-pending">Pendentes</button>
                             <button class="filter-tab" onclick="app.setFilter('paid')" id="filter-paid">Recebidos</button>
                         </div>
                         <div class="month-selector" id="monthSelector" style="display:none;">
-                            <input type="month" id="monthSelect" onchange="app.setMonth(this.value)">
+                            <input class="month-select-control" type="month" id="monthSelect" onchange="app.setMonth(this.value)">
+                            <button class="btn btn-glass month-all-btn" id="monthAllBtn" onclick="app.clearHistoryMonth()">Todos</button>
                         </div>
                         <div class="history-list" id="histList">
                             <div class="empty-state">
@@ -565,13 +602,32 @@
         <footer class="app-footer">
             <!-- O navio e as particulas de espuma sao criados por js/main.js (footerVoyage).
                  Sem JS o rodape aparece normal e estatico, nunca vazio. -->
-            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">6</span><span class="ltr">6</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">6</span><span class="ltr">9</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
                 <div>Todos os direitos reservados © 2026</div>
             </div>
         </footer>
+    </div>
+
+    <!-- PAYMENT SUMMARY MODAL -->
+    <div class="modal-overlay" id="paymentSummaryModal" onclick="app.closeModalOnOverlay(event, 'paymentSummaryModal')">
+        <div class="modal-content" style="max-width: 430px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color: var(--success);">Resumo de Pagamentos</h3>
+                <button class="modal-close" onclick="app.closeModal('paymentSummaryModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="paymentSummaryPeriod" style="text-align: center; color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 14px;">Pagamentos marcados hoje</p>
+                <div class="payment-summary-list" id="paymentSummaryList"></div>
+                <div class="payment-summary-totals">
+                    <div class="payment-summary-total gross"><span class="payment-summary-total-label">Total bruto</span><span class="payment-summary-total-value" id="paymentSummaryGrossTotal">R$ 0,00</span></div>
+                    <div class="payment-summary-total net"><span class="payment-summary-total-label">Total líquido</span><span class="payment-summary-total-value" id="paymentSummaryNetTotal">R$ 0,00</span></div>
+                </div>
+                <button class="btn btn-glass" onclick="app.closeModal('paymentSummaryModal')">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- PROFILE MODAL -->
@@ -696,7 +752,56 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admRates')"><span>💲 Editar Taxas</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admPorts')"><span>⚓ Configuração de Portos</span><span>▼</span></button>
+                    <div id="admPorts" class="admin-toggle-content">
+                        <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                            Configure as taxas específicas do BrIta e defina se a opção será exibida e liberada para os usuários.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div><strong style="font-size: 0.82rem;">Exibir BrIta para os usuários</strong><div class="input-hint">Mostra o porto no formulário de produção.</div></div>
+                                <label class="toggle-switch"><input type="checkbox" id="britaVisible"><span class="toggle-slider"></span></label>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div><strong style="font-size: 0.82rem;">Liberar registros no BrIta</strong><div class="input-hint">Permite calcular e salvar usando as taxas do BrIta.</div></div>
+                                <label class="toggle-switch"><input type="checkbox" id="britaEnabled"><span class="toggle-slider"></span></label>
+                            </div>
+                        </div>
+                        <div class="rates-grid">
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">🌅 BrIta • 07x15</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_07x15_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_07x15_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">🌇 BrIta • 15x23</div>
+                                <div class="rate-subtitle">Período 15h-19h</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_15x23_p1_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_15x23_p1_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                                <div class="rate-subtitle" style="margin-top: 12px;">Período 19h-23h</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_15x23_p2_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_15x23_p2_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">🌙 BrIta • 23x07</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_23x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="app.saveRates()" style="margin-top: 16px;">Salvar Configuração dos Portos</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admRates')"><span>💲 Editar Taxas BrMao</span><span>▼</span></button>
                     <div id="admRates" class="admin-toggle-content">
                         <div class="rates-grid">
                             <div class="rate-turno-section">
@@ -798,7 +903,6 @@
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 16px 0;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <button class="btn btn-glass" id="btnBlockUser" onclick="app.toggleBlockFromModal()">Bloquear</button>
-                    <button class="btn btn-glass" onclick="app.resetDeviceFromModal()">Reset Device</button>
                 </div>
                 <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2);">🗑 Excluir Usuario</button>
             </div>
@@ -998,16 +1102,16 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.66"></script>
-    <script src="js/main.js?v=5.66"></script>
-    <script src="js/auth.js?v=5.66"></script>
-    <script src="js/firebase-sync.js?v=5.66"></script>
-    <script src="js/ui.js?v=5.66"></script>
-    <script src="js/entries.js?v=5.66"></script>
-    <script src="js/admin.js?v=5.66"></script>
-    <script src="js/utils.js?v=5.66"></script>
-    <script src="js/turtle.js?v=5.66"></script>
-    <script src="js/init.js?v=5.66"></script>
+    <script src="js/config.js?v=5.69"></script>
+    <script src="js/main.js?v=5.69"></script>
+    <script src="js/auth.js?v=5.69"></script>
+    <script src="js/firebase-sync.js?v=5.69"></script>
+    <script src="js/ui.js?v=5.69"></script>
+    <script src="js/entries.js?v=5.69"></script>
+    <script src="js/admin.js?v=5.69"></script>
+    <script src="js/utils.js?v=5.69"></script>
+    <script src="js/turtle.js?v=5.69"></script>
+    <script src="js/init.js?v=5.69"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas

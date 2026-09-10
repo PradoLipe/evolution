@@ -134,6 +134,11 @@
                     return;
                 }
                 this.syncCurrentUserLastSeen(false, 'heartbeat');
+                // Verifica tambem a virada do dia enquanto o usuario mantiver o
+                // aplicativo aberto, garantindo um aviso por dia nos 3 ultimos dias.
+                if (typeof this.checkVipNotification === 'function' && this.currentUserId) {
+                    this.checkVipNotification(this.users[this.currentUserId] || {});
+                }
             }, 60 * 1000);
         };
 
@@ -160,6 +165,8 @@
             if (this.pinValue.length < 6 && this.currentMode === 'login') {
                 this.pinValue += digit;
                 this.updatePinDisplay();
+                // Confirma ao toque que o digito foi reconhecido no teclado do login.
+                if (typeof this.triggerHaptic === 'function') this.triggerHaptic('light');
                 // Auto-login apenas ao completar 6 digitos (seguro para PINs de 4-6 digitos:
                 // usuarios com PIN < 6 usam o botao de acao → abaixo para confirmar)
                 if (this.pinValue.length === 6) {
@@ -172,6 +179,7 @@
             if (this.currentMode === 'login') {
                 this.pinValue = this.pinValue.slice(0, -1);
                 this.updatePinDisplay();
+                if (typeof this.triggerHaptic === 'function') this.triggerHaptic('light');
             }
         };
 
@@ -282,17 +290,6 @@
                 foundUser.vip = true;
             }
 
-            // Verificar bloqueio de dispositivo para usuarios nao-VIP
-            if (!foundUser.isAdmin) {
-                const vipInfo = this.getVipInfo(foundUser);
-                if (!vipInfo.active && foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
-                    this.showToast('Acesso permitido apenas no dispositivo cadastrado. Contate o administrador para resetar.', 'error');
-                    this.pinValue = '';
-                    this.updatePinDisplay();
-                    return;
-                }
-            }
-
             // Login bem-sucedido
             this.restoreUserSession(foundUser, {
                 user: foundUser.name,
@@ -300,18 +297,9 @@
                 docId: foundUser.docId
             });
 
-            // Registrar ultimo login + deviceId do dispositivo atual (para nao-VIP)
+            // Registrar ultimo login
             const loginTs = new Date().toISOString();
             const loginUpdate = { lastLoginAt: loginTs };
-            if (!foundUser.isAdmin) {
-                const vipInfo = this.getVipInfo(foundUser);
-                if (!vipInfo.active) {
-                    loginUpdate.deviceId = this.deviceId;
-                    if (this.users[foundUser.docId]) {
-                        this.users[foundUser.docId].deviceId = this.deviceId;
-                    }
-                }
-            }
             if (this.users[foundUser.docId]) {
                 this.users[foundUser.docId].lastLoginAt = loginTs;
                 this.saveUsersToCache();
@@ -471,14 +459,6 @@
                     safeStorage.removeItem('evo_session_v516');
                     return;
                 }
-                // Verificar bloqueio de dispositivo para nao-VIP na restauracao de sessao
-                if (cachedUser && !cachedUser.isAdmin) {
-                    const vipInfo = this.getVipInfo(cachedUser);
-                    if (!vipInfo.active && cachedUser.deviceId && cachedUser.deviceId !== this.deviceId) {
-                        safeStorage.removeItem('evo_session_v516');
-                        return;
-                    }
-                }
                 if (cachedUser && !cachedUser.blocked) {
                     this.restoreUserSession({ ...cachedUser, docId: cachedUser.docId || d.docId }, d);
                     return;
@@ -530,14 +510,6 @@
                     }
                 }
                 if (foundUser && !foundUser.blocked) {
-                    // Verificar bloqueio de dispositivo para nao-VIP
-                    if (!foundUser.isAdmin) {
-                        const vipInfo = this.getVipInfo(foundUser);
-                        if (!vipInfo.active && foundUser.deviceId && foundUser.deviceId !== this.deviceId) {
-                            safeStorage.removeItem('evo_session_v516');
-                            return;
-                        }
-                    }
                     this.users[foundUser.docId] = foundUser;
                     this.saveUsersToCache();
                     this.restoreUserSession(foundUser, { ...d, docId: foundUser.docId });
@@ -559,17 +531,6 @@
             const trialActive = userData.vipTrialUntil && new Date(userData.vipTrialUntil) > now;
             const paidActive = userData.vipUntil && new Date(userData.vipUntil) > now;
             this.isVip = userData.vip || trialActive || paidActive || this.isAdmin;
-
-            // Registrar deviceId para usuarios nao-VIP (lock de dispositivo)
-            if (!this.isAdmin && !this.isVip && (!userData.deviceId || userData.deviceId === this.deviceId)) {
-                if (this.users[this.currentUserId]) {
-                    this.users[this.currentUserId].deviceId = this.deviceId;
-                    this.saveUsersToCache();
-                }
-                if (db) {
-                    db.collection('users').doc(this.currentUserId).set({ deviceId: this.deviceId }, { merge: true }).catch((e) => { console.warn('[sync] deviceId falhou:', e?.code || e?.message || e); });
-                }
-            }
 
             // Salvar sessao (garante que TODOS os caminhos de login persistem a sessao,
             // incluindo o caminho rapido do admin que retorna cedo antes do save no login())

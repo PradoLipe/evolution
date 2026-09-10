@@ -281,6 +281,12 @@
                     const fp = document.getElementById('floodPercentage');
                     if (fp) fp.value = doc.data().floodPercentage;
                 }
+                const settings = doc.exists ? doc.data() : {};
+                if (settings.portSettings) {
+                    this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...settings.portSettings };
+                    safeStorage.setItem('evo_port_settings_v1', JSON.stringify(this.portSettings));
+                }
+                this.updatePortSelector();
                 // Logout remoto forcado: se o admin publicou um forceLogoutBefore,
                 // qualquer sessao criada ANTES desse timestamp e invalidada
                 if (doc.exists && doc.data().forceLogoutBefore != null) {
@@ -290,7 +296,14 @@
                         this._checkForceLogout(forceTs);
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                // Mantem a ultima configuracao conhecida quando o Firebase estiver offline.
+                try {
+                    const cached = safeStorage.getItem('evo_port_settings_v1');
+                    if (cached) this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...JSON.parse(cached) };
+                } catch (_) {}
+                this.updatePortSelector();
+            }
 
             // A mensagem do sistema e checada por usuario a cada login (ver checkSystemMessage,
             // chamada em restoreUserSession) para garantir que currentUserId ja esta definido.
@@ -346,13 +359,20 @@
             try {
                 const doc = await db.collection('config').doc('rates').get();
                 if (doc.exists) {
-                    this.taxas = doc.data();
+                    const data = doc.data() || {};
+                    // Compatibilidade com o formato antigo, que armazenava
+                    // diretamente as taxas do BrMao no documento.
+                    this.taxas = data.brmao || data;
+                    this.taxasBrIta = data.brita || JSON.parse(JSON.stringify(DEFAULT_TAXAS_BRITA));
                     safeStorage.setItem('evo_rates_v54', JSON.stringify(this.taxas));
+                    safeStorage.setItem('evo_rates_brita_v1', JSON.stringify(this.taxasBrIta));
                 }
             } catch (e) {
                 try {
                     const local = safeStorage.getItem('evo_rates_v54');
                     if (local) this.taxas = JSON.parse(local);
+                    const localBrita = safeStorage.getItem('evo_rates_brita_v1');
+                    if (localBrita) this.taxasBrIta = JSON.parse(localBrita);
                 } catch (parseErr) {
                     this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
                 }
@@ -768,20 +788,6 @@
             }
         };
 
-        EvolutionApp.prototype.resetDeviceFromModal = async function() {
-            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
-            if (!this.managingUser) return;
-            this.users[this.managingUser].deviceId = null;
-            this.saveUsersToCache();
-            this.showToast('Dispositivo resetado', 'success');
-            if (db) {
-                try {
-                    // FIX 15: set/merge em vez de update (ver toggleBlockFromModal)
-                    await db.collection('users').doc(this.managingUser).set({ deviceId: null }, { merge: true });
-                } catch (e) {}
-            }
-        };
-
         EvolutionApp.prototype.deleteUser = async function(docId) {
             if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!docId || docId === this.currentUserId) {
@@ -805,48 +811,116 @@
 
         EvolutionApp.prototype.renderAdminRates = function() {
             try {
-                document.getElementById('rate_07x15_normal').value = this.taxas['07x15'].normal;
-                document.getElementById('rate_07x15_feriado').value = this.taxas['07x15'].feriado;
-                document.getElementById('rate_15x23_p1_normal').value = this.taxas['15x23'].normal.p1;
-                document.getElementById('rate_15x23_p1_feriado').value = this.taxas['15x23'].feriado.p1;
-                document.getElementById('rate_15x23_p2_normal').value = this.taxas['15x23'].normal.p2;
-                document.getElementById('rate_15x23_p2_feriado').value = this.taxas['15x23'].feriado.p2;
-                document.getElementById('rate_23x07_normal').value = this.taxas['23x07'].normal;
-                document.getElementById('rate_23x07_feriado').value = this.taxas['23x07'].feriado;
-            } catch (e) {}
+                const brmao = this.taxas || DEFAULT_TAXAS;
+                const brita = this.taxasBrIta || DEFAULT_TAXAS_BRITA;
+                document.getElementById('rate_07x15_normal').value = brmao['07x15'].normal;
+                document.getElementById('rate_07x15_feriado').value = brmao['07x15'].feriado;
+                document.getElementById('rate_15x23_p1_normal').value = brmao['15x23'].normal.p1;
+                document.getElementById('rate_15x23_p1_feriado').value = brmao['15x23'].feriado.p1;
+                document.getElementById('rate_15x23_p2_normal').value = brmao['15x23'].normal.p2;
+                document.getElementById('rate_15x23_p2_feriado').value = brmao['15x23'].feriado.p2;
+                document.getElementById('rate_23x07_normal').value = brmao['23x07'].normal;
+                document.getElementById('rate_23x07_feriado').value = brmao['23x07'].feriado;
+                document.getElementById('rate_brita_07x15_normal').value = brita['07x15'].normal;
+                document.getElementById('rate_brita_07x15_feriado').value = brita['07x15'].feriado;
+                document.getElementById('rate_brita_15x23_p1_normal').value = brita['15x23'].normal.p1;
+                document.getElementById('rate_brita_15x23_p1_feriado').value = brita['15x23'].feriado.p1;
+                document.getElementById('rate_brita_15x23_p2_normal').value = brita['15x23'].normal.p2;
+                document.getElementById('rate_brita_15x23_p2_feriado').value = brita['15x23'].feriado.p2;
+                document.getElementById('rate_brita_23x07_normal').value = brita['23x07'].normal;
+                document.getElementById('rate_brita_23x07_feriado').value = brita['23x07'].feriado;
+                document.getElementById('britaVisible').checked = this.portSettings?.britaVisible !== false;
+                document.getElementById('britaEnabled').checked = this.portSettings?.britaEnabled === true;
+            } catch (e) {
+                try {
+                    const cached = safeStorage.getItem('evo_port_settings_v1');
+                    if (cached) this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...JSON.parse(cached) };
+                } catch (_) {}
+                this.updatePortSelector();
+            }
         };
 
         EvolutionApp.prototype.saveRates = async function() {
             if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
+            const readRate = (id, fallback) => {
+                const value = parseFloat(document.getElementById(id)?.value);
+                return Number.isFinite(value) ? value : fallback;
+            };
             const newRates = {
                 '07x15': {
-                    normal: parseFloat(document.getElementById('rate_07x15_normal').value) || 5.73,
-                    feriado: parseFloat(document.getElementById('rate_07x15_feriado').value) || 8.61
+                    normal: readRate('rate_07x15_normal', DEFAULT_TAXAS['07x15'].normal),
+                    feriado: readRate('rate_07x15_feriado', DEFAULT_TAXAS['07x15'].feriado)
                 },
                 '15x23': {
                     normal: {
-                        p1: parseFloat(document.getElementById('rate_15x23_p1_normal').value) || 5.73,
-                        p2: parseFloat(document.getElementById('rate_15x23_p2_normal').value) || 6.88
+                        p1: readRate('rate_15x23_p1_normal', DEFAULT_TAXAS['15x23'].normal.p1),
+                        p2: readRate('rate_15x23_p2_normal', DEFAULT_TAXAS['15x23'].normal.p2)
                     },
                     feriado: {
-                        p1: parseFloat(document.getElementById('rate_15x23_p1_feriado').value) || 8.61,
-                        p2: parseFloat(document.getElementById('rate_15x23_p2_feriado').value) || 10.32
+                        p1: readRate('rate_15x23_p1_feriado', DEFAULT_TAXAS['15x23'].feriado.p1),
+                        p2: readRate('rate_15x23_p2_feriado', DEFAULT_TAXAS['15x23'].feriado.p2)
                     }
                 },
                 '23x07': {
-                    normal: parseFloat(document.getElementById('rate_23x07_normal').value) || 6.88,
-                    feriado: parseFloat(document.getElementById('rate_23x07_feriado').value) || 10.32
+                    normal: readRate('rate_23x07_normal', DEFAULT_TAXAS['23x07'].normal),
+                    feriado: readRate('rate_23x07_feriado', DEFAULT_TAXAS['23x07'].feriado)
                 }
             };
 
+            const britaRates = {
+                '07x15': {
+                    normal: readRate('rate_brita_07x15_normal', DEFAULT_TAXAS_BRITA['07x15'].normal),
+                    feriado: readRate('rate_brita_07x15_feriado', DEFAULT_TAXAS_BRITA['07x15'].feriado)
+                },
+                '15x23': {
+                    normal: {
+                        p1: readRate('rate_brita_15x23_p1_normal', DEFAULT_TAXAS_BRITA['15x23'].normal.p1),
+                        p2: readRate('rate_brita_15x23_p2_normal', DEFAULT_TAXAS_BRITA['15x23'].normal.p2)
+                    },
+                    feriado: {
+                        p1: readRate('rate_brita_15x23_p1_feriado', DEFAULT_TAXAS_BRITA['15x23'].feriado.p1),
+                        p2: readRate('rate_brita_15x23_p2_feriado', DEFAULT_TAXAS_BRITA['15x23'].feriado.p2)
+                    }
+                },
+                '23x07': {
+                    normal: readRate('rate_brita_23x07_normal', DEFAULT_TAXAS_BRITA['23x07'].normal),
+                    feriado: readRate('rate_brita_23x07_feriado', DEFAULT_TAXAS_BRITA['23x07'].feriado)
+                }
+            };
+
+            const britaRateValues = [
+                britaRates['07x15'].normal,
+                britaRates['07x15'].feriado,
+                britaRates['15x23'].normal.p1,
+                britaRates['15x23'].normal.p2,
+                britaRates['15x23'].feriado.p1,
+                britaRates['15x23'].feriado.p2,
+                britaRates['23x07'].normal,
+                britaRates['23x07'].feriado
+            ];
+            const wantsBritaEnabled = document.getElementById('britaEnabled')?.checked === true;
+            if (wantsBritaEnabled && britaRateValues.some(value => !Number.isFinite(value) || value <= 0)) {
+                this.showToast('Preencha todas as taxas do BrIta antes de liberar o acesso.', 'error');
+                return;
+            }
+
             this.taxas = newRates;
+            this.taxasBrIta = britaRates;
+            this.portSettings = {
+                britaVisible: document.getElementById('britaVisible')?.checked !== false,
+                britaEnabled: document.getElementById('britaEnabled')?.checked === true
+            };
             safeStorage.setItem('evo_rates_v54', JSON.stringify(newRates));
+            safeStorage.setItem('evo_rates_brita_v1', JSON.stringify(britaRates));
+            safeStorage.setItem('evo_port_settings_v1', JSON.stringify(this.portSettings));
+            this.updatePortSelector();
             this.showToast('Taxas salvas!', 'success');
             this.closeModal('adminModal');
 
             if (db) {
                 try {
-                    await db.collection('config').doc('rates').set(newRates);
+                    await db.collection('config').doc('rates').set({ brmao: newRates, brita: britaRates });
+                    await db.collection('config').doc('settings').set({ portSettings: this.portSettings }, { merge: true });
                 } catch (e) {}
             }
         };

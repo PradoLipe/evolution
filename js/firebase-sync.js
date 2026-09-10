@@ -196,7 +196,44 @@
             return Object.keys(this.pendingHistoryQueue || {}).length === 0;
         };
 
+        EvolutionApp.prototype.checkVipExpiryNotification = function(userData) {
+            if (!this.currentUserId || this.isAdmin || !userData) return;
+            const vipInfo = this.getVipInfo(userData);
+            if (!vipInfo.active || !vipInfo.until || vipInfo.daysLeft < 1 || vipInfo.daysLeft > 3) return;
+
+            const today = typeof getCurrentDateStringManaus === 'function'
+                ? getCurrentDateStringManaus()
+                : new Date().toISOString().slice(0, 10);
+            const seenKey = `evo_vip_expiry_notice_${this.currentUserId}`;
+            if (safeStorage.getItem(seenKey) === today) return;
+
+            const title = document.getElementById('vipNotifType');
+            const dateEl = document.getElementById('vipNotifDate');
+            const giftBox = document.getElementById('vipGiftMessageContainer');
+            const action = document.getElementById('btnVipAction');
+            const daysText = `${vipInfo.daysLeft} dia${vipInfo.daysLeft !== 1 ? 's' : ''}`;
+            const untilText = vipInfo.until.toLocaleDateString('pt-BR');
+
+            if (title) title.textContent = `VIP TERMINA EM ${daysText.toUpperCase()}`;
+            if (dateEl) dateEl.textContent = `Vencimento: ${untilText}`;
+            if (giftBox) {
+                giftBox.textContent = `Seu acesso VIP termina em ${daysText}. Renove seu acesso para continuar utilizando todos os recursos do Evolution.`;
+                giftBox.classList.remove('hidden');
+            }
+            if (action) {
+                action.textContent = 'Entendi';
+                action.className = 'btn btn-primary';
+            }
+
+            // A chave usa a data, e nao apenas a quantidade de dias, para impedir
+            // repeticoes no mesmo dia e permitir um novo aviso no dia seguinte.
+            safeStorage.setItem(seenKey, today);
+            this.openModal('vipNotificationModal');
+        };
+
         EvolutionApp.prototype.checkVipNotification = function(userData) {
+            // Aviso de vencimento e independente do aviso unico de ativacao do VIP.
+            this.checkVipExpiryNotification(userData);
             if (!this.currentUserId || !userData || !userData.vipNotificationPending || !userData.vipNotificationId) return;
             const seenKey = `evo_vip_notice_seen_${this.currentUserId}`;
             const lastSeen = safeStorage.getItem(seenKey);
@@ -205,6 +242,7 @@
             const title = document.getElementById('vipNotifType');
             const dateEl = document.getElementById('vipNotifDate');
             const giftBox = document.getElementById('vipGiftMessageContainer');
+            const action = document.getElementById('btnVipAction');
             const until = userData.vipNotificationUntil ? new Date(userData.vipNotificationUntil) : null;
             const untilText = (until && !isNaN(until.getTime())) ? `Valido ate ${until.toLocaleDateString('pt-BR')}` : 'Acesso liberado';
             const notifType = userData.vipNotificationType;
@@ -220,6 +258,10 @@
                     ? 'Voce ganhou 15 dias de acesso VIP gratis para testar todos os recursos premium. Aproveite!'
                     : (isGift ? 'Seu acesso VIP foi liberado como presente. Aproveite todos os recursos premium.' : 'Seu pagamento foi confirmado e os recursos VIP ja estao disponiveis.');
                 giftBox.classList.remove('hidden');
+            }
+            if (action) {
+                action.textContent = 'Aproveitar Agora';
+                action.className = 'btn btn-success';
             }
             safeStorage.setItem(seenKey, userData.vipNotificationId);
             this.openModal('vipNotificationModal');

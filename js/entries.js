@@ -11,6 +11,44 @@
             this.calcularSimulacao();
         };
 
+        EvolutionApp.prototype.getPortRates = function(porto) {
+            return porto === 'brita'
+                ? (this.taxasBrIta || DEFAULT_TAXAS_BRITA)
+                : (this.taxas || DEFAULT_TAXAS);
+        };
+
+        EvolutionApp.prototype.getPortLabel = function(porto) {
+            return porto === 'brita' ? 'BrIta' : 'BrMao';
+        };
+
+        EvolutionApp.prototype.showBritaUnavailable = function() {
+            if (typeof this.triggerHaptic === 'function') this.triggerHaptic('medium');
+            this.openModal('britaNoticeModal');
+        };
+
+        EvolutionApp.prototype.handlePortChange = function(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select || select.value !== 'brita') return;
+            if (!this.portSettings?.britaEnabled) {
+                select.value = 'brmao';
+                this.showBritaUnavailable();
+            }
+        };
+
+        EvolutionApp.prototype.updatePortSelector = function() {
+            const select = document.getElementById('calcPorto');
+            if (!select) return;
+            const britaOption = select.querySelector('option[value="brita"]');
+            if (britaOption) {
+                britaOption.hidden = !this.portSettings?.britaVisible;
+                britaOption.disabled = false;
+                britaOption.textContent = this.portSettings?.britaEnabled
+                    ? 'BrIta'
+                    : 'BrIta (em atualização)';
+            }
+            if (!this.portSettings?.britaVisible && select.value === 'brita') select.value = 'brmao';
+        };
+
         EvolutionApp.prototype.calcularSimulacao = function() {
             const turnoEl = document.getElementById('simTurno');
             const tipoEl = document.getElementById('simTipo');
@@ -28,9 +66,10 @@
             document.getElementById('simDetalhe').textContent = `Bruto: ${this.formatMoney(res.bruto)} | Liquido: ${this.formatMoney(res.liquido)}`;
         };
 
-        EvolutionApp.prototype.calcularValores = function(tipo, turno, valores, qtdConf) {
+        EvolutionApp.prototype.calcularValores = function(tipo, turno, valores, qtdConf, porto = 'brmao') {
             // Protecao: se a taxa do turno nao estiver disponivel, usa os defaults para evitar NaN/crash
-            const taxa = (this.taxas && this.taxas[turno]) ? this.taxas[turno] : DEFAULT_TAXAS[turno];
+            const portRates = this.getPortRates(porto);
+            const taxa = (portRates && portRates[turno]) ? portRates[turno] : DEFAULT_TAXAS[turno];
             if (!taxa) return { bruto: 0, liquido: 0 };
             const numConf = parseInt(qtdConf) || 1;
             let bruto = 0;
@@ -150,6 +189,11 @@
             const turno = document.getElementById('calcTurno').value;
             const tipo = document.getElementById('calcTipoDia').value;
             const conf = document.getElementById('calcQtdConf').value;
+            const porto = document.getElementById('calcPorto')?.value || 'brmao';
+            if (porto === 'brita' && !this.portSettings?.britaEnabled) {
+                this.showBritaUnavailable();
+                return;
+            }
             let valores = turno === '15x23'
                 ? [document.getElementById('calcP1')?.value, document.getElementById('calcP2')?.value]
                 : [document.getElementById('calcPT')?.value];
@@ -161,7 +205,7 @@
                 return;
             }
 
-            const res = this.calcularValores(tipo, turno, valores, conf);
+            const res = this.calcularValores(tipo, turno, valores, conf, porto);
             const [y, m, d] = dataInput.split('-');
 
             // FIX 23: ID unico com sufixo aleatorio para evitar colisao por Date.now()
@@ -172,6 +216,7 @@
                 navio,
                 data: dataInput,
                 dataF: `${d}/${m}/${y}`,
+                porto,
                 turno,
                 tipo,
                 valores,
@@ -197,7 +242,7 @@
                 <div class="epc-top">
                     <div>
                         <div class="epc-ship">${this.escHtml(entry.navio)}</div>
-                        <div class="epc-meta">${this.escHtml(entry.dataF)} • ${this.escHtml(entry.turno)}</div>
+                        <div class="epc-meta">${this.escHtml(entry.dataF)} • ${this.escHtml(this.getPortLabel(entry.porto))} • ${this.escHtml(entry.turno)}</div>
                     </div>
                     <div>
                         <div class="epc-liquid">${this.formatMoney(entry.liquido)}</div>
@@ -205,6 +250,7 @@
                     </div>
                 </div>
                 <div class="epc-grid">
+                    <div><span>Porto</span><b>${this.escHtml(this.getPortLabel(entry.porto))}</b></div>
                     <div><span>Tipo</span><b>${entry.tipo === 'normal' ? 'Normal' : 'Feriado'}</b></div>
                     <div><span>Conf.</span><b>${this.escHtml(String(entry.conferentes))}</b></div>
                     <div><span>Data</span><b>${this.escHtml(entry.dataF)}</b></div>

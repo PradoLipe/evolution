@@ -371,7 +371,36 @@
         .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
         .filter-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-secondary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; font-family: 'Inter', sans-serif; }
         .filter-tab.active { background: var(--gradient-selected); color: #fff; box-shadow: 0 1px 4px rgba(var(--primary-rgb), 0.18); }
-        .month-selector { margin-bottom: 12px; }
+        .payment-summary-notice { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 12px 14px; background: linear-gradient(110deg, rgba(0, 217, 166, 0.08), rgba(37, 99, 235, 0.12)); border: 1px solid rgba(0, 217, 166, 0.38); border-radius: 14px; cursor: pointer; user-select: none; box-shadow: 0 6px 20px rgba(0, 217, 166, 0.08); transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .payment-summary-notice:hover { border-color: var(--success); box-shadow: 0 8px 26px rgba(0, 217, 166, 0.18); }
+        .payment-summary-notice:active { transform: scale(0.985); }
+        .payment-summary-visual { position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 50%; background: rgba(0, 217, 166, 0.14); border: 1px solid rgba(0, 217, 166, 0.3); }
+        .payment-summary-visual::before { content: ''; position: absolute; inset: 3px; border: 1px dashed rgba(0, 217, 166, 0.75); border-radius: 50%; animation: paymentOrbit 3s linear infinite; }
+        .payment-summary-ship { font-size: 1.35rem; line-height: 1; animation: paymentShipFloat 1.8s ease-in-out infinite; }
+        .payment-summary-plus { position: absolute; right: -3px; top: -5px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--success); color: #06251f; font-size: 0.9rem; font-weight: 900; border: 2px solid var(--surface); }
+        .payment-summary-copy { flex: 1; min-width: 0; }
+        .payment-summary-title { color: var(--success); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.4px; margin-bottom: 3px; }
+        .payment-summary-meta { color: var(--text-secondary); font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-meta strong { color: var(--text); }
+        .payment-summary-arrow { color: var(--success); font-size: 1.45rem; font-weight: 300; }
+        .payment-summary-list { display: flex; flex-direction: column; gap: 8px; max-height: 330px; overflow-y: auto; margin-bottom: 14px; }
+        .payment-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+        .payment-summary-row-name { min-width: 0; color: var(--text); font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-row-values { text-align: right; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
+        .payment-summary-row-values .gross { color: var(--info); }
+        .payment-summary-row-values .net { color: var(--success); margin-left: 5px; }
+        .payment-summary-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .payment-summary-total { padding: 10px; text-align: center; background: rgba(37, 99, 235, 0.08); border: 1px solid var(--border); border-radius: 10px; }
+        .payment-summary-total-label { display: block; color: var(--text-secondary); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .payment-summary-total-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 800; }
+        .payment-summary-total.gross .payment-summary-total-value { color: var(--info); }
+        .payment-summary-total.net .payment-summary-total-value { color: var(--success); }
+        @keyframes paymentOrbit { to { transform: rotate(360deg); } }
+        @keyframes paymentShipFloat { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
+        @media (prefers-reduced-motion: reduce) { .payment-summary-visual::before, .payment-summary-ship { animation: none; } }
+        .month-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .month-selector .month-select-control { flex: 1; min-width: 0; }
+        .month-selector .month-all-btn { width: auto; min-width: 76px; padding: 10px 12px; font-size: 0.65rem; letter-spacing: 1px; }
         .month-selector select, .month-selector input[type="month"] { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; transition: all 0.3s ease; color-scheme: dark; }
         .month-selector select:focus, .month-selector input[type="month"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15); }
         body.light-mode .month-selector input[type="month"] { color-scheme: light; }
@@ -707,4 +736,3 @@
             color: rgba(var(--primary-rgb),0.45);
             letter-spacing: 0.05em;
         }
-

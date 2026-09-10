@@ -138,6 +138,7 @@
             // Atualizar dashboard
             this.updateDashboard();
             this.renderHistory();
+            this.renderPaymentSummary();
             this.renderChart();
             this.loadMeta();
 
@@ -383,6 +384,84 @@
         // ============================================
         // HISTORICO
         // ============================================
+        EvolutionApp.prototype.getPaymentDateKey = function(rawDate) {
+            if (!rawDate) return '';
+            const date = new Date(rawDate);
+            if (isNaN(date.getTime())) return '';
+            try {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'America/Manaus', year: 'numeric', month: '2-digit', day: '2-digit'
+                }).formatToParts(date).reduce((acc, part) => {
+                    if (part.type !== 'literal') acc[part.type] = part.value;
+                    return acc;
+                }, {});
+                return `${parts.year}-${parts.month}-${parts.day}`;
+            } catch (e) {
+                return getCurrentDateStringManaus();
+            }
+        };
+
+        EvolutionApp.prototype.getPaidEntriesForDate = function(dateKey) {
+            return (this.entries || [])
+                .filter(entry => entry && entry.pago && this.getPaymentDateKey(entry.paymentDate) === dateKey)
+                .sort((a, b) => new Date(b.paymentDate || 0) - new Date(a.paymentDate || 0));
+        };
+
+        EvolutionApp.prototype.renderPaymentSummary = function() {
+            const notice = document.getElementById('paymentSummaryNotice');
+            if (!notice) return;
+            const entries = this.getPaidEntriesForDate(getCurrentDateStringManaus());
+            if (entries.length === 0) {
+                notice.classList.add('hidden');
+                return;
+            }
+
+            const gross = entries.reduce((sum, entry) => sum + (Number(entry.bruto) || 0), 0);
+            const net = entries.reduce((sum, entry) => sum + (Number(entry.liquido) || 0), 0);
+            const count = document.getElementById('paymentSummaryCount');
+            const grossEl = document.getElementById('paymentSummaryGross');
+            const netEl = document.getElementById('paymentSummaryNet');
+            if (count) count.textContent = `${entries.length} navio${entries.length !== 1 ? 's' : ''}`;
+            if (grossEl) grossEl.textContent = this.formatMoney(gross);
+            if (netEl) netEl.textContent = this.formatMoney(net);
+            notice.classList.remove('hidden');
+        };
+
+        EvolutionApp.prototype.openPaymentSummary = function() {
+            const entries = this.getPaidEntriesForDate(getCurrentDateStringManaus());
+            const list = document.getElementById('paymentSummaryList');
+            const period = document.getElementById('paymentSummaryPeriod');
+            const grossTotal = document.getElementById('paymentSummaryGrossTotal');
+            const netTotal = document.getElementById('paymentSummaryNetTotal');
+            const today = getCurrentDateStringManaus().split('-').reverse().join('/');
+            if (period) period.textContent = `Pagamentos marcados em ${today}`;
+
+            const gross = entries.reduce((sum, entry) => sum + (Number(entry.bruto) || 0), 0);
+            const net = entries.reduce((sum, entry) => sum + (Number(entry.liquido) || 0), 0);
+            if (grossTotal) grossTotal.textContent = this.formatMoney(gross);
+            if (netTotal) netTotal.textContent = this.formatMoney(net);
+            if (list) {
+                list.innerHTML = entries.length
+                    ? entries.map(entry => `
+                        <div class="payment-summary-row">
+                            <span class="payment-summary-row-name">🚢 ${this.escHtml(entry.navio || 'Sem nome')}</span>
+                            <span class="payment-summary-row-values"><span class="gross">B ${this.formatMoney(Number(entry.bruto) || 0)}</span><span class="net">L ${this.formatMoney(Number(entry.liquido) || 0)}</span></span>
+                        </div>
+                    `).join('')
+                    : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento marcado hoje.</div>';
+            }
+            this.openModal('paymentSummaryModal');
+        };
+
+        EvolutionApp.prototype.clearHistoryMonth = function() {
+            this.historyMonth = null;
+            safeStorage.removeItem('evo_history_month');
+            const monthSelect = document.getElementById('monthSelect');
+            if (monthSelect) monthSelect.value = '';
+            this.updateHistSubtitle();
+            this.renderHistory();
+        };
+
         EvolutionApp.prototype.setFilter = function(f) {
             this.currentFilter = f;
             this.currentPage = 1;
@@ -460,6 +539,7 @@
         EvolutionApp.prototype.renderHistory = function() {
             const list = document.getElementById('histList');
             if (!list) return;
+            this.renderPaymentSummary();
 
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
             let filtered = this.getVisibleEntries();
@@ -510,7 +590,7 @@
                     <div class="history-main-row" onclick="app.toggleHistoryDetail('${e.id}')">
                         <div class="history-main">
                             <div class="history-ship">${this.escHtml(e.navio)}</div>
-                            <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(e.turno)}</div>
+                            <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(this.getPortLabel(e.porto))} • ${this.escHtml(e.turno)}</div>
                             <span class="status-badge ${e.pago ? 'paid' : 'pending'}">${e.pago ? '✓ PAGO' : '⏳ PENDENTE'}</span>
                         </div>
                         <div class="history-values">
@@ -521,6 +601,7 @@
                     </div>
                     <div class="history-details">
                         <div class="details-grid">
+                            <div class="detail-item"><div class="detail-label">Porto</div><div class="detail-value">${this.escHtml(this.getPortLabel(e.porto))}</div></div>
                             <div class="detail-item"><div class="detail-label">Data</div><div class="detail-value">${this.escHtml(e.dataF)}</div></div>
                             <div class="detail-item"><div class="detail-label">Turno</div><div class="detail-value">${this.escHtml(e.turno)}</div></div>
                             <div class="detail-item"><div class="detail-label">Tipo</div><div class="detail-value">${e.tipo === 'normal' ? 'Normal' : 'Feriado'}</div></div>
@@ -636,6 +717,7 @@
             if (e.pago) this.updateMetaProgress(true);
             this.updateDashboard();
             this.renderHistory();
+            this.renderPaymentSummary();
             // Atualizar calendario imediatamente ao alterar status de pagamento
             if (typeof this.renderCalendar === 'function') { this.syncCalendarMonthWithEntries(true); this.renderCalendar(); }
             // Atualizar resumo de pendencias
@@ -755,6 +837,7 @@
             const e = this.entries.find(x => String(x.id) === String(id));
             if (!e) return;
             const text = `${e.navio} - ${e.dataF}
+Porto: ${this.getPortLabel(e.porto)}
 Turno: ${e.turno}
 Tipo: ${e.tipo}
 Bruto: ${this.formatMoney(e.bruto)}
@@ -840,11 +923,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const confInput = document.getElementById('editQtdConf');
             const turnoInput = document.getElementById('editTurno');
             const tipoInput = document.getElementById('editTipo');
+            const portoInput = document.getElementById('editPorto');
             if (navioInput) navioInput.value = entry.navio || '';
             if (dataInput) dataInput.value = entry.data || '';
             if (confInput) confInput.value = entry.conferentes || 1;
             if (turnoInput) turnoInput.value = entry.turno || '';
             if (tipoInput) tipoInput.value = entry.tipo || 'normal';
+            if (portoInput) portoInput.value = entry.porto || 'brmao';
             // Ajustar campos de producao
             this.adjustEditFields();
             // FIX 7: Verificacao de nulo antes de acessar .value nos campos de producao
@@ -874,6 +959,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const conf = parseInt(document.getElementById('editQtdConf')?.value) || 1;
             const turno = document.getElementById('editTurno')?.value || '';
             const tipo = document.getElementById('editTipo')?.value || 'normal';
+            const porto = document.getElementById('editPorto')?.value || 'brmao';
             if (!navio || !data || !turno) {
                 this.showToast('Preencha todos os campos', 'error');
                 return;
@@ -887,7 +973,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 const pt = document.getElementById('editPT')?.value || 0;
                 valores = [pt];
             }
-            const res = this.calcularValores(tipo, turno, valores, conf);
+            const existingEntry = this.entries.find(e => String(e.id) === String(this.editingEntryId));
+            if (porto === 'brita' && !this.portSettings?.britaEnabled && existingEntry?.porto !== 'brita') {
+                this.showBritaUnavailable();
+                return;
+            }
+            const res = this.calcularValores(tipo, turno, valores, conf, porto);
             // Encontrar entrada para atualizar
             const idx = this.entries.findIndex(e => String(e.id) === String(this.editingEntryId));
             if (idx !== -1) {
@@ -898,6 +989,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                     data,
                     dataF: `${d}/${m}/${y}`,
                     turno,
+                    porto,
                     tipo,
                     valores,
                     conferentes: conf,

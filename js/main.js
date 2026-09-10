@@ -24,6 +24,12 @@
             this.learnedNavios = new Set();
             this.users = {};
             this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
+            this.taxasBrIta = JSON.parse(JSON.stringify(DEFAULT_TAXAS_BRITA));
+            this.portSettings = { ...DEFAULT_PORT_SETTINGS };
+            try {
+                const cachedPortSettings = safeStorage.getItem('evo_port_settings_v1');
+                if (cachedPortSettings) this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...JSON.parse(cachedPortSettings) };
+            } catch (e) {}
             this.isAdmin = false;
             this.isVip = false;
             this.firebaseReady = false;
@@ -137,6 +143,7 @@
 
             // Verificar sessao
             this.checkSession();
+            this.updatePortSelector();
             // FIX 6: Verificar expiracao de sessao a cada 5 minutos (evita sessao expirada ativa em background)
             setInterval(() => {
                 if (!this.currentUserId) return;

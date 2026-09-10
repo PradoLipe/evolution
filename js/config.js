@@ -3,7 +3,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.66';
+    window.EVOLUTION_APP_VERSION = 'V5.69';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -24,6 +24,18 @@
         '07x15': { normal: 5.73, feriado: 8.61 },
         '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } },
         '23x07': { normal: 6.88, feriado: 10.32 }
+    };
+
+    // O BrIta inicia visivel para comunicar a implantacao, mas bloqueado ate
+    // que o administrador confirme os valores e libere a operacao.
+    const DEFAULT_TAXAS_BRITA = {
+        '07x15': { normal: 0, feriado: 0 },
+        '15x23': { normal: { p1: 0, p2: 0 }, feriado: { p1: 0, p2: 0 } },
+        '23x07': { normal: 0, feriado: 0 }
+    };
+    const DEFAULT_PORT_SETTINGS = {
+        britaVisible: true,
+        britaEnabled: false
     };
 
     // Mensagens de meta
