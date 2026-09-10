@@ -161,11 +161,22 @@
             this.setLoginMode('login');
         };
 
-        EvolutionApp.prototype.addDigit = function(digit) {
+        EvolutionApp.prototype.showKeyFeedback = function(button) {
+            if (!button) return;
+            button.classList.remove('key-feedback');
+            // Forca a reinicializacao da animacao quando a mesma tecla e tocada rapidamente.
+            void button.offsetWidth;
+            button.classList.add('key-feedback');
+            clearTimeout(button._keyFeedbackTimer);
+            button._keyFeedbackTimer = setTimeout(() => button.classList.remove('key-feedback'), 180);
+        };
+
+        EvolutionApp.prototype.addDigit = function(digit, button) {
             if (this.pinValue.length < 6 && this.currentMode === 'login') {
                 this.pinValue += digit;
                 this.updatePinDisplay();
                 // Confirma ao toque que o digito foi reconhecido no teclado do login.
+                this.showKeyFeedback(button);
                 if (typeof this.triggerHaptic === 'function') this.triggerHaptic('light');
                 // Auto-login apenas ao completar 6 digitos (seguro para PINs de 4-6 digitos:
                 // usuarios com PIN < 6 usam o botao de acao → abaixo para confirmar)
@@ -175,10 +186,11 @@
             }
         };
 
-        EvolutionApp.prototype.removeDigit = function() {
+        EvolutionApp.prototype.removeDigit = function(button) {
             if (this.currentMode === 'login') {
                 this.pinValue = this.pinValue.slice(0, -1);
                 this.updatePinDisplay();
+                this.showKeyFeedback(button);
                 if (typeof this.triggerHaptic === 'function') this.triggerHaptic('light');
             }
         };

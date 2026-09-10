@@ -112,6 +112,8 @@
         .key-btn::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%); opacity: 0; transition: opacity 0.2s; }
         .key-btn:active { transform: scale(0.96); background: var(--primary); color: var(--bg); }
         .key-btn:active::before { opacity: 1; }
+        .key-btn.key-feedback { animation: keyFeedback 0.18s ease-out; background: var(--primary); color: var(--bg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.18), 0 0 16px var(--primary-glow); }
+        @keyframes keyFeedback { 0% { transform: scale(0.92); } 100% { transform: scale(1); } }
         .key-btn.action { background: var(--gradient-primary); color: white; font-weight: 700; box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.3); }
         .key-btn.delete { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
         .login-footer { margin-top: 24px; text-align: center; opacity: 0.5; }
@@ -263,6 +265,8 @@
         .chart-growth.positive { color: var(--success); background: rgba(0, 217, 166, 0.1); }
         .chart-growth.negative { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
         .input-group { margin-bottom: 16px; }
+        .port-selector-group { max-width: 190px; }
+        .port-selector-compact { padding: 9px 10px; font-size: 0.78rem; }
         .input-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; }
         input, select { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; outline: none; -webkit-appearance: none; appearance: none; }
         .input-with-calc { display: flex; gap: 8px; align-items: center; }

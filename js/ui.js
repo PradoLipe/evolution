@@ -670,9 +670,9 @@
         // Vibração haptica: Android via Vibration API, iOS via AudioContext (pulso silencioso)
         EvolutionApp.prototype.triggerHaptic = function(type = 'medium') {
             // Android / Chrome: Vibration API
-            if (navigator.vibrate) {
+            if (typeof navigator.vibrate === 'function') {
                 const patterns = { light: [30], medium: [60], success: [40, 30, 80] };
-                navigator.vibrate(patterns[type] || patterns.medium);
+                try { navigator.vibrate(patterns[type] || patterns.medium); } catch (_) {}
             }
             // FIX 13: iOS Safari — AudioContext fechado corretamente em todos os caminhos
             let ctx = null;
