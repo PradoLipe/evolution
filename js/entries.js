@@ -21,6 +21,32 @@
             return porto === 'brita' ? 'BrIta' : 'BrMao';
         };
 
+        EvolutionApp.prototype.isSundayDate = function(dateValue) {
+            const match = String(dateValue || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!match) return false;
+            // Construtor com partes numericas evita a mudanca de dia por fuso horario.
+            return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getDay() === 0;
+        };
+
+        EvolutionApp.prototype.applySundayHoliday = function(dateInputId, tipoInputId) {
+            const dateValue = document.getElementById(dateInputId)?.value;
+            const tipoInput = document.getElementById(tipoInputId);
+            const isSunday = this.isSundayDate(dateValue);
+            if (!tipoInput) return isSunday;
+            if (isSunday) tipoInput.value = 'feriado';
+            // Em domingo, o tipo fica bloqueado para garantir que a taxa de feriado seja usada.
+            tipoInput.disabled = isSunday;
+            return isSunday;
+        };
+
+        EvolutionApp.prototype.adjustCalcTipoForDate = function() {
+            return this.applySundayHoliday('calcData', 'calcTipoDia');
+        };
+
+        EvolutionApp.prototype.adjustEditTipoForDate = function() {
+            return this.applySundayHoliday('editData', 'editTipo');
+        };
+
         EvolutionApp.prototype.showBritaUnavailable = function() {
             if (typeof this.triggerHaptic === 'function') this.triggerHaptic('medium');
             this.openModal('britaNoticeModal');
@@ -185,7 +211,8 @@
             }
 
             const turno = document.getElementById('calcTurno').value;
-            const tipo = document.getElementById('calcTipoDia').value;
+            let tipo = document.getElementById('calcTipoDia').value;
+            if (this.adjustCalcTipoForDate()) tipo = 'feriado';
             const conf = document.getElementById('calcQtdConf').value;
             const porto = document.getElementById('calcPorto')?.value || 'brmao';
             if (porto === 'brita' && !this.portSettings?.britaEnabled) {

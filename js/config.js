@@ -3,7 +3,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V5.71';
+    window.EVOLUTION_APP_VERSION = 'V5.75';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -23,7 +23,9 @@
     const DEFAULT_TAXAS = {
         '07x15': { normal: 5.73, feriado: 8.61 },
         '15x23': { normal: { p1: 5.73, p2: 6.88 }, feriado: { p1: 8.61, p2: 10.32 } },
-        '23x07': { normal: 6.88, feriado: 10.32 }
+        '23x07': { normal: 6.88, feriado: 10.32 },
+        '07x19': { normal: 5.73, feriado: 8.61 },
+        '19x07': { normal: 6.88, feriado: 10.32 }
     };
 
     // O BrIta inicia visivel para comunicar a implantacao, mas bloqueado ate
@@ -31,8 +33,26 @@
     const DEFAULT_TAXAS_BRITA = {
         '07x15': { normal: 0, feriado: 0 },
         '15x23': { normal: { p1: 0, p2: 0 }, feriado: { p1: 0, p2: 0 } },
-        '23x07': { normal: 0, feriado: 0 }
+        '23x07': { normal: 0, feriado: 0 },
+        '07x19': { normal: 0, feriado: 0 },
+        '19x07': { normal: 0, feriado: 0 }
     };
+
+    // Mantem as taxas salvas em versoes anteriores compativeis com novos turnos.
+    // Sem essa mesclagem, documentos antigos no Firebase nao teriam 07x19/19x07.
+    function mergeRatesWithDefaults(defaults, savedRates) {
+        const saved = (savedRates && typeof savedRates === 'object') ? savedRates : {};
+        return {
+            '07x15': { ...defaults['07x15'], ...(saved['07x15'] || {}) },
+            '15x23': {
+                normal: { ...defaults['15x23'].normal, ...(saved['15x23']?.normal || {}) },
+                feriado: { ...defaults['15x23'].feriado, ...(saved['15x23']?.feriado || {}) }
+            },
+            '23x07': { ...defaults['23x07'], ...(saved['23x07'] || {}) },
+            '07x19': { ...defaults['07x19'], ...(saved['07x19'] || {}) },
+            '19x07': { ...defaults['19x07'], ...(saved['19x07'] || {}) }
+        };
+    }
     const DEFAULT_PORT_SETTINGS = {
         britaVisible: true,
         britaEnabled: false

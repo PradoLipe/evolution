@@ -376,30 +376,41 @@
         .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; padding: 4px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
         .filter-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-secondary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; font-family: 'Inter', sans-serif; }
         .filter-tab.active { background: var(--gradient-selected); color: #fff; box-shadow: 0 1px 4px rgba(var(--primary-rgb), 0.18); }
-        .payment-summary-notice { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 12px 14px; background: linear-gradient(110deg, rgba(0, 217, 166, 0.08), rgba(37, 99, 235, 0.12)); border: 1px solid rgba(0, 217, 166, 0.38); border-radius: 14px; cursor: pointer; user-select: none; box-shadow: 0 6px 20px rgba(0, 217, 166, 0.08); transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .payment-summary-notice { display: flex; align-items: center; gap: 13px; margin-bottom: 12px; padding: 14px; background: linear-gradient(125deg, rgba(0, 217, 166, 0.12), rgba(37, 99, 235, 0.14)); border: 1px solid rgba(0, 217, 166, 0.42); border-radius: 16px; cursor: pointer; user-select: none; box-shadow: 0 8px 24px rgba(0, 217, 166, 0.1); transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
         .payment-summary-notice:hover { border-color: var(--success); box-shadow: 0 8px 26px rgba(0, 217, 166, 0.18); }
         .payment-summary-notice:active { transform: scale(0.985); }
         .payment-summary-visual { position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 50%; background: rgba(0, 217, 166, 0.14); border: 1px solid rgba(0, 217, 166, 0.3); }
         .payment-summary-visual::before { content: ''; position: absolute; inset: 3px; border: 1px dashed rgba(0, 217, 166, 0.75); border-radius: 50%; animation: paymentOrbit 3s linear infinite; }
-        .payment-summary-ship { font-size: 1.35rem; line-height: 1; animation: paymentShipFloat 1.8s ease-in-out infinite; }
-        .payment-summary-plus { position: absolute; right: -3px; top: -5px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--success); color: #06251f; font-size: 0.9rem; font-weight: 900; border: 2px solid var(--surface); }
+        .payment-summary-ship { color: var(--success); font-size: 1.2rem; line-height: 1; font-weight: 900; animation: paymentShipFloat 1.8s ease-in-out infinite; }
         .payment-summary-copy { flex: 1; min-width: 0; }
-        .payment-summary-title { color: var(--success); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.4px; margin-bottom: 3px; }
-        .payment-summary-meta { color: var(--text-secondary); font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-title { color: var(--success); font-size: 0.8rem; font-weight: 800; letter-spacing: 0.4px; margin-bottom: 3px; }
+        .payment-summary-meta { color: var(--text-secondary); font-size: 0.68rem; }
         .payment-summary-meta strong { color: var(--text); }
+        .payment-summary-notice-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
+        .payment-summary-notice-values > div { min-width: 0; padding: 7px 8px; background: rgba(7, 19, 36, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9px; }
+        .payment-summary-notice-values span { display: block; color: var(--text-secondary); font-size: 0.55rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; margin-bottom: 2px; }
+        .payment-summary-notice-values strong { display: block; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-notice-values > div:last-child strong { color: var(--success); }
         .payment-summary-arrow { color: var(--success); font-size: 1.45rem; font-weight: 300; }
         .payment-summary-list { display: flex; flex-direction: column; gap: 8px; max-height: 330px; overflow-y: auto; margin-bottom: 14px; }
-        .payment-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
-        .payment-summary-row-name { min-width: 0; color: var(--text); font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .payment-summary-row-values { text-align: right; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
-        .payment-summary-row-values .gross { color: var(--info); }
-        .payment-summary-row-values .net { color: var(--success); margin-left: 5px; }
+        .payment-summary-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+        .payment-summary-row-main { min-width: 0; }
+        .payment-summary-row-name { display: block; min-width: 0; color: var(--text); font-size: 0.82rem; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-row-time { display: block; color: var(--text-muted); font-size: 0.62rem; margin-top: 4px; }
+        .payment-summary-row-values { display: grid; grid-template-columns: repeat(2, minmax(78px, 1fr)); gap: 6px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+        .payment-summary-row-value { padding: 7px 8px; border-radius: 8px; background: rgba(37, 99, 235, 0.08); }
+        .payment-summary-row-value span { display: block; color: var(--text-secondary); font-family: 'Inter', sans-serif; font-size: 0.53rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; margin-bottom: 3px; }
+        .payment-summary-row-value strong { display: block; font-size: 0.67rem; white-space: nowrap; }
+        .payment-summary-row-value.gross strong { color: var(--info); }
+        .payment-summary-row-value.net { background: rgba(0, 217, 166, 0.09); }
+        .payment-summary-row-value.net strong { color: var(--success); }
         .payment-summary-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
         .payment-summary-total { padding: 10px; text-align: center; background: rgba(37, 99, 235, 0.08); border: 1px solid var(--border); border-radius: 10px; }
         .payment-summary-total-label { display: block; color: var(--text-secondary); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .payment-summary-total-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 800; }
         .payment-summary-total.gross .payment-summary-total-value { color: var(--info); }
         .payment-summary-total.net .payment-summary-total-value { color: var(--success); }
+        @media (max-width: 430px) { .payment-summary-row { grid-template-columns: 1fr; } .payment-summary-row-values { width: 100%; } }
         @keyframes paymentOrbit { to { transform: rotate(360deg); } }
         @keyframes paymentShipFloat { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
         @media (prefers-reduced-motion: reduce) { .payment-summary-visual::before, .payment-summary-ship { animation: none; } }
@@ -413,13 +424,19 @@
         .modal-overlay.active { display: flex; opacity: 1; }
         #deleteAvatarModal { z-index: 1200; }
         #vipRequiredModal { z-index: 1100; }
-        .modal-content { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        /* Janelas sempre usam fundo escuro e opaco. No tema claro, o antigo
+           --glass deixava os modais brancos e com pouco contraste. */
+        .modal-content { background: #151d2e; color: #eef2f7; border: 1px solid rgba(151, 170, 205, 0.28); border-radius: 24px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.58); }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--glass); backdrop-filter: blur(10px); z-index: 10; }
+        .modal-header { padding: 20px; border-bottom: 1px solid rgba(151, 170, 205, 0.2); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #19243a; backdrop-filter: blur(10px); z-index: 10; }
         .modal-title { font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-        .modal-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .modal-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(151, 170, 205, 0.28); background: #0f1726; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
         .modal-close:active { background: var(--danger); color: white; transform: rotate(90deg); }
         .modal-body { padding: 20px; }
+        .modal-content .input-label, .modal-content .input-hint, .modal-content .rate-subtitle, .modal-content .rate-type-label { color: #b9c5d8; }
+        .modal-content input, .modal-content select, .modal-content textarea { background: #0e1625; color: #eef2f7; border-color: rgba(151, 170, 205, 0.28); color-scheme: dark; }
+        .modal-content input::placeholder, .modal-content textarea::placeholder { color: #8290a7; }
+        .modal-content option { background: #0e1625; color: #eef2f7; }
         .report-preview-body { display: flex; flex-direction: column; gap: 14px; }
         .report-preview-meta { display: flex; flex-direction: column; gap: 4px; text-align: center; }
         .report-preview-title { font-size: 0.95rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); }

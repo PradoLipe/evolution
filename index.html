@@ -8,9 +8,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.71 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.75 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.71">
+    <link rel="stylesheet" href="estilos.css?v=5.75">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -88,11 +88,11 @@
                     <select id="editPorto"><option value="brmao">BrMao</option><option value="brita">BrIta</option></select>
                 </div>
                 <div class="input-row">
-                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="editData"></div>
+                    <div class="input-group"><label class="input-label">Data</label><input type="date" id="editData" onchange="app.adjustEditTipoForDate()"></div>
                     <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="editQtdConf" min="1" step="1"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-group"><label class="input-label">Turno</label><select id="editTurno" onchange="app.adjustEditFields()"><option value="07x15">07x15</option><option value="15x23">15x23</option><option value="23x07">23x07</option></select></div>
+                    <div class="input-group"><label class="input-label">Turno</label><select id="editTurno" onchange="app.adjustEditFields()"><option value="07x15">07x15</option><option value="15x23">15x23</option><option value="23x07">23x07</option><option value="07x19">07x19</option><option value="19x07">19x07</option></select></div>
                     <div class="input-group"><label class="input-label">Tipo</label><select id="editTipo"><option value="normal">Normal</option><option value="feriado">Feriado</option></select></div>
                 </div>
                 <div id="editCampos">
@@ -454,6 +454,8 @@
                                     <option value="07x15">07x15</option>
                                     <option value="15x23" selected>15x23</option>
                                     <option value="23x07">23x07</option>
+                                    <option value="07x19">07x19</option>
+                                    <option value="19x07">19x07</option>
                                 </select>
                             </div>
                             <div class="input-group">
@@ -511,11 +513,11 @@
                             <div class="navio-suggestions-list" id="calcNavioSuggestions" style="display: none;"></div>
                         </div>
                         <div class="input-row">
-                            <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData"></div>
+                            <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData" onchange="app.adjustCalcTipoForDate()"></div>
                             <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="calcQtdConf" value="3" min="1" step="1" inputmode="numeric"></div>
                         </div>
                         <div class="input-row">
-                            <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
+                            <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option><option value="07x19">07x19</option><option value="19x07">19x07</option></select></div>
                             <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Feriado</option></select></div>
                         </div>
                         <div id="calcCampos">
@@ -543,7 +545,7 @@
                         <div class="input-group navio-suggestions"><label class="input-label">Navio</label><div class="navio-input-wrapper"><input type="text" id="relNavio" style="text-transform: uppercase;" placeholder="Nome do navio" autocomplete="off" autocorrect="off" spellcheck="false" oncontextmenu="return false" oninput="app._onNavioInput(this,'relNavio')" onfocus="app.showNavioSuggestions('relNavio')"><button class="navio-clear-btn" id="relNavioClear" onclick="app.clearNavioInput('relNavio')" tabindex="-1">✕</button></div><!-- Caixa de sugestoes dinamica para o campo relNavio --><div class="navio-suggestions-list" id="relNavioSuggestions" style="display: none;"></div></div>
                         <div class="input-group"><label class="input-label">Data</label><input type="date" id="relData"></div>
                         <div class="input-row-3">
-                            <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option></select></div>
+                            <div class="input-group"><label class="input-label">Turno</label><select id="relTurno" onchange="app.toggleRelatorioCampos()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option><option value="07x19">07x19</option><option value="19x07">19x07</option></select></div>
                             <div class="input-group" style="grid-column: span 2;"><label class="input-label">Terno</label><select id="relTernoSelecao"><option value="1°">1 Terno</option><option value="2°">2 Terno</option><option value="3°">3 Terno</option><option value="4°">4 Terno</option></select></div>
                         </div>
                         <div id="relCamposProducao">
@@ -569,10 +571,14 @@
                 <div class="section-content">
                     <div class="section-inner">
                         <div class="payment-summary-notice hidden" id="paymentSummaryNotice" role="button" tabindex="0" onclick="app.openPaymentSummary()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openPaymentSummary();}">
-                            <div class="payment-summary-visual"><span class="payment-summary-ship">🚢</span><span class="payment-summary-plus">+</span></div>
+                            <div class="payment-summary-visual"><span class="payment-summary-ship">✓</span></div>
                             <div class="payment-summary-copy">
-                                <div class="payment-summary-title" id="paymentSummaryTitle">Pagamentos de hoje</div>
-                                <div class="payment-summary-meta"><strong id="paymentSummaryCount">0 navios</strong> • <span id="paymentSummaryGross">R$ 0,00</span> bruto • <span id="paymentSummaryNet">R$ 0,00</span> líquido</div>
+                                <div class="payment-summary-title" id="paymentSummaryTitle">Pagamentos recentes</div>
+                                <div class="payment-summary-meta"><strong id="paymentSummaryCount">0 navios</strong> nas últimas 24 horas</div>
+                                <div class="payment-summary-notice-values">
+                                    <div><span>Bruto</span><strong id="paymentSummaryGross">R$ 0,00</strong></div>
+                                    <div><span>Líquido</span><strong id="paymentSummaryNet">R$ 0,00</strong></div>
+                                </div>
                             </div>
                             <span class="payment-summary-arrow">›</span>
                         </div>
@@ -601,7 +607,7 @@
         <footer class="app-footer">
             <!-- O navio e as particulas de espuma sao criados por js/main.js (footerVoyage).
                  Sem JS o rodape aparece normal e estatico, nunca vazio. -->
-            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">6</span><span class="ltr">9</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">7</span><span class="ltr">5</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -618,7 +624,7 @@
                 <button class="modal-close" onclick="app.closeModal('paymentSummaryModal')">✕</button>
             </div>
             <div class="modal-body">
-                <p id="paymentSummaryPeriod" style="text-align: center; color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 14px;">Pagamentos marcados hoje</p>
+                <p id="paymentSummaryPeriod" style="text-align: center; color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 14px;">Pagamentos marcados nas últimas 24 horas</p>
                 <div class="payment-summary-list" id="paymentSummaryList"></div>
                 <div class="payment-summary-totals">
                     <div class="payment-summary-total gross"><span class="payment-summary-total-label">Total bruto</span><span class="payment-summary-total-value" id="paymentSummaryGrossTotal">R$ 0,00</span></div>
@@ -794,6 +800,22 @@
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">☀️ BrIta • 07x19</div>
+                                <div class="rate-subtitle">Turno diurno</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_07x19_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Dia de Feriado</div><input type="number" id="rate_brita_07x19_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">🌙 BrIta • 19x07</div>
+                                <div class="rate-subtitle">Turno noturno</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Noite Normal</div><input type="number" id="rate_brita_19x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Noite de Feriado</div><input type="number" id="rate_brita_19x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
                         </div>
                         <button class="btn btn-success" onclick="app.saveRates()" style="margin-top: 16px;">Salvar Configuração dos Portos</button>
                     </div>
@@ -828,6 +850,20 @@
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_23x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">☀️ 07x19 (Dia)</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_07x19_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Dia de Feriado</div><input type="number" id="rate_07x19_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                </div>
+                            </div>
+                            <div class="rate-turno-section">
+                                <div class="rate-turno-title">🌙 19x07 (Noite)</div>
+                                <div class="rate-type-row">
+                                    <div><div class="rate-type-label"><span class="dot normal"></span> Noite Normal</div><input type="number" id="rate_19x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
+                                    <div><div class="rate-type-label"><span class="dot feriado"></span> Noite de Feriado</div><input type="number" id="rate_19x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                         </div>
@@ -1101,16 +1137,16 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.71"></script>
-    <script src="js/main.js?v=5.71"></script>
-    <script src="js/auth.js?v=5.71"></script>
-    <script src="js/firebase-sync.js?v=5.71"></script>
-    <script src="js/ui.js?v=5.71"></script>
-    <script src="js/entries.js?v=5.71"></script>
-    <script src="js/admin.js?v=5.71"></script>
-    <script src="js/utils.js?v=5.71"></script>
-    <script src="js/turtle.js?v=5.71"></script>
-    <script src="js/init.js?v=5.71"></script>
+    <script src="js/config.js?v=5.75"></script>
+    <script src="js/main.js?v=5.75"></script>
+    <script src="js/auth.js?v=5.75"></script>
+    <script src="js/firebase-sync.js?v=5.75"></script>
+    <script src="js/ui.js?v=5.75"></script>
+    <script src="js/entries.js?v=5.75"></script>
+    <script src="js/admin.js?v=5.75"></script>
+    <script src="js/utils.js?v=5.75"></script>
+    <script src="js/turtle.js?v=5.75"></script>
+    <script src="js/init.js?v=5.75"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas

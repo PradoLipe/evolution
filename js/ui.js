@@ -401,18 +401,47 @@
             }
         };
 
-        EvolutionApp.prototype.getPaidEntriesForDate = function(dateKey) {
+        // O resumo e uma confirmacao temporaria: cada pagamento fica nele por 24 horas
+        // a partir do instante em que foi marcado, independentemente da virada do dia.
+        const PAYMENT_SUMMARY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+        EvolutionApp.prototype.getRecentPaidEntries = function(now = Date.now()) {
             return (this.entries || [])
-                .filter(entry => entry && entry.pago && this.getPaymentDateKey(entry.paymentDate) === dateKey)
+                .filter(entry => {
+                    if (!entry?.pago || !entry.paymentDate) return false;
+                    const paidAt = new Date(entry.paymentDate).getTime();
+                    return Number.isFinite(paidAt) && paidAt <= now && (now - paidAt) < PAYMENT_SUMMARY_WINDOW_MS;
+                })
                 .sort((a, b) => new Date(b.paymentDate || 0) - new Date(a.paymentDate || 0));
+        };
+
+        EvolutionApp.prototype.schedulePaymentSummaryRefresh = function(entries) {
+            if (this._paymentSummaryTimer) clearTimeout(this._paymentSummaryTimer);
+            if (!entries?.length) return;
+            const nextExpiry = Math.min(...entries.map(entry => new Date(entry.paymentDate).getTime() + PAYMENT_SUMMARY_WINDOW_MS));
+            const delay = Math.max(250, nextExpiry - Date.now() + 50);
+            this._paymentSummaryTimer = setTimeout(() => this.renderPaymentSummary(), delay);
+        };
+
+        EvolutionApp.prototype.formatPaymentSummaryTime = function(rawDate) {
+            const date = new Date(rawDate);
+            if (isNaN(date.getTime())) return '';
+            try {
+                return new Intl.DateTimeFormat('pt-BR', {
+                    timeZone: 'America/Manaus', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                }).format(date);
+            } catch (e) {
+                return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
         };
 
         EvolutionApp.prototype.renderPaymentSummary = function() {
             const notice = document.getElementById('paymentSummaryNotice');
             if (!notice) return;
-            const entries = this.getPaidEntriesForDate(getCurrentDateStringManaus());
+            const entries = this.getRecentPaidEntries();
             if (entries.length === 0) {
                 notice.classList.add('hidden');
+                if (this._paymentSummaryTimer) clearTimeout(this._paymentSummaryTimer);
                 return;
             }
 
@@ -425,16 +454,16 @@
             if (grossEl) grossEl.textContent = this.formatMoney(gross);
             if (netEl) netEl.textContent = this.formatMoney(net);
             notice.classList.remove('hidden');
+            this.schedulePaymentSummaryRefresh(entries);
         };
 
         EvolutionApp.prototype.openPaymentSummary = function() {
-            const entries = this.getPaidEntriesForDate(getCurrentDateStringManaus());
+            const entries = this.getRecentPaidEntries();
             const list = document.getElementById('paymentSummaryList');
             const period = document.getElementById('paymentSummaryPeriod');
             const grossTotal = document.getElementById('paymentSummaryGrossTotal');
             const netTotal = document.getElementById('paymentSummaryNetTotal');
-            const today = getCurrentDateStringManaus().split('-').reverse().join('/');
-            if (period) period.textContent = `Pagamentos marcados em ${today}`;
+            if (period) period.textContent = 'Pagamentos marcados nas últimas 24 horas';
 
             const gross = entries.reduce((sum, entry) => sum + (Number(entry.bruto) || 0), 0);
             const net = entries.reduce((sum, entry) => sum + (Number(entry.liquido) || 0), 0);
@@ -444,11 +473,17 @@
                 list.innerHTML = entries.length
                     ? entries.map(entry => `
                         <div class="payment-summary-row">
-                            <span class="payment-summary-row-name">🚢 ${this.escHtml(entry.navio || 'Sem nome')}</span>
-                            <span class="payment-summary-row-values"><span class="gross">B ${this.formatMoney(Number(entry.bruto) || 0)}</span><span class="net">L ${this.formatMoney(Number(entry.liquido) || 0)}</span></span>
+                            <div class="payment-summary-row-main">
+                                <span class="payment-summary-row-name">🚢 ${this.escHtml(entry.navio || 'Sem nome')}</span>
+                                <span class="payment-summary-row-time">Pago em ${this.formatPaymentSummaryTime(entry.paymentDate)}</span>
+                            </div>
+                            <div class="payment-summary-row-values">
+                                <div class="payment-summary-row-value gross"><span>Bruto</span><strong>${this.formatMoney(Number(entry.bruto) || 0)}</strong></div>
+                                <div class="payment-summary-row-value net"><span>Líquido</span><strong>${this.formatMoney(Number(entry.liquido) || 0)}</strong></div>
+                            </div>
                         </div>
                     `).join('')
-                    : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento marcado hoje.</div>';
+                    : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento nas últimas 24 horas.</div>';
             }
             this.openModal('paymentSummaryModal');
         };
@@ -586,8 +621,8 @@
             const paged = filtered.slice(start, start + this.itemsPerPage);
 
             let html = paged.map(e => `
-                <div class="history-item ${e.pago ? 'paid' : 'pending'} ${String(this.expandedHistoryId) === String(e.id) ? 'expanded' : ''}" id="history-item-${e.id}">
-                    <div class="history-main-row" onclick="app.toggleHistoryDetail('${e.id}')">
+                <div class="history-item ${e.pago ? 'paid' : 'pending'} ${String(this.expandedHistoryId) === String(e.id) ? 'expanded' : ''}" id="history-item-${this.escHtml(e.id)}" data-entry-id="${this.escHtml(e.id)}">
+                    <div class="history-main-row" data-history-action="toggle">
                         <div class="history-main">
                             <div class="history-ship">${this.escHtml(e.navio)}</div>
                             <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(this.getPortLabel(e.porto))} • ${this.escHtml(e.turno)}</div>
@@ -608,10 +643,10 @@
                             <div class="detail-item"><div class="detail-label">Conf.</div><div class="detail-value">${this.escHtml(String(e.conferentes))}</div></div>
                         </div>
                         <div class="history-actions-row">
-                            <button class="action-btn" onclick="event.stopPropagation(); app.togglePago('${e.id}');">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
-                            <button class="action-btn" onclick="event.stopPropagation(); app.copyEntryDetails('${e.id}');">📋 Copiar</button>
-                            <button class="action-btn" onclick="event.stopPropagation(); app.openEditModal('${e.id}');">✏ Editar</button>
-                            <button class="action-btn delete" onclick="event.stopPropagation(); app.deleteEntry('${e.id}');">🗑 Excluir</button>
+                            <button class="action-btn" data-history-action="pay">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
+                            <button class="action-btn" data-history-action="copy">📋 Copiar</button>
+                            <button class="action-btn" data-history-action="edit">✏ Editar</button>
+                            <button class="action-btn delete" data-history-action="delete">🗑 Excluir</button>
                         </div>
                     </div>
                 </div>
@@ -626,6 +661,22 @@
             }
 
             list.innerHTML = html;
+            // IDs vindos de backups ou da nuvem são dados, nunca código JavaScript.
+            list.onclick = (event) => {
+                const action = event.target.closest?.('[data-history-action]');
+                if (!action || !list.contains(action)) return;
+                const item = action.closest('[data-entry-id]');
+                if (!item || !list.contains(item)) return;
+                const id = item.dataset.entryId;
+                event.stopPropagation();
+                switch (action.dataset.historyAction) {
+                    case 'toggle': this.toggleHistoryDetail(id); break;
+                    case 'pay': this.togglePago(id); break;
+                    case 'copy': this.copyEntryDetails(id); break;
+                    case 'edit': this.openEditModal(id); break;
+                    case 'delete': this.deleteEntry(id); break;
+                }
+            };
         };
 
         EvolutionApp.prototype.toggleHistoryDetail = function(id) {
@@ -861,6 +912,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 // adjustCalcFields() recria o HTML e apaga a producao ja digitada.
                 const sec = document.getElementById('secNew');
                 if (sec && !sec.classList.contains('expanded')) return;
+                this.adjustCalcTipoForDate?.();
                 const navioVal = document.getElementById('calcNavio')?.value || '';
                 const jaPreencheu = navioVal.trim() !== '' || ['calcP1', 'calcP2', 'calcPT'].some(fid => {
                     const el = document.getElementById(fid);
@@ -930,6 +982,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (turnoInput) turnoInput.value = entry.turno || '';
             if (tipoInput) tipoInput.value = entry.tipo || 'normal';
             if (portoInput) portoInput.value = entry.porto || 'brmao';
+            this.adjustEditTipoForDate?.();
             // Ajustar campos de producao
             this.adjustEditFields();
             // FIX 7: Verificacao de nulo antes de acessar .value nos campos de producao
@@ -958,7 +1011,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const data = document.getElementById('editData')?.value || '';
             const conf = parseInt(document.getElementById('editQtdConf')?.value) || 1;
             const turno = document.getElementById('editTurno')?.value || '';
-            const tipo = document.getElementById('editTipo')?.value || 'normal';
+            let tipo = document.getElementById('editTipo')?.value || 'normal';
+            if (this.adjustEditTipoForDate?.()) tipo = 'feriado';
             const porto = document.getElementById('editPorto')?.value || 'brmao';
             if (!navio || !data || !turno) {
                 this.showToast('Preencha todos os campos', 'error');
@@ -1287,9 +1341,9 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
                 if (modalTitle) {
                     const parts = dateStr.split('-');
-                    modalTitle.innerHTML = parts.length === 3
-                        ? `<span style="font-size:1.1rem;">📅</span> ${parts[2]}/${parts[1]}/${parts[0]}`
-                        : `<span style="font-size:1.1rem;">📅</span> Resumo do Dia`;
+                    modalTitle.textContent = parts.length === 3
+                        ? `📅 ${parts[2]}/${parts[1]}/${parts[0]}`
+                        : '📅 Resumo do Dia';
                 }
 
                 const totalBruto = list.reduce((s,e) => s + (Number(e.bruto)||0), 0);
@@ -1332,13 +1386,19 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                                 <div>💎 Liquido: <strong style="color:var(--success);">${this.formatMoney(e.liquido)}</strong></div>
                             </div>
                             <div style="margin-top:10px;text-align:right;">
-                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" onclick="app.openEditModal('${e.id}'); app.closeModal('daySummaryModal');">✏ Editar</button>
+                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" data-day-entry-id="${this.escHtml(e.id)}">✏ Editar</button>
                             </div>
                         </div>
                     </div>`;
                 }).join('');
 
                 content.innerHTML = summaryBar + cards;
+                content.onclick = (event) => {
+                    const button = event.target.closest?.('button[data-day-entry-id]');
+                    if (!button || !content.contains(button)) return;
+                    this.openEditModal(button.dataset.dayEntryId);
+                    this.closeModal('daySummaryModal');
+                };
                 this.openModal('daySummaryModal');
             } catch (err) {
                 console.error('Erro ao abrir resumo do dia', err);

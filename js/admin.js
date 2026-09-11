@@ -362,17 +362,17 @@
                     const data = doc.data() || {};
                     // Compatibilidade com o formato antigo, que armazenava
                     // diretamente as taxas do BrMao no documento.
-                    this.taxas = data.brmao || data;
-                    this.taxasBrIta = data.brita || JSON.parse(JSON.stringify(DEFAULT_TAXAS_BRITA));
+                    this.taxas = mergeRatesWithDefaults(DEFAULT_TAXAS, data.brmao || data);
+                    this.taxasBrIta = mergeRatesWithDefaults(DEFAULT_TAXAS_BRITA, data.brita);
                     safeStorage.setItem('evo_rates_v54', JSON.stringify(this.taxas));
                     safeStorage.setItem('evo_rates_brita_v1', JSON.stringify(this.taxasBrIta));
                 }
             } catch (e) {
                 try {
                     const local = safeStorage.getItem('evo_rates_v54');
-                    if (local) this.taxas = JSON.parse(local);
+                    if (local) this.taxas = mergeRatesWithDefaults(DEFAULT_TAXAS, JSON.parse(local));
                     const localBrita = safeStorage.getItem('evo_rates_brita_v1');
-                    if (localBrita) this.taxasBrIta = JSON.parse(localBrita);
+                    if (localBrita) this.taxasBrIta = mergeRatesWithDefaults(DEFAULT_TAXAS_BRITA, JSON.parse(localBrita));
                 } catch (parseErr) {
                     this.taxas = JSON.parse(JSON.stringify(DEFAULT_TAXAS));
                 }
@@ -821,6 +821,10 @@
                 document.getElementById('rate_15x23_p2_feriado').value = brmao['15x23'].feriado.p2;
                 document.getElementById('rate_23x07_normal').value = brmao['23x07'].normal;
                 document.getElementById('rate_23x07_feriado').value = brmao['23x07'].feriado;
+                document.getElementById('rate_07x19_normal').value = brmao['07x19'].normal;
+                document.getElementById('rate_07x19_feriado').value = brmao['07x19'].feriado;
+                document.getElementById('rate_19x07_normal').value = brmao['19x07'].normal;
+                document.getElementById('rate_19x07_feriado').value = brmao['19x07'].feriado;
                 document.getElementById('rate_brita_07x15_normal').value = brita['07x15'].normal;
                 document.getElementById('rate_brita_07x15_feriado').value = brita['07x15'].feriado;
                 document.getElementById('rate_brita_15x23_p1_normal').value = brita['15x23'].normal.p1;
@@ -829,6 +833,10 @@
                 document.getElementById('rate_brita_15x23_p2_feriado').value = brita['15x23'].feriado.p2;
                 document.getElementById('rate_brita_23x07_normal').value = brita['23x07'].normal;
                 document.getElementById('rate_brita_23x07_feriado').value = brita['23x07'].feriado;
+                document.getElementById('rate_brita_07x19_normal').value = brita['07x19'].normal;
+                document.getElementById('rate_brita_07x19_feriado').value = brita['07x19'].feriado;
+                document.getElementById('rate_brita_19x07_normal').value = brita['19x07'].normal;
+                document.getElementById('rate_brita_19x07_feriado').value = brita['19x07'].feriado;
                 document.getElementById('britaVisible').checked = this.portSettings?.britaVisible !== false;
                 document.getElementById('britaEnabled').checked = this.portSettings?.britaEnabled === true;
             } catch (e) {
@@ -864,6 +872,14 @@
                 '23x07': {
                     normal: readRate('rate_23x07_normal', DEFAULT_TAXAS['23x07'].normal),
                     feriado: readRate('rate_23x07_feriado', DEFAULT_TAXAS['23x07'].feriado)
+                },
+                '07x19': {
+                    normal: readRate('rate_07x19_normal', DEFAULT_TAXAS['07x19'].normal),
+                    feriado: readRate('rate_07x19_feriado', DEFAULT_TAXAS['07x19'].feriado)
+                },
+                '19x07': {
+                    normal: readRate('rate_19x07_normal', DEFAULT_TAXAS['19x07'].normal),
+                    feriado: readRate('rate_19x07_feriado', DEFAULT_TAXAS['19x07'].feriado)
                 }
             };
 
@@ -885,6 +901,14 @@
                 '23x07': {
                     normal: readRate('rate_brita_23x07_normal', DEFAULT_TAXAS_BRITA['23x07'].normal),
                     feriado: readRate('rate_brita_23x07_feriado', DEFAULT_TAXAS_BRITA['23x07'].feriado)
+                },
+                '07x19': {
+                    normal: readRate('rate_brita_07x19_normal', DEFAULT_TAXAS_BRITA['07x19'].normal),
+                    feriado: readRate('rate_brita_07x19_feriado', DEFAULT_TAXAS_BRITA['07x19'].feriado)
+                },
+                '19x07': {
+                    normal: readRate('rate_brita_19x07_normal', DEFAULT_TAXAS_BRITA['19x07'].normal),
+                    feriado: readRate('rate_brita_19x07_feriado', DEFAULT_TAXAS_BRITA['19x07'].feriado)
                 }
             };
 
@@ -896,7 +920,11 @@
                 britaRates['15x23'].feriado.p1,
                 britaRates['15x23'].feriado.p2,
                 britaRates['23x07'].normal,
-                britaRates['23x07'].feriado
+                britaRates['23x07'].feriado,
+                britaRates['07x19'].normal,
+                britaRates['07x19'].feriado,
+                britaRates['19x07'].normal,
+                britaRates['19x07'].feriado
             ];
             const wantsBritaEnabled = document.getElementById('britaEnabled')?.checked === true;
             if (wantsBritaEnabled && britaRateValues.some(value => !Number.isFinite(value) || value <= 0)) {
