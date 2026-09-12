@@ -158,7 +158,12 @@ body.light-mode .modal-content input, body.light-mode .modal-content select, bod
 .login-footer { opacity: 1; }
 .app-footer { opacity: .8; margin-top: 12px; }
 .footer-brand { font-size: .7rem; }
-body.light-mode .footer-brand, body.light-mode .footer-brand .ltr { color: var(--text-secondary) !important; text-shadow: none !important; }
+/* No tema claro, a viagem do rodapé continua visível com um brilho em verde
+   profundo. A versão anterior anulava o estado .lit e fazia a animação parecer
+   estática. */
+body.light-mode .footer-brand { color: #426b72; }
+body.light-mode .footer-brand .ltr { color: #537b82; text-shadow: 0 0 6px rgba(7,121,109,0), 0 0 18px rgba(7,121,109,0); }
+body.light-mode .footer-brand .ltr.lit { color: #07796d; text-shadow: 0 0 6px rgba(7,121,109,.56), 0 0 18px rgba(7,121,109,.28); }
 .port-selector-group select.port-selector-compact { background-color: var(--surface-elevated); color: var(--primary); border-color: var(--border); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238493aa' stroke-width='1.5'%3E%3Cpath d='m3 5 4 4 4-4'/%3E%3C/svg%3E"); }
 .port-selector-compact option { background: var(--field-bg); color: var(--text); }
 body.light-mode .port-selector-group select.port-selector-compact { color-scheme: light; }
@@ -216,15 +221,15 @@ body.light-mode .port-selector-group select.port-selector-compact { color-scheme
   --primary-active: #31bda8; --primary-active-rgb: 49,189,168;
   --secondary: #138b86; --accent: #e9c27c;
   --success: #66deb0; --danger: #f09188; --warning: #edc078; --info: #83bffa;
-  --bg: #091419; --surface: #13252c; --surface-elevated: #1b3139;
-  --glass: #102027; --border: #23363e; --text: #edf5f6;
+  --bg: #071217; --surface: #10242b; --surface-elevated: #183139;
+  --glass: #0f2027; --border: #29444c; --text: #edf5f6;
   --text-secondary: #a0b6be; --text-muted: #8bA3ad;
   --field-bg: #0d1b22; --header-bg: rgba(9,20,25,.9);
   --primary-glow: rgba(87,222,202,.16);
   --gradient-primary: linear-gradient(120deg,#6ce8d2,#36bfb9);
   --gradient-success: linear-gradient(120deg,#6ce8d2,#36bfb9);
   --gradient-selected: linear-gradient(120deg,#197568,#16545a);
-  --card-shadow: 0 8px 24px rgba(0,0,0,.12);
+  --card-shadow: 0 14px 38px rgba(0,0,0,.24), inset 0 1px 0 rgba(214,255,248,.025);
 }
 body.light-mode {
   --primary: #07796d; --primary-rgb: 7,121,109;
@@ -546,4 +551,21 @@ select:disabled { cursor: not-allowed; color: var(--warning); border-style: dash
 @keyframes login-container-settle { 50% { transform: translateY(-1px); } }
 @keyframes login-beacon { 50% { transform: scale(1.65); opacity: .42; } }
 @keyframes login-spark { 50% { transform: scale(1.65); opacity: .45; } }
+
+/* Tema escuro: mais profundidade, pontos de luz e separação entre camadas,
+   sem perder a leitura confortável para uso prolongado. */
+body:not(.light-mode) .ambient-bg { background: radial-gradient(ellipse at 90% 0%, rgba(87,222,202,.105), transparent 42%), radial-gradient(ellipse at 7% 48%, rgba(36,117,133,.09), transparent 43%), var(--bg); }
+body:not(.light-mode) .app-header { background: linear-gradient(180deg, rgba(13,34,41,.97), rgba(7,19,24,.91)); border-bottom-color: rgba(113,210,195,.16); box-shadow: 0 8px 26px rgba(0,0,0,.16); }
+body:not(.light-mode) .quick-link-btn, body:not(.light-mode) .segmented-control-mini { background: linear-gradient(145deg, rgba(33,65,73,.46), rgba(12,29,35,.52)); border-color: rgba(111,190,181,.18); }
+body:not(.light-mode) .stat-card { background: linear-gradient(145deg, rgba(109,226,204,.055), transparent 44%), linear-gradient(145deg, rgba(22,51,59,.94), rgba(10,27,33,.94)); border-color: rgba(105,183,174,.17); box-shadow: 0 15px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(205,255,247,.035); }
+body:not(.light-mode) .stat-card.liquido { background: linear-gradient(145deg, rgba(233,194,124,.12), transparent 48%), linear-gradient(145deg, rgba(28,52,56,.95), rgba(12,28,33,.95)); }
+body:not(.light-mode) .section { background: linear-gradient(145deg, rgba(38,72,78,.52), rgba(13,31,37,.62)); border-color: rgba(102,183,173,.15); box-shadow: 0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(207,255,248,.025); }
+body:not(.light-mode) .section.expanded { border-color: rgba(102,213,195,.3); }
+body:not(.light-mode) .history-item, body:not(.light-mode) .history-item.paid { background: linear-gradient(135deg, rgba(25,52,59,.9), rgba(10,26,32,.9)); border-color: rgba(104,180,171,.14); }
+body:not(.light-mode) .app-footer { position: relative; overflow: hidden; opacity: 1; background: linear-gradient(180deg, rgba(7,18,23,.12), rgba(17,47,54,.58)); border-top-color: rgba(111,218,201,.18); box-shadow: inset 0 1px 0 rgba(202,255,244,.035); }
+body:not(.light-mode) .app-footer::before { content: ''; position: absolute; width: 320px; height: 100px; left: 50%; bottom: -75px; transform: translateX(-50%); background: radial-gradient(ellipse, rgba(86,222,201,.17), transparent 68%); pointer-events: none; }
+body:not(.light-mode) .footer-brand { color: #d9c078; text-shadow: 0 0 18px rgba(212,175,55,.11); }
+body:not(.light-mode) .footer-brand .ltr { color: #dcbf6b; text-shadow: 0 0 6px rgba(212,175,55,0), 0 0 18px rgba(212,175,55,0); }
+body:not(.light-mode) .footer-brand .ltr.lit { color: #fff8df; text-shadow: 0 0 7px rgba(255,217,129,.88), 0 0 22px rgba(212,175,55,.7), 0 0 38px rgba(87,222,202,.18); }
+body.light-mode .app-footer { opacity: 1; background: radial-gradient(ellipse at 50% 120%, rgba(7,121,109,.1), transparent 66%), var(--surface); border-top-color: rgba(7,121,109,.16); }
 
