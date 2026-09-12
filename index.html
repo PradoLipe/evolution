@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#091419">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.75 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.84 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.75">
+    <link rel="stylesheet" href="estilos.css?v=5.84">
+    <link rel="stylesheet" href="visual.css?v=5.84">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -64,7 +65,7 @@
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" id="confirmActionTitle" style="color: var(--danger);">Confirmação</h3></div>
             <div class="modal-body">
-                <div style="font-size: 2.5rem; margin-bottom: 16px;" id="confirmActionIcon">⚠</div>
+                <div style="font-size: 2.5rem; margin-bottom: 16px;" id="confirmActionIcon"><span class="ui-icon icon-warning" aria-hidden="true"></span></div>
                 <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);" id="confirmActionText">Tem certeza?</p>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-glass" onclick="app.closeModal('confirmActionModal')">Cancelar</button>
@@ -116,7 +117,7 @@
                 <h3 class="modal-title" style="color: var(--accent);">BrIta em atualização</h3>
             </div>
             <div class="modal-body">
-                <div style="font-size: 2.3rem; margin-bottom: 14px;">⏳</div>
+                <div style="font-size: 2.3rem; margin-bottom: 14px;"><span class="ui-icon icon-clock" aria-hidden="true"></span></div>
                 <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
                     A opção BrIta está em fase de implantação. O desenvolvimento aguarda a confirmação da operação em outro porto e a validação dos valores aplicáveis. Assim que essas informações forem confirmadas, o administrador liberará o uso desta opção.
                 </p>
@@ -135,7 +136,7 @@
                 <p style="text-align:center; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 14px;">Confira os dados antes de adicionar ao histórico</p>
                 <div class="entry-preview-card" id="entryPreviewCard"></div>
                 <div style="display:flex; gap:10px; margin-top:18px;">
-                    <button class="btn btn-glass" onclick="app.editPendingEntry()">✏ Editar</button>
+                    <button class="btn btn-glass" onclick="app.editPendingEntry()"><span class="ui-icon icon-edit" aria-hidden="true"></span> Editar</button>
                     <button class="btn btn-success" id="btnConfirmEntry" onclick="app.confirmSaveEntry()">✓ Confirmar</button>
                 </div>
             </div>
@@ -147,7 +148,7 @@
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="daySummaryTitle" style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:1.1rem;">📅</span> Resumo do Dia
+                    <span style="font-size:1.1rem;"><span class="ui-icon icon-calendar" aria-hidden="true"></span></span> Resumo do Dia
                 </h3>
                 <button class="modal-close" onclick="app.closeModal('daySummaryModal')">✕</button>
             </div>
@@ -164,7 +165,7 @@
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--danger);">Confirmar Exclusao</h3></div>
             <div class="modal-body">
-                <div style="font-size: 2.5rem; margin-bottom: 16px;">🗑</div>
+                <div style="font-size: 2.5rem; margin-bottom: 16px;"><span class="ui-icon icon-trash" aria-hidden="true"></span></div>
                 <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);">Tem certeza que deseja excluir este registro permanentemente?</p>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-glass" onclick="app.closeModal('confirmModal')">Cancelar</button>
@@ -179,7 +180,7 @@
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--danger);">Remover Foto</h3></div>
             <div class="modal-body">
-                <div style="font-size: 2.5rem; margin-bottom: 16px;">🗑</div>
+                <div style="font-size: 2.5rem; margin-bottom: 16px;"><span class="ui-icon icon-trash" aria-hidden="true"></span></div>
                 <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary);">Tem certeza que deseja remover sua foto de perfil?</p>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-glass" onclick="app.closeModal('deleteAvatarModal')">Cancelar</button>
@@ -191,22 +192,34 @@
 
     <!-- LOGIN SCREEN -->
     <div class="login-screen" id="loginScreen">
-        <div class="login-container">
+        <div class="login-story"><a class="brand-lockup" href="#"> <span class="brand-symbol">E<span></span></span><span>EVOLUTION<small>GESTÃO DE PRODUÇÃO</small></span></a><div class="login-story-copy"><span class="workspace-eyebrow">CADA OPERAÇÃO CONTA</span><h2>O próximo nível<br>da sua <span>produção.</span></h2><p>Mais clareza na rotina.<br>Mais controle sobre seus resultados.</p><div class="login-story-tags"><span><span class="ui-icon icon-ship" aria-hidden="true"></span> Produção</span><span><span class="ui-icon icon-chart" aria-hidden="true"></span> Resultados</span><span><span class="ui-icon icon-shield" aria-hidden="true"></span> Seu controle</span></div></div><span class="login-story-footer">FEITO PARA QUEM MOVIMENTA O PORTO.</span></div><div class="login-container">
             <div class="login-hero">
-                <div class="sindicato-emblem">
-                    <svg class="sindicato-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 8 L85 25 L85 60 Q50 92 15 60 L15 25 Z" stroke="url(#grad1)" stroke-width="3" fill="rgba(37, 99, 235, 0.1)"/>
-                        <rect x="32" y="30" width="36" height="40" rx="4" stroke="url(#grad1)" stroke-width="2.5" fill="none"/>
-                        <line x1="38" y1="40" x2="62" y2="40" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
-                        <line x1="38" y1="50" x2="62" y2="50" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-                        <line x1="38" y1="60" x2="52" y2="60" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
-                        <circle cx="68" cy="68" r="10" fill="var(--success)" fill-opacity="0.2" stroke="var(--success)" stroke-width="2"/>
-                        <path d="M64 68 L67 71 L72 65" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" /><stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" /></linearGradient></defs>
+                <div class="sindicato-emblem login-voyage-emblem" aria-hidden="true">
+                    <span class="emblem-orbit emblem-orbit-one"></span>
+                    <span class="emblem-orbit emblem-orbit-two"></span>
+                    <svg class="sindicato-icon login-voyage-icon" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="voyage-compass" cx="48" cy="48" r="36" stroke="currentColor" stroke-opacity=".16"/>
+                        <path class="voyage-route" d="M15 61C28 75 55 77 81 54" stroke="url(#voyageGradient)" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 5"/>
+                        <path class="voyage-wave voyage-wave-back" d="M16 69C24 65 31 73 39 69C47 65 54 73 62 69C70 65 76 73 82 69" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+                        <g class="voyage-ship">
+                            <path d="M24 52H71L64 63H35L24 52Z" fill="url(#voyageGradient)"/>
+                            <path d="M30 52H66" stroke="#0D3438" stroke-width="2" stroke-linecap="round" opacity=".38"/>
+                            <rect class="voyage-container voyage-container-one" x="34" y="42" width="10" height="10" rx="1.8" fill="#80E5D2"/>
+                            <rect class="voyage-container voyage-container-two" x="45" y="42" width="10" height="10" rx="1.8" fill="#4BBDB5"/>
+                            <rect class="voyage-container voyage-container-three" x="56" y="42" width="9" height="10" rx="1.8" fill="#A4F2DF"/>
+                            <path d="M38 42V35H49V42" stroke="currentColor" stroke-width="2.7" stroke-linejoin="round"/>
+                            <path d="M43.5 35V29" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                            <circle class="voyage-beacon" cx="43.5" cy="27" r="2.5" fill="#A4F2DF"/>
+                            <path d="M35 57H43M52 57H61" stroke="#0D3438" stroke-width="2.4" stroke-linecap="round"/>
+                        </g>
+                        <path class="voyage-wave voyage-wave-front" d="M15 74C23 70 31 78 39 74C47 70 55 78 63 74C71 70 78 78 83 74" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+                        <circle class="voyage-spark" cx="71" cy="31" r="3" fill="#8AE6D3"/>
+                        <defs><linearGradient id="voyageGradient" x1="25" y1="35" x2="70" y2="65" gradientUnits="userSpaceOnUse"><stop stop-color="#A4F2DF"/><stop offset="1" stop-color="#37B8B0"/></linearGradient></defs>
                     </svg>
                 </div>
-                <h1 class="login-title">EVOLUTION</h1>
-                <p class="login-subtitle">Controle e Registro de Produção</p>
+                <h1 class="login-title">Bem-vindo a bordo.</h1>
+                <p class="login-slogan">Controle e registro de produção.</p>
+                <p class="login-subtitle">Acesse sua conta para continuar.</p>
             </div>
 
             <div class="login-mode-toggle">
@@ -238,14 +251,9 @@
 
                 <div class="register-section" id="registerSection">
                     <div id="registerForm">
-                        <div class="input-tip">
-                            <span class="input-tip-icon">💡</span>
-                            <span class="input-tip-text"><strong>Dica:</strong> O nome que você cadastrar aqui será usado para te identificar nos relatórios enviados via WhatsApp.</span>
-                        </div>
                         <div class="input-group">
                             <label class="input-label">Nome Completo</label>
-                            <input type="text" id="regName" placeholder="Seu nome (será usado nos relatórios)" style="text-transform: uppercase;">
-                            <div class="input-hint">Este nome aparecerá nos relatórios que você gerar</div>
+                            <input type="text" id="regName" placeholder="Digite seu nome completo" style="text-transform: uppercase;">
                         </div>
                         <div class="input-group">
                             <label class="input-label">Senha (4 a 6 digitos)</label>
@@ -259,7 +267,7 @@
                         <button class="btn btn-orange" onclick="app.submitRegistration()">Solicitar Cadastro</button>
                     </div>
                     <div id="registerStatus" class="register-status hidden">
-                        <div class="register-status-icon">⏳</div>
+                        <div class="register-status-icon"><span class="ui-icon icon-clock" aria-hidden="true"></span></div>
                         <div class="register-status-title">Cadastro em Análise</div>
                         <div class="register-status-text">Seu pedido foi enviado para aprovação do administrador.<br>Você receberá uma notificação quando for aprovado.</div>
                         <div style="margin-top: 12px;"><span class="pending-badge"><span class="pending-dot"></span>Aguardando Aprovação</span></div>
@@ -268,7 +276,7 @@
                 </div>
             </div>
 
-            <div class="login-footer"><p>© 2026 Felipe Prado Systems</p></div>
+            <div class="login-footer"><div>Felipe Prado Systems</div><div>Todos os direitos reservados © 2026</div></div>
         </div>
     </div>
 
@@ -296,9 +304,16 @@
     <div class="app-container hidden" id="mainApp">
         <!-- BANNER AVISO - auto-remove apos 31/03/2026 -->
         <div id="announcementBanner" class="announcement-banner hidden" onclick="app.openModal('announcementModal')">
-            <span>⚠️ Acesso gratuito encerra 31/03 — <strong>Saiba mais</strong></span>
+            <span><span class="ui-icon icon-warning" aria-hidden="true"></span> Acesso gratuito encerra 31/03 — <strong>Saiba mais</strong></span>
         </div>
+        <aside class="app-sidebar" aria-label="Menu principal">
+            <a class="brand-lockup" href="#mainApp" data-workspace-target="overview"><span class="brand-symbol">E<span></span></span><span>EVOLUTION<small>GESTÃO DE PRODUÇÃO</small></span></a>
+            <div class="sidebar-label">WORKSPACE</div>
+            <nav class="sidebar-nav"><button type="button" class="workspace-nav active" data-workspace-target="overview" aria-current="page"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Visão geral</span></button><button type="button" class="workspace-nav" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span><span>Registrar produção</span><span class="nav-plus">+</span></button><button type="button" class="workspace-nav" data-workspace-target="secCal"><span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Calendário</span></button><button type="button" class="workspace-nav" data-workspace-target="secRel"><span class="ui-icon icon-report" aria-hidden="true"></span><span>Gerar relatório</span></button><button type="button" class="workspace-nav" data-workspace-target="secSim"><span class="ui-icon icon-calculator" aria-hidden="true"></span><span>Simulador rápido</span></button><button type="button" class="workspace-nav" data-workspace-target="secChart"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Performance</span></button><button type="button" class="workspace-nav" data-workspace-target="secHist"><span class="ui-icon icon-inbox" aria-hidden="true"></span><span>Histórico</span></button></nav>
+            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>5.84</b></span></div>
+        </aside>
         <header class="app-header">
+            <div class="header-location"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Workspace <i>/</i> <strong>Visão geral</strong></span></div>
             <div class="user-pill" onclick="app.openModal('profileModal')">
                 <div class="avatar" id="userAvatarContainer">
                     <span id="userAvatarInitials">FP</span>
@@ -310,21 +325,25 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')" title="Admin">🛡</button>
+                <button class="icon-btn admin-btn hidden" id="btnAdmin" onclick="app.openModal('adminModal')" title="Admin"><span class="ui-icon icon-shield" aria-hidden="true"></span></button>
                 <div class="header-actions-sep hidden" id="adminSep"></div>
-                <button class="icon-btn" onclick="app.toggleTheme()" title="Tema">◐</button>
-                <button class="icon-btn" onclick="app.openModal('configModal')" title="Config">⚙</button>
+                <button class="icon-btn" onclick="app.toggleTheme()" title="Tema"><span class="ui-icon icon-theme" aria-hidden="true"></span></button>
+                <button class="icon-btn" onclick="app.openModal('configModal')" title="Config"><span class="ui-icon icon-settings" aria-hidden="true"></span></button>
             </div>
         </header>
 
         <main class="app-content">
+            <section class="workspace-heading" aria-label="Painel de operações">
+                <div class="workspace-hero-copy"><span class="workspace-eyebrow"><span></span> SEU CENTRO DE OPERAÇÕES</span><h1>Sua produção.<br><span>Em outro nível.</span></h1><p>Acompanhe cada operação. Valorize cada resultado.</p><button type="button" class="hero-action" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span> Nova produção <span aria-hidden="true">↗</span></button></div>
+                <div class="hero-caption"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>EVOLUTION<small>Precisão em cada jornada.</small></span></div>
+            </section>
             <!-- Acesso Rapido: Modallport -->
             <div class="quick-links-bar fade-in">
-                <button class="quick-link-btn" onclick="window.open('http://modallport.grupochibatao.com.br:2424/modallweb/SIDWebPanels/PanelProgramacaoBerco', '_blank', 'noopener')">⚓ <span>Progr. Berço</span></button>
-                <button class="quick-link-btn" onclick="window.open('http://modallport.grupochibatao.com.br:2424/modallweb/Home/Navios', '_blank', 'noopener')">🚢 <span>Navios</span></button>
+                <button class="quick-link-btn" onclick="window.open('http://modallport.grupochibatao.com.br:2424/modallweb/SIDWebPanels/PanelProgramacaoBerco', '_blank', 'noopener')"><span class="ui-icon icon-anchor" aria-hidden="true"></span> <span>Progr. Berço</span></button>
+                <button class="quick-link-btn" onclick="window.open('http://modallport.grupochibatao.com.br:2424/modallweb/Home/Navios', '_blank', 'noopener')"><span class="ui-icon icon-ship" aria-hidden="true"></span> <span>Navios</span></button>
             </div>
             <!-- Dashboard Controls -->
-            <div class="dashboard-controls fade-in">
+            <div class="dashboard-controls fade-in"><div class="dashboard-heading"><span class="workspace-eyebrow">SEUS RESULTADOS</span><h2>Visão financeira</h2></div>
                 <div class="dashboard-controls-compact">
                     <div class="segmented-control-mini" id="dashboardSegmentedControl" data-state="all">
                         <div class="segment-highlight-mini"></div>
@@ -332,35 +351,34 @@
                             <span style="font-size: 0.9rem;">∞</span><span>Todos</span>
                         </button>
                         <button id="btnFilterMonth" class="segment-btn-mini" onclick="app.setDashboardMode('month')">
-                            <span style="font-size: 0.9rem;">📅</span><span>Mensal</span>
+                            <span style="font-size: 0.9rem;"><span class="ui-icon icon-calendar" aria-hidden="true"></span></span><span>Mensal</span>
                         </button>
                     </div>
                     <div id="monthSelectorInline" class="month-selector-inline">
                         <span class="month-label">Periodo:</span>
                         <input type="month" id="dashboardMonthInput" class="month-input-compact" onchange="app.updateDashboard()">
                     </div>
-                    <div id="periodIndicator" class="period-indicator"></div>
                 </div>
             </div>
 
             <!-- Stats Grid -->
             <div class="dashboard-grid fade-in">
-                <div class="stat-card bruto" id="cardBruto">
+                <div class="stat-card bruto" id="cardBruto"><span class="stat-icon"><span class="ui-icon icon-chart" aria-hidden="true"></span></span>
                     <div class="stat-label">Total Bruto</div>
                     <div class="stat-value" id="dashBruto">R$ 0,00</div>
                     <div class="stat-meta">Acumulado</div>
                 </div>
-                <div class="stat-card liquido" id="cardLiquido">
-                    <div class="stat-label">Total Liquido</div>
+                <div class="stat-card liquido" id="cardLiquido"><span class="stat-icon"><span class="ui-icon icon-report" aria-hidden="true"></span></span>
+                    <div class="stat-label">Total líquido</div>
                     <div class="stat-value" id="dashLiq">R$ 0,00</div>
                     <div class="stat-meta">Recebimento</div>
                 </div>
-                <div class="stat-card pendente" onclick="app.setFilter('pending')">
+                <div class="stat-card pendente" role="button" tabindex="0" aria-label="Ver registros pendentes" onclick="app.setFilter('pending'); app.navigateWorkspace('secHist')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"><span class="stat-icon"><span class="ui-icon icon-clock" aria-hidden="true"></span></span>
                     <div class="stat-label">Pendente</div>
                     <div class="stat-value" id="dashPend" style="color: var(--danger);">R$ 0,00</div>
                     <div class="stat-meta" id="countPend">0 servicos</div>
                 </div>
-                <div class="stat-card pago" onclick="app.setFilter('paid')">
+                <div class="stat-card pago" role="button" tabindex="0" aria-label="Ver registros recebidos" onclick="app.setFilter('paid'); app.navigateWorkspace('secHist')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"><span class="stat-icon"><span class="ui-icon icon-check" aria-hidden="true"></span></span>
                     <div class="stat-label">Recebido</div>
                     <div class="stat-value" id="dashPago" style="color: var(--success);">R$ 0,00</div>
                     <div class="stat-meta" id="countPago">0 servicos</div>
@@ -382,68 +400,59 @@
                 </div>
             </div>
 
-            <!-- Calendar -->
-            <div class="section fade-in" id="secCal">
-                <div class="section-header" onclick="app.toggleSection('secCal')">
+            <div class="operations-heading"><div><span class="workspace-eyebrow">SUA ROTINA, ORGANIZADA</span><h2>Central de operações</h2></div><span class="operations-detail">Tudo pronto para o próximo registro <span class="ui-icon icon-anchor" aria-hidden="true"></span></span></div>
+            <div class="operations-grid"><div class="production-column"><!-- New Entry -->
+            <div class="section fade-in" id="secNew">
+                <div class="section-header" onclick="app.toggleSection('secNew'); app.suggestDefaultTurno()">
                     <div class="section-title-group">
-                        <div class="section-icon">📅</div>
-                        <div class="section-titles"><h3>Calendário</h3><p>Resumo mensal de operações</p></div>
+                        <div class="section-icon"><span class="ui-icon icon-plus" aria-hidden="true"></span></div>
+                        <div class="section-titles"><h3>Registrar Produção</h3><p>Adicionar ao histórico</p></div>
                     </div>
-                    <div class="section-arrow">▼</div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
-                        <div class="calendar-toolbar">
-                            <label for="calendarMonth" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Mes</label>
-                            <input type="month" id="calendarMonth" class="calendar-month-input" onchange="app.handleCalendarMonthChange()">
+                        <div class="input-group port-selector-group">
+                            <label class="input-label">Porto</label>
+                            <select id="calcPorto" class="port-selector-compact" onchange="app.handlePortChange('calcPorto')">
+                                <option value="brmao">BrMao</option>
+                                <option value="brita">BrIta</option>
+                            </select>
                         </div>
-                        <div class="calendar-summary" id="calendarSummary">
-                            <div class="calendar-summary-card total"><div class="calendar-summary-label">Serviços</div><div class="calendar-summary-value" id="calendarTotalServicos">0</div></div>
-                            <div class="calendar-summary-card paid"><div class="calendar-summary-label">Pagos</div><div class="calendar-summary-value" id="calendarTotalPagos">0</div></div>
-                            <div class="calendar-summary-card pending"><div class="calendar-summary-label">Pendentes</div><div class="calendar-summary-value" id="calendarTotalPendentes">0</div></div>
-                        </div>
-                        <div id="calendarGrid" class="calendar-grid"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Performance Chart -->
-            <div class="section fade-in" id="secChart">
-                <div class="section-header" onclick="app.toggleSection('secChart')">
-                    <div class="section-title-group">
-                        <div class="section-icon">🚀</div>
-                        <div class="section-titles"><h3>Performance</h3><p>Grafico Semanal</p></div>
-                    </div>
-                    <div class="section-arrow">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="section-inner">
-                        <div class="chart-stats-overlay">
-                            <div class="chart-stat-item">
-                                <div class="chart-stat-label">Atual</div>
-                                <div class="chart-stat-value" id="chartTotalCurr" style="color: var(--primary);">R$ 0,00</div>
+                        <div class="input-group navio-suggestions">
+                            <label class="input-label">Navio</label>
+                            <div class="navio-input-wrapper">
+                                <input type="text" id="calcNavio" style="text-transform: uppercase;" placeholder="Nome do navio" autocomplete="off" autocorrect="off" spellcheck="false" oncontextmenu="return false" oninput="app._onNavioInput(this,'calcNavio')" onfocus="app.showNavioSuggestions('calcNavio')">
+                                <button class="navio-clear-btn" id="calcNavioClear" onclick="app.clearNavioInput('calcNavio')" tabindex="-1">✕</button>
                             </div>
-                            <div class="chart-growth" id="chartGrowth">0%</div>
-                            <div class="chart-stat-item" style="text-align: right;">
-                                <div class="chart-stat-label">Anterior</div>
-                                <div class="chart-stat-value" id="chartTotalPrev" style="color: var(--text-secondary);">R$ 0,00</div>
+                            <!-- Caixa de sugestoes dinamica para o campo calcNavio -->
+                            <div class="navio-suggestions-list" id="calcNavioSuggestions" style="display: none;"></div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData" onchange="app.adjustCalcTipoForDate()"></div>
+                            <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="calcQtdConf" value="3" min="1" step="1" inputmode="numeric"></div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option><option value="07x19">07x19</option><option value="19x07">19x07</option></select></div>
+                            <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Feriado</option></select></div>
+                        </div>
+                        <div id="calcCampos">
+                            <div class="input-row">
+                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
+                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
                             </div>
                         </div>
-                        <svg class="chart-svg" id="evolutionChart" viewBox="0 0 300 160" preserveAspectRatio="none">
-                            <defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.4" /><stop offset="100%" style="stop-color:#2563eb;stop-opacity:0" /></linearGradient></defs>
-                        </svg>
+                        <button class="btn btn-success" id="btnSaveEntry" onclick="app.saveEntry()" style="margin-top: 4px;">Salvar Registro</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Simulator -->
+            </div><div class="tools-heading">FERRAMENTAS DE PRODUÇÃO</div><!-- Simulator -->
             <div class="section fade-in" id="secSim">
                 <div class="section-header" onclick="app.toggleSection('secSim')">
                     <div class="section-title-group">
-                        <div class="section-icon">🧮</div>
-                        <div class="section-titles"><h3>Simulador Rapido</h3><p>Calcule sem salvar</p></div>
+                        <div class="section-icon"><span class="ui-icon icon-calculator" aria-hidden="true"></span></div>
+                        <div class="section-titles"><h3>Simulador rápido</h3><p>Calcule sem salvar</p></div>
                     </div>
-                    <div class="section-arrow">▼</div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
@@ -483,62 +492,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- New Entry -->
-            <div class="section fade-in" id="secNew">
-                <div class="section-header" onclick="app.toggleSection('secNew'); app.suggestDefaultTurno()">
-                    <div class="section-title-group">
-                        <div class="section-icon">➕</div>
-                        <div class="section-titles"><h3>Registrar Produção</h3><p>Adicionar ao histórico</p></div>
-                    </div>
-                    <div class="section-arrow">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="section-inner">
-                        <div class="input-group port-selector-group">
-                            <label class="input-label">Porto</label>
-                            <select id="calcPorto" class="port-selector-compact" onchange="app.handlePortChange('calcPorto')">
-                                <option value="brmao">BrMao</option>
-                                <option value="brita">BrIta</option>
-                            </select>
-                        </div>
-                        <div class="input-group navio-suggestions">
-                            <label class="input-label">Navio</label>
-                            <div class="navio-input-wrapper">
-                                <input type="text" id="calcNavio" style="text-transform: uppercase;" placeholder="Nome do navio" autocomplete="off" autocorrect="off" spellcheck="false" oncontextmenu="return false" oninput="app._onNavioInput(this,'calcNavio')" onfocus="app.showNavioSuggestions('calcNavio')">
-                                <button class="navio-clear-btn" id="calcNavioClear" onclick="app.clearNavioInput('calcNavio')" tabindex="-1">✕</button>
-                            </div>
-                            <!-- Caixa de sugestoes dinamica para o campo calcNavio -->
-                            <div class="navio-suggestions-list" id="calcNavioSuggestions" style="display: none;"></div>
-                        </div>
-                        <div class="input-row">
-                            <div class="input-group"><label class="input-label">Data</label><input type="date" id="calcData" onchange="app.adjustCalcTipoForDate()"></div>
-                            <div class="input-group"><label class="input-label">Conf.</label><input type="number" id="calcQtdConf" value="3" min="1" step="1" inputmode="numeric"></div>
-                        </div>
-                        <div class="input-row">
-                            <div class="input-group"><label class="input-label">Turno</label><select id="calcTurno" onchange="app.adjustCalcFields()"><option value="07x15">07x15</option><option value="15x23" selected>15x23</option><option value="23x07">23x07</option><option value="07x19">07x19</option><option value="19x07">19x07</option></select></div>
-                            <div class="input-group"><label class="input-label">Tipo</label><select id="calcTipoDia"><option value="normal">Normal</option><option value="feriado">Feriado</option></select></div>
-                        </div>
-                        <div id="calcCampos">
-                            <div class="input-row">
-                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
-                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
-                            </div>
-                        </div>
-                        <button class="btn btn-success" id="btnSaveEntry" onclick="app.saveEntry()" style="margin-top: 4px;">Salvar Registro</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Report -->
+            </div><!-- Report -->
             <div class="section fade-in" id="secRel">
                 <div class="section-header" onclick="app.toggleSection('secRel')">
                     <div class="section-title-group">
-                        <div class="section-icon">📋</div>
+                        <div class="section-icon"><span class="ui-icon icon-report" aria-hidden="true"></span></div>
                         <div class="section-titles"><h3>Gerar Relatório</h3><p>Formato para envio</p></div>
                     </div>
-                    <div class="section-arrow">▼</div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
@@ -550,23 +511,72 @@
                         </div>
                         <div id="relCamposProducao">
                             <div class="input-row">
-                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
-                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>
+                                <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
+                                <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
                             </div>
                         </div>
                         <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatório</button>
                     </div>
                 </div>
-            </div>
-
+            </div></div><div class="insights-column"><!-- Calendar -->
+            <div class="section fade-in" id="secCal">
+                <div class="section-header" onclick="app.toggleSection('secCal')">
+                    <div class="section-title-group">
+                        <div class="section-icon"><span class="ui-icon icon-calendar" aria-hidden="true"></span></div>
+                        <div class="section-titles"><h3>Calendário</h3><p>Resumo mensal de operações</p></div>
+                    </div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
+                </div>
+                <div class="section-content">
+                    <div class="section-inner">
+                        <div class="calendar-toolbar">
+                            <label for="calendarMonth" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Mes</label>
+                            <input type="month" id="calendarMonth" class="calendar-month-input" onchange="app.handleCalendarMonthChange()">
+                        </div>
+                        <div class="calendar-summary" id="calendarSummary">
+                            <div class="calendar-summary-card total"><div class="calendar-summary-label">Serviços</div><div class="calendar-summary-value" id="calendarTotalServicos">0</div></div>
+                            <div class="calendar-summary-card paid"><div class="calendar-summary-label">Pagos</div><div class="calendar-summary-value" id="calendarTotalPagos">0</div></div>
+                            <div class="calendar-summary-card pending"><div class="calendar-summary-label">Pendentes</div><div class="calendar-summary-value" id="calendarTotalPendentes">0</div></div>
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+            </div><!-- Performance Chart -->
+            <div class="section fade-in" id="secChart">
+                <div class="section-header" onclick="app.toggleSection('secChart')">
+                    <div class="section-title-group">
+                        <div class="section-icon"><span class="ui-icon icon-chart" aria-hidden="true"></span></div>
+                        <div class="section-titles"><h3>Performance</h3><p>Evolução semanal</p></div>
+                    </div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
+                </div>
+                <div class="section-content">
+                    <div class="section-inner">
+                        <div class="chart-stats-overlay">
+                            <div class="chart-stat-item">
+                                <div class="chart-stat-label">Atual</div>
+                                <div class="chart-stat-value" id="chartTotalCurr" style="color: var(--primary);">R$ 0,00</div>
+                            </div>
+                            <div class="chart-growth" id="chartGrowth">0%</div>
+                            <div class="chart-stat-item" style="text-align: right;">
+                                <div class="chart-stat-label">Anterior</div>
+                                <div class="chart-stat-value" id="chartTotalPrev" style="color: var(--text-secondary);">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <svg class="chart-svg" id="evolutionChart" viewBox="0 0 300 160" preserveAspectRatio="none">
+                            <defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:0.4" /><stop offset="100%" style="stop-color:#2563eb;stop-opacity:0" /></linearGradient></defs>
+                        </svg>
+                    </div>
+                </div>
+            </div></div></div>
             <!-- History -->
             <div class="section fade-in" id="secHist">
                 <div class="section-header" onclick="app.toggleSection('secHist')">
                     <div class="section-title-group">
-                        <div class="section-icon">📊</div>
+                        <div class="section-icon"><span class="ui-icon icon-inbox" aria-hidden="true"></span></div>
                         <div class="section-titles"><h3>Histórico</h3><p id="histSubtitle">Aguardando pagamento</p></div>
                     </div>
-                    <div class="section-arrow">▼</div>
+                    <div class="section-arrow"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
                 </div>
                 <div class="section-content">
                     <div class="section-inner">
@@ -593,21 +603,20 @@
                         </div>
                         <div class="history-list" id="histList">
                             <div class="empty-state">
-                                <div class="empty-state-icon">📭</div>
+                                <div class="empty-state-icon"><span class="ui-icon icon-inbox" aria-hidden="true"></span></div>
                                 <div style="font-size: 0.85rem; font-weight: 600; color: var(--text);">Nenhum registro</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </main>
 
+        <nav class="mobile-nav" aria-label="Navegação principal"><button type="button" class="mobile-nav-btn active" data-workspace-target="overview"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Início</span></button><button type="button" class="mobile-nav-btn" data-workspace-target="secCal"><span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Agenda</span></button><button type="button" class="mobile-nav-btn mobile-create" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span><span>Produção</span></button><button type="button" class="mobile-nav-btn" data-workspace-target="secRel"><span class="ui-icon icon-report" aria-hidden="true"></span><span>Relatório</span></button><button type="button" class="mobile-nav-btn" data-workspace-target="secHist"><span class="ui-icon icon-inbox" aria-hidden="true"></span><span>Histórico</span></button></nav>
         <footer class="app-footer">
             <!-- O navio e as particulas de espuma sao criados por js/main.js (footerVoyage).
                  Sem JS o rodape aparece normal e estatico, nunca vazio. -->
-            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">7</span><span class="ltr">5</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">8</span><span class="ltr">1</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -646,8 +655,8 @@
                         <img id="profileAvatarImg" src="" class="hidden" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="avatar-controls">
-                        <button class="btn-icon-round edit" onclick="app.uploadAvatar()" data-tooltip="Alterar foto">✏</button>
-                        <button class="btn-icon-round delete hidden" id="btnDeleteAvatar" onclick="app.deleteAvatar()" data-tooltip="Remover foto">🗑</button>
+                        <button class="btn-icon-round edit" onclick="app.uploadAvatar()" data-tooltip="Alterar foto" aria-label="Alterar foto"><span class="ui-icon icon-edit" aria-hidden="true"></span></button>
+                        <button class="btn-icon-round delete hidden" id="btnDeleteAvatar" onclick="app.deleteAvatar()" data-tooltip="Remover foto" aria-label="Remover foto"><span class="ui-icon icon-trash" aria-hidden="true"></span></button>
                     </div>
                 </div>
                 <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="app.handleAvatarChange(event)">
@@ -665,7 +674,7 @@
             <div class="modal-body">
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">Selecione o período para gerar o relatório profissional em PDF.</p>
                 <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-                    <button class="btn btn-primary" onclick="app.generatePdf('weekly')">📅 Relatório Semanal (7 dias)</button>
+                    <button class="btn btn-primary" onclick="app.generatePdf('weekly')"><span class="ui-icon icon-calendar" aria-hidden="true"></span> Relatório Semanal (7 dias)</button>
                     <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
                     <div class="input-group">
                         <label class="input-label" style="text-align: center;">Ou selecione um mês específico</label>
@@ -675,7 +684,7 @@
                         </div>
                     </div>
                     <div style="border-top: 1px solid var(--border); margin: 8px 0;"></div>
-                    <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);">📋 Todos os Registros (Histórico Completo)</button>
+                    <button class="btn btn-glass" onclick="app.generatePdf('all')" style="border-color: var(--accent); color: var(--accent);"><span class="ui-icon icon-report" aria-hidden="true"></span> Todos os Registros (Histórico Completo)</button>
                 </div>
             </div>
         </div>
@@ -730,16 +739,16 @@
             <div class="modal-header"><h3 class="modal-title" style="color: var(--accent);">Painel Admin</h3><button class="modal-close" onclick="app.closeModal('adminModal')">✕</button></div>
             <div class="modal-body">
                 <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                    <button class="btn-tiny btn-glass" onclick="app.refreshAdminLists()" style="display: flex; align-items: center; gap: 4px;">🔄 Atualizar Listas</button>
+                    <button class="btn-tiny btn-glass" onclick="app.refreshAdminLists()" style="display: flex; align-items: center; gap: 4px;"><span class="ui-icon icon-refresh" aria-hidden="true"></span> Atualizar Listas</button>
                 </div>
 
                 <div class="pending-section" id="pendingSection">
-                    <div class="pending-title"><span>⏳</span>Cadastros Pendentes</div>
+                    <div class="pending-title"><span><span class="ui-icon icon-clock" aria-hidden="true"></span></span>Cadastros Pendentes</div>
                     <div class="pending-list" id="pendingList"><div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px;">Carregando...</div></div>
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admUsers')"><span>👥 Usuarios Aprovados</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admUsers')"><span><span class="ui-icon icon-users" aria-hidden="true"></span> Usuarios Aprovados</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admUsers" class="admin-toggle-content">
                         <div class="input-group" style="margin-bottom: 12px;">
                             <label class="input-label">Adicionar Novo Usuario</label>
@@ -747,7 +756,7 @@
                                 <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
                                 <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6" inputmode="numeric">
                             </div>
-                            <button class="btn btn-primary" onclick="app.addNewUser()">➕ Adicionar</button>
+                            <button class="btn btn-primary" onclick="app.addNewUser()"><span class="ui-icon icon-plus" aria-hidden="true"></span> Adicionar</button>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Lista de Usuarios</label>
@@ -757,7 +766,7 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admPorts')"><span>⚓ Configuração de Portos</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admPorts')"><span><span class="ui-icon icon-anchor" aria-hidden="true"></span> Configuração de Portos</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admPorts" class="admin-toggle-content">
                         <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
                             Configure as taxas específicas do BrIta e defina se a opção será exibida e liberada para os usuários.
@@ -774,14 +783,14 @@
                         </div>
                         <div class="rates-grid">
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌅 BrIta • 07x15</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> BrIta • 07x15</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_07x15_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_07x15_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌇 BrIta • 15x23</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> BrIta • 15x23</div>
                                 <div class="rate-subtitle">Período 15h-19h</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_15x23_p1_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
@@ -794,14 +803,14 @@
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌙 BrIta • 23x07</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-moon" aria-hidden="true"></span> BrIta • 23x07</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_23x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_brita_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">☀️ BrIta • 07x19</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> BrIta • 07x19</div>
                                 <div class="rate-subtitle">Turno diurno</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_brita_07x19_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
@@ -809,7 +818,7 @@
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌙 BrIta • 19x07</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-moon" aria-hidden="true"></span> BrIta • 19x07</div>
                                 <div class="rate-subtitle">Turno noturno</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Noite Normal</div><input type="number" id="rate_brita_19x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
@@ -822,18 +831,18 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admRates')"><span>💲 Editar Taxas BrMao</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admRates')"><span><span class="ui-icon icon-money" aria-hidden="true"></span> Editar Taxas BrMao</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admRates" class="admin-toggle-content">
                         <div class="rates-grid">
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌅 07x15 (Manha)</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> 07x15 (Manha)</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_07x15_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_07x15_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌇 15x23 (Tarde/Noite)</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> 15x23 (Tarde/Noite)</div>
                                 <div class="rate-subtitle">Periodo 15h-19h</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_15x23_p1_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
@@ -846,21 +855,21 @@
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌙 23x07 (Madrugada)</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-moon" aria-hidden="true"></span> 23x07 (Madrugada)</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_23x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Feriado</div><input type="number" id="rate_23x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">☀️ 07x19 (Dia)</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-sun" aria-hidden="true"></span> 07x19 (Dia)</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Dia Normal</div><input type="number" id="rate_07x19_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Dia de Feriado</div><input type="number" id="rate_07x19_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                 </div>
                             </div>
                             <div class="rate-turno-section">
-                                <div class="rate-turno-title">🌙 19x07 (Noite)</div>
+                                <div class="rate-turno-title"><span class="ui-icon icon-moon" aria-hidden="true"></span> 19x07 (Noite)</div>
                                 <div class="rate-type-row">
                                     <div><div class="rate-type-label"><span class="dot normal"></span> Noite Normal</div><input type="number" id="rate_19x07_normal" step="0.01" placeholder="0,00" inputmode="decimal"></div>
                                     <div><div class="rate-type-label"><span class="dot feriado"></span> Noite de Feriado</div><input type="number" id="rate_19x07_feriado" step="0.01" placeholder="0,00" inputmode="decimal"></div>
@@ -872,7 +881,7 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admMessages')"><span>📢 Mensagens do Sistema</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admMessages')"><span><span class="ui-icon icon-megaphone" aria-hidden="true"></span> Mensagens do Sistema</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admMessages" class="admin-toggle-content">
                         <div class="input-group"><label class="input-label">Texto do Aviso</label><textarea id="msgContent" rows="3" style="width: 100%; padding: 10px; background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); resize: none;"></textarea></div>
                         <div class="input-group"><label class="input-label">Tipo de Exibição</label><select id="msgType" onchange="app.toggleMsgDates()"><option value="once">Uma vez (Ao logar)</option><option value="always">Sempre (Todo login)</option><option value="period">Por Período</option></select></div>
@@ -883,7 +892,7 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admFlood')"><span>💸 Taxa de Doação (Flood)</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admFlood')"><span><span class="ui-icon icon-money" aria-hidden="true"></span> Taxa de Doação (Flood)</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admFlood" class="admin-toggle-content">
                         <div class="input-group"><label class="input-label">Probabilidade de exibir mensagem (%)</label><input type="number" id="floodPercentage" min="0" max="100" value="40" placeholder="40"><div class="input-hint">Valor de 0 a 100. Define a % de chance de exibir a mensagem pedindo doação.</div></div>
                         <button class="btn btn-success" onclick="app.saveFloodRate()">Salvar Taxa</button>
@@ -891,7 +900,7 @@
                 </div>
 
                 <div class="admin-section">
-                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutenção / Atualização</span><span>▼</span></button>
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutenção / Atualização</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admForceLogout" class="admin-toggle-content">
                         <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
                             Use este botão para <strong style="color:var(--warning);">desconectar todos os usuários</strong> imediatamente.
@@ -916,7 +925,7 @@
                 <h4 id="manageUserName" style="text-align: center; margin-bottom: 8px; color: var(--text);">Nome</h4>
                 <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 8px;">PIN: <span id="manageUserPin">000000</span></div>
                 <div id="manageUserLastLogin" style="text-align: center; margin-bottom: 20px; font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 5px;">
-                    <span>🕐</span><span id="manageUserLastLoginText">Ultimo acesso: sem registro</span>
+                    <span><span class="ui-icon icon-clock" aria-hidden="true"></span></span><span id="manageUserLastLoginText">Ultimo acesso: sem registro</span>
                 </div>
                 <div id="manageUserLastSeen" style="text-align: center; margin-top: -12px; margin-bottom: 20px; font-size: 0.68rem; color: var(--info); display: flex; align-items: center; justify-content: center; gap: 5px;">
                     <span>o</span><span id="manageUserLastSeenText">Atividade: sem registro</span>
@@ -924,8 +933,8 @@
                 <div class="input-group">
                     <label class="input-label">Conceder VIP</label>
                     <div class="input-row">
-                        <select id="vipTypeSelect"><option value="gift">🎁 Brinde (Adm)</option><option value="paid">💰 Pago</option></select>
-                        <select id="vipDurationSelect" onchange="document.getElementById('vipCustomDaysRow').style.display = this.value === 'custom' ? 'flex' : 'none'"><option value="15d">15 Dias</option><option value="1">1 Mes</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="perm">👑 Permanente</option><option value="custom">📝 Dias Customizados</option></select>
+                        <select id="vipTypeSelect"><option value="gift">Brinde (Adm)</option><option value="paid">Pago</option></select>
+                        <select id="vipDurationSelect" onchange="document.getElementById('vipCustomDaysRow').style.display = this.value === 'custom' ? 'flex' : 'none'"><option value="15d">15 Dias</option><option value="1">1 Mes</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="perm">Permanente</option><option value="custom">Dias Customizados</option></select>
                     </div>
                     <div id="vipCustomDaysRow" class="input-row" style="display: none; margin-top: 6px;">
                         <input type="number" id="vipCustomDaysInput" min="1" max="3650" placeholder="Qtd de dias" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 0.85rem;">
@@ -939,7 +948,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <button class="btn btn-glass" id="btnBlockUser" onclick="app.toggleBlockFromModal()">Bloquear</button>
                 </div>
-                <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2);">🗑 Excluir Usuario</button>
+                <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2);"><span class="ui-icon icon-trash" aria-hidden="true"></span> Excluir Usuario</button>
             </div>
         </div>
     </div>
@@ -947,9 +956,9 @@
     <!-- VIP NOTIFICATION MODAL -->
     <div class="modal-overlay" id="vipNotificationModal" onclick="app.closeModalOnOverlay(event, 'vipNotificationModal')">
         <div class="modal-content" style="text-align: center; border: 2px solid var(--success); box-shadow: 0 0 30px rgba(0, 217, 166, 0.2);">
-            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(0, 217, 166, 0.3);"><h3 class="modal-title" style="color: var(--success); letter-spacing: 2px;">Parabens! 🌟</h3></div>
+            <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(0, 217, 166, 0.3);"><h3 class="modal-title" style="color: var(--success); letter-spacing: 2px;">Parabens! <span class="ui-icon icon-star" aria-hidden="true"></span></h3></div>
             <div class="modal-body">
-                <div style="font-size: 3.5rem; margin-bottom: 16px;">🚀</div>
+                <div style="font-size: 3.5rem; margin-bottom: 16px;"><span class="ui-icon icon-chart" aria-hidden="true"></span></div>
                 <p style="margin-bottom: 12px; font-size: 0.95rem; color: var(--text); line-height: 1.6;">Seu acesso VIP foi ativado com sucesso!</p>
                 <div style="background: rgba(0, 217, 166, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(0, 217, 166, 0.3);">
                     <h2 id="vipNotifType" style="color: var(--success); font-size: 1.2rem; margin-bottom: 4px;">VIP ATIVO</h2>
@@ -966,7 +975,7 @@
         <div class="modal-content" style="text-align: center;">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--primary);">Aviso do Sistema</h3></div>
             <div class="modal-body">
-                <div style="font-size: 2.5rem; margin-bottom: 16px;">📢</div>
+                <div style="font-size: 2.5rem; margin-bottom: 16px;"><span class="ui-icon icon-megaphone" aria-hidden="true"></span></div>
                 <p id="sysMsgContent" style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text); white-space: pre-wrap;"></p>
                 <button class="btn btn-glass" onclick="app.closeModal('messageModal')">Entendi</button>
             </div>
@@ -978,7 +987,7 @@
         <div class="modal-content" style="text-align: center; border: 2px solid var(--accent); box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);">
             <div class="modal-header" style="justify-content: center; border-bottom-color: rgba(212, 175, 55, 0.3);"><h3 class="modal-title" style="color: var(--accent); letter-spacing: 2px;">Recurso VIP</h3></div>
             <div class="modal-body">
-                <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
+                <div style="font-size: 3rem; margin-bottom: 12px;"><span class="ui-icon icon-lock" aria-hidden="true"></span></div>
                 <p id="vipRequiredMessage" style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text); line-height: 1.6;">Este recurso esta disponivel apenas para usuarios VIP.</p>
                 <div style="background: rgba(212, 175, 55, 0.08); padding: 14px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(212, 175, 55, 0.2);">
                     <h2 style="color: var(--accent); font-size: 1.1rem; margin-bottom: 6px;">ASSINE O VIP</h2>
@@ -1017,11 +1026,11 @@
                 <div class="config-buttons-grid">
                     <button class="btn btn-glass" onclick="app.exportData()">↓ Exportar</button>
                     <button class="btn btn-glass" onclick="app.triggerImport()">↑ Importar</button>
-                    <button class="btn btn-glass" onclick="app.toggleMetaEditor()">🎯 Meta</button>
-                    <button class="btn btn-glass" onclick="app.openPdfOptions()">📄 Baixar PDF</button>
+                    <button class="btn btn-glass" onclick="app.toggleMetaEditor()"><span class="ui-icon icon-chart" aria-hidden="true"></span> Meta</button>
+                    <button class="btn btn-glass" onclick="app.openPdfOptions()"><span class="ui-icon icon-report" aria-hidden="true"></span> Baixar PDF</button>
                 </div>
-                <button id="btnAddHome" class="btn btn-glass" onclick="app.addToHomeScreen()" style="width: 100%; margin-top: 10px; border-color: var(--primary);">📲 ADICIONAR A TELA INICIAL</button>
-                <button class="btn" onclick="app.showPix()" style="width: 100%; background: var(--gradient-gold); color: #0d1117; margin-top: 10px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); font-weight: 800;">💎 APOIAR O PROJETO</button>
+                <button id="btnAddHome" class="btn btn-glass" onclick="app.addToHomeScreen()" style="width: 100%; margin-top: 10px; border-color: var(--primary);"><span class="ui-icon icon-plus" aria-hidden="true"></span> ADICIONAR A TELA INICIAL</button>
+                <button class="btn" onclick="app.showPix()" style="width: 100%; background: var(--gradient-gold); color: #0d1117; margin-top: 10px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); font-weight: 800;"><span class="ui-icon icon-star" aria-hidden="true"></span> APOIAR O PROJETO</button>
                 <button class="btn btn-danger" onclick="app.logout()" style="margin-top: 20px;">Sair do Sistema</button>
             </div>
             <input type="file" id="importInput" style="display: none;" accept=".json">
@@ -1033,7 +1042,7 @@
         <div class="modal-content" style="text-align: center; padding-bottom: 40px;">
             <div class="modal-header" style="justify-content: center;"><h3 class="modal-title" style="color: var(--accent);">Fortaleca o Evolution</h3></div>
             <div class="modal-body">
-                <div style="font-size: 2.5rem; margin: 10px 0 20px;">🚀</div>
+                <div style="font-size: 2.5rem; margin: 10px 0 20px;"><span class="ui-icon icon-chart" aria-hidden="true"></span></div>
                 <p style="color: var(--text); font-weight: 600; font-size: 0.95rem; margin-bottom: 12px;" id="pixMessageTitle">Ajude a manter o sistema</p>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 24px;" id="pixMessage"></p>
                 <div onclick="app.copyPix()" style="background: var(--surface); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;">
@@ -1112,7 +1121,7 @@
         max-width: 90vw;
         animation: swBannerIn 0.4s ease;
     ">
-        <span style="font-size: 1.3rem;">🚀</span>
+        <span style="font-size: 1.3rem;"><span class="ui-icon icon-chart" aria-hidden="true"></span></span>
         <div>
             <div style="color: #2563eb; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Nova versão disponível</div>
             <div style="color: #8a94a6; font-size: 0.7rem; margin-top: 2px;">Toque em Atualizar para usar a versão mais recente</div>
@@ -1137,16 +1146,17 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.75"></script>
-    <script src="js/main.js?v=5.75"></script>
-    <script src="js/auth.js?v=5.75"></script>
-    <script src="js/firebase-sync.js?v=5.75"></script>
-    <script src="js/ui.js?v=5.75"></script>
-    <script src="js/entries.js?v=5.75"></script>
-    <script src="js/admin.js?v=5.75"></script>
-    <script src="js/utils.js?v=5.75"></script>
-    <script src="js/turtle.js?v=5.75"></script>
-    <script src="js/init.js?v=5.75"></script>
+    <script src="js/config.js?v=5.81"></script>
+    <script src="js/main.js?v=5.81"></script>
+    <script src="js/auth.js?v=5.81"></script>
+    <script src="js/firebase-sync.js?v=5.81"></script>
+    <script src="js/ui.js?v=5.81"></script>
+    <script src="js/entries.js?v=5.81"></script>
+    <script src="js/admin.js?v=5.81"></script>
+    <script src="js/utils.js?v=5.81"></script>
+    <script src="js/turtle.js?v=5.81"></script>
+    <script src="js/workspace.js?v=5.81"></script>
+    <script src="js/init.js?v=5.81"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas

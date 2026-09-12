@@ -313,20 +313,19 @@
             const btnAll = document.getElementById('btnFilterAll');
             const btnMonth = document.getElementById('btnFilterMonth');
             const monthSelector = document.getElementById('monthSelectorInline');
-            const periodIndicator = document.getElementById('periodIndicator');
 
             if (pill) pill.setAttribute('data-state', mode);
+            btnAll?.setAttribute('aria-pressed', String(mode === 'all'));
+            btnMonth?.setAttribute('aria-pressed', String(mode === 'month'));
 
             if (mode === 'all') {
                 btnAll?.classList.add('active');
                 btnMonth?.classList.remove('active');
                 monthSelector?.classList.remove('visible');
-                periodIndicator?.classList.remove('visible');
             } else {
                 btnAll?.classList.remove('active');
                 btnMonth?.classList.add('active');
                 monthSelector?.classList.add('visible');
-                periodIndicator?.classList.add('visible');
             }
 
             this.updateDashboard();
@@ -607,7 +606,7 @@
             }
 
             if (filtered.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div style="font-size:0.85rem;font-weight:600;">Nenhum registro</div></div>';
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><span class="ui-icon icon-inbox" aria-hidden="true"></span></div><div style="font-size:0.85rem;font-weight:600;">Nenhum registro</div></div>';
                 return;
             }
 
@@ -626,13 +625,13 @@
                         <div class="history-main">
                             <div class="history-ship">${this.escHtml(e.navio)}</div>
                             <div class="history-meta">${this.escHtml(e.dataF)} • ${this.escHtml(this.getPortLabel(e.porto))} • ${this.escHtml(e.turno)}</div>
-                            <span class="status-badge ${e.pago ? 'paid' : 'pending'}">${e.pago ? '✓ PAGO' : '⏳ PENDENTE'}</span>
+                            <span class="status-badge ${e.pago ? 'paid' : 'pending'}">${e.pago ? '✓ PAGO' : 'PENDENTE'}</span>
                         </div>
                         <div class="history-values">
                             <div class="history-liquid">${this.formatMoney(e.liquido)}</div>
                             <div class="history-bruto">B: ${this.formatMoney(e.bruto)}</div>
                         </div>
-                        <div class="history-expand-icon">▼</div>
+                        <div class="history-expand-icon"><span class="ui-icon icon-chevron" aria-hidden="true"></span></div>
                     </div>
                     <div class="history-details">
                         <div class="details-grid">
@@ -644,9 +643,9 @@
                         </div>
                         <div class="history-actions-row">
                             <button class="action-btn" data-history-action="pay">${e.pago ? '↩ Desfazer' : '✓ Pagar'}</button>
-                            <button class="action-btn" data-history-action="copy">📋 Copiar</button>
-                            <button class="action-btn" data-history-action="edit">✏ Editar</button>
-                            <button class="action-btn delete" data-history-action="delete">🗑 Excluir</button>
+                            <button class="action-btn" data-history-action="copy"><span class="ui-icon icon-report" aria-hidden="true"></span> Copiar</button>
+                            <button class="action-btn" data-history-action="edit"><span class="ui-icon icon-edit" aria-hidden="true"></span> Editar</button>
+                            <button class="action-btn delete" data-history-action="delete"><span class="ui-icon icon-trash" aria-hidden="true"></span> Excluir</button>
                         </div>
                     </div>
                 </div>
@@ -982,7 +981,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (turnoInput) turnoInput.value = entry.turno || '';
             if (tipoInput) tipoInput.value = entry.tipo || 'normal';
             if (portoInput) portoInput.value = entry.porto || 'brmao';
-            this.adjustEditTipoForDate?.();
+            this.adjustEditTipoForDate?.(true);
             // Ajustar campos de producao
             this.adjustEditFields();
             // FIX 7: Verificacao de nulo antes de acessar .value nos campos de producao
@@ -1011,8 +1010,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const data = document.getElementById('editData')?.value || '';
             const conf = parseInt(document.getElementById('editQtdConf')?.value) || 1;
             const turno = document.getElementById('editTurno')?.value || '';
-            let tipo = document.getElementById('editTipo')?.value || 'normal';
-            if (this.adjustEditTipoForDate?.()) tipo = 'feriado';
+            this.adjustEditTipoForDate?.();
+            const tipo = document.getElementById('editTipo')?.value || 'normal';
             const porto = document.getElementById('editPorto')?.value || 'brmao';
             if (!navio || !data || !turno) {
                 this.showToast('Preencha todos os campos', 'error');
@@ -1342,8 +1341,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 if (modalTitle) {
                     const parts = dateStr.split('-');
                     modalTitle.textContent = parts.length === 3
-                        ? `📅 ${parts[2]}/${parts[1]}/${parts[0]}`
-                        : '📅 Resumo do Dia';
+                        ? `${parts[2]}/${parts[1]}/${parts[0]}`
+                        : 'Resumo do Dia';
                 }
 
                 const totalBruto = list.reduce((s,e) => s + (Number(e.bruto)||0), 0);
@@ -1368,7 +1367,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
 
                 const cards = list.map(e => {
                     const statusColor = e.pago ? 'var(--success)' : 'var(--warning)';
-                    const statusIcon = e.pago ? '✓' : '⏳';
+                    const statusIcon = e.pago ? '✓' : '•';
                     const statusLabel = e.pago ? 'Pago' : 'Pendente';
                     const barColor = e.pago ? 'rgba(0,217,166,0.35)' : 'rgba(255,184,0,0.35)';
                     return `
@@ -1381,12 +1380,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                             </div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.72rem;color:var(--text-secondary);">
                                 <div>🕐 Turno: <strong style="color:var(--text);">${this.escHtml(e.turno)}</strong></div>
-                                <div>📋 Tipo: <strong style="color:var(--text);">${e.tipo === 'feriado' ? 'Feriado' : 'Normal'}</strong></div>
+                                <div><span class="ui-icon icon-report" aria-hidden="true"></span> Tipo: <strong style="color:var(--text);">${e.tipo === 'feriado' ? 'Feriado' : 'Normal'}</strong></div>
                                 <div>💰 Bruto: <strong style="color:var(--info);">${this.formatMoney(e.bruto)}</strong></div>
                                 <div>💎 Liquido: <strong style="color:var(--success);">${this.formatMoney(e.liquido)}</strong></div>
                             </div>
                             <div style="margin-top:10px;text-align:right;">
-                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" data-day-entry-id="${this.escHtml(e.id)}">✏ Editar</button>
+                                <button style="background:var(--surface-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:5px 12px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;" data-day-entry-id="${this.escHtml(e.id)}"><span class="ui-icon icon-edit" aria-hidden="true"></span> Editar</button>
                             </div>
                         </div>
                     </div>`;

@@ -2,13 +2,14 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '5.75';
+const APP_VERSION = '5.84';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
 
 const LOCAL_ASSETS = [
   './',
   './index.html',
   './estilos.css',
+  './visual.css',
   './js/config.js',
   './js/main.js',
   './js/auth.js',
@@ -19,6 +20,7 @@ const LOCAL_ASSETS = [
   './js/utils.js',
   './js/turtle.js',
   './js/init.js',
+  './js/workspace.js',
   './NAVIO.jpg',
 ];
 

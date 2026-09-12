@@ -28,12 +28,27 @@
             return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getDay() === 0;
         };
 
-        EvolutionApp.prototype.applySundayHoliday = function(dateInputId, tipoInputId) {
+        EvolutionApp.prototype.applySundayHoliday = function(dateInputId, tipoInputId, reset = false) {
             const dateValue = document.getElementById(dateInputId)?.value;
             const tipoInput = document.getElementById(tipoInputId);
             const isSunday = this.isSundayDate(dateValue);
             if (!tipoInput) return isSunday;
-            if (isSunday) tipoInput.value = 'feriado';
+            if (!this._sundayRateState) this._sundayRateState = new WeakMap();
+            if (reset) this._sundayRateState.delete(tipoInput);
+            const previous = this._sundayRateState.get(tipoInput);
+            if (isSunday) {
+                if (!previous) {
+                    // Um registro carregado de domingo nao tem uma escolha manual anterior.
+                    this._sundayRateState.set(tipoInput, {
+                        previousType: !reset && tipoInput.value === 'feriado' ? 'feriado' : 'normal'
+                    });
+                }
+                tipoInput.value = 'feriado';
+            } else if (previous) {
+                // Desfaz apenas a taxa automatica; preserva feriados escolhidos pelo usuario.
+                tipoInput.value = previous.previousType;
+                this._sundayRateState.delete(tipoInput);
+            }
             // Em domingo, o tipo fica bloqueado para garantir que a taxa de feriado seja usada.
             tipoInput.disabled = isSunday;
             return isSunday;
@@ -43,8 +58,8 @@
             return this.applySundayHoliday('calcData', 'calcTipoDia');
         };
 
-        EvolutionApp.prototype.adjustEditTipoForDate = function() {
-            return this.applySundayHoliday('editData', 'editTipo');
+        EvolutionApp.prototype.adjustEditTipoForDate = function(reset = false) {
+            return this.applySundayHoliday('editData', 'editTipo', reset);
         };
 
         EvolutionApp.prototype.showBritaUnavailable = function() {
@@ -115,9 +130,9 @@
             if (!turnoEl || !container) return;
             const turno = turnoEl.value;
             if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div></div>`;
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
             } else {
-                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="calcPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcPT')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>`;
+                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="calcPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcPT')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>`;
             }
         };
 
@@ -127,9 +142,9 @@
             if (!turnoEl || !container) return;
             const turno = turnoEl.value;
             if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div></div>`;
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
             } else {
-                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="relPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relPT')" title="Somar produtividade" aria-label="Somar produtividade">🧮</button></div></div>`;
+                container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="relPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relPT')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>`;
             }
         };
 
@@ -211,8 +226,8 @@
             }
 
             const turno = document.getElementById('calcTurno').value;
-            let tipo = document.getElementById('calcTipoDia').value;
-            if (this.adjustCalcTipoForDate()) tipo = 'feriado';
+            this.adjustCalcTipoForDate();
+            const tipo = document.getElementById('calcTipoDia').value;
             const conf = document.getElementById('calcQtdConf').value;
             const porto = document.getElementById('calcPorto')?.value || 'brmao';
             if (porto === 'brita' && !this.portSettings?.britaEnabled) {
@@ -483,8 +498,7 @@
             const dataFormatada = `${d}/${m}/${y}`;
 
             // Detectar domingo automaticamente
-            const diaSemana = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getDay();
-            const isDomingo = diaSemana === 0;
+            const isDomingo = this.isSundayDate(dataInput);
             const turnoLabel = isDomingo ? `${turno} ( DOMINGO )` : turno;
 
             let msg = `*${navio}*
