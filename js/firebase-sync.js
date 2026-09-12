@@ -197,7 +197,7 @@
         };
 
         EvolutionApp.prototype.checkVipExpiryNotification = function(userData) {
-            if (!this.currentUserId || this.isAdmin || !userData) return;
+            if (!this.currentUserId || this.isAdmin || !userData || userData.vipNotificationPending) return;
             const vipInfo = this.getVipInfo(userData);
             if (!vipInfo.active || !vipInfo.until || vipInfo.daysLeft < 1 || vipInfo.daysLeft > 3) return;
 
@@ -207,28 +207,38 @@
             const seenKey = `evo_vip_expiry_notice_${this.currentUserId}`;
             if (safeStorage.getItem(seenKey) === today) return;
 
-            const title = document.getElementById('vipNotifType');
-            const dateEl = document.getElementById('vipNotifDate');
-            const giftBox = document.getElementById('vipGiftMessageContainer');
-            const action = document.getElementById('btnVipAction');
-            const daysText = `${vipInfo.daysLeft} dia${vipInfo.daysLeft !== 1 ? 's' : ''}`;
+            const daysEl = document.getElementById('vipExpiryDays');
+            const dateEl = document.getElementById('vipExpiryDate');
+            const title = document.getElementById('vipExpiryTitle');
             const untilText = vipInfo.until.toLocaleDateString('pt-BR');
 
-            if (title) title.textContent = `VIP TERMINA EM ${daysText.toUpperCase()}`;
-            if (dateEl) dateEl.textContent = `Vencimento: ${untilText}`;
-            if (giftBox) {
-                giftBox.textContent = `Seu acesso VIP termina em ${daysText}. Renove seu acesso para continuar utilizando todos os recursos do Evolution.`;
-                giftBox.classList.remove('hidden');
-            }
-            if (action) {
-                action.textContent = 'Entendi';
-                action.className = 'btn btn-primary';
-            }
+            if (daysEl) daysEl.textContent = vipInfo.daysLeft;
+            if (dateEl) dateEl.textContent = untilText;
+            if (title) title.textContent = vipInfo.daysLeft === 1 ? 'Seu último dia de acesso.' : 'Continue no ritmo.';
 
             // A chave usa a data, e nao apenas a quantidade de dias, para impedir
             // repeticoes no mesmo dia e permitir um novo aviso no dia seguinte.
             safeStorage.setItem(seenKey, today);
-            this.openModal('vipNotificationModal');
+            this.showVipExpiryNotice();
+            this.openModal('vipExpiryModal');
+        };
+
+        EvolutionApp.prototype.showVipRenewalPix = function() {
+            const notice = document.getElementById('vipExpiryNotice');
+            const pix = document.getElementById('vipRenewalPix');
+            if (notice) notice.classList.add('hidden');
+            if (pix) pix.classList.remove('hidden');
+        };
+
+        EvolutionApp.prototype.showVipExpiryNotice = function() {
+            const notice = document.getElementById('vipExpiryNotice');
+            const pix = document.getElementById('vipRenewalPix');
+            if (pix) pix.classList.add('hidden');
+            if (notice) notice.classList.remove('hidden');
+        };
+
+        EvolutionApp.prototype.copyVipRenewalPix = function() {
+            this.copyToClipboard('00245116257', 'Chave PIX copiada!');
         };
 
         EvolutionApp.prototype.checkVipNotification = function(userData) {

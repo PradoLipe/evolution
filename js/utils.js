@@ -1191,6 +1191,13 @@
             // Mostrar tela de login
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
+
+            // A tela de login fica fora do layout durante a sessão. Alguns
+            // navegadores não retomam as animações do SVG ao ela reaparecer;
+            // recriar apenas o emblema força um novo ciclo sem mexer no form.
+            const loginEmblem = document.querySelector('#loginScreen .login-voyage-emblem');
+            if (loginEmblem) loginEmblem.replaceWith(loginEmblem.cloneNode(true));
+
             this.updatePinDisplay();
         };
 

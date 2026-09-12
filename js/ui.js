@@ -306,6 +306,16 @@
         // DASHBOARD
         // ============================================
         EvolutionApp.prototype.setDashboardMode = function(mode, save = true) {
+            const monthInput = document.getElementById('dashboardMonthInput');
+
+            // Depois de usar o "limpar" do seletor nativo, o input pode ficar
+            // vazio. Ao voltar para Mensal, restaura o último mês usado (ou o
+            // mês atual) antes de atualizar o painel, para que a opção não
+            // seja imediatamente revertida para "Todos".
+            if (mode === 'month' && monthInput && !monthInput.value) {
+                monthInput.value = this.selectedMonth || getCurrentMonthStringManaus();
+            }
+
             this.dashboardMode = mode;
             if (save) safeStorage.setItem('evo_dashboard_mode', mode);
 
@@ -335,6 +345,13 @@
             const mode = this.dashboardMode;
             const monthInput = document.getElementById('dashboardMonthInput');
             const monthVal = monthInput ? monthInput.value : '';
+
+            // Limpar o período volta a mostrar todos os registros. Ao tocar em
+            // "Mensal" novamente, setDashboardMode restaura um mês válido.
+            if (mode === 'month' && !monthVal) {
+                this.setDashboardMode('all');
+                return;
+            }
 
             if (mode === 'month' && monthVal) {
                 this.selectedMonth = monthVal;
@@ -492,8 +509,12 @@
             safeStorage.removeItem('evo_history_month');
             const monthSelect = document.getElementById('monthSelect');
             if (monthSelect) monthSelect.value = '';
-            this.updateHistSubtitle();
-            this.renderHistory();
+            if (this.currentFilter !== 'all') {
+                this.setFilter('all');
+            } else {
+                this.updateHistSubtitle();
+                this.renderHistory();
+            }
         };
 
         EvolutionApp.prototype.setFilter = function(f) {
@@ -557,7 +578,6 @@
         EvolutionApp.prototype.restoreHistoryPrefs = function() {
             const savedFilter = safeStorage.getItem('evo_history_filter');
             const savedMonth = safeStorage.getItem('evo_history_month');
-
             if (savedFilter && savedFilter !== 'pending') {
                 this.setFilter(savedFilter);
             }
