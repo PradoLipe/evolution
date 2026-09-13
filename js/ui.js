@@ -476,10 +476,8 @@
         EvolutionApp.prototype.openPaymentSummary = function() {
             const entries = this.getRecentPaidEntries();
             const list = document.getElementById('paymentSummaryList');
-            const period = document.getElementById('paymentSummaryPeriod');
             const grossTotal = document.getElementById('paymentSummaryGrossTotal');
             const netTotal = document.getElementById('paymentSummaryNetTotal');
-            if (period) period.textContent = 'Pagamentos marcados nas últimas 24 horas';
 
             const gross = entries.reduce((sum, entry) => sum + (Number(entry.bruto) || 0), 0);
             const net = entries.reduce((sum, entry) => sum + (Number(entry.liquido) || 0), 0);
@@ -489,19 +487,71 @@
                 list.innerHTML = entries.length
                     ? entries.map(entry => `
                         <div class="payment-summary-row">
-                            <div class="payment-summary-row-main">
-                                <span class="payment-summary-row-name">🚢 ${this.escHtml(entry.navio || 'Sem nome')}</span>
-                                <span class="payment-summary-row-time">Pago em ${this.formatPaymentSummaryTime(entry.paymentDate)}</span>
+                            <div class="payment-summary-row-header">
+                                <div class="payment-summary-row-main">
+                                    <span class="payment-summary-row-name">🚢 ${this.escHtml(entry.navio || 'Sem nome')}</span>
+                                    <span class="payment-summary-row-time">Pago em ${this.formatPaymentSummaryTime(entry.paymentDate)}</span>
+                                </div>
+                                <span class="payment-summary-row-status">✓ Pago</span>
                             </div>
                             <div class="payment-summary-row-values">
                                 <div class="payment-summary-row-value gross"><span>Bruto</span><strong>${this.formatMoney(Number(entry.bruto) || 0)}</strong></div>
                                 <div class="payment-summary-row-value net"><span>Líquido</span><strong>${this.formatMoney(Number(entry.liquido) || 0)}</strong></div>
                             </div>
+                            <button type="button" class="payment-summary-undo" data-payment-undo-request="${this.escHtml(entry.id)}" aria-label="Desfazer pagamento de ${this.escHtml(entry.navio || 'navio sem nome')}">↩ Desfazer pagamento</button>
+                            <div class="payment-summary-confirm hidden" data-payment-confirm-panel="${this.escHtml(entry.id)}" role="group" aria-label="Confirmar alteração do pagamento">
+                                <span class="payment-summary-confirm-question">Desfazer este pagamento?</span>
+                                <div class="payment-summary-confirm-actions">
+                                    <button type="button" class="payment-summary-confirm-btn cancel" data-payment-undo-cancel>Cancelar</button>
+                                    <button type="button" class="payment-summary-confirm-btn confirm" data-payment-undo-confirm="${this.escHtml(entry.id)}">Sim, desfazer</button>
+                                </div>
+                            </div>
                         </div>
                     `).join('')
                     : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento nas últimas 24 horas.</div>';
+                list.onclick = async (event) => {
+                    const requestButton = event.target.closest?.('button[data-payment-undo-request]');
+                    const cancelButton = event.target.closest?.('button[data-payment-undo-cancel]');
+                    const confirmButton = event.target.closest?.('button[data-payment-undo-confirm]');
+
+                    if (requestButton && list.contains(requestButton)) {
+                        list.querySelectorAll('.payment-summary-confirm').forEach(panel => panel.classList.add('hidden'));
+                        list.querySelectorAll('.payment-summary-row.confirming').forEach(row => row.classList.remove('confirming'));
+                        const row = requestButton.closest('.payment-summary-row');
+                        const panel = row?.querySelector('.payment-summary-confirm');
+                        row?.classList.add('confirming');
+                        panel?.classList.remove('hidden');
+                        panel?.querySelector('[data-payment-undo-confirm]')?.focus();
+                        return;
+                    }
+
+                    if (cancelButton && list.contains(cancelButton)) {
+                        const row = cancelButton.closest('.payment-summary-row');
+                        row?.querySelector('.payment-summary-confirm')?.classList.add('hidden');
+                        row?.classList.remove('confirming');
+                        row?.querySelector('[data-payment-undo-request]')?.focus();
+                        return;
+                    }
+
+                    if (confirmButton && list.contains(confirmButton)) {
+                        confirmButton.disabled = true;
+                        await this.undoPaymentFromSummary(confirmButton.dataset.paymentUndoConfirm);
+                    }
+                };
             }
             this.openModal('paymentSummaryModal');
+        };
+
+        EvolutionApp.prototype.undoPaymentFromSummary = async function(id) {
+            const entry = (this.entries || []).find(item => String(item.id) === String(id));
+            if (!entry || !entry.pago) {
+                this.showToast('Este pagamento já foi desfeito', 'info');
+                this.openPaymentSummary();
+                return;
+            }
+
+            await this.togglePago(id);
+            this.openPaymentSummary();
         };
 
         EvolutionApp.prototype.clearHistoryMonth = function() {
