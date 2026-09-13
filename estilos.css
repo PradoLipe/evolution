@@ -160,6 +160,9 @@
         @keyframes pendingCardIn { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes pendingCardOut { 0% { opacity: 1; transform: scale(1) translateY(0); } 100% { opacity: 0; transform: scale(0.92) translateY(10px); } }
         .pending-overlay-border { position: absolute; inset: 0; border-radius: 20px; padding: 2px; background: conic-gradient(from var(--border-angle, 0deg), transparent 0%, rgba(var(--primary-rgb), 0.6) 10%, rgba(212, 175, 55, 0.4) 20%, transparent 30%, transparent 70%, rgba(var(--primary-rgb), 0.4) 80%, rgba(255, 255, 255, 0.6) 90%, transparent 100%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: borderSpin 3s linear infinite; pointer-events: none; }
+        /* No modo claro, o brilho original ficava discreto demais sobre o cartão
+           branco. Estes tons de azul mantêm a mesma animação, agora visível. */
+        body.light-mode .pending-overlay-border { padding: 3px; background: conic-gradient(from var(--border-angle, 0deg), transparent 0%, rgba(46, 99, 198, 0.25) 7%, #2e63c6 15%, #82a9f0 23%, transparent 32%, transparent 67%, rgba(46, 99, 198, 0.32) 77%, #2e63c6 86%, #82a9f0 93%, transparent 100%); filter: drop-shadow(0 0 5px rgba(46, 99, 198, 0.3)); }
         @property --border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
         @keyframes borderSpin { from { --border-angle: 0deg; } to { --border-angle: 360deg; } }
         /* v5.66 — o cartao do resumo agora e opaco. Antes usava var(--glass) semi-transparente

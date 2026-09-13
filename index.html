@@ -617,7 +617,7 @@
         <footer class="app-footer">
             <!-- O navio e as particulas de espuma sao criados por js/main.js (footerVoyage).
                  Sem JS o rodape aparece normal e estatico, nunca vazio. -->
-            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">9</span><span class="ltr">3</span></div>
+            <div class="footer-brand" id="footerBrand"><span class="ltr">E</span><span class="ltr">V</span><span class="ltr">O</span><span class="ltr">L</span><span class="ltr">U</span><span class="ltr">T</span><span class="ltr">I</span><span class="ltr">O</span><span class="ltr">N</span> <span class="ltr">V</span><span class="ltr">5</span><span class="ltr">.</span><span class="ltr">9</span><span class="ltr">4</span></div>
             <div class="footer-divider"></div>
             <div class="footer-copy">
                 <div style="font-weight: 700; color: var(--text); margin-bottom: 2px;">Felipe Prado Systems</div>
@@ -1202,7 +1202,7 @@
             // Flag: se já havia SW controlando a página antes de carregar
             const hadController = !!navigator.serviceWorker.controller;
 
-            navigator.serviceWorker.register('./sw.js')
+            navigator.serviceWorker.register('./sw.js?v=5.94', { updateViaCache: 'none' })
                 .then(reg => {
                     // Verifica se há uma atualização pendente logo ao carregar
                     reg.update();
