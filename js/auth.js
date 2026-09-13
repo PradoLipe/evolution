@@ -146,6 +146,8 @@
         // LOGIN E AUTENTICACAO
         // ============================================
         EvolutionApp.prototype.setLoginMode = function(mode) {
+            clearTimeout(this.pinAutoLoginTimer);
+            this.pinAutoLoginTimer = null;
             this.currentMode = mode;
             document.getElementById('btnModeLogin').classList.toggle('active', mode === 'login');
             document.getElementById('btnModeRegister').classList.toggle('active', mode === 'register');
@@ -173,21 +175,36 @@
 
         EvolutionApp.prototype.addDigit = function(digit, button) {
             if (this.pinValue.length < 6 && this.currentMode === 'login') {
+                clearTimeout(this.pinAutoLoginTimer);
+                this.pinAutoLoginTimer = null;
                 this.pinValue += digit;
                 this.updatePinDisplay();
                 // Confirma ao toque que o digito foi reconhecido no teclado do login.
                 this.showKeyFeedback(button);
                 if (typeof this.triggerHaptic === 'function') this.triggerHaptic('light');
-                // Auto-login apenas ao completar 6 digitos (seguro para PINs de 4-6 digitos:
-                // usuarios com PIN < 6 usam o botao de acao → abaixo para confirmar)
-                if (this.pinValue.length === 6) {
-                    setTimeout(() => this.login(), 100);
+                // PINs de 4 e 5 digitos aguardam um breve intervalo: se o usuario
+                // continuar digitando, o timer e cancelado. Com 6 digitos, entra
+                // imediatamente como antes.
+                const enteredPin = this.pinValue;
+                if (enteredPin.length >= 4) {
+                    const delay = enteredPin.length === 6 ? 100 : 650;
+                    this.pinAutoLoginTimer = setTimeout(() => {
+                        this.pinAutoLoginTimer = null;
+                        if (this.currentMode === 'login' && this.pinValue === enteredPin) {
+                            this.login({
+                                expectedPin: enteredPin,
+                                silentIfNotFound: enteredPin.length < 6
+                            });
+                        }
+                    }, delay);
                 }
             }
         };
 
         EvolutionApp.prototype.removeDigit = function(button) {
             if (this.currentMode === 'login') {
+                clearTimeout(this.pinAutoLoginTimer);
+                this.pinAutoLoginTimer = null;
                 this.pinValue = this.pinValue.slice(0, -1);
                 this.updatePinDisplay();
                 this.showKeyFeedback(button);
@@ -204,6 +221,8 @@
         };
 
         EvolutionApp.prototype.showPinError = function(msg) {
+            clearTimeout(this.pinAutoLoginTimer);
+            this.pinAutoLoginTimer = null;
             const dots = document.querySelectorAll('.pin-dot');
             dots.forEach(dot => {
                 dot.classList.remove('active');
@@ -216,8 +235,20 @@
             this.showToast(msg || 'PIN incorreto ou usuário não aprovado', 'error');
         };
 
-        EvolutionApp.prototype.login = async function() {
-            if (this.isLoggingIn) return;
+        EvolutionApp.prototype.login = async function(options = {}) {
+            const expectedPin = options?.expectedPin || null;
+            if (expectedPin && this.pinValue !== expectedPin) return;
+            if (this.isLoggingIn) {
+                // Se uma tentativa curta ainda estiver consultando o Firebase e o
+                // usuario completar o PIN, tenta novamente assim que ela terminar.
+                if (expectedPin && this.pinValue === expectedPin) {
+                    clearTimeout(this.pinAutoLoginTimer);
+                    this.pinAutoLoginTimer = setTimeout(() => this.login(options), 150);
+                }
+                return;
+            }
+            clearTimeout(this.pinAutoLoginTimer);
+            this.pinAutoLoginTimer = null;
             this.isLoggingIn = true;
 
             try {
@@ -275,6 +306,10 @@
                 } catch (e) {}
             }
 
+            // O usuario pode ter continuado a digitacao enquanto a consulta do PIN
+            // curto estava em andamento. Nesse caso, descarta a resposta antiga.
+            if (expectedPin && this.pinValue !== enteredPin) return;
+
             // Verificar se esta pendente
             if (!foundUser) {
                 const pending = this.pendingUsers.find(p => p.code === enteredPin);
@@ -282,6 +317,10 @@
                     this.showToast('Seu cadastro está aguardando aprovação', 'warning');
                     this.pinValue = '';
                     this.updatePinDisplay();
+                } else if (options?.silentIfNotFound) {
+                    // Quatro ou cinco digitos podem ser apenas o prefixo de um PIN
+                    // maior; aguarda a continuacao sem exibir um falso erro.
+                    return;
                 } else {
                     this.showPinError('PIN não encontrado');
                 }

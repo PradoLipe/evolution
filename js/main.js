@@ -11,6 +11,7 @@
             this.dashboardMode = 'all';
             this.historyMonth = null;
             this.pinValue = '';
+            this.pinAutoLoginTimer = null;
             this.deviceId = this.getOrCreateDeviceId();
             this.metaMensal = 0;
             this.metaStartDate = null;

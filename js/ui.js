@@ -555,43 +555,71 @@
         };
 
         EvolutionApp.prototype.clearHistoryMonth = function() {
-            this.historyMonth = null;
-            safeStorage.removeItem('evo_history_month');
+            this.setMonth('');
+        };
+
+        EvolutionApp.prototype.formatHistoryMonth = function(month) {
+            const match = String(month || '').match(/^(\d{4})-(\d{2})$/);
+            if (!match) return '';
+
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const monthIndex = Number(match[2]) - 1;
+            if (monthIndex < 0 || monthIndex >= meses.length) return '';
+            return `${meses[monthIndex]} de ${match[1]}`;
+        };
+
+        EvolutionApp.prototype.refreshHistoryMonthSelect = function() {
             const monthSelect = document.getElementById('monthSelect');
-            if (monthSelect) monthSelect.value = '';
-            if (this.currentFilter !== 'all') {
-                this.setFilter('all');
-            } else {
-                this.updateHistSubtitle();
-                this.renderHistory();
+            if (!monthSelect) return;
+
+            const selectedMonth = /^\d{4}-\d{2}$/.test(this.historyMonth || '') ? this.historyMonth : '';
+            let visibleEntries = typeof this.getVisibleEntries === 'function'
+                ? this.getVisibleEntries()
+                : (this.entries || []);
+
+            if (this.currentFilter === 'paid') {
+                visibleEntries = visibleEntries.filter(entry => entry.pago);
             }
+
+            const availableMonths = new Set();
+            visibleEntries.forEach(entry => {
+                const month = String(entry.data || '').substring(0, 7);
+                if (/^\d{4}-\d{2}$/.test(month)) availableMonths.add(month);
+            });
+            if (selectedMonth) availableMonths.add(selectedMonth);
+
+            monthSelect.replaceChildren(new Option('Todos os meses', ''));
+            [...availableMonths].sort().reverse().forEach(month => {
+                monthSelect.add(new Option(this.formatHistoryMonth(month), month));
+            });
+
+            monthSelect.value = selectedMonth;
+            const selectedLabel = selectedMonth ? this.formatHistoryMonth(selectedMonth) : 'Todos os meses';
+            monthSelect.setAttribute('aria-label', `Período do histórico: ${selectedLabel}`);
+            monthSelect.title = selectedLabel;
         };
 
         EvolutionApp.prototype.setFilter = function(f) {
+            if (!['all', 'pending', 'paid'].includes(f)) f = 'pending';
             this.currentFilter = f;
             this.currentPage = 1;
             document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(`filter-${f}`)?.classList.add('active');
 
-            const subs = { all: 'Todos os registros', pending: 'Aguardando pagamento', paid: 'Valores recebidos' };
-            document.getElementById('histSubtitle').textContent = subs[f];
-
             const monthSelector = document.getElementById('monthSelector');
-            const monthSelect = document.getElementById('monthSelect');
             if (f === 'all' || f === 'paid') {
-                monthSelector.style.display = 'block';
+                if (monthSelector) monthSelector.style.display = 'flex';
                 const savedMonth = safeStorage.getItem('evo_history_month');
                 if (savedMonth && /^\d{4}-\d{2}$/.test(savedMonth)) {
                     this.historyMonth = savedMonth;
-                    monthSelect.value = savedMonth;
                 } else {
                     if (savedMonth) safeStorage.removeItem('evo_history_month'); // formato antigo (so mes, sem ano)
                     this.historyMonth = null;
                 }
+                this.refreshHistoryMonthSelect();
             } else {
-                monthSelector.style.display = 'none';
+                if (monthSelector) monthSelector.style.display = 'none';
                 this.historyMonth = null;
-                if (monthSelect) monthSelect.value = '';
             }
 
             safeStorage.setItem('evo_history_filter', f);
@@ -600,7 +628,7 @@
         };
 
         EvolutionApp.prototype.setMonth = function(month) {
-            this.historyMonth = month || null;
+            this.historyMonth = /^\d{4}-\d{2}$/.test(month || '') ? month : null;
             this.currentPage = 1;
 
             if (this.historyMonth) {
@@ -609,40 +637,40 @@
                 safeStorage.removeItem('evo_history_month');
             }
 
+            this.refreshHistoryMonthSelect();
             this.updateHistSubtitle();
             this.renderHistory();
         };
 
         EvolutionApp.prototype.updateHistSubtitle = function() {
-            const meses = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const subtitle = document.getElementById('histSubtitle');
+            if (!subtitle) return;
+
             if (this.historyMonth) {
-                const [y, m] = this.historyMonth.split('-');
                 const prefixo = this.currentFilter === 'paid' ? 'Recebidos de ' : 'Registros de ';
-                document.getElementById('histSubtitle').textContent = `${prefixo}${meses[parseInt(m, 10)]} de ${y}`;
+                subtitle.textContent = `${prefixo}${this.formatHistoryMonth(this.historyMonth)}`;
             } else {
-                const subs = { all: 'Todos os registros', pending: 'Aguardando pagamento', paid: 'Valores recebidos' };
-                document.getElementById('histSubtitle').textContent = subs[this.currentFilter] || 'Todos os registros';
+                const subs = {
+                    all: 'Todos os registros • todos os meses',
+                    pending: 'Aguardando pagamento',
+                    paid: 'Valores recebidos • todos os meses'
+                };
+                subtitle.textContent = subs[this.currentFilter] || subs.all;
             }
         };
 
         EvolutionApp.prototype.restoreHistoryPrefs = function() {
             const savedFilter = safeStorage.getItem('evo_history_filter');
-            const savedMonth = safeStorage.getItem('evo_history_month');
-            if (savedFilter && savedFilter !== 'pending') {
-                this.setFilter(savedFilter);
-            }
-            if (savedMonth && /^\d{4}-\d{2}$/.test(savedMonth)) {
-                const monthSelect = document.getElementById('monthSelect');
-                if (monthSelect) monthSelect.value = savedMonth;
-                this.historyMonth = savedMonth;
-                this.updateHistSubtitle();
-                this.renderHistory();
-            }
+            const filter = ['all', 'pending', 'paid'].includes(savedFilter) ? savedFilter : 'pending';
+            this.setFilter(filter);
         };
 
         EvolutionApp.prototype.renderHistory = function() {
             const list = document.getElementById('histList');
             if (!list) return;
+            if (this.currentFilter === 'all' || this.currentFilter === 'paid') {
+                this.refreshHistoryMonthSelect();
+            }
             this.renderPaymentSummary();
 
             // Restricao VIP: nao-VIP ve apenas ultimos 15 dias
