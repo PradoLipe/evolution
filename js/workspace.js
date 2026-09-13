@@ -23,6 +23,16 @@
     EvolutionApp.prototype.navigateWorkspace = function(id) {
         const target = document.getElementById(id === 'overview' ? 'mainApp' : id);
         if (!target) return;
+        // A navegação pelos atalhos (inclusive a barra inferior no celular) usa
+        // uma única seção ativa: ao trocar de destino, recolhe a anterior antes
+        // de abrir a nova, evitando que o usuário chegue a um painel diferente
+        // ainda expandido.
+        document.querySelectorAll('#mainApp .section.expanded').forEach(section => {
+            if (section !== target) {
+                section.classList.remove('expanded');
+                syncSection(section);
+            }
+        });
         if (id !== 'overview') {
             target.classList.add('expanded');
             syncSection(target);

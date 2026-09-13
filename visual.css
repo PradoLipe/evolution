@@ -215,7 +215,7 @@ body.light-mode .port-selector-group select.port-selector-compact { color-scheme
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* EVOLUTION 5.97 · Maritime workspace */
+/* EVOLUTION 5.94 · Maritime workspace */
 :root {
   --primary: #86a5dc; --primary-rgb: 134,165,220;
   --primary-active: #6f8fc7; --primary-active-rgb: 111,143,199;
@@ -561,8 +561,7 @@ select:disabled { cursor: not-allowed; color: var(--warning); border-style: dash
 @keyframes login-beacon { 50% { transform: scale(1.65); opacity: .42; } }
 @keyframes login-spark { 50% { transform: scale(1.65); opacity: .45; } }
 
-/* Tema escuro: grafite com azul-ardósia dessaturado. O verde fica restrito
-   aos estados semânticos de pagamento, sem dominar a identidade da interface. */
+/* Tema escuro: base grafite/preta, com azul restrito aos destaques. */
 body:not(.light-mode) .login-screen {
   --primary: #6098ff; --primary-rgb: 96,152,255;
   --primary-active: #3b72dd; --primary-active-rgb: 59,114,221;
@@ -648,25 +647,45 @@ body.light-mode .calendar-day.pending { background: #fff6dc; border-color: #e5cb
   body.light-mode .calendar-day.pending:hover { background: #ffefc2; border-color: #d5b456; box-shadow: 0 5px 13px rgba(151,99,14,.1); }
 }
 
-/* Histórico: os recebidos respiram e recebem um reflexo curto e discreto. */
-.history-item.paid { position: relative; isolation: isolate; animation: paidHistoryPulse 3.8s ease-in-out infinite; }
-.history-item.paid::after { content: ''; position: absolute; z-index: 0; top: 0; bottom: 0; left: -55%; width: 42%; pointer-events: none; background: linear-gradient(105deg, transparent, rgba(88,201,154,.13), transparent); transform: skewX(-16deg); animation: paidHistorySweep 5.2s ease-in-out infinite; }
+/* Histórico: recebido e pendente usam o mesmo reflexo breve, com cores de status. */
+.history-item.paid,
+.history-item.pending { position: relative; isolation: isolate; }
+.history-item.paid { animation: paidHistoryPulse 2.4s ease-in-out infinite; }
+.history-item.pending { animation: pendingHistoryPulse 2.4s ease-in-out infinite; }
+.history-item.paid::after,
+.history-item.pending::after { content: ''; position: absolute; z-index: 0; top: 0; bottom: 0; left: -55%; width: 42%; pointer-events: none; transform: skewX(-16deg); }
+.history-item.paid::after { background: linear-gradient(105deg, transparent, rgba(88,201,154,.13), transparent); animation: paidHistorySweep 3s ease-in-out infinite; }
+.history-item.pending::after { background: linear-gradient(105deg, transparent, rgba(241,127,135,.17), transparent); animation: pendingHistorySweep 3s ease-in-out infinite; }
 .history-item.paid > .history-main-row,
-.history-item.paid > .history-details { position: relative; z-index: 1; }
+.history-item.paid > .history-details,
+.history-item.pending > .history-main-row,
+.history-item.pending > .history-details { position: relative; z-index: 1; }
 body.light-mode .history-item.paid { background: linear-gradient(110deg, rgba(8,117,81,.035), rgba(255,255,255,.94)); border-color: rgba(8,117,81,.32); }
 body:not(.light-mode) .history-item.paid { background: linear-gradient(135deg, rgba(58,82,74,.2), rgba(16,19,23,.98)); border-color: rgba(115,183,152,.28); }
+body.light-mode .history-item.pending { background: linear-gradient(110deg, rgba(181,57,75,.045), rgba(255,255,255,.94)); border-color: rgba(181,57,75,.32); }
+body:not(.light-mode) .history-item.pending { background: linear-gradient(135deg, rgba(112,48,57,.22), rgba(16,19,23,.98)); border-color: rgba(241,127,135,.3); }
 
 @keyframes paidHistoryPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(88,201,154,0); }
   50% { box-shadow: 0 0 0 2px rgba(88,201,154,.07), 0 8px 24px rgba(29,125,92,.11); }
 }
+@keyframes pendingHistoryPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(241,127,135,0); }
+  50% { box-shadow: 0 0 0 2px rgba(241,127,135,.08), 0 8px 24px rgba(175,53,66,.13); }
+}
 @keyframes paidHistorySweep {
-  0%, 58% { left: -55%; opacity: 0; }
-  66% { opacity: 1; }
-  84%, 100% { left: 115%; opacity: 0; }
+  0%, 42% { left: -55%; opacity: 0; }
+  50% { opacity: 1; }
+  72%, 100% { left: 115%; opacity: 0; }
+}
+@keyframes pendingHistorySweep {
+  0%, 42% { left: -55%; opacity: 0; }
+  50% { opacity: 1; }
+  72%, 100% { left: 115%; opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .history-item.paid, .history-item.paid::after { animation: none; }
+  .history-item.paid, .history-item.paid::after,
+  .history-item.pending, .history-item.pending::after { animation: none; }
 }
 
