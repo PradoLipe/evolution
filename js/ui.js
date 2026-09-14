@@ -327,6 +327,7 @@
             if (pill) pill.setAttribute('data-state', mode);
             btnAll?.setAttribute('aria-pressed', String(mode === 'all'));
             btnMonth?.setAttribute('aria-pressed', String(mode === 'month'));
+            if (monthSelector) monthSelector.inert = mode !== 'month';
 
             if (mode === 'all') {
                 btnAll?.classList.add('active');
@@ -393,6 +394,15 @@
             document.getElementById('dashPago').textContent = this.formatMoney(pg);
             document.getElementById('countPend').textContent = `${cp} serviço${cp !== 1 ? 's' : ''}`;
             document.getElementById('countPago').textContent = `${cpg} serviço${cpg !== 1 ? 's' : ''}`;
+
+            const periodStatus = document.getElementById('dashboardPeriodStatus');
+            if (periodStatus) {
+                const period = mode === 'month' && monthVal
+                    ? new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+                        .format(new Date(`${monthVal}-15T12:00:00`))
+                    : 'Todos os períodos';
+                periodStatus.textContent = `${period} · ${filtered.length} serviço${filtered.length !== 1 ? 's' : ''}`;
+            }
 
             this.updateMetaProgress();
         };
@@ -603,8 +613,12 @@
             if (!['all', 'pending', 'paid'].includes(f)) f = 'pending';
             this.currentFilter = f;
             this.currentPage = 1;
-            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.filter-tab').forEach(t => {
+                t.classList.remove('active');
+                t.setAttribute('aria-pressed', 'false');
+            });
             document.getElementById(`filter-${f}`)?.classList.add('active');
+            document.getElementById(`filter-${f}`)?.setAttribute('aria-pressed', 'true');
 
             const monthSelector = document.getElementById('monthSelector');
             if (f === 'all' || f === 'paid') {
