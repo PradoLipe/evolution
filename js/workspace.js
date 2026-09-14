@@ -1,6 +1,7 @@
 // Navigation and accessible disclosure behavior for the responsive workspace.
 (() => {
     const motion = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    let navigationRequest = 0;
     const setActiveNavigation = id => {
         document.querySelectorAll('[data-workspace-target]').forEach(button => {
             const active = button.dataset.workspaceTarget === id;
@@ -20,7 +21,21 @@
         // Keep collapsed fields out of the tab order, including after save flows.
         if (content) content.inert = !open;
     };
+    const centerWorkspaceTarget = (target, request) => {
+        if (request !== navigationRequest) return;
+        const anchor = target.querySelector('.section-header, h1') || target;
+        const appHeader = document.querySelector('.app-header');
+        const mobileNav = document.querySelector('.mobile-nav');
+        const topInset = appHeader?.getBoundingClientRect().height || 0;
+        const mobileNavVisible = mobileNav && getComputedStyle(mobileNav).display !== 'none';
+        const bottomInset = mobileNavVisible ? mobileNav.getBoundingClientRect().height : 0;
+        const usableHeight = window.innerHeight - topInset - bottomInset;
+        const anchorRect = anchor.getBoundingClientRect();
+        const top = window.scrollY + anchorRect.top - topInset - Math.max(0, (usableHeight - anchorRect.height) / 2);
+        window.scrollTo({ top: Math.max(0, top), behavior: motion() });
+    };
     EvolutionApp.prototype.navigateWorkspace = function(id) {
+        const request = ++navigationRequest;
         const target = document.getElementById(id === 'overview' ? 'mainApp' : id);
         if (!target) return;
         // A navegação pelos atalhos (inclusive a barra inferior no celular) usa
@@ -42,7 +57,8 @@
         setActiveNavigation(id);
         const focusTarget = id === 'overview' ? target.querySelector('h1') : target.querySelector('.section-header');
         if (focusTarget) { focusTarget.tabIndex = 0; focusTarget.focus({ preventScroll: true }); }
-        requestAnimationFrame(() => target.scrollIntoView({ behavior: motion(), block: 'start' }));
+        // Aguarda a transição dos painéis antes de calcular o centro visual disponível.
+        window.setTimeout(() => centerWorkspaceTarget(target, request), 320);
     };
     // Independent panels keep the form, calendar and history available side by side.
     EvolutionApp.prototype.toggleSection = function(id) {
