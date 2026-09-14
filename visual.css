@@ -215,7 +215,7 @@ body.light-mode .port-selector-group select.port-selector-compact { color-scheme
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* EVOLUTION 5.95 · Maritime workspace */
+/* EVOLUTION 5.96 · Maritime workspace */
 :root {
   --primary: #86a5dc; --primary-rgb: 134,165,220;
   --primary-active: #6f8fc7; --primary-active-rgb: 111,143,199;

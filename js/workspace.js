@@ -21,17 +21,16 @@
         // Keep collapsed fields out of the tab order, including after save flows.
         if (content) content.inert = !open;
     };
-    const centerWorkspaceTarget = (target, request) => {
+    const placeWorkspaceTargetAtTop = (target, request) => {
         if (request !== navigationRequest) return;
         const anchor = target.querySelector('.section-header, h1') || target;
         const appHeader = document.querySelector('.app-header');
-        const mobileNav = document.querySelector('.mobile-nav');
         const topInset = appHeader?.getBoundingClientRect().height || 0;
-        const mobileNavVisible = mobileNav && getComputedStyle(mobileNav).display !== 'none';
-        const bottomInset = mobileNavVisible ? mobileNav.getBoundingClientRect().height : 0;
-        const usableHeight = window.innerHeight - topInset - bottomInset;
         const anchorRect = anchor.getBoundingClientRect();
-        const top = window.scrollY + anchorRect.top - topInset - Math.max(0, (usableHeight - anchorRect.height) / 2);
+        // Mantém o começo da seção pronto para uso, sem centralizá-la na área livre
+        // da tela. Assim, o formulário ou conteúdo selecionado aparece logo abaixo
+        // do cabeçalho em celulares e desktops.
+        const top = window.scrollY + anchorRect.top - topInset - 16;
         window.scrollTo({ top: Math.max(0, top), behavior: motion() });
     };
     EvolutionApp.prototype.navigateWorkspace = function(id) {
@@ -57,8 +56,8 @@
         setActiveNavigation(id);
         const focusTarget = id === 'overview' ? target.querySelector('h1') : target.querySelector('.section-header');
         if (focusTarget) { focusTarget.tabIndex = 0; focusTarget.focus({ preventScroll: true }); }
-        // Aguarda a transição dos painéis antes de calcular o centro visual disponível.
-        window.setTimeout(() => centerWorkspaceTarget(target, request), 320);
+        // Aguarda a transição dos painéis antes de posicionar o início da seção.
+        window.setTimeout(() => placeWorkspaceTargetAtTop(target, request), 320);
     };
     // Independent panels keep the form, calendar and history available side by side.
     EvolutionApp.prototype.toggleSection = function(id) {
