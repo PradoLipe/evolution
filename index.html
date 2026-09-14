@@ -2,16 +2,16 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0d0f13">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V5.95 | Felipe Prado Systems</title>
+    <title>EVOLUTION V5.94 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=5.95">
-    <link rel="stylesheet" href="visual.css?v=5.95">
+    <link rel="stylesheet" href="estilos.css?v=5.94">
+    <link rel="stylesheet" href="visual.css?v=5.94">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -310,7 +310,7 @@
             <a class="brand-lockup" href="#mainApp" data-workspace-target="overview"><span class="brand-symbol">E<span></span></span><span>EVOLUTION<small>GESTÃO DE PRODUÇÃO</small></span></a>
             <div class="sidebar-label">WORKSPACE</div>
             <nav class="sidebar-nav"><button type="button" class="workspace-nav active" data-workspace-target="overview" aria-current="page"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Visão geral</span></button><button type="button" class="workspace-nav" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span><span>Registrar produção</span><span class="nav-plus">+</span></button><button type="button" class="workspace-nav" data-workspace-target="secCal"><span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Calendário</span></button><button type="button" class="workspace-nav" data-workspace-target="secRel"><span class="ui-icon icon-report" aria-hidden="true"></span><span>Gerar relatório</span></button><button type="button" class="workspace-nav" data-workspace-target="secSim"><span class="ui-icon icon-calculator" aria-hidden="true"></span><span>Simulador rápido</span></button><button type="button" class="workspace-nav" data-workspace-target="secChart"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Performance</span></button><button type="button" class="workspace-nav" data-workspace-target="secHist"><span class="ui-icon icon-inbox" aria-hidden="true"></span><span>Histórico</span></button></nav>
-            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>5.95</b></span></div>
+            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>5.94</b></span></div>
         </aside>
         <header class="app-header">
             <div class="header-location"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Workspace <i>/</i> <strong>Visão geral</strong></span></div>
@@ -343,25 +343,26 @@
                 <button class="quick-link-btn" onclick="window.open('http://modallport.grupochibatao.com.br:2424/modallweb/Home/Navios', '_blank', 'noopener')"><span class="ui-icon icon-ship" aria-hidden="true"></span> <span>Navios</span></button>
             </div>
             <!-- Dashboard Controls -->
-            <div class="dashboard-controls fade-in"><div class="dashboard-heading"><h2 id="financialHeading">Visão Financeira</h2><p id="dashboardPeriodStatus" role="status" aria-live="polite">Todos os períodos</p></div>
+            <div class="dashboard-controls fade-in"><div class="dashboard-heading"><span class="workspace-eyebrow">SEUS RESULTADOS</span><h2>Visão financeira</h2></div>
                 <div class="dashboard-controls-compact">
-                    <div class="segmented-control-mini" id="dashboardSegmentedControl" data-state="all" role="group" aria-label="Período da visão financeira">
-                        <button type="button" id="btnFilterAll" class="segment-btn-mini active" aria-pressed="true" aria-controls="financialSummary" onclick="app.setDashboardMode('all')">
-                            <span>Todos</span>
+                    <div class="segmented-control-mini" id="dashboardSegmentedControl" data-state="all">
+                        <div class="segment-highlight-mini"></div>
+                        <button id="btnFilterAll" class="segment-btn-mini active" onclick="app.setDashboardMode('all')">
+                            <span style="font-size: 0.9rem;">∞</span><span>Todos</span>
                         </button>
-                        <button type="button" id="btnFilterMonth" class="segment-btn-mini" aria-pressed="false" aria-controls="financialSummary monthSelectorInline" onclick="app.setDashboardMode('month')">
-                            <span>Mensal</span>
+                        <button id="btnFilterMonth" class="segment-btn-mini" onclick="app.setDashboardMode('month')">
+                            <span style="font-size: 0.9rem;"><span class="ui-icon icon-calendar" aria-hidden="true"></span></span><span>Mensal</span>
                         </button>
                     </div>
-                    <div id="monthSelectorInline" class="month-selector-inline" inert>
-                        <label for="dashboardMonthInput" class="month-label">Mês de referência</label>
+                    <div id="monthSelectorInline" class="month-selector-inline">
+                        <span class="month-label">Periodo:</span>
                         <input type="month" id="dashboardMonthInput" class="month-input-compact" onchange="app.updateDashboard()">
                     </div>
                 </div>
             </div>
 
             <!-- Stats Grid -->
-            <div class="dashboard-grid fade-in" id="financialSummary" role="region" aria-labelledby="financialHeading">
+            <div class="dashboard-grid fade-in">
                 <div class="stat-card bruto" id="cardBruto"><span class="stat-icon"><span class="ui-icon icon-chart" aria-hidden="true"></span></span>
                     <div class="stat-label">Total Bruto</div>
                     <div class="stat-value" id="dashBruto">R$ 0,00</div>
@@ -1183,17 +1184,17 @@
         }
     </style>
 
-    <script src="js/config.js?v=5.95"></script>
-    <script src="js/main.js?v=5.95"></script>
-    <script src="js/auth.js?v=5.95"></script>
-    <script src="js/firebase-sync.js?v=5.95"></script>
-    <script src="js/ui.js?v=5.95"></script>
-    <script src="js/entries.js?v=5.95"></script>
-    <script src="js/admin.js?v=5.95"></script>
-    <script src="js/utils.js?v=5.95"></script>
-    <script src="js/turtle.js?v=5.95"></script>
-    <script src="js/workspace.js?v=5.95"></script>
-    <script src="js/init.js?v=5.95"></script>
+    <script src="js/config.js?v=5.94"></script>
+    <script src="js/main.js?v=5.94"></script>
+    <script src="js/auth.js?v=5.94"></script>
+    <script src="js/firebase-sync.js?v=5.94"></script>
+    <script src="js/ui.js?v=5.94"></script>
+    <script src="js/entries.js?v=5.94"></script>
+    <script src="js/admin.js?v=5.94"></script>
+    <script src="js/utils.js?v=5.94"></script>
+    <script src="js/turtle.js?v=5.94"></script>
+    <script src="js/workspace.js?v=5.94"></script>
+    <script src="js/init.js?v=5.94"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas
@@ -1201,7 +1202,7 @@
             // Flag: se já havia SW controlando a página antes de carregar
             const hadController = !!navigator.serviceWorker.controller;
 
-            navigator.serviceWorker.register('./sw.js?v=5.95', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=5.94', { updateViaCache: 'none' })
                 .then(reg => {
                     // Verifica se há uma atualização pendente logo ao carregar
                     reg.update();
