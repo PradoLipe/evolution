@@ -139,6 +139,27 @@ button:focus-visible, [onclick]:focus-visible { outline: 2px solid var(--primary
 body.light-mode .modal-content input, body.light-mode .modal-content select, body.light-mode .modal-content textarea { color-scheme: light; }
 .modal-content input::placeholder, .modal-content textarea::placeholder { color: var(--text-muted); }
 .modal-close { color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); border-radius: 9px; min-width: 34px; min-height: 34px; }
+/* O aviso VIP tem uma paleta própria. No tema claro, o fundo geral dos modais
+   ficava branco enquanto os textos permaneciam claros, tornando-o ilegível. */
+body.light-mode .modal-content.vip-expiry-modal { color: #25342f; background: radial-gradient(circle at 50% -10%, rgba(230,157,56,.18), transparent 42%), #fffaf2; border-color: #d9a04b; box-shadow: 0 24px 72px rgba(82,55,20,.2); }
+body.light-mode .vip-expiry-modal::before { background: rgba(224,153,55,.12); }
+body.light-mode .vip-expiry-close { color: #5d4630; background: #fff4df; border-color: #dfbd84; }
+body.light-mode .vip-expiry-kicker { color: #754000; background: #fff0d1; border-color: #d5a253; }
+body.light-mode .vip-expiry-body h2 { color: #3d2812; }
+body.light-mode .vip-expiry-lead { color: #4d5b66; }
+body.light-mode .vip-expiry-lead strong { color: #7a4300; }
+body.light-mode .vip-expiry-value { background: #edf8f4; border-color: #9ccfbe; }
+body.light-mode .vip-expiry-value-icon { color: #0b6049; background: #d7eee6; }
+body.light-mode .vip-expiry-value strong { color: #183b32; }
+body.light-mode .vip-expiry-value span { color: #425f58; }
+body.light-mode .vip-expiry-reminder { color: #704000; }
+body.light-mode .vip-expiry-dismiss { color: #46596a; }
+body.light-mode .vip-renewal-icon { color: #7a4300; background: #fff0d1; border-color: #d5a253; }
+body.light-mode .vip-pix-key { color: #263647; background: #fff5e2; border-color: #d5a253; }
+body.light-mode .vip-pix-key-label { color: #754000; }
+body.light-mode .vip-pix-copy,
+body.light-mode .vip-pix-bank { color: #46596a; }
+body.light-mode .vip-pix-bank strong { color: #263647; }
 .calc-helper-parcel { padding: 5px 8px 5px 14px; }
 .calc-helper-parcel-remove { width: 34px; height: 34px; }
 .navio-suggestions-list { background: var(--glass); border-color: var(--border); }
@@ -215,7 +236,7 @@ body.light-mode .port-selector-group select.port-selector-compact { color-scheme
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* EVOLUTION 6.1 · Maritime workspace */
+/* EVOLUTION 6.2 · Maritime workspace */
 :root {
   --primary: #86a5dc; --primary-rgb: 134,165,220;
   --primary-active: #6f8fc7; --primary-active-rgb: 111,143,199;

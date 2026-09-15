@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.1',
+                v: window.EVOLUTION_APP_VERSION || 'V6.2',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V6.1');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -292,10 +291,6 @@
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...PDF.textMid);
                 doc.text('SISTEMA DE GESTAO DE PRODUCAO PORTUARIA', 9, 19);
-                // Versao
-                doc.setFontSize(6.5);
-                doc.setTextColor(...PDF.textSoft);
-                doc.text(APP_VERSION, 9, 25);
                 // Data geracao (direita)
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(7);
@@ -982,6 +977,8 @@
                 this.updateVipUI();
             }
             if (id === 'adminModal' && this.isAdmin) {
+                const versionEl = document.getElementById('adminAppVersion');
+                if (versionEl) versionEl.textContent = window.EVOLUTION_APP_VERSION || '—';
                 this.loadPendingUsers();
                 this.renderUserList();
             }

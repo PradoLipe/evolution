@@ -203,7 +203,7 @@
     // ============================================
     // A VIAGEM DO RODAPE (v5.62)
     // A cada login um cargueiro cruza o rodape e vai "entregando" as letras de
-    // EVOLUTION V6.1: cada uma acende no instante em que o casco passa por ela.
+    // EVOLUTION: cada uma acende no instante em que o casco passa por ela.
     // Terminada a travessia o navio some e o brilho vira um vaivem continuo.
     //
     // Tudo e movido por requestAnimationFrame, e nao por @keyframes, porque o

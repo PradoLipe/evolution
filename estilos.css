@@ -553,12 +553,12 @@
         .rate-type-label .dot.feriado { background: var(--warning); }
         .rate-subtitle { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
         .app-footer { margin-top: auto; padding: 20px 16px; text-align: center; border-top: 1px solid var(--border); background: var(--surface); }
-        .footer-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin-bottom: 8px; position: relative; }
+        .footer-brand { width: max-content; max-width: 100%; font-size: 0.7rem; font-weight: 800; letter-spacing: 4px; color: var(--accent); margin: 0 auto 8px; position: relative; }
 
         /* ============================================================
            v5.62 — A VIAGEM DO RODAPE
            A cada login um cargueiro cruza o rodape e vai deixando as letras de
-           EVOLUTION V6.1 acesas na sua esteira. Depois que a travessia termina,
+           EVOLUTION acesas na sua esteira. Depois que a travessia termina,
            o brilho vira um vaivem continuo entre as letras.
 
            Quem move o navio, a espuma e as letras e o requestAnimationFrame em
@@ -614,6 +614,9 @@
         .btn-approve { background: var(--success); color: white; }
         .btn-reject { background: var(--danger); color: white; }
         #adminModal .modal-content { width: min(96vw, 780px); max-width: 780px; }
+        #adminModal .admin-modal-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        #adminModal .admin-version-badge { color: var(--text-secondary); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.01em; }
+        #adminModal .admin-version-badge strong { color: var(--text); font-variant-numeric: tabular-nums; }
         #adminModal .modal-body { padding: 22px; }
         #adminModal textarea { min-height: 110px; resize: vertical; }
         #adminModal .rate-type-row { gap: 14px; }
