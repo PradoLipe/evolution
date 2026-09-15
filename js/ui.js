@@ -305,6 +305,29 @@
         // ============================================
         // DASHBOARD
         // ============================================
+        EvolutionApp.prototype.formatFinancialMoney = function(value) {
+            return this.financialValuesVisible ? this.formatMoney(value) : 'R$ ••••';
+        };
+
+        EvolutionApp.prototype.updateFinancialVisibilityControl = function() {
+            const button = document.getElementById('financialVisibilityToggle');
+            const icon = document.getElementById('financialVisibilityIcon');
+            if (!button || !icon) return;
+
+            const isVisible = this.financialValuesVisible !== false;
+            button.setAttribute('aria-pressed', String(isVisible));
+            button.setAttribute('data-state', isVisible ? 'visible' : 'hidden');
+            button.title = isVisible ? 'Ocultar valores' : 'Mostrar valores';
+            icon.className = `ui-icon ${isVisible ? 'icon-eye' : 'icon-eye-off'}`;
+        };
+
+        EvolutionApp.prototype.toggleFinancialValues = function() {
+            this.financialValuesVisible = !this.financialValuesVisible;
+            safeStorage.setItem('evo_financial_values_visible', this.financialValuesVisible ? '1' : '0');
+            this.updateFinancialVisibilityControl();
+            this.updateDashboard();
+        };
+
         EvolutionApp.prototype.setDashboardMode = function(mode, save = true) {
             const monthInput = document.getElementById('dashboardMonthInput');
 
@@ -387,10 +410,11 @@
                 }
             });
 
-            document.getElementById('dashBruto').textContent = this.formatMoney(tb);
-            document.getElementById('dashLiq').textContent = this.formatMoney(tl);
-            document.getElementById('dashPend').textContent = this.formatMoney(p);
-            document.getElementById('dashPago').textContent = this.formatMoney(pg);
+            this.updateFinancialVisibilityControl();
+            document.getElementById('dashBruto').textContent = this.formatFinancialMoney(tb);
+            document.getElementById('dashLiq').textContent = this.formatFinancialMoney(tl);
+            document.getElementById('dashPend').textContent = this.formatFinancialMoney(p);
+            document.getElementById('dashPago').textContent = this.formatFinancialMoney(pg);
             document.getElementById('countPend').textContent = `${cp} serviço${cp !== 1 ? 's' : ''}`;
             document.getElementById('countPago').textContent = `${cpg} serviço${cpg !== 1 ? 's' : ''}`;
 
@@ -1551,7 +1575,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         EvolutionApp.prototype.renderMetaCard = function() {
             if (this.metaMensal > 0) {
                 document.getElementById('metaCard').style.display = 'block';
-                document.getElementById('metaValor').textContent = this.formatMoney(this.metaMensal);
+                document.getElementById('metaValor').textContent = this.formatFinancialMoney(this.metaMensal);
                 this.updateMetaProgress();
             }
         };
@@ -1576,6 +1600,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const faltam = this.metaMensal - totalLiquido;
             if (p >= 100) {
                 document.getElementById('metaAtual').textContent = '✓ Meta atingida!';
+            } else if (!this.financialValuesVisible) {
+                document.getElementById('metaAtual').textContent = 'Valores ocultos';
             } else {
                 document.getElementById('metaAtual').textContent = `${this.formatMoney(totalLiquido)} recebido • Faltam ${this.formatMoney(Math.max(0, faltam))}`;
             }

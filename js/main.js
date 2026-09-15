@@ -9,6 +9,7 @@
             this.currentUserCode = null;
             this.currentFilter = 'pending';
             this.dashboardMode = 'all';
+            this.financialValuesVisible = safeStorage.getItem('evo_financial_values_visible') !== '0';
             this.historyMonth = null;
             this.pinValue = '';
             this.pinAutoLoginTimer = null;

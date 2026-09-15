@@ -24,6 +24,8 @@
 .icon-lock { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%224%22%20y%3D%2210%22%20width%3D%2216%22%20height%3D%2212%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M8%2010V6a4%204%200%200%201%208%200v4M12%2015v3%22%2F%3E%3C%2Fsvg%3E"); }
 .icon-star { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202l3%206%207%201-5%205%201%207-6-3-6%203%201-7-5-5%207-1z%22%2F%3E%3C%2Fsvg%3E"); }
 .icon-check { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%2012l4%204L19%206%22%2F%3E%3C%2Fsvg%3E"); }
+.icon-eye { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2.5%2012s3.5-6%209.5-6%209.5%206%209.5%206-3.5%206-9.5%206S2.5%2012%202.5%2012z%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%222.5%22%2F%3E%3C%2Fsvg%3E"); }
+.icon-eye-off { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%203l18%2018M10.6%206.2A10.6%2010.6%200%200%201%2012%206c6%200%209.5%206%209.5%206a17%2017%200%200%201-2.1%202.8M6.2%206.2C3.8%207.9%202.5%2012%202.5%2012s3.5%206%209.5%206a9.7%209.7%200%200%200%203.1-.5M9.9%209.9a3%203%200%200%200%204.2%204.2%22%2F%3E%3C%2Fsvg%3E"); }
 .icon-chevron { --icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E"); }
 /* EVOLUTION — base controls and local icons. Responsive workspace below. */
 :root {
@@ -236,7 +238,7 @@ body.light-mode .port-selector-group select.port-selector-compact { color-scheme
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* EVOLUTION 6.2 · Maritime workspace */
+/* EVOLUTION 6.3 · Maritime workspace */
 :root {
   --primary: #86a5dc; --primary-rgb: 134,165,220;
   --primary-active: #6f8fc7; --primary-active-rgb: 111,143,199;
@@ -310,7 +312,14 @@ body { font-family: 'Inter', 'Segoe UI', sans-serif; }
 .quick-link-btn::after { color: var(--text-muted); font-size: .82rem; margin-left: auto; }
 .quick-link-btn:hover, .quick-link-btn:focus-visible { background: var(--surface); border-color: rgba(var(--primary-rgb), .42); color: var(--text); }
 .dashboard-controls { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: -4px 0 -7px; }
+.dashboard-title-row { display: flex; align-items: center; gap: 8px; }
 .dashboard-heading h2, .operations-heading h2 { font-size: 1.1rem; letter-spacing: -.03em; font-weight: 620; margin-top: 4px; }
+.dashboard-visibility-toggle { width: 30px; height: 30px; margin-top: 4px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--text-secondary); cursor: pointer; transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease; }
+.dashboard-visibility-toggle:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
+.dashboard-visibility-toggle:active { transform: scale(.94); }
+.dashboard-visibility-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dashboard-visibility-toggle[data-state="hidden"] { color: var(--primary); background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.22); }
+.dashboard-visibility-toggle .ui-icon { width: 17px; height: 17px; }
 .dashboard-controls-compact { display: grid; grid-template-columns: 162px minmax(150px, 182px); align-items: center; width: 354px; max-width: 100%; gap: 10px; }
 .segmented-control-mini { width: 100%; min-width: 0; height: 38px; border-radius: 10px; background: var(--glass); border-color: var(--border); box-shadow: none; }
 .segment-btn-mini { min-height: 30px; font-size: .68rem; font-weight: 650; padding: 2px 12px; color: var(--text-secondary); }
