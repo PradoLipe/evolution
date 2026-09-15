@@ -152,7 +152,7 @@
             // Aviso de encerramento gratuito (expira automaticamente apos 31/03/2026)
             this.showAnnouncementIfNeeded();
 
-            // A viagem do rodape: o navio cruza deixando "EVOLUTION V5.64".
+            // A viagem do rodape: o navio cruza deixando "EVOLUTION V6.1".
             // Roda a cada login, e espera sozinha qualquer modal de abertura sair
             // da frente. O app abre no topo, normalmente. O atraso da ao layout
             // do mainApp tempo de assentar antes da medicao.
@@ -417,9 +417,9 @@
             }
         };
 
-        // O resumo e uma confirmacao temporaria: cada pagamento fica nele por 24 horas
+        // O resumo e uma confirmacao temporaria: cada pagamento fica nele por 5 horas
         // a partir do instante em que foi marcado, independentemente da virada do dia.
-        const PAYMENT_SUMMARY_WINDOW_MS = 24 * 60 * 60 * 1000;
+        const PAYMENT_SUMMARY_WINDOW_MS = 5 * 60 * 60 * 1000;
 
         EvolutionApp.prototype.getRecentPaidEntries = function(now = Date.now()) {
             return (this.entries || [])
@@ -508,7 +508,7 @@
                             </div>
                         </div>
                     `).join('')
-                    : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento nas últimas 24 horas.</div>';
+                    : '<div class="empty-state" style="padding: 20px 0;">Nenhum pagamento recente.</div>';
                 list.onclick = async (event) => {
                     const requestButton = event.target.closest?.('button[data-payment-undo-request]');
                     const cancelButton = event.target.closest?.('button[data-payment-undo-cancel]');

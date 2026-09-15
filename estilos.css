@@ -390,11 +390,38 @@
         .payment-summary-meta { color: var(--text-secondary); font-size: 0.68rem; }
         .payment-summary-meta strong { color: var(--text); }
         .payment-summary-notice-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
-        .payment-summary-notice-values > div { min-width: 0; padding: 7px 8px; background: rgba(7, 19, 36, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9px; }
+        .payment-summary-notice-values > div { min-width: 0; padding: 7px 8px; border: 1px solid var(--border); border-radius: 9px; }
+        .payment-summary-notice-values > div:first-child { background: linear-gradient(145deg, rgba(var(--primary-rgb),.14), rgba(var(--primary-rgb),.035)), var(--surface); border-color: rgba(var(--primary-rgb),.32); }
+        .payment-summary-notice-values > div:last-child { background: linear-gradient(145deg, rgba(88,201,154,.15), rgba(88,201,154,.035)), var(--surface); border-color: rgba(88,201,154,.34); }
         .payment-summary-notice-values span { display: block; color: var(--text-secondary); font-size: 0.55rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; margin-bottom: 2px; }
-        .payment-summary-notice-values strong { display: block; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; }
+        .payment-summary-notice-values strong { display: block; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; }
         .payment-summary-notice-values > div:last-child strong { color: var(--success); }
         .payment-summary-arrow { color: var(--success); font-size: 1.45rem; font-weight: 300; }
+        body.light-mode .payment-summary-notice { background: linear-gradient(125deg, #e7f6f0, #edf7f8); border-color: #8fc9b2; box-shadow: 0 8px 24px rgba(8, 117, 81, 0.1); }
+        body.light-mode .payment-summary-notice:hover { border-color: #4d9e7d; box-shadow: 0 8px 26px rgba(8, 117, 81, 0.16); }
+        body.light-mode .payment-summary-visual { background: #d8eee5; border-color: #89c5ad; }
+        body.light-mode .payment-summary-title { color: #075f43; }
+        body.light-mode .payment-summary-meta,
+        body.light-mode .payment-summary-notice-values span { color: #3f6268; }
+        body.light-mode .payment-summary-meta strong { color: #163038; }
+        body.light-mode .payment-summary-notice-values > div:first-child { background: linear-gradient(145deg, rgba(var(--primary-rgb),.14), rgba(var(--primary-rgb),.035)), var(--surface); border-color: rgba(var(--primary-rgb),.32); }
+        body.light-mode .payment-summary-notice-values > div:last-child { background: linear-gradient(145deg, rgba(88,201,154,.15), rgba(88,201,154,.035)), var(--surface); border-color: rgba(88,201,154,.34); }
+        body.light-mode .payment-summary-notice-values strong { color: var(--primary); }
+        body.light-mode .payment-summary-notice-values > div:last-child strong { color: #087551; }
+        .payment-summary-header-actions { display: flex; align-items: center; gap: 8px; }
+        .payment-summary-info { position: relative; }
+        .payment-summary-info summary { width: 27px; height: 27px; display: grid; place-items: center; list-style: none; border: 1px solid var(--border); border-radius: 50%; background: var(--surface-elevated); color: var(--text-secondary); font-family: Georgia, serif; font-size: 0.82rem; font-weight: 700; font-style: italic; cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease; }
+        .payment-summary-info summary::-webkit-details-marker { display: none; }
+        .payment-summary-info summary:hover,
+        .payment-summary-info summary:focus-visible,
+        .payment-summary-info[open] summary { border-color: var(--primary); background: rgba(var(--primary-rgb),.1); color: var(--primary); outline: none; }
+        .payment-summary-info summary:focus-visible { box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.18); }
+        .payment-summary-info-note { position: absolute; z-index: 3; top: 35px; right: 0; width: min(310px, calc(100vw - 52px)); padding: 12px 38px 12px 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text-secondary); box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .68rem; font-weight: 550; line-height: 1.55; }
+        .payment-summary-info-close { position: absolute; top: 7px; right: 7px; width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-elevated); color: var(--text-secondary); font-size: .9rem; line-height: 1; cursor: pointer; }
+        .payment-summary-info-close:hover,
+        .payment-summary-info-close:focus-visible { border-color: var(--danger); color: var(--danger); outline: none; }
+        .payment-summary-info-close:focus-visible { box-shadow: 0 0 0 3px rgba(187,73,67,.16); }
+        body.light-mode .payment-summary-info-note { background: #ffffff; color: #3f6268; box-shadow: 0 10px 28px rgba(22,48,56,.14); }
         .payment-summary-list { display: flex; flex-direction: column; gap: 10px; max-height: 390px; overflow-y: auto; margin-bottom: 14px; padding-right: 2px; }
         .payment-summary-row { display: flex; flex-direction: column; gap: 11px; padding: 14px; background: linear-gradient(145deg, rgba(var(--primary-rgb), 0.045), transparent 48%), var(--surface); border: 1px solid var(--border); border-radius: 14px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .payment-summary-row.confirming { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
@@ -531,7 +558,7 @@
         /* ============================================================
            v5.62 — A VIAGEM DO RODAPE
            A cada login um cargueiro cruza o rodape e vai deixando as letras de
-           EVOLUTION V5.64 acesas na sua esteira. Depois que a travessia termina,
+           EVOLUTION V6.1 acesas na sua esteira. Depois que a travessia termina,
            o brilho vira um vaivem continuo entre as letras.
 
            Quem move o navio, a espuma e as letras e o requestAnimationFrame em

@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.0',
+                v: window.EVOLUTION_APP_VERSION || 'V6.1',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -94,7 +94,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V6.0');
+            const APP_VERSION = (window.EVOLUTION_APP_VERSION || 'V6.1');
             const generatedAt = new Date().toLocaleString('pt-BR');
             const pageW = 210;
             const marginL = 14;
@@ -1012,6 +1012,11 @@
             }
             if (id === 'reportPreviewModal' && typeof this.clearReportPreview === 'function') {
                 this.clearReportPreview();
+            }
+            // O informativo do resumo sempre volta fechado quando o modal e encerrado,
+            // inclusive ao tocar no fundo da tela.
+            if (id === 'paymentSummaryModal') {
+                m.querySelectorAll('.payment-summary-info[open]').forEach(info => info.removeAttribute('open'));
             }
             // FIX: Recolhe metaEditor ao fechar configModal (qualquer forma de fechar)
             if (id === 'configModal') {
