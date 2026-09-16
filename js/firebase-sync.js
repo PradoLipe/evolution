@@ -290,10 +290,15 @@
         EvolutionApp.prototype.handleCurrentUserRemoteUpdate = function(userData) {
             if (!userData || !this.currentUserId || userData.docId !== this.currentUserId) return;
             const previousVip = this.isVip;
+            const previousAvatar = this.users[this.currentUserId]?.avatar || this.users[this.currentUserId]?.avatarData || null;
             const info = this.getVipInfo(userData);
             this.isVip = info.active || !!userData.vip || this.isAdmin;
             this.users[this.currentUserId] = { ...(this.users[this.currentUserId] || {}), ...userData };
             this.saveUsersToCache();
+            const remoteAvatar = userData.avatar || userData.avatarData || null;
+            // Um perfil em cache pode chegar sem foto; ao receber a versao remota,
+            // redesenha o avatar imediatamente, sem exigir recarregar a pagina.
+            if (previousAvatar !== remoteAvatar) this.showMainApp();
             this.updateVipUI();
             if (!previousVip && this.isVip) {
                 this.scheduleHistorySync('vip-activated', 600);

@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.4',
+                v: window.EVOLUTION_APP_VERSION || 'V6.6',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -917,7 +917,7 @@
                         this.users[userId].avatar = downloadURL;
                         this.saveUsersToCache();
                         this.showMainApp();
-                        this.showToast('Foto salva na nuvem!', 'success');
+                        this.showToast('Foto atualizada!', 'success');
                     } catch (err) {
                         console.error('Falha ao salvar avatar no Storage:', err);
                         try {
@@ -934,7 +934,7 @@
                             this.users[userId].avatarData = cloudAvatarData;
                             this.saveUsersToCache();
                             this.showMainApp();
-                            this.showToast('Foto salva na nuvem!', 'success');
+                            this.showToast('Foto atualizada!', 'success');
                         } catch (fallbackErr) {
                             console.error('Falha ao salvar avatar no Firestore:', fallbackErr);
                             this.showToast('A foto ficou somente neste dispositivo. Verifique sua conexao e tente novamente.', 'error');
@@ -973,7 +973,6 @@
                 this.users[userId] = { ...user, avatar: null, avatarData };
                 this.saveUsersToCache();
                 this.showMainApp();
-                this.showToast('Foto de perfil salva na nuvem!', 'success');
             } catch (error) {
                 // Mantem a copia local intacta para uma nova tentativa no proximo acesso.
                 console.error('Falha ao migrar foto local para o Firestore:', error);
