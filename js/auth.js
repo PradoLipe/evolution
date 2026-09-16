@@ -265,9 +265,9 @@
                     vip: true,
                     isAdmin: true
                 };
-                this.users[adminId] = adminUser;
+                this.users[adminId] = { ...(this.users[adminId] || {}), ...adminUser };
                 this.saveUsersToCache();
-                this.restoreUserSession(adminUser, { user: adminUser.name, code: adminUser.code, docId: adminId });
+                this.restoreUserSession(this.users[adminId], { user: adminUser.name, code: adminUser.code, docId: adminId });
                 return;
             }
 
@@ -497,9 +497,9 @@
                         vip: true,
                         isAdmin: true
                     };
-                    this.users[adminDocId] = adminUser;
+                    this.users[adminDocId] = { ...(this.users[adminDocId] || {}), ...adminUser };
                     this.saveUsersToCache();
-                    this.restoreUserSession(adminUser, { ...d, docId: adminDocId });
+                    this.restoreUserSession(this.users[adminDocId], { ...d, docId: adminDocId });
                     return;
                 }
 
@@ -540,9 +540,9 @@
                     vip: true,
                     isAdmin: true
                 };
-                this.users[adminDocId] = adminUser;
+                this.users[adminDocId] = { ...(this.users[adminDocId] || {}), ...adminUser };
                 this.saveUsersToCache();
-                this.restoreUserSession(adminUser, { ...d, docId: adminDocId });
+                this.restoreUserSession(this.users[adminDocId], { ...d, docId: adminDocId });
                 return;
             }
 
@@ -576,6 +576,13 @@
             this.currentUserId = userData.docId || sessionData.docId;
             this.isAdmin = userData.isAdmin || false;
             this.pendingSessionData = { ...sessionData, docId: this.currentUserId };
+            // Mantem todos os campos remotos do perfil (incluindo avatarData) ao
+            // restaurar caminhos especiais de login, como a conta administradora.
+            this.users[this.currentUserId] = {
+                ...(this.users[this.currentUserId] || {}),
+                ...userData,
+                docId: this.currentUserId
+            };
 
             // Verificar VIP
             const now = new Date();

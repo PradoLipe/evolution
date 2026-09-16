@@ -15,9 +15,10 @@
                         if (change.type === 'removed') {
                             delete this.users[change.doc.id];
                         } else {
-                            this.users[change.doc.id] = data;
                             if (this.currentUserId && change.doc.id === this.currentUserId) {
                                 this.handleCurrentUserRemoteUpdate(data);
+                            } else {
+                                this.users[change.doc.id] = data;
                             }
                         }
                     });

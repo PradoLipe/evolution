@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.6',
+                v: window.EVOLUTION_APP_VERSION || 'V6.8',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -950,14 +950,17 @@
             const userId = this.currentUserId;
             const user = this.users?.[userId] || {};
             const localAvatar = userId ? safeStorage.getItem(`evo_avatar_local_${userId}`) : null;
-            if (!userId || !db || !localAvatar || user.avatar || user.avatarData) return;
+            const cachedAvatar = typeof user.avatar === 'string' ? user.avatar : '';
+            const legacyAvatar = localAvatar || (cachedAvatar.startsWith('data:image/') ? cachedAvatar : null);
+            const hasRemoteAvatar = !!cachedAvatar && !cachedAvatar.startsWith('data:image/');
+            if (!userId || !db || !legacyAvatar || hasRemoteAvatar || user.avatarData) return;
 
             try {
                 const image = new Image();
                 await new Promise((resolve, reject) => {
                     image.onload = resolve;
                     image.onerror = reject;
-                    image.src = localAvatar;
+                    image.src = legacyAvatar;
                 });
                 const canvas = document.createElement('canvas');
                 canvas.width = 256;
