@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const {
+    collectGlyphTemplates,
+    classifyByTemplates,
     normalizeLbs,
     parseHourToken,
     parseOcrResult,
@@ -190,10 +192,17 @@ const layout = {
 const lattice = buildCellLattice(gridLines, layout);
 assert.ok(lattice, 'a grade + estrutura precisam gerar o lattice de celulas');
 assert.deepEqual(lattice.columns, [
-    { hour: '12', left: 100, right: 200 },
-    { hour: '11', left: 200, right: 300 },
-    { hour: '10', left: 300, right: 400 }
+    { hour: '12', left: 100, right: 200, truncated: false },
+    { hour: '11', left: 200, right: 300, truncated: false },
+    { hour: '10', left: 300, right: 400, truncated: false }
 ]);
+
+// Coluna bem mais estreita que as outras = cortada na borda da foto.
+const cortada = buildCellLattice(
+    { xs: [0, 100, 200, 300, 340, 400], ys: gridLines.ys },
+    { headers: [{ hour: 12, x: 150 }, { hour: 11, x: 250 }, { hour: 10, x: 320 }], rows: layout.rows }
+);
+assert.deepEqual(cortada.columns.map(c => c.truncated), [false, false, true]);
 assert.deepEqual(lattice.rows, [
     { key: 'LBS 07', top: 40, bottom: 80 },
     { key: 'LBS 08', top: 80, bottom: 120 }
@@ -367,6 +376,61 @@ assert.equal(canUsePhotoImport({ enabled: true, audience: 'all' }, COMUM), true)
 
 // Sem contexto de usuario (antes do login) nao libera nada alem do padrao.
 assert.equal(canUsePhotoImport({ enabled: true, audience: 'selected' }, undefined), false);
+
+// ===========================================================================
+// COLUNA CORTADA NA FOTO
+// O numero aparece pela metade ("16" vira "1"): nenhuma leitura vale, nem a
+// da 1a passada. Vai para revisao em vez de gravar valor errado.
+// ===========================================================================
+const truncada = mergeCellReadings({ value: 1, confidence: 95 }, { status: 'unreadable', confidence: 0, truncated: true });
+assert.equal(getCellStatus(truncada).status, 'unrecognized');
+assert.equal(truncada.source, 'truncated');
+
+// ===========================================================================
+// RECONHECIMENTO POR MOLDE
+// O Tesseract as vezes devolve VAZIO num digito isolado. Como a tabela usa
+// sempre a mesma fonte, o desenho do digito e comparado com os que o proprio
+// OCR ja leu com confianca na mesma imagem.
+// ===========================================================================
+function fakeGlyph(preenchido) {
+    const bitmap = new Float32Array(12 * 18);
+    for (let y = 0; y < 18; y++) for (let x = 0; x < 12; x++) bitmap[y * 12 + x] = preenchido(x, y) ? 1 : 0;
+    return bitmap;
+}
+// "0": anel (borda pintada, meio vazio). "1": barra vertical no centro.
+const moldeZero = fakeGlyph((x, y) => x === 0 || x === 11 || y === 0 || y === 17);
+const moldeUm = fakeGlyph((x) => x >= 5 && x <= 6);
+
+const moldes = collectGlyphTemplates([
+    { status: 'value', digits: '0', confidence: 95, bitmaps: [moldeZero] },
+    { status: 'value', digits: '1', confidence: 92, bitmaps: [moldeUm] },
+    // descartada: confianca baixa
+    { status: 'value', digits: '7', confidence: 30, bitmaps: [moldeUm] },
+    // descartada: quantidade de digitos nao bate com os desenhos
+    { status: 'value', digits: '15', confidence: 95, bitmaps: [moldeUm] }
+]);
+assert.deepEqual(Object.keys(moldes).sort(), ['0', '1']);
+
+// Desenho identico ao molde do zero -> reconhece
+const recuperado = classifyByTemplates([moldeZero], moldes);
+assert.equal(recuperado.value, 0);
+assert.ok(recuperado.score > 0.99);
+
+// Dois algarismos: le na ordem
+assert.equal(classifyByTemplates([moldeUm, moldeZero], moldes).digits, '10');
+
+// Desenho que nao parece com nenhum molde -> NAO decide (fica vermelho)
+const borrado = fakeGlyph((x, y) => (x + y) % 2 === 0);
+assert.equal(classifyByTemplates([borrado], moldes), null);
+
+// Sem moldes suficientes nao arrisca
+assert.equal(classifyByTemplates([moldeZero], { '0': [moldeZero] }), null);
+
+// Valor vindo do molde entra como reconhecido (VERDE)
+const porMolde = mergeCellReadings(undefined, { status: 'value', value: 0, confidence: 99, raw: '0', byTemplate: true, geometryOk: true });
+assert.equal(porMolde.value, 0);
+assert.equal(porMolde.source, 'template');
+assert.equal(getCellStatus(porMolde).status, 'recognized');
 
 class FakeEvolutionApp {}
 install(FakeEvolutionApp);

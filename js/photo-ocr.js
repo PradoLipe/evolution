@@ -22,6 +22,17 @@
     const GEOMETRY_CONFIDENCE = 55;    // idem, quando a geometria ja confirmou a quantidade de digitos
     const REFINED_AGREEMENT = 74;      // confianca para a celula vencer a 1a passada em caso de divergencia
     const MAX_REFINED_CELLS = 180;     // trava de seguranca (performance no celular)
+    // Reconhecimento por molde: o Tesseract as vezes devolve VAZIO num digito
+    // isolado (tipicamente um "0"), mesmo com a celula nitida. Como a tabela e
+    // desenhada pelo sistema, sempre na mesma fonte e tamanho, o mesmo digito
+    // tem o mesmo desenho em todas as celulas. Entao montamos moldes a partir
+    // dos digitos que o OCR JA leu com confianca NESTA imagem e usamos esses
+    // moldes para decidir as celulas que ficaram sem leitura.
+    const GLYPH_W = 12;
+    const GLYPH_H = 18;
+    const TEMPLATE_MIN_SIMILARITY = 0.90;  // semelhanca minima com o molde
+    const TEMPLATE_MIN_MARGIN = 0.12;      // distancia minima para o 2o candidato
+    const TEMPLATE_MIN_CONFIDENCE = 70;    // confianca para uma leitura virar molde
 
     const hourKey = value => String(value).padStart(2, '0');
 
@@ -427,6 +438,31 @@
             : { left: 0, top: 0, width, height, trimmed: false };
     }
 
+    // As linhas de uma TABELA sao igualmente espacadas. Bordas de painel,
+    // divisorias de layout e molduras aparecem isoladas, fora desse ritmo --
+    // e no print de celular elas tem praticamente a mesma largura da tabela,
+    // entrando no mesmo grupo e esticando o recorte para a tela inteira.
+    // Mantendo so a maior sequencia de espacamento regular, o recorte cai
+    // exatamente sobre a tabela, em qualquer layout ou resolucao.
+    function keepEvenlySpacedRun(lines) {
+        if (!lines || lines.length < 4) return lines || [];
+        const gaps = [];
+        for (let index = 1; index < lines.length; index++) gaps.push(lines[index].top - lines[index - 1].top);
+        const sorted = [...gaps].sort((a, b) => a - b);
+        const median = sorted[Math.floor(sorted.length / 2)];
+        if (!median || median <= 0) return lines;
+        const tolerance = Math.max(4, median * .25);
+        let bestFrom = 0;
+        let bestTo = 0;
+        let from = 0;
+        for (let index = 0; index <= gaps.length; index++) {
+            if (index < gaps.length && Math.abs(gaps[index] - median) <= tolerance) continue;
+            if (index - from > bestTo - bestFrom) { bestFrom = from; bestTo = index; }
+            from = index + 1;
+        }
+        return lines.slice(bestFrom, bestTo + 1);
+    }
+
     // Capturas da tela inteira incluem graficos e paineis cujos numeros podem
     // ser confundidos com celulas. A grade operacional, porem, possui varias
     // linhas horizontais longas, neutras e alinhadas. Usamos essa assinatura
@@ -496,9 +532,13 @@
         if (bestGroup.length < 4) return null;
 
         bestGroup.sort((a, b) => a.top - b.top);
+        bestGroup = keepEvenlySpacedRun(bestGroup);
+        if (bestGroup.length < 4) return null;
         const top = bestGroup[0].top;
         const bottom = bestGroup[bestGroup.length - 1].bottom;
-        if (bottom - top < Math.max(80, height * .08)) return null;
+        // A altura minima nao pode depender do tamanho da imagem: num print de
+        // celular (imagem muito alta) isso rejeitava tabelas perfeitamente boas.
+        if (bottom - top < 80) return null;
 
         const median = values => {
             const sorted = [...values].sort((a, b) => a - b);
@@ -631,6 +671,16 @@
         if (columns.length < 3 || !rows.length) return null;
         if (columns.length < Math.ceil(headers.length * .7)) return null;
         if (rows.length < Math.ceil(rowDefinitions.length * .7)) return null;
+
+        // Coluna bem mais estreita que as outras = coluna cortada na borda da
+        // foto (tipico do print de celular, em que a tabela nao cabe na tela).
+        // O numero ali aparece pela metade ("16" vira "1"), entao ela nao pode
+        // virar valor: vai para revisao.
+        const widths = columns.map(column => column.right - column.left).sort((a, b) => a - b);
+        const medianWidth = widths[Math.floor(widths.length / 2)];
+        columns.forEach(column => {
+            column.truncated = (column.right - column.left) < medianWidth * .7;
+        });
         return { columns, rows };
     }
 
@@ -712,6 +762,129 @@
         return blobs;
     }
 
+    // Recorta o desenho de cada algarismo da celula e normaliza para uma
+    // grade fixa (GLYPH_W x GLYPH_H), onde cada posicao guarda quanto daquele
+    // pedaco esta pintado. Assim dois desenhos podem ser comparados mesmo com
+    // pequenas diferencas de tamanho ou posicao.
+    function extractGlyphBitmaps(imageData, width, height, stats) {
+        const pixels = imageData && imageData.data;
+        if (!pixels || !width || !height || width * height * 4 > pixels.length + 3) return [];
+        const values = new Uint8Array(width * height);
+        for (let index = 0, position = 0; position < values.length; index += 4, position++) {
+            let luminance = Math.round(pixels[index] * .299 + pixels[index + 1] * .587 + pixels[index + 2] * .114);
+            if (stats.darkBackground) luminance = 255 - luminance;
+            values[position] = luminance;
+        }
+        const threshold = stats.threshold;
+        const columns = new Uint32Array(width);
+        let top = height;
+        let bottom = -1;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (values[y * width + x] >= threshold) continue;
+                columns[x]++;
+                if (y < top) top = y;
+                if (y > bottom) bottom = y;
+            }
+        }
+        if (bottom < top) return [];
+        const minimumRun = Math.max(1, Math.round((bottom - top + 1) * .12));
+        const runs = [];
+        let start = -1;
+        for (let x = 0; x <= width; x++) {
+            const on = x < width && columns[x] > 0;
+            if (on && start < 0) start = x;
+            if (!on && start >= 0) {
+                if (x - start >= minimumRun) runs.push([start, x - 1]);
+                start = -1;
+            }
+        }
+
+        return runs.map(([left, right]) => {
+            let glyphTop = height;
+            let glyphBottom = -1;
+            for (let y = 0; y < height; y++) {
+                for (let x = left; x <= right; x++) {
+                    if (values[y * width + x] >= threshold) continue;
+                    if (y < glyphTop) glyphTop = y;
+                    if (y > glyphBottom) glyphBottom = y;
+                }
+            }
+            const glyphWidth = right - left + 1;
+            const glyphHeight = glyphBottom - glyphTop + 1;
+            const bitmap = new Float32Array(GLYPH_W * GLYPH_H);
+            for (let ty = 0; ty < GLYPH_H; ty++) {
+                const sy0 = glyphTop + Math.floor(ty * glyphHeight / GLYPH_H);
+                const sy1 = Math.min(glyphBottom + 1, Math.max(glyphTop + Math.floor((ty + 1) * glyphHeight / GLYPH_H), sy0 + 1));
+                for (let tx = 0; tx < GLYPH_W; tx++) {
+                    const sx0 = left + Math.floor(tx * glyphWidth / GLYPH_W);
+                    const sx1 = Math.min(right + 1, Math.max(left + Math.floor((tx + 1) * glyphWidth / GLYPH_W), sx0 + 1));
+                    let ink = 0;
+                    let total = 0;
+                    for (let y = sy0; y < sy1; y++) {
+                        for (let x = sx0; x < sx1; x++) {
+                            total++;
+                            if (values[y * width + x] < threshold) ink++;
+                        }
+                    }
+                    bitmap[ty * GLYPH_W + tx] = total ? ink / total : 0;
+                }
+            }
+            return bitmap;
+        });
+    }
+
+    function bitmapSimilarity(a, b) {
+        if (!a || !b || a.length !== b.length) return 0;
+        let difference = 0;
+        for (let index = 0; index < a.length; index++) difference += Math.abs(a[index] - b[index]);
+        return 1 - difference / a.length;
+    }
+
+    // Uma leitura so vira molde quando o OCR estava confiante E a quantidade de
+    // digitos bate com a quantidade de desenhos na celula.
+    function collectGlyphTemplates(readings) {
+        const templates = {};
+        (readings || []).forEach(reading => {
+            if (!reading || reading.status !== 'value' || !reading.bitmaps) return;
+            const digits = String(reading.digits || '');
+            if (!digits || digits.length !== reading.bitmaps.length) return;
+            if (Number(reading.confidence) < TEMPLATE_MIN_CONFIDENCE) return;
+            for (let index = 0; index < digits.length; index++) {
+                const character = digits[index];
+                if (!templates[character]) templates[character] = [];
+                if (templates[character].length < 12) templates[character].push(reading.bitmaps[index]);
+            }
+        });
+        return templates;
+    }
+
+    // Decide a celula pelo desenho. Exige semelhanca alta com o molde vencedor
+    // E folga clara para o segundo colocado -- na duvida, nao decide (fica
+    // vermelho para o conferente), nunca chuta.
+    function classifyByTemplates(bitmaps, templates) {
+        if (!bitmaps || !bitmaps.length || !templates) return null;
+        const characters = Object.keys(templates);
+        if (characters.length < 2) return null;
+        let digits = '';
+        let worstScore = 1;
+        let worstMargin = 1;
+        for (const bitmap of bitmaps) {
+            const scores = characters.map(character => ({
+                character,
+                score: templates[character].reduce((best, template) => Math.max(best, bitmapSimilarity(bitmap, template)), 0)
+            })).sort((a, b) => b.score - a.score);
+            const best = scores[0];
+            const margin = best.score - (scores[1] ? scores[1].score : 0);
+            if (best.score < TEMPLATE_MIN_SIMILARITY || margin < TEMPLATE_MIN_MARGIN) return null;
+            digits += best.character;
+            worstScore = Math.min(worstScore, best.score);
+            worstMargin = Math.min(worstMargin, margin);
+        }
+        if (!digits || digits.length > 4) return null;
+        return { digits, value: Number(digits), score: worstScore, margin: worstMargin };
+    }
+
     function binarizeCellPixels(imageData, stats) {
         const pixels = imageData.data;
         for (let index = 0; index < pixels.length; index += 4) {
@@ -740,6 +913,9 @@
         }
 
         if (refined.status === 'unreadable') {
+            // Coluna cortada na foto: o numero esta incompleto na imagem, entao
+            // nenhuma leitura vale -- nem a da 1a passada.
+            if (refined.truncated) return { value: null, confidence: 0, raw, uncertain: true, source: 'truncated' };
             if (coarseStatus.status === 'recognized' && coarseConfidence >= 80) return coarse;
             return { value: null, confidence, raw, uncertain: true, source: 'cell' };
         }
@@ -758,6 +934,9 @@
             return { value, confidence: Math.max(confidence, coarseConfidence), raw: raw || String(value), uncertain: false, source: 'both' };
         }
         if (coarseStatus.status !== 'recognized') {
+            // Decidido pelo molde: ja passou por semelhanca alta E folga clara
+            // para o segundo candidato, entao nao depende da confianca do OCR.
+            if (refined.byTemplate) return { value, confidence, raw: raw || String(value), uncertain: false, source: 'template' };
             // Com a contagem de digitos confirmada pelo desenho da celula, a
             // confianca do OCR pode ser um pouco menor sem risco de chute.
             const minimum = refined.geometryOk === true ? GEOMETRY_CONFIDENCE : REFINED_CONFIDENCE;
@@ -1202,7 +1381,8 @@
             const confidence = Number(result?.data?.confidence);
             const safeConfidence = Number.isFinite(confidence) ? confidence : 0;
             const blobs = stats.blobs;
-            if (!digits) return { status: 'unreadable', confidence: safeConfidence, raw, blobs };
+            const bitmaps = extractGlyphBitmaps(cellData, rect.width, rect.height, stats);
+            if (!digits) return { status: 'unreadable', confidence: safeConfidence, raw, blobs, bitmaps };
             // A geometria diz quantos algarismos existem na celula. Se o OCR
             // devolveu uma quantidade diferente, a leitura perdeu (ou inventou)
             // um digito: nao vale como valor reconhecido.
@@ -1210,9 +1390,11 @@
             return {
                 status: 'value',
                 value: Number(digits.slice(0, 4)),
+                digits,
                 confidence: safeConfidence,
                 raw,
                 blobs,
+                bitmaps,
                 geometryOk
             };
         };
@@ -1238,14 +1420,16 @@
                     for (const column of lattice.columns) {
                         if (token !== this._photoOcrToken) return null;
                         const rect = insetCellRect(column, row, sourceCanvas.width, sourceCanvas.height);
-                        const reading = rect
-                            ? await this._readPhotoCell(sourceCanvas, context, cellCanvas, cellContext, rect, worker)
-                            : { status: 'unreadable', confidence: 0 };
+                        const reading = column.truncated
+                            ? { status: 'unreadable', confidence: 0, truncated: true }
+                            : rect
+                                ? await this._readPhotoCell(sourceCanvas, context, cellCanvas, cellContext, rect, worker)
+                                : { status: 'unreadable', confidence: 0 };
                         refined[row.key][column.hour] = reading;
                         // Numero isolado curto (tipicamente um "0") as vezes escapa do
                         // modo "palavra". Guardamos para uma segunda tentativa em modo
                         // de caractere unico, em vez de ja marcar como nao reconhecido.
-                        if (rect && (reading.status === 'unreadable' || reading.geometryOk === false)) {
+                        if (rect && !reading.truncated && (reading.status === 'unreadable' || reading.geometryOk === false)) {
                             retries.push({ key: row.key, hour: column.hour, rect, previous: reading });
                         }
                         done++;
@@ -1262,9 +1446,41 @@
                         // a contagem de digitos batendo com o desenho da celula.
                         if (second.status === 'empty') refined[retry.key][retry.hour] = second;
                         else if (second.status === 'value' && second.geometryOk !== false) refined[retry.key][retry.hour] = second;
+                        else if (second.bitmaps && second.bitmaps.length) refined[retry.key][retry.hour] = second;
                     }
                     this._setPhotoProgress('Conferindo célula por célula…', 99);
                 }
+
+                // 3a tentativa: o que o OCR nao leu, decidimos pelo desenho,
+                // comparando com os digitos que ele JA leu com certeza nesta
+                // mesma tabela (mesma fonte, mesmo tamanho).
+                const allReadings = [];
+                Object.values(refined).forEach(hours => Object.values(hours).forEach(reading => allReadings.push(reading)));
+                const templates = collectGlyphTemplates(allReadings);
+                let recovered = 0;
+                Object.entries(refined).forEach(([key, hours]) => {
+                    Object.entries(hours).forEach(([hour, reading]) => {
+                        if (!reading || reading.status === 'empty' || reading.truncated) return;
+                        const undecided = reading.status === 'unreadable' || reading.geometryOk === false;
+                        if (!undecided) return;
+                        const match = classifyByTemplates(reading.bitmaps, templates);
+                        if (!match) return;
+                        refined[key][hour] = {
+                            status: 'value',
+                            value: match.value,
+                            digits: match.digits,
+                            confidence: Math.round(match.score * 100),
+                            raw: match.digits,
+                            blobs: reading.blobs,
+                            geometryOk: Number.isFinite(reading.blobs) && reading.blobs > 0
+                                ? match.digits.length === reading.blobs
+                                : null,
+                            byTemplate: true
+                        };
+                        recovered++;
+                    });
+                });
+                if (recovered) console.info(`[photo-ocr] ${recovered} célula(s) resolvida(s) pelo desenho do dígito.`);
             } finally {
                 this._photoRefining = false;
                 cellCanvas.width = 0;
@@ -1323,10 +1539,14 @@
                     : cell.status === 'unrecognized'
                         ? (raw?.source === 'conflict'
                             ? 'As duas leituras divergiram — confira na foto'
-                            : 'Não foi possível ler este valor — confira na foto')
+                            : raw?.source === 'truncated'
+                                ? 'Esta coluna ficou cortada na foto — digite o valor'
+                                : 'Não foi possível ler este valor — confira na foto')
                         : raw?.source === 'both'
                             ? 'Valor confirmado nas duas leituras'
-                            : 'Valor reconhecido';
+                            : raw?.source === 'template'
+                                ? 'Valor confirmado pelo desenho do dígito'
+                                : 'Valor reconhecido';
                 return `<input class="photo-review-input${statusClass}" type="number" min="0" step="1" inputmode="numeric" aria-label="${escapeHtml(key)}, ${hour} horas: ${escapeHtml(hint)}" title="${escapeHtml(hint)}" value="${displayValue}" placeholder="?" data-photo-lbs="${escapeHtml(key)}" data-photo-hour="${hour}" data-photo-status="${cell.status}" oninput="app.updatePhotoReviewValue(this)">`;
             };
 
@@ -1369,6 +1589,7 @@
             notice.classList.toggle('ready', unresolved.length === 0 && invalid === 0);
             if (invalid) notice.textContent = 'Há valores inválidos. Use somente números inteiros iguais ou maiores que zero.';
             else if (unresolved.length) notice.textContent = `${unresolved.length} valor${unresolved.length === 1 ? '' : 'es'} em vermelho não${unresolved.length === 1 ? ' foi' : ' foram'} reconhecido${unresolved.length === 1 ? '' : 's'} pelo OCR. Revise antes de confirmar.`;
+            else if (this._photoOcrMeta && this._photoOcrMeta.refined === false) notice.textContent = 'Leitura feita em modo simples (não foi possível mapear a grade da tabela nesta foto). Confira os valores com atenção antes de confirmar.';
             else notice.textContent = 'Leitura completa. Células em amarelo não tiveram produção informada e foram consideradas 0. Confira e confirme.';
         };
 
@@ -1510,6 +1731,10 @@
         measureCellInk,
         mergeCellReadings,
         applyRefinedCells,
+        extractGlyphBitmaps,
+        bitmapSimilarity,
+        collectGlyphTemplates,
+        classifyByTemplates,
         normalizePhotoImportSettings,
         canUsePhotoImport,
         install

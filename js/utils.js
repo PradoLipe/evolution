@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.9',
+                v: window.EVOLUTION_APP_VERSION || 'V7.0',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
