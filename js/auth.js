@@ -625,6 +625,8 @@
 
             // Mostrar app
             this.showMainApp();
+            // Migra fotos existentes que ainda estavam apenas no navegador.
+            this.migrateLocalAvatarToFirestore();
             this.startSessionWatch();
             this.setDashboardMode(this.dashboardMode, false);
             this.restoreHistoryPrefs();
@@ -642,7 +644,7 @@
                 // carregamento da pagina, entao apos sair e entrar de novo na mesma aba o
                 // app parava de receber VIP/aviso VIP em tempo real ate um F5.
                 if (db && !this.unsubscribeUsers) this.syncUsersFromFirebase();
-                if (this.isAdmin || this.isVip) {
+                if (this.isRemoteHistoryEnabled()) {
                     this.setupEntriesListener(this.currentUserId);
                     this.scheduleHistorySync('session-restore', 800);
                 } else if (this.unsubscribeEntries) {

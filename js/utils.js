@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.3',
+                v: window.EVOLUTION_APP_VERSION || 'V6.4',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -882,39 +882,102 @@
                     ctx.drawImage(img, sx, sy, side, side, 0, 0, MAX_SIZE, MAX_SIZE);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
 
-                    // Salva base64 no localStorage para exibicao instantanea
+                    // Copia compacta para o Firestore: funciona mesmo no plano gratuito,
+                    // permanece muito abaixo do limite de 1 MiB por documento e serve como
+                    // fonte definitiva quando o Storage nao estiver habilitado.
+                    const cloudCanvas = document.createElement('canvas');
+                    const CLOUD_MAX_SIZE = 256;
+                    cloudCanvas.width = CLOUD_MAX_SIZE;
+                    cloudCanvas.height = CLOUD_MAX_SIZE;
+                    cloudCanvas.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, CLOUD_MAX_SIZE, CLOUD_MAX_SIZE);
+                    const cloudAvatarData = cloudCanvas.toDataURL('image/jpeg', 0.72);
+
+                    // Exibe um preview local enquanto o envio para a nuvem e confirmado.
                     safeStorage.setItem(`evo_avatar_local_${this.currentUserId}`, dataUrl);
                     if (!this.users[this.currentUserId]) this.users[this.currentUserId] = {};
                     this.users[this.currentUserId].avatar = dataUrl;
                     this.saveUsersToCache();
                     this.showMainApp();
-                    this.showToast('Foto atualizada!', 'success');
 
-                    // Upload para Firebase Storage (sem limite de tamanho)
-                    if (storage && db) {
+                    try {
+                        await this.ensureFirebaseReady();
+                        if (!storage || !db) throw new Error('Firebase Storage nao inicializado');
+
+                        const userId = this.currentUserId;
+                        const storageRef = storage.ref(`avatars/${userId}/profile.jpg`);
+                        const response = await fetch(dataUrl);
+                        const blob = await response.blob();
+                        await storageRef.put(blob, { contentType: 'image/jpeg' });
+                        const downloadURL = await storageRef.getDownloadURL();
+                        // O Firestore guarda somente a URL; o arquivo fica no Storage.
+                        await db.collection('users').doc(userId).set({ avatar: downloadURL }, { merge: true });
+
+                        // A URL remota passa a ser a fonte definitiva em todos os dispositivos.
+                        safeStorage.removeItem(`evo_avatar_local_${userId}`);
+                        this.users[userId].avatar = downloadURL;
+                        this.saveUsersToCache();
+                        this.showMainApp();
+                        this.showToast('Foto salva na nuvem!', 'success');
+                    } catch (err) {
+                        console.error('Falha ao salvar avatar no Storage:', err);
                         try {
-                            const storageRef = storage.ref(`avatars/${this.currentUserId}/profile.jpg`);
-                            const response = await fetch(dataUrl);
-                            const blob = await response.blob();
-                            await storageRef.put(blob, { contentType: 'image/jpeg' });
-                            const downloadURL = await storageRef.getDownloadURL();
-                            // Salva apenas a URL (pequena) no Firestore - sem pressao no documento
-                            // FIX 15: set/merge em vez de update — update falha com
-                            // "No document to update" se o doc do usuario ainda nao existir
-                            await db.collection('users').doc(this.currentUserId).set({ avatar: downloadURL }, { merge: true });
-                            // Atualiza cache local com a URL para que outros dispositivos carreguem direto
-                            this.users[this.currentUserId].avatar = downloadURL;
+                            // Sem Storage (plano Spark), persiste uma versao compacta no
+                            // proprio documento do usuario para manter a foto entre dispositivos.
+                            if (!db || !this.currentUserId) throw err;
+                            const userId = this.currentUserId;
+                            await db.collection('users').doc(userId).set({
+                                avatar: null,
+                                avatarData: cloudAvatarData
+                            }, { merge: true });
+                            safeStorage.removeItem(`evo_avatar_local_${userId}`);
+                            this.users[userId].avatar = null;
+                            this.users[userId].avatarData = cloudAvatarData;
                             this.saveUsersToCache();
-                        } catch (err) {
-                            console.error('Falha ao salvar avatar no Storage:', err);
-                            // Fallback silencioso: imagem ja salva no localStorage
-                            // Nao persiste base64 no Firestore para nao violar limite de 1MB por documento
+                            this.showMainApp();
+                            this.showToast('Foto salva na nuvem!', 'success');
+                        } catch (fallbackErr) {
+                            console.error('Falha ao salvar avatar no Firestore:', fallbackErr);
+                            this.showToast('A foto ficou somente neste dispositivo. Verifique sua conexao e tente novamente.', 'error');
                         }
                     }
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+        };
+
+        EvolutionApp.prototype.migrateLocalAvatarToFirestore = async function() {
+            const userId = this.currentUserId;
+            const user = this.users?.[userId] || {};
+            const localAvatar = userId ? safeStorage.getItem(`evo_avatar_local_${userId}`) : null;
+            if (!userId || !db || !localAvatar || user.avatar || user.avatarData) return;
+
+            try {
+                const image = new Image();
+                await new Promise((resolve, reject) => {
+                    image.onload = resolve;
+                    image.onerror = reject;
+                    image.src = localAvatar;
+                });
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                canvas.getContext('2d').drawImage(image, 0, 0, 256, 256);
+                const avatarData = canvas.toDataURL('image/jpeg', 0.72);
+
+                await db.collection('users').doc(userId).set({
+                    avatar: null,
+                    avatarData
+                }, { merge: true });
+                safeStorage.removeItem(`evo_avatar_local_${userId}`);
+                this.users[userId] = { ...user, avatar: null, avatarData };
+                this.saveUsersToCache();
+                this.showMainApp();
+                this.showToast('Foto de perfil salva na nuvem!', 'success');
+            } catch (error) {
+                // Mantem a copia local intacta para uma nova tentativa no proximo acesso.
+                console.error('Falha ao migrar foto local para o Firestore:', error);
+            }
         };
 
         EvolutionApp.prototype.deleteAvatar = function() {
@@ -932,7 +995,7 @@
             if (db) {
                 try {
                     // FIX 15: set/merge em vez de update (ver handleAvatarChange)
-                    await db.collection('users').doc(this.currentUserId).set({ avatar: null }, { merge: true });
+                    await db.collection('users').doc(this.currentUserId).set({ avatar: null, avatarData: null }, { merge: true });
                 } catch (e) {
                     console.error('Falha ao remover avatar no Firestore:', e);
                 }

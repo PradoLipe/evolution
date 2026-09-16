@@ -1,5 +1,7 @@
         EvolutionApp.prototype.isRemoteHistoryEnabled = function() {
-            return !!(this.currentUserId && (this.isAdmin || this.isVip));
+            // Todo usuario autenticado tem o historico protegido na nuvem.
+            // A fila local continua cobrindo periodos sem internet.
+            return !!this.currentUserId;
         };
 
         EvolutionApp.prototype.getHistoryQueueKey = function() {

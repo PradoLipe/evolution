@@ -70,7 +70,7 @@
             // Avatar
             const user = this.users[this.currentUserId] || {};
             const localAvatar = safeStorage.getItem(`evo_avatar_local_${this.currentUserId}`);
-            const finalAvatar = localAvatar || user.avatar;
+            const finalAvatar = localAvatar || user.avatar || user.avatarData;
 
             const avatarImg = document.getElementById('userAvatarImg');
             const avatarInitials = document.getElementById('userAvatarInitials');
