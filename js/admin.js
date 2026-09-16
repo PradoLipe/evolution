@@ -283,6 +283,7 @@
                     if (fp) fp.value = doc.data().floodPercentage;
                 }
                 const settings = doc.exists ? doc.data() : {};
+                this.setPhotoImportSettings(settings.photoImportSettings);
                 if (settings.portSettings) {
                     this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...settings.portSettings };
                     safeStorage.setItem('evo_port_settings_v1', JSON.stringify(this.portSettings));
@@ -299,6 +300,8 @@
                 }
             } catch (e) {
                 // Mantem a ultima configuracao conhecida quando o Firebase estiver offline.
+                this.loadCachedPhotoImportSettings();
+                this.applyPhotoImportAccess();
                 try {
                     const cached = safeStorage.getItem('evo_port_settings_v1');
                     if (cached) this.portSettings = { ...DEFAULT_PORT_SETTINGS, ...JSON.parse(cached) };
@@ -951,6 +954,110 @@
                     await db.collection('config').doc('rates').set({ brmao: newRates, brita: britaRates });
                     await db.collection('config').doc('settings').set({ portSettings: this.portSettings }, { merge: true });
                 } catch (e) {}
+            }
+        };
+
+        // ============================================
+        // LEITURA POR FOTO (beta) - painel de ativacao
+        // ============================================
+        EvolutionApp.prototype.renderPhotoImportAdmin = function() {
+            if (!this.isAdmin) return;
+            const settings = this.getPhotoImportSettings();
+            const enabledEl = document.getElementById('photoImportEnabled');
+            const audienceEl = document.getElementById('photoImportAudience');
+            const picker = document.getElementById('photoImportUserPicker');
+            const list = document.getElementById('photoImportUserList');
+            if (enabledEl) enabledEl.checked = settings.enabled;
+            if (audienceEl) audienceEl.value = settings.audience;
+            this.refreshPhotoImportAdminState();
+
+            if (!list) return;
+            const esc = (value) => this.escHtml(value);
+            const userArray = Object.values(this.users)
+                .filter(u => u && u.name && !u.isAdmin)
+                .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            if (!userArray.length) {
+                list.innerHTML = '<div class="photo-beta-empty">Nenhum usuário cadastrado.</div>';
+                this.updatePhotoImportCount();
+                return;
+            }
+
+            list.innerHTML = userArray.map(u => {
+                const uid = u.docId || u.code;
+                return `
+                    <label class="photo-beta-user">
+                        <span class="photo-beta-user-info">
+                            <strong>${esc(u.name)}</strong>
+                            <span>PIN: ${esc(u.code)}</span>
+                        </span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" data-photo-beta-uid="${esc(uid)}" ${u.photoImportBeta ? 'checked' : ''} onchange="app.updatePhotoImportCount()">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                `;
+            }).join('');
+            this.updatePhotoImportCount();
+        };
+
+        // Chamada pelos onchange do painel: atualiza apenas o que depende da
+        // escolha atual. Nao repovoa os campos, para nao desfazer o clique.
+        EvolutionApp.prototype.refreshPhotoImportAdminState = function() {
+            const enabled = Boolean(document.getElementById('photoImportEnabled')?.checked);
+            const audience = document.getElementById('photoImportAudience')?.value || 'admins';
+            const picker = document.getElementById('photoImportUserPicker');
+            if (picker) picker.style.display = (enabled && audience === 'selected') ? 'block' : 'none';
+            const status = document.getElementById('photoImportStatus');
+            if (status) {
+                status.textContent = !enabled
+                    ? 'Desativado: o recurso não aparece para ninguém, nem para você.'
+                    : audience === 'all'
+                        ? 'Ativo para todos os usuários.'
+                        : audience === 'selected'
+                            ? 'Ativo para você e para os usuários marcados abaixo.'
+                            : 'Ativo somente para administradores.';
+            }
+        };
+
+        EvolutionApp.prototype.updatePhotoImportCount = function() {
+            const counter = document.getElementById('photoImportCount');
+            if (!counter) return;
+            const checked = document.querySelectorAll('#photoImportUserList input[data-photo-beta-uid]:checked').length;
+            counter.textContent = String(checked);
+        };
+
+        EvolutionApp.prototype.savePhotoImportSettings = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
+            const enabled = Boolean(document.getElementById('photoImportEnabled')?.checked);
+            const audience = document.getElementById('photoImportAudience')?.value || 'admins';
+            const inputs = Array.from(document.querySelectorAll('#photoImportUserList input[data-photo-beta-uid]'));
+
+            // Grava apenas os usuarios que mudaram, para nao escrever a colecao toda.
+            const changes = inputs
+                .map(input => ({ uid: input.getAttribute('data-photo-beta-uid'), allowed: input.checked }))
+                .filter(item => item.uid && Boolean(this.users[item.uid]?.photoImportBeta) !== item.allowed);
+
+            if (!db) { this.showToast('Sem conexão com o servidor. Tente novamente.', 'error'); return; }
+            try {
+                {
+                    await db.collection('config').doc('settings').set({
+                        photoImportSettings: { enabled, audience }
+                    }, { merge: true });
+                    for (const change of changes) {
+                        await db.collection('users').doc(change.uid).set({ photoImportBeta: change.allowed }, { merge: true });
+                    }
+                }
+                changes.forEach(change => {
+                    if (this.users[change.uid]) this.users[change.uid].photoImportBeta = change.allowed;
+                });
+                this.setPhotoImportSettings({ enabled, audience });
+                this.renderPhotoImportAdmin();
+                const suffix = changes.length ? ` (${changes.length} usuário${changes.length === 1 ? '' : 's'} atualizado${changes.length === 1 ? '' : 's'})` : '';
+                this.showToast(`Leitura por foto ${enabled ? 'ativada' : 'desativada'}${suffix}.`, 'success');
+            } catch (error) {
+                console.error('Erro ao salvar configuracao da leitura por foto:', error);
+                this.showToast('Não foi possível salvar. Verifique a conexão.', 'error');
             }
         };
 

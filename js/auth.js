@@ -630,6 +630,10 @@
                 return;
             }
 
+            // Acesso ao recurso em beta (leitura por foto) conforme o painel adm
+            this.loadCachedPhotoImportSettings();
+            this.applyPhotoImportAccess();
+
             // Mostrar app
             this.showMainApp();
             // Migra fotos existentes que ainda estavam apenas no navegador.

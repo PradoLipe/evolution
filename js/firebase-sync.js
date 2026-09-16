@@ -295,6 +295,9 @@
             this.isVip = info.active || !!userData.vip || this.isAdmin;
             this.users[this.currentUserId] = { ...(this.users[this.currentUserId] || {}), ...userData };
             this.saveUsersToCache();
+            // O admin pode liberar/retirar o beta da leitura por foto a qualquer
+            // momento: reflete na tela sem precisar recarregar.
+            if (typeof this.applyPhotoImportAccess === 'function') this.applyPhotoImportAccess();
             const remoteAvatar = userData.avatar || userData.avatarData || null;
             // Um perfil em cache pode chegar sem foto; ao receber a versao remota,
             // redesenha o avatar imediatamente, sem exigir recarregar a pagina.

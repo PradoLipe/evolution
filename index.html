@@ -8,10 +8,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V6.8 | Felipe Prado Systems</title>
+    <title>EVOLUTION V6.9 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=6.8">
-    <link rel="stylesheet" href="visual.css?v=6.8">
+    <link rel="stylesheet" href="estilos.css?v=6.9">
+    <link rel="stylesheet" href="visual.css?v=6.9">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -310,7 +310,7 @@
             <a class="brand-lockup" href="#mainApp" data-workspace-target="overview"><span class="brand-symbol">E<span></span></span><span>EVOLUTION<small>GESTÃO DE PRODUÇÃO</small></span></a>
             <div class="sidebar-label">WORKSPACE</div>
             <nav class="sidebar-nav"><button type="button" class="workspace-nav active" data-workspace-target="overview" aria-current="page"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Visão geral</span></button><button type="button" class="workspace-nav" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span><span>Registrar produção</span><span class="nav-plus">+</span></button><button type="button" class="workspace-nav" data-workspace-target="secCal"><span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Calendário</span></button><button type="button" class="workspace-nav" data-workspace-target="secRel"><span class="ui-icon icon-report" aria-hidden="true"></span><span>Gerar relatório</span></button><button type="button" class="workspace-nav" data-workspace-target="secSim"><span class="ui-icon icon-calculator" aria-hidden="true"></span><span>Simulador rápido</span></button><button type="button" class="workspace-nav" data-workspace-target="secChart"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Performance</span></button><button type="button" class="workspace-nav" data-workspace-target="secHist"><span class="ui-icon icon-inbox" aria-hidden="true"></span><span>Histórico</span></button></nav>
-            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>6.8</b></span></div>
+            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>6.9</b></span></div>
         </aside>
         <header class="app-header">
             <div class="header-location"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Workspace <i>/</i> <strong>Visão geral</strong></span></div>
@@ -442,6 +442,18 @@
                                 <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
                             </div>
                         </div>
+                        <div class="photo-import-card" id="entryPhotoImportCard" style="display: none;" aria-labelledby="entryPhotoImportTitle">
+                            <div class="photo-import-copy">
+                                <strong id="entryPhotoImportTitle">Importar produção por foto</strong>
+                                <span>Leia todas as LBS da tabela e preencha a produção do turno.</span>
+                            </div>
+                            <label class="photo-import-button">
+                                <span class="ui-icon icon-report" aria-hidden="true"></span>
+                                Selecionar foto
+                                <input class="photo-file-input" type="file" id="entryPhotoInput" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic,.heif" onchange="app.startPhotoImport('entry', this)">
+                            </label>
+                            <small>JPG, PNG ou WEBP. A imagem é processada no aparelho e não é salva.</small>
+                        </div>
                         <button class="btn btn-success" id="btnSaveEntry" onclick="app.saveEntry()" style="margin-top: 4px;">Salvar Registro</button>
                     </div>
                 </div>
@@ -514,6 +526,24 @@
                                 <div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
                                 <div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>
                             </div>
+                        </div>
+                        <div class="photo-import-card" id="reportPhotoImportCard" style="display: none;" aria-labelledby="reportPhotoImportTitle">
+                            <div class="photo-import-copy">
+                                <strong id="reportPhotoImportTitle">Importar produção por foto</strong>
+                                <span>Informe a LBS do relatório. As demais ficam disponíveis para um registro posterior.</span>
+                            </div>
+                            <div class="photo-import-controls">
+                                <div class="input-group">
+                                    <label class="input-label" for="relPhotoLbs">LBS do relatório</label>
+                                    <input type="text" id="relPhotoLbs" inputmode="numeric" autocomplete="off" placeholder="Ex.: 08" maxlength="6">
+                                </div>
+                                <label class="photo-import-button">
+                                    <span class="ui-icon icon-report" aria-hidden="true"></span>
+                                    Selecionar foto
+                                    <input class="photo-file-input" type="file" id="reportPhotoInput" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic,.heif" onchange="app.startPhotoImport('report', this)">
+                                </label>
+                            </div>
+                            <small>JPG, PNG ou WEBP. A imagem é processada no aparelho e não é salva.</small>
                         </div>
                         <button class="btn btn-primary" onclick="app.generateReport()">Gerar Relatório</button>
                     </div>
@@ -720,6 +750,68 @@
         </div>
     </div>
 
+    <!-- OCR local: progresso, conferencia e reaproveitamento dos dados -->
+    <div class="modal-overlay" id="photoOcrProgressModal" role="dialog" aria-modal="true" aria-labelledby="photoOcrProgressTitle">
+        <div class="modal-content photo-progress-modal">
+            <div class="modal-body">
+                <div class="photo-progress-mark"><span class="ui-icon icon-report" aria-hidden="true"></span></div>
+                <h3 class="modal-title" id="photoOcrProgressTitle">Lendo tabela</h3>
+                <p id="photoOcrProgressText">Preparando a imagem no seu aparelho…</p>
+                <div class="photo-progress-track" role="progressbar" aria-label="Progresso da leitura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <span id="photoOcrProgressBar"></span>
+                </div>
+                <button class="btn btn-glass" type="button" onclick="app.cancelPhotoOcr()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="photoReviewModal" role="dialog" aria-modal="true" aria-labelledby="photoReviewTitle">
+        <div class="modal-content photo-review-modal">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title" id="photoReviewTitle">Conferir leitura</h3>
+                    <p class="photo-review-subtitle" id="photoReviewSubtitle"></p>
+                </div>
+                <button class="modal-close" type="button" onclick="app.cancelPhotoImport()" aria-label="Cancelar importação">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="photo-review-legend">
+                    <span><i class="legend-recognized"></i> Reconhecido</span>
+                    <span><i class="legend-empty"></i> Sem produção (0)</span>
+                    <span><i class="legend-review"></i> Não reconhecido — revisar</span>
+                </div>
+                <div class="photo-review-notice" id="photoReviewNotice" role="status"></div>
+                <div class="photo-review-scroll" id="photoReviewContent"></div>
+                <div class="photo-add-lbs" id="photoAddLbsRow">
+                    <label class="input-label" for="photoAddLbsInput">Faltou alguma LBS?</label>
+                    <div>
+                        <input type="text" id="photoAddLbsInput" inputmode="numeric" maxlength="6" placeholder="Ex.: 08">
+                        <button class="btn btn-glass" type="button" onclick="app.addPhotoReviewLbs()">Adicionar LBS</button>
+                    </div>
+                </div>
+                <div class="photo-review-actions">
+                    <button class="btn btn-glass" type="button" onclick="app.cancelPhotoImport()">Cancelar</button>
+                    <button class="btn btn-glass" type="button" onclick="app.focusPhotoCorrection()">Corrigir</button>
+                    <button class="btn btn-primary" id="photoReviewConfirm" type="button" onclick="app.confirmPhotoImport()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="photoRegisterPromptModal" role="dialog" aria-modal="true" aria-labelledby="photoRegisterPromptTitle">
+        <div class="modal-content photo-register-prompt">
+            <div class="modal-body">
+                <div class="photo-progress-mark"><span class="ui-icon icon-check" aria-hidden="true"></span></div>
+                <h3 class="modal-title" id="photoRegisterPromptTitle">Relatório concluído</h3>
+                <p>Quer aproveitar a mesma leitura para preencher Registrar Produção com todas as LBS do turno?</p>
+                <div class="photo-register-actions">
+                    <button class="btn btn-glass" type="button" onclick="app.dismissPhotoRegistration()">Agora não</button>
+                    <button class="btn btn-success" type="button" onclick="app.transferPhotoReportToEntry()">Registrar produção</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- CALC HELPER MODAL (Somar Produtividade) -->
     <div class="modal-overlay" id="calcHelperModal" onclick="app.closeModalOnOverlay(event, 'calcHelperModal')">
         <div class="modal-content" style="max-width: 340px;">
@@ -905,6 +997,34 @@
                     <div id="admFlood" class="admin-toggle-content">
                         <div class="input-group"><label class="input-label">Probabilidade de exibir mensagem (%)</label><input type="number" id="floodPercentage" min="0" max="100" value="40" placeholder="40"><div class="input-hint">Valor de 0 a 100. Define a % de chance de exibir a mensagem pedindo doação.</div></div>
                         <button class="btn btn-success" onclick="app.saveFloodRate()">Salvar Taxa</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admPhotoImport')"><span><span class="ui-icon icon-report" aria-hidden="true"></span> Leitura por Foto (Beta)</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
+                    <div id="admPhotoImport" class="admin-toggle-content">
+                        <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                            Controla quem enxerga o cartão <strong>Importar produção por foto</strong> em Registrar Produção e no Relatório.
+                            Com o recurso desativado, ele não aparece para ninguém — nem para você — o que permite conferir como o app fica para o usuário comum.
+                        </p>
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;">
+                            <div><strong style="font-size: 0.82rem;">Ativar leitura por foto</strong><div class="input-hint">Chave geral do recurso.</div></div>
+                            <label class="toggle-switch"><input type="checkbox" id="photoImportEnabled" onchange="app.refreshPhotoImportAdminState()"><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label" for="photoImportAudience">Quem pode usar</label>
+                            <select id="photoImportAudience" onchange="app.refreshPhotoImportAdminState()">
+                                <option value="admins">Somente administradores</option>
+                                <option value="selected">Administradores + usuários selecionados</option>
+                                <option value="all">Todos os usuários</option>
+                            </select>
+                            <div class="input-hint" id="photoImportStatus">&nbsp;</div>
+                        </div>
+                        <div id="photoImportUserPicker" style="display: none; margin-bottom: 14px;">
+                            <label class="input-label">Usuários liberados (<span id="photoImportCount">0</span>)</label>
+                            <div id="photoImportUserList" class="photo-beta-user-list"></div>
+                        </div>
+                        <button class="btn btn-success" onclick="app.savePhotoImportSettings()" style="width: 100%;">Salvar Configuração</button>
                     </div>
                 </div>
 
@@ -1193,17 +1313,18 @@
         }
     </style>
 
-    <script src="js/config.js?v=6.8"></script>
-    <script src="js/main.js?v=6.8"></script>
-    <script src="js/auth.js?v=6.8"></script>
-    <script src="js/firebase-sync.js?v=6.8"></script>
-    <script src="js/ui.js?v=6.8"></script>
-    <script src="js/entries.js?v=6.8"></script>
-    <script src="js/admin.js?v=6.8"></script>
-    <script src="js/utils.js?v=6.8"></script>
-    <script src="js/turtle.js?v=6.8"></script>
-    <script src="js/workspace.js?v=6.8"></script>
-    <script src="js/init.js?v=6.8"></script>
+    <script src="js/config.js?v=6.9"></script>
+    <script src="js/main.js?v=6.9"></script>
+    <script src="js/auth.js?v=6.9"></script>
+    <script src="js/firebase-sync.js?v=6.9"></script>
+    <script src="js/ui.js?v=6.9"></script>
+    <script src="js/entries.js?v=6.9"></script>
+    <script src="js/admin.js?v=6.9"></script>
+    <script src="js/utils.js?v=6.9"></script>
+    <script src="js/photo-ocr.js?v=6.9"></script>
+    <script src="js/turtle.js?v=6.9"></script>
+    <script src="js/workspace.js?v=6.9"></script>
+    <script src="js/init.js?v=6.9"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas
@@ -1211,7 +1332,7 @@
             // Flag: se já havia SW controlando a página antes de carregar
             const hadController = !!navigator.serviceWorker.controller;
 
-            navigator.serviceWorker.register('./sw.js?v=6.8', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=6.9', { updateViaCache: 'none' })
                 .then(reg => {
                     // Verifica se há uma atualização pendente logo ao carregar
                     reg.update();

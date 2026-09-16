@@ -8,7 +8,7 @@
                 return;
             }
             const data = {
-                v: window.EVOLUTION_APP_VERSION || 'V6.8',
+                v: window.EVOLUTION_APP_VERSION || 'V6.9',
                 u: this.currentUser,
                 t: new Date().toISOString(),
                 r: this.entries
@@ -1046,6 +1046,7 @@
                 if (versionEl) versionEl.textContent = window.EVOLUTION_APP_VERSION || '—';
                 this.loadPendingUsers();
                 this.renderUserList();
+                this.renderPhotoImportAdmin();
             }
             // FIX: Sempre abre configModal com metaEditor recolhido (estado limpo)
             if (id === 'configModal') {

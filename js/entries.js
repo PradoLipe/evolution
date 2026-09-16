@@ -527,6 +527,14 @@ ${userName}`;
             // a semana. Agora so marca como pendente; a cota e consumida em
             // _consumeReportQuota(), chamado ao copiar ou compartilhar de fato.
             this._reportQuotaPending = (!this.isAdmin && !this.isVip);
+            // Se os campos vieram do OCR, atualiza os dados comuns no momento exato
+            // em que o relatorio foi validado pelo fluxo existente. Assim, eventuais
+            // correcoes de navio/data feitas pelo usuario tambem seguem no repasse.
+            if (this._photoReportHandoff) {
+                this._photoReportHandoff.navio = navio;
+                this._photoReportHandoff.data = dataInput;
+                this._photoReportHandoff.turno = turno;
+            }
             this.openReportPreview(msg);
         };
 
@@ -568,6 +576,10 @@ ${userName}`;
             const subEl = document.getElementById('reportPreviewSubtitle');
             if (textEl) textEl.value = '';
             if (subEl) subEl.textContent = 'Aguardando geracao...';
+            if (this._photoReportHandoff && !this._keepPhotoHandoffOnReportClose && typeof this.clearPhotoImportSession === 'function') {
+                this.clearPhotoImportSession();
+            }
+            this._keepPhotoHandoffOnReportClose = false;
         };
 
         EvolutionApp.prototype.copyReportText = function() {
@@ -578,6 +590,7 @@ ${userName}`;
             }
             this._consumeReportQuota(); // FIX 11
             this.copyToClipboard(currentText, 'Relatorio copiado!');
+            if (typeof this.completePhotoReportFlow === 'function') this.completePhotoReportFlow();
         };
 
         EvolutionApp.prototype.shareReportText = async function() {
@@ -594,7 +607,8 @@ ${userName}`;
                     });
                     this._consumeReportQuota(); // FIX 11
                     // Compartilhamento concluido: fecha a tela de edicao e volta para a tela principal
-                    this.closeModal('reportPreviewModal');
+                    if (typeof this.completePhotoReportFlow === 'function' && this._photoReportHandoff) this.completePhotoReportFlow();
+                    else this.closeModal('reportPreviewModal');
                     return;
                 } catch (e) {
                     // Usuario cancelou o compartilhamento: mantem a tela de edicao aberta, sem copiar
