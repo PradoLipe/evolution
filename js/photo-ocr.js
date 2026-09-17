@@ -12,8 +12,8 @@
     const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
     const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
     const MAX_FILE_SIZE = 15 * 1024 * 1024;
-    const MIN_IMAGE_WIDTH = 600;
-    const MIN_IMAGE_HEIGHT = 300;
+    const MIN_IMAGE_WIDTH = 480;
+    const MIN_IMAGE_HEIGHT = 240;
     const VALUE_CONFIDENCE = 52;
     // Refinamento por celula (2a passada, somente digitos)
     const CELL_INK_RATIO = 0.004;      // abaixo disso a celula nao tem tinta -> sem producao
@@ -33,6 +33,8 @@
     const TEMPLATE_MIN_SIMILARITY = 0.90;  // semelhanca minima com o molde
     const TEMPLATE_MIN_MARGIN = 0.12;      // distancia minima para o 2o candidato
     const TEMPLATE_MIN_CONFIDENCE = 70;    // confianca para uma leitura virar molde
+    const LABEL_MIN_CONFIDENCE = 55;       // confianca para aceitar um rotulo (LBS / hora) lido na celula
+    const COARSE_ONLY_CONFIDENCE = 80;     // sem grade mapeada, so passa leitura muito confiante
 
     const hourKey = value => String(value).padStart(2, '0');
 
@@ -438,6 +440,130 @@
             : { left: 0, top: 0, width, height, trimmed: false };
     }
 
+    // =====================================================================
+    // DETECCAO DE LINHA POR CRISTA LOCAL
+    //
+    // A versao anterior classificava como "linha de grade" todo pixel cinza
+    // dentro de uma faixa fixa de luminancia (60..205). Isso quebra no tema
+    // claro do painel: ali o FUNDO da celula fica em ~204, cai dentro da
+    // faixa e a imagem inteira vira "linha" (medido: 403 de 429 linhas).
+    //
+    // Uma linha de grade nao e definida pela cor dela, e sim pelo contraste
+    // com o que esta imediatamente acima e abaixo. Testamos exatamente isso:
+    // o pixel precisa ser neutro (a fonte azul dos rotulos nao passa) e
+    // diferir, no MESMO sentido, dos pixels a alguns pixels de distancia nos
+    // dois lados. Isso vale no tema escuro, no tema claro e em foto da tela.
+    // =====================================================================
+    const RIDGE_SPANS = [2, 4, 7];   // cobre linhas finas e linhas grossas (imagem ampliada)
+    const RIDGE_MIN_DELTA = 13;      // contraste minimo com a vizinhanca
+    const RIDGE_MAX_SATURATION = 40; // acima disso e texto colorido, nao linha
+
+    function buildLuminanceMap(imageData, width, height) {
+        const data = imageData.data;
+        const total = width * height;
+        const lum = new Uint8Array(total);
+        const flat = new Uint8Array(total);
+        for (let index = 0, position = 0; position < total; index += 4, position++) {
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            lum[position] = (r * .299 + g * .587 + b * .114) | 0;
+            flat[position] = (Math.max(r, g, b) - Math.min(r, g, b)) <= RIDGE_MAX_SATURATION ? 1 : 0;
+        }
+        return { lum, flat, width, height };
+    }
+
+    function ridgeAt(map, x, y, horizontal) {
+        const { lum, flat, width, height } = map;
+        const here = y * width + x;
+        if (!flat[here]) return false;
+        const value = lum[here];
+        for (let index = 0; index < RIDGE_SPANS.length; index++) {
+            const span = RIDGE_SPANS[index];
+            let before;
+            let after;
+            if (horizontal) {
+                if (y - span < 0 || y + span >= height) continue;
+                before = lum[here - span * width];
+                after = lum[here + span * width];
+            } else {
+                if (x - span < 0 || x + span >= width) continue;
+                before = lum[here - span];
+                after = lum[here + span];
+            }
+            const d1 = value - before;
+            const d2 = value - after;
+            if ((d1 >= RIDGE_MIN_DELTA && d2 >= RIDGE_MIN_DELTA) || (d1 <= -RIDGE_MIN_DELTA && d2 <= -RIDGE_MIN_DELTA)) return true;
+        }
+        return false;
+    }
+
+    // =====================================================================
+    // CORRECAO DE INCLINACAO (deskew)
+    //
+    // Toda a leitura depende de linhas de grade HORIZONTAIS: o recorte da
+    // tabela, a deteccao da grade e o retangulo de cada celula. Numa foto
+    // tirada da tela, mesmo 1 ou 2 graus de inclinacao derrubam tudo isso --
+    // medido: a leitura caia para a 1a passada e produzia dezenas de valores
+    // verdes errados.
+    //
+    // O angulo e estimado projetando os pixels de crista em linhas inclinadas
+    // e escolhendo o angulo em que essa projecao fica mais concentrada (as
+    // linhas da tabela "colapsam" em poucos picos). Nao depende de OCR.
+    // =====================================================================
+    const SKEW_MAX_DEGREES = 6;
+    const SKEW_MIN_DEGREES = .15;   // abaixo disso nao compensa girar
+    const SKEW_MIN_GAIN = 1.08;     // ganho minimo sobre o angulo zero
+
+    function collectRidgePoints(map, width, height, stride) {
+        const xs = [];
+        const ys = [];
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 0; x < width; x += stride) {
+                if (!ridgeAt(map, x, y, true)) continue;
+                xs.push(x);
+                ys.push(y);
+            }
+        }
+        return { xs, ys, count: xs.length };
+    }
+
+    function projectionScore(points, height, tangent) {
+        const bins = new Float64Array(height + 1);
+        const { xs, ys, count } = points;
+        for (let index = 0; index < count; index++) {
+            const y = ys[index] - xs[index] * tangent;
+            if (y < 0 || y >= height) continue;
+            bins[y | 0]++;
+        }
+        let score = 0;
+        for (let index = 0; index < bins.length; index++) score += bins[index] * bins[index];
+        return score;
+    }
+
+    function estimateSkewDegrees(imageData, width, height) {
+        if (width < 200 || height < 120) return 0;
+        const map = buildLuminanceMap(imageData, width, height);
+        const stride = Math.max(1, Math.round(width / 420));
+        const points = collectRidgePoints(map, width, height, stride);
+        if (points.count < 400) return 0;
+        const evaluate = degrees => projectionScore(points, height, Math.tan(degrees * Math.PI / 180));
+        const zero = evaluate(0);
+        if (!zero) return 0;
+        let best = { degrees: 0, score: zero };
+        for (let degrees = -SKEW_MAX_DEGREES; degrees <= SKEW_MAX_DEGREES + 1e-9; degrees += .5) {
+            const score = evaluate(degrees);
+            if (score > best.score) best = { degrees, score };
+        }
+        for (let degrees = best.degrees - .5; degrees <= best.degrees + .5 + 1e-9; degrees += .05) {
+            const score = evaluate(degrees);
+            if (score > best.score) best = { degrees, score };
+        }
+        if (Math.abs(best.degrees) < SKEW_MIN_DEGREES) return 0;
+        if (best.score < zero * SKEW_MIN_GAIN) return 0;
+        return Math.round(best.degrees * 100) / 100;
+    }
+
     // As linhas de uma TABELA sao igualmente espacadas. Bordas de painel,
     // divisorias de layout e molduras aparecem isoladas, fora desse ritmo --
     // e no print de celular elas tem praticamente a mesma largura da tabela,
@@ -469,35 +595,40 @@
     // visual para isolar a tabela antes do OCR, sem depender da resolucao ou
     // de coordenadas fixas da tela.
     function findGridTableBounds(imageData, width, height) {
-        const pixels = imageData.data;
+        const map = buildLuminanceMap(imageData, width, height);
         const minimumRun = Math.max(260, Math.floor(width * .28));
         const candidates = [];
 
+        // Um digito encostando na linha abre um buraco de 1-2 px nela. Exigir
+        // run perfeitamente continuo derrubava a linha inteira (medido: 1310
+        // pixels de linha viravam um trecho maximo de 262). Por isso a
+        // varredura tolera falhas curtas dentro do mesmo traco.
+        const maxGap = Math.max(4, Math.round(width * .006));
         for (let y = 0; y < height; y++) {
             let runStart = -1;
+            let runEnd = -1;
+            let gap = 0;
             let bestStart = -1;
             let bestEnd = -1;
+            const closeRun = () => {
+                if (runStart >= 0 && runEnd - runStart > bestEnd - bestStart) {
+                    bestStart = runStart;
+                    bestEnd = runEnd;
+                }
+                runStart = -1;
+                runEnd = -1;
+            };
             for (let x = 0; x < width; x++) {
-                const index = (y * width + x) * 4;
-                const r = pixels[index];
-                const g = pixels[index + 1];
-                const b = pixels[index + 2];
-                const luminance = r * .299 + g * .587 + b * .114;
-                const neutralLine = luminance >= 60 && luminance <= 205 && Math.max(r, g, b) - Math.min(r, g, b) <= 30;
-                if (neutralLine) {
+                if (ridgeAt(map, x, y, true)) {
                     if (runStart < 0) runStart = x;
-                } else if (runStart >= 0) {
-                    if (x - runStart > bestEnd - bestStart) {
-                        bestStart = runStart;
-                        bestEnd = x - 1;
-                    }
-                    runStart = -1;
+                    runEnd = x;
+                    gap = 0;
+                } else if (runStart >= 0 && ++gap > maxGap) {
+                    closeRun();
+                    gap = 0;
                 }
             }
-            if (runStart >= 0 && width - runStart > bestEnd - bestStart) {
-                bestStart = runStart;
-                bestEnd = width - 1;
-            }
+            closeRun();
             if (bestStart >= 0 && bestEnd - bestStart + 1 >= minimumRun) {
                 candidates.push({ y, left: bestStart, right: bestEnd, length: bestEnd - bestStart + 1 });
             }
@@ -588,21 +719,13 @@
     // (brancos) e os rotulos (azuis) nao passam nesse filtro.
     function detectGridLines(imageData, width, height) {
         if (!imageData || !imageData.data || width < 60 || height < 40) return null;
-        const pixels = imageData.data;
+        const map = buildLuminanceMap(imageData, width, height);
         const verticalHits = new Uint32Array(width);
         const horizontalHits = new Uint32Array(height);
         for (let y = 0; y < height; y++) {
-            const rowOffset = y * width;
             for (let x = 0; x < width; x++) {
-                const index = (rowOffset + x) * 4;
-                const r = pixels[index];
-                const g = pixels[index + 1];
-                const b = pixels[index + 2];
-                const luminance = r * .299 + g * .587 + b * .114;
-                if (luminance < 60 || luminance > 205) continue;
-                if (Math.max(r, g, b) - Math.min(r, g, b) > 30) continue;
-                verticalHits[x]++;
-                horizontalHits[y]++;
+                if (ridgeAt(map, x, y, true)) horizontalHits[y]++;
+                if (ridgeAt(map, x, y, false)) verticalHits[x]++;
             }
         }
         const collect = (hits, limit) => {
@@ -623,65 +746,203 @@
         return { xs: withBorders(xs, width), ys: withBorders(ys, height) };
     }
 
-    function findBand(lines, position) {
-        for (let index = 0; index < lines.length - 1; index++) {
-            if (position > lines[index] && position < lines[index + 1]) return index;
-        }
-        return -1;
+    // As horas do painel sao sempre consecutivas e monotonicas (15,14,13...).
+    // Com esse padrao, tres colunas lidas ja determinam TODAS as outras --
+    // inclusive as que o OCR da tabela inteira nao conseguiu ler. E uma
+    // verificacao forte: se as horas lidas nao formarem uma sequencia, a
+    // estrutura da 1a passada estava errada e nao deve ser usada.
+    function predictHour(fit, index) {
+        return ((fit.base + fit.step * index) % 24 + 24) % 24;
     }
 
-    // Cruza a grade detectada com a estrutura da 1a passada: cada cabecalho
-    // de hora cai em uma coluna da grade e cada LBS cai em uma linha da
-    // grade. Linhas sem LBS (vazias, "Paradas") simplesmente nao entram.
-    function buildCellLattice(gridLines, layout) {
-        if (!gridLines || !layout) return null;
-        const headers = layout.headers || [];
-        const rowDefinitions = layout.rows || [];
-        if (!headers.length || !rowDefinitions.length) return null;
-        const xs = gridLines.xs || [];
-        const ys = gridLines.ys || [];
-        if (xs.length < 4 || ys.length < 3) return null;
+    function fitHourSequence(bands) {
+        const observed = bands.filter(band => band.hour !== null).map(band => ({ index: band.index, hour: Number(band.hour) }));
+        if (observed.length < 3) return null;
+        let best = null;
+        [-1, 1].forEach(step => {
+            observed.forEach(anchor => {
+                const base = ((anchor.hour - step * anchor.index) % 24 + 24) % 24;
+                const fit = { step, base };
+                const agree = observed.filter(item => predictHour(fit, item.index) === item.hour).length;
+                if (!best || agree > best.agree) best = { step, base, agree };
+            });
+        });
+        if (!best) return null;
+        best.observed = observed.length;
+        return best.agree >= Math.max(3, Math.ceil(observed.length * .7)) ? best : null;
+    }
 
-        const columns = [];
-        const usedColumns = new Set();
-        for (const header of headers) {
-            const index = findBand(xs, header.x);
-            if (index < 0) continue;
-            if (usedColumns.has(index)) return null; // duas horas na mesma coluna: grade nao confiavel
-            const left = xs[index];
-            const right = xs[index + 1];
-            if (right - left < 12) return null;
-            usedColumns.add(index);
-            columns.push({ hour: hourKey(header.hour), left, right });
-        }
-
-        const rows = [];
-        const usedRows = new Set();
-        for (const row of rowDefinitions) {
-            const index = findBand(ys, row.y);
-            if (index < 0) continue;
-            if (usedRows.has(index)) return null; // duas LBS na mesma linha: grade nao confiavel
-            const top = ys[index];
-            const bottom = ys[index + 1];
-            if (bottom - top < 10) return null;
-            usedRows.add(index);
-            rows.push({ key: row.key, top, bottom });
-        }
-
-        if (columns.length < 3 || !rows.length) return null;
-        if (columns.length < Math.ceil(headers.length * .7)) return null;
-        if (rows.length < Math.ceil(rowDefinitions.length * .7)) return null;
-
-        // Coluna bem mais estreita que as outras = coluna cortada na borda da
-        // foto (tipico do print de celular, em que a tabela nao cabe na tela).
-        // O numero ali aparece pela metade ("16" vira "1"), entao ela nao pode
-        // virar valor: vai para revisao.
+    function markTruncatedColumns(columns) {
+        if (!columns.length) return columns;
         const widths = columns.map(column => column.right - column.left).sort((a, b) => a - b);
         const medianWidth = widths[Math.floor(widths.length / 2)];
         columns.forEach(column => {
             column.truncated = (column.right - column.left) < medianWidth * .7;
         });
-        return { columns, rows };
+        return columns;
+    }
+
+    // Monta a grade de celulas a partir da GEOMETRIA: cada faixa entre duas
+    // linhas da grade e uma coluna/linha em potencial. A 1a passada entra
+    // apenas para NOMEAR as faixas (qual hora, qual LBS) e a sequencia de
+    // horas preenche as colunas que ela nao conseguiu ler.
+    //
+    // As faixas que sobram sem nome ficam em columnBands/rowBands para serem
+    // resolvidas com OCR da celula isolada -- muito mais confiavel do que ler
+    // "LBS 07" no meio do OCR da tela inteira (medido: no tema claro e em
+    // imagem reduzida, a 1a passada devolve "s07"/"SB8 07" e a tabela inteira
+    // era descartada, mesmo com a geometria perfeita).
+    function buildCellLattice(gridLines, layout) {
+        if (!gridLines) return null;
+        const xs = gridLines.xs || [];
+        const ys = gridLines.ys || [];
+        if (xs.length < 4 || ys.length < 3) return null;
+        const headers = (layout && layout.headers) || [];
+        const rowDefinitions = (layout && layout.rows) || [];
+
+        const columnBands = [];
+        for (let index = 0; index < xs.length - 1; index++) {
+            if (xs[index + 1] - xs[index] >= 12) {
+                columnBands.push({ index, left: xs[index], right: xs[index + 1], hour: null, origin: null });
+            }
+        }
+        const rowBands = [];
+        for (let index = 0; index < ys.length - 1; index++) {
+            if (ys[index + 1] - ys[index] >= 10) {
+                rowBands.push({ index, top: ys[index], bottom: ys[index + 1], key: null, origin: null });
+            }
+        }
+        if (columnBands.length < 3 || !rowBands.length) return null;
+
+        for (const header of headers) {
+            const band = columnBands.find(item => header.x > item.left && header.x < item.right);
+            if (!band) continue;
+            if (band.hour !== null) return null; // duas horas na mesma coluna: grade nao confiavel
+            band.hour = hourKey(header.hour);
+            band.origin = 'coarse';
+        }
+        for (const row of rowDefinitions) {
+            const band = rowBands.find(item => row.y > item.top && row.y < item.bottom);
+            if (!band) continue;
+            if (band.key !== null) return null; // duas LBS na mesma linha: grade nao confiavel
+            band.key = row.key;
+            band.origin = 'coarse';
+        }
+
+        const hourFit = fitHourSequence(columnBands);
+        if (hourFit) {
+            const observed = columnBands.filter(band => band.origin === 'coarse');
+            const first = observed[0].index;
+            const last = observed[observed.length - 1].index;
+            columnBands.forEach(band => {
+                if (band.index < first || band.index > last) return;
+                const predicted = hourKey(predictHour(hourFit, band.index));
+                if (band.hour === predicted) return;
+                // Buraco no meio da sequencia, ou hora lida que contraria a
+                // sequencia: a geometria manda, porque ela nao depende do OCR.
+                band.hour = predicted;
+                band.origin = band.origin === 'coarse' ? 'fit-fix' : 'fit';
+            });
+        }
+
+        keepConsistentRowKeys(rowBands);
+        const columns = columnBands.filter(band => band.hour !== null)
+            .map(band => ({ hour: band.hour, left: band.left, right: band.right }));
+        const rows = rowBands.filter(band => band.key !== null)
+            .map(band => ({ key: band.key, top: band.top, bottom: band.bottom }));
+        markTruncatedColumns(columns);
+
+        // Coluna de rotulo ("Guindaste"/LBS): a faixa sem hora mais proxima da
+        // esquerda das colunas de dados. E dela que sai o nome de cada linha.
+        const firstHourIndex = columnBands.find(band => band.hour !== null)?.index;
+        const labelColumn = Number.isInteger(firstHourIndex)
+            ? [...columnBands].reverse().find(band => band.hour === null && band.index < firstHourIndex) || null
+            : columnBands[0] || null;
+
+        return { columns, rows, columnBands, rowBands, labelColumn, hourFit };
+    }
+
+    // Cada linha tem ate duas leituras do rotulo: a da 1a passada (que ve
+    // "LBS 08" inteiro) e a da celula isolada (que le so o numero, com veto
+    // geometrico). Quando as duas discordam, quem decide e a SEQUENCIA: as
+    // LBS do painel sao consecutivas e crescentes de cima para baixo.
+    // Medido: isso corrige "LBS 48" numa foto inclinada sem derrubar as
+    // linhas de uma foto ruidosa, que o override cego perdia.
+    function reconcileRowKeys(rowBands) {
+        const entries = [];
+        rowBands.forEach(band => {
+            const candidates = [];
+            [band.cellKey, band.key].forEach(key => {
+                const number = key ? Number(String(key).replace(/\D/g, '')) : NaN;
+                if (Number.isInteger(number) && number > 0 && !candidates.includes(number)) candidates.push(number);
+            });
+            if (candidates.length) entries.push({ band, candidates });
+        });
+        rowBands.forEach(band => { band.key = null; });
+        if (!entries.length) return rowBands;
+
+        let best = null;
+        entries.forEach((entry, position) => {
+            entry.candidates.forEach(candidate => {
+                const base = candidate - position;
+                const agree = entries.filter((item, index) => item.candidates.includes(base + index)).length;
+                if (!best || agree > best.agree) best = { base, agree };
+            });
+        });
+
+        const used = new Set();
+        entries.forEach((entry, position) => {
+            const predicted = best && best.agree >= 2 ? best.base + position : null;
+            let chosen = null;
+            if (predicted !== null && entry.candidates.includes(predicted)) chosen = predicted;
+            else if (entry.candidates.length === 1) chosen = entry.candidates[0]; // leituras concordam
+            const key = chosen === null ? null : normalizeLbs(chosen);
+            if (!key || used.has(key)) return;
+            used.add(key);
+            entry.band.key = key;
+            entry.band.origin = entry.band.cellKey ? 'cell' : 'coarse';
+        });
+        return keepConsistentRowKeys(rowBands);
+    }
+
+    // No painel as LBS aparecem em ordem CRESCENTE de cima para baixo. Um
+    // rotulo que quebra essa ordem foi lido errado -- e producao lancada no
+    // guindaste errado nao pode acontecer. Mantemos a maior sequencia
+    // crescente e descartamos o resto (o conferente adiciona a LBS na mao).
+    function keepConsistentRowKeys(rowBands) {
+        const named = rowBands.filter(band => band.key);
+        if (named.length < 2) return rowBands;
+        const numbers = named.map(band => Number(String(band.key).replace(/\D/g, '')));
+        const length = new Array(named.length).fill(1);
+        const previous = new Array(named.length).fill(-1);
+        let bestIndex = 0;
+        for (let index = 1; index < named.length; index++) {
+            for (let before = 0; before < index; before++) {
+                if (numbers[before] < numbers[index] && length[before] + 1 > length[index]) {
+                    length[index] = length[before] + 1;
+                    previous[index] = before;
+                }
+            }
+            if (length[index] > length[bestIndex]) bestIndex = index;
+        }
+        const keep = new Set();
+        for (let index = bestIndex; index >= 0; index = previous[index]) {
+            keep.add(named[index]);
+            if (previous[index] < 0) break;
+        }
+        named.forEach(band => {
+            if (keep.has(band)) return;
+            band.key = null;
+            band.origin = null;
+        });
+        return rowBands;
+    }
+
+    // O lattice so pode substituir a 1a passada quando tem colunas e linhas
+    // suficientes; caso contrario o fluxo volta para a leitura da tabela
+    // inteira (ou recusa a imagem).
+    function latticeIsUsable(lattice) {
+        return Boolean(lattice && lattice.columns.length >= 3 && lattice.rows.length >= 1);
     }
 
     // Recorta a celula por dentro das bordas para a linha da grade nao virar
@@ -766,16 +1027,20 @@
     // grade fixa (GLYPH_W x GLYPH_H), onde cada posicao guarda quanto daquele
     // pedaco esta pintado. Assim dois desenhos podem ser comparados mesmo com
     // pequenas diferencas de tamanho ou posicao.
-    function extractGlyphBitmaps(imageData, width, height, stats) {
+    function buildCellValues(imageData, width, height, stats) {
         const pixels = imageData && imageData.data;
-        if (!pixels || !width || !height || width * height * 4 > pixels.length + 3) return [];
+        if (!pixels || !width || !height || width * height * 4 > pixels.length + 3) return null;
         const values = new Uint8Array(width * height);
         for (let index = 0, position = 0; position < values.length; index += 4, position++) {
             let luminance = Math.round(pixels[index] * .299 + pixels[index + 1] * .587 + pixels[index + 2] * .114);
             if (stats.darkBackground) luminance = 255 - luminance;
             values[position] = luminance;
         }
-        const threshold = stats.threshold;
+        return values;
+    }
+
+    // Separa os desenhos (algarismos, letras) por colunas com tinta.
+    function findGlyphRuns(values, width, height, threshold) {
         const columns = new Uint32Array(width);
         let top = height;
         let bottom = -1;
@@ -787,7 +1052,7 @@
                 if (y > bottom) bottom = y;
             }
         }
-        if (bottom < top) return [];
+        if (bottom < top) return { runs: [], top: 0, bottom: -1 };
         const minimumRun = Math.max(1, Math.round((bottom - top + 1) * .12));
         const runs = [];
         let start = -1;
@@ -799,6 +1064,45 @@
                 start = -1;
             }
         }
+        return { runs, top, bottom };
+    }
+
+    // Na celula de rotulo ("LBS 07") o numero fica depois do MAIOR espaco
+    // horizontal. Lendo so esse pedaco, com o OCR restrito a digitos, o
+    // rotulo passa pelas mesmas travas dos valores (contagem de algarismos
+    // pelo desenho e molde) -- medido: sem isso, "LBS 08" virava "LBS 48"
+    // numa foto inclinada, ou seja, producao atribuida a outro guindaste.
+    function findLabelNumberSpan(imageData, width, height, stats) {
+        const values = buildCellValues(imageData, width, height, stats);
+        if (!values) return null;
+        const { runs } = findGlyphRuns(values, width, height, stats.threshold);
+        if (runs.length < 2) return null;
+        let bestGap = 0;
+        let splitAt = -1;
+        for (let index = 1; index < runs.length; index++) {
+            const gap = runs[index][0] - runs[index - 1][1];
+            if (gap > bestGap) { bestGap = gap; splitAt = index; }
+        }
+        // Espaco precisa ser claramente maior do que o vao entre letras.
+        const inner = [];
+        for (let index = 1; index < runs.length; index++) if (index !== splitAt) inner.push(runs[index][0] - runs[index - 1][1]);
+        const typical = inner.length ? inner.reduce((sum, value) => sum + value, 0) / inner.length : 0;
+        if (splitAt < 0 || bestGap < Math.max(4, typical * 1.8)) return null;
+        // Antes do espaco tem que haver "LBS" (1 a 3 desenhos, letras podendo
+        // se encostar) e depois dele no maximo 2 algarismos. Isso rejeita
+        // "Paradas", "Guindaste" e qualquer outro texto da coluna.
+        if (splitAt < 1 || splitAt > 3) return null;
+        const digits = runs.slice(splitAt);
+        if (!digits.length || digits.length > 2) return null;
+        return { left: digits[0][0], right: digits[digits.length - 1][1], count: digits.length };
+    }
+
+    function extractGlyphBitmaps(imageData, width, height, stats) {
+        const values = buildCellValues(imageData, width, height, stats);
+        if (!values) return [];
+        const threshold = stats.threshold;
+        const { runs, top, bottom } = findGlyphRuns(values, width, height, threshold);
+        if (bottom < top) return [];
 
         return runs.map(([left, right]) => {
             let glyphTop = height;
@@ -949,9 +1253,38 @@
         return { value: null, confidence, raw, uncertain: true, source: 'conflict' };
     }
 
-    function applyRefinedCells(rows, refined) {
+    // Quando a grade da tabela nao pode ser mapeada, a unica leitura
+    // disponivel e a da tabela inteira -- justamente a que confunde colunas
+    // vizinhas e a linha "Paradas". Medido nas fotos tortas/desfocadas: esse
+    // caminho produzia dezenas de valores VERDES errados. Aqui ele passa a
+    // exigir confianca alta; abaixo disso a celula vai para revisao.
+    function demoteCoarseOnlyRows(rows) {
         const output = {};
-        Object.keys(rows || {}).forEach(key => { output[key] = { ...rows[key] }; });
+        Object.entries(rows || {}).forEach(([key, hours]) => {
+            output[key] = {};
+            Object.entries(hours || {}).forEach(([hour, cell]) => {
+                const status = getCellStatus(cell);
+                const confidence = Number(cell && cell.confidence) || 0;
+                if (status.status === 'recognized' && confidence < COARSE_ONLY_CONFIDENCE) {
+                    output[key][hour] = { value: null, confidence, raw: cell && cell.raw, uncertain: true, source: 'coarse-only' };
+                } else {
+                    output[key][hour] = cell;
+                }
+            });
+        });
+        return output;
+    }
+
+    // allowedKeys: quando a grade foi mapeada, só as LBS da grade podem sair
+    // daqui. Sem isso, uma linha inventada pela 1a passada sobreviveria e
+    // entraria no total do registro de produção.
+    function applyRefinedCells(rows, refined, allowedKeys) {
+        const allowed = allowedKeys && allowedKeys.length ? new Set(allowedKeys) : null;
+        const output = {};
+        Object.keys(rows || {}).forEach(key => {
+            if (allowed && !allowed.has(key)) return;
+            output[key] = { ...rows[key] };
+        });
         Object.entries(refined || {}).forEach(([key, hours]) => {
             if (!output[key]) output[key] = {};
             Object.entries(hours || {}).forEach(([hour, reading]) => {
@@ -1108,7 +1441,7 @@
             let bitmap = null;
             let objectUrl = null;
             try {
-                if ('createImageBitmap' in window) {
+                if (typeof createImageBitmap === 'function') {
                     bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
                 } else {
                     objectUrl = URL.createObjectURL(file);
@@ -1122,7 +1455,7 @@
                 if (token !== this._photoOcrToken) throw new Error('Leitura cancelada');
                 const sourceWidth = bitmap.width || bitmap.naturalWidth;
                 const sourceHeight = bitmap.height || bitmap.naturalHeight;
-                if (sourceWidth < MIN_IMAGE_WIDTH || sourceHeight < MIN_IMAGE_HEIGHT) throw new Error('A imagem tem baixa resolução. Use uma foto com pelo menos 600 × 300 pixels.');
+                if (sourceWidth < MIN_IMAGE_WIDTH || sourceHeight < MIN_IMAGE_HEIGHT) throw new Error('A imagem tem baixa resolução. Use uma foto com pelo menos 480 × 240 pixels.');
 
                 const targetWidth = Math.min(2600, Math.max(1600, sourceWidth));
                 const scale = targetWidth / sourceWidth;
@@ -1148,6 +1481,35 @@
                     context = croppedContext;
                 }
                 let photoTrimmed = bounds.trimmed;
+
+                // Endireita a foto ANTES de procurar a tabela: sem isso, uma
+                // inclinacao de 1-2 graus ja impede o recorte e a grade.
+                const skewImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const skew = estimateSkewDegrees(skewImageData, canvas.width, canvas.height);
+                if (skew) {
+                    const straight = document.createElement('canvas');
+                    straight.width = canvas.width;
+                    straight.height = canvas.height;
+                    const straightContext = straight.getContext('2d', { willReadFrequently: true });
+                    // Fundo com a cor da borda, para o giro nao criar faixas
+                    // pretas que virariam "conteudo" no recorte seguinte.
+                    const corner = skewImageData.data;
+                    straightContext.fillStyle = `rgb(${corner[0]},${corner[1]},${corner[2]})`;
+                    straightContext.fillRect(0, 0, straight.width, straight.height);
+                    straightContext.imageSmoothingEnabled = true;
+                    straightContext.imageSmoothingQuality = 'high';
+                    straightContext.translate(straight.width / 2, straight.height / 2);
+                    straightContext.rotate(-skew * Math.PI / 180);
+                    straightContext.translate(-straight.width / 2, -straight.height / 2);
+                    straightContext.drawImage(canvas, 0, 0);
+                    straightContext.setTransform(1, 0, 0, 1, 0, 0);
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    canvas = straight;
+                    context = straightContext;
+                    photoTrimmed = true;
+                }
+
                 const gridImageData = context.getImageData(0, 0, canvas.width, canvas.height);
                 const gridBounds = findGridTableBounds(gridImageData, canvas.width, canvas.height);
                 if (gridBounds) {
@@ -1233,6 +1595,125 @@
             }
         };
 
+        EvolutionAppClass.prototype._createPhotoWorker = function (Tesseract, token) {
+            return Tesseract.createWorker('eng', 1, {
+                logger: message => {
+                    if (token !== this._photoOcrToken || this._photoRefining || message.status !== 'recognizing text') return;
+                    this._setPhotoProgress('Reconhecendo linhas, horários e valores…', 40 + (Number(message.progress) || 0) * 45);
+                }
+            });
+        };
+
+        // Pipeline completo de leitura: prepara a imagem, faz a 1a passada,
+        // monta a grade e refina celula a celula. Fica isolado da interface
+        // para poder ser medido fora do navegador (harness de regressao).
+        // Retorna null quando a leitura foi cancelada (token trocado).
+        EvolutionAppClass.prototype._runPhotoPipeline = async function (file, token) {
+            let canvas = null;
+            let sourceCanvas = null;
+            let gridLines = null;
+            let worker = null;
+            try {
+                const prepared = await this._preparePhotoCanvas(file, token);
+                canvas = prepared.canvas;
+                sourceCanvas = prepared.sourceCanvas;
+                gridLines = prepared.gridLines;
+                if (token !== this._photoOcrToken) return null;
+                this._setPhotoProgress('Carregando o leitor local…', 12);
+                const Tesseract = await this._loadTesseract();
+                if (token !== this._photoOcrToken) return null;
+                worker = await this._createPhotoWorker(Tesseract, token);
+                this._photoOcrWorker = worker;
+
+                // ETAPA 1 - ESTRUTURA PELA GEOMETRIA.
+                // A grade da tabela ja diz onde estao as colunas e as linhas;
+                // so os rotulos (hora e LBS) precisam de OCR, e em celulas
+                // isoladas. Isso dispensa a leitura da tabela INTEIRA, que
+                // custa sozinha cerca de 60% de todo o tempo de OCR
+                // (medido: 575 ms de 956 ms, contra 10 ms por celula).
+                let lattice = null;
+                try {
+                    const geometric = buildCellLattice(gridLines, null);
+                    if (geometric && sourceCanvas) {
+                        this._setPhotoProgress('Mapeando a grade da tabela…', 35);
+                        const resolved = await this._resolvePhotoStructure(sourceCanvas, geometric, worker, Tesseract, token);
+                        if (token !== this._photoOcrToken) return null;
+                        if (latticeIsUsable(resolved)) lattice = resolved;
+                    }
+                } catch (structureError) {
+                    console.warn('Não foi possível mapear a grade da tabela:', structureError);
+                    lattice = null;
+                }
+
+                // ETAPA 2 - PLANO B: leitura da tabela inteira. So entra quando
+                // a geometria nao resolveu a estrutura sozinha.
+                let parsed = { rows: {}, hours: [], usedFallback: false, recognizedRows: 0, layout: null };
+                if (!lattice) {
+                    this._setPhotoProgress('Reconhecendo linhas, horários e valores…', 40);
+                    await worker.setParameters({
+                        tessedit_pageseg_mode: canvas.dataset.photoTrimmed === 'true'
+                            ? (Tesseract.PSM?.SINGLE_BLOCK || '6')
+                            : (Tesseract.PSM?.SPARSE_TEXT || '11'),
+                        preserve_interword_spaces: '1',
+                        tessedit_char_whitelist: 'LBSlbs0123456789: '
+                    });
+                    const result = await worker.recognize(canvas, {}, { text: true, tsv: true });
+                    if (token !== this._photoOcrToken) return null;
+                    this._setPhotoProgress('Organizando a tabela…', 88);
+                    parsed = parseOcrResult(result?.data?.tsv, result?.data?.text);
+                    try {
+                        const hinted = buildCellLattice(gridLines, parsed.layout);
+                        if (hinted && sourceCanvas) {
+                            const resolved = await this._resolvePhotoStructure(sourceCanvas, hinted, worker, Tesseract, token);
+                            if (token !== this._photoOcrToken) return null;
+                            if (latticeIsUsable(resolved)) lattice = resolved;
+                        }
+                    } catch (structureError) {
+                        console.warn('Não foi possível mapear a grade da tabela:', structureError);
+                    }
+                }
+
+                if (!lattice && (!parsed.recognizedRows || !parsed.hours.length)) {
+                    throw new Error('Não foi possível identificar a grade da tabela. Use uma imagem mais nítida e sem cortes.');
+                }
+
+                // 2a passada: relê cada célula isolada, só com dígitos.
+                // Se a grade não for confiável, mantém a leitura da 1a passada.
+                let rows = parsed.rows;
+                let hours = parsed.hours;
+                try {
+                    if (lattice && sourceCanvas) {
+                        const refined = await this._refinePhotoCells(sourceCanvas, lattice, worker, Tesseract, token);
+                        if (token !== this._photoOcrToken) return null;
+                        if (refined) {
+                            rows = applyRefinedCells(parsed.rows, refined, lattice.rows.map(row => row.key));
+                            hours = lattice.columns.map(column => column.hour);
+                        }
+                    }
+                } catch (refineError) {
+                    console.warn('Refinamento por célula indisponível, usando a leitura da tabela inteira:', refineError);
+                }
+                // Sem grade mapeada nao existe conferência célula a célula:
+                // a leitura da tabela inteira sozinha só vale com confiança
+                // alta -- o resto vai para revisão, nunca para valor "chutado".
+                if (!lattice) rows = demoteCoarseOnlyRows(rows);
+                return { rows, parsed: { ...parsed, hours }, lattice, refined: Boolean(lattice) };
+            } finally {
+                if (canvas) {
+                    canvas.width = 0;
+                    canvas.height = 0;
+                }
+                if (sourceCanvas) {
+                    sourceCanvas.width = 0;
+                    sourceCanvas.height = 0;
+                }
+                if (worker) {
+                    try { await worker.terminate(); } catch (error) {}
+                }
+                if (this._photoOcrWorker === worker) this._photoOcrWorker = null;
+            }
+        };
+
         EvolutionAppClass.prototype.startPhotoImport = async function (mode, input) {
             // Trava de verdade: nao basta esconder o botao, o fluxo tambem recusa.
             if (!this.canUsePhotoImport()) {
@@ -1273,56 +1754,11 @@
             this.openModal('photoOcrProgressModal');
             await new Promise(resolve => requestAnimationFrame(resolve));
 
-            let canvas = null;
-            let sourceCanvas = null;
-            let gridLines = null;
-            let worker = null;
             try {
-                const prepared = await this._preparePhotoCanvas(file, token);
-                canvas = prepared.canvas;
-                sourceCanvas = prepared.sourceCanvas;
-                gridLines = prepared.gridLines;
-                if (token !== this._photoOcrToken) return;
-                this._setPhotoProgress('Carregando o leitor local…', 12);
-                const Tesseract = await this._loadTesseract();
-                if (token !== this._photoOcrToken) return;
-                worker = await Tesseract.createWorker('eng', 1, {
-                    logger: message => {
-                        if (token !== this._photoOcrToken || this._photoRefining || message.status !== 'recognizing text') return;
-                        this._setPhotoProgress('Reconhecendo linhas, horários e valores…', 20 + (Number(message.progress) || 0) * 68);
-                    }
-                });
-                this._photoOcrWorker = worker;
-                await worker.setParameters({
-                    tessedit_pageseg_mode: canvas.dataset.photoTrimmed === 'true'
-                        ? (Tesseract.PSM?.SINGLE_BLOCK || '6')
-                        : (Tesseract.PSM?.SPARSE_TEXT || '11'),
-                    preserve_interword_spaces: '1',
-                    tessedit_char_whitelist: 'LBSlbs0123456789: '
-                });
-                const result = await worker.recognize(canvas, {}, { text: true, tsv: true });
-                if (token !== this._photoOcrToken) return;
-                this._setPhotoProgress('Organizando a tabela…', 88);
-                const parsed = parseOcrResult(result?.data?.tsv, result?.data?.text);
-                if (!parsed.recognizedRows || !parsed.hours.length) throw new Error('Não foi possível identificar a grade da tabela. Use uma imagem mais nítida e sem cortes.');
-
-                // 2a passada: relê cada célula isolada, só com dígitos.
-                // Se a grade não for confiável, mantém a leitura da 1a passada.
-                let rows = parsed.rows;
-                let lattice = null;
-                try {
-                    lattice = buildCellLattice(gridLines, parsed.layout);
-                    if (lattice && sourceCanvas) {
-                        const refined = await this._refinePhotoCells(sourceCanvas, lattice, worker, Tesseract, token);
-                        if (token !== this._photoOcrToken) return;
-                        if (refined) rows = applyRefinedCells(parsed.rows, refined);
-                    }
-                } catch (refineError) {
-                    console.warn('Refinamento por célula indisponível, usando a leitura da tabela inteira:', refineError);
-                }
-
-                this._photoOcrData = rows;
-                this._photoOcrMeta = { ...parsed, rows, refined: Boolean(lattice) };
+                const outcome = await this._runPhotoPipeline(file, token);
+                if (!outcome || token !== this._photoOcrToken) return;
+                this._photoOcrData = outcome.rows;
+                this._photoOcrMeta = { ...outcome.parsed, rows: outcome.rows, refined: outcome.refined };
                 if (isReport && !this._photoOcrData[lbs]) this._photoOcrData[lbs] = {};
                 this._setPhotoProgress('Leitura concluída.', 100);
                 this.closeModal('photoOcrProgressModal');
@@ -1335,25 +1771,52 @@
                     this.closeModal('photoOcrProgressModal');
                     this._clearPhotoWorkingState();
                 }
-            } finally {
-                if (canvas) {
-                    canvas.width = 0;
-                    canvas.height = 0;
-                }
-                if (sourceCanvas) {
-                    sourceCanvas.width = 0;
-                    sourceCanvas.height = 0;
-                }
-                if (worker) {
-                    try { await worker.terminate(); } catch (error) {}
-                }
-                if (this._photoOcrWorker === worker) this._photoOcrWorker = null;
             }
         };
 
         // Le uma unica celula: recorta, amplia, binariza e roda o OCR
         // restrito a digitos. O teste de tinta vem antes: celula sem tinta e
         // "sem producao" (0), nunca "falha de leitura".
+        // Recorta, amplia e binariza a celula dentro de cellCanvas. Devolve as
+        // estatisticas de tinta (ou null quando a celula esta vazia).
+        EvolutionAppClass.prototype._prepareCellCanvas = function (sourceCanvas, context, cellCanvas, cellContext, rect) {
+            const cellData = context.getImageData(rect.left, rect.top, rect.width, rect.height);
+            const stats = measureCellInk(cellData, rect.width, rect.height);
+            if (stats.inkRatio < CELL_INK_RATIO) return { cellData, stats, empty: true };
+
+            const scale = Math.max(2, Math.min(6, 58 / rect.height));
+            const padding = 14;
+            cellCanvas.width = Math.round(rect.width * scale) + padding * 2;
+            cellCanvas.height = Math.round(rect.height * scale) + padding * 2;
+            cellContext.fillStyle = stats.darkBackground ? '#000000' : '#ffffff';
+            cellContext.fillRect(0, 0, cellCanvas.width, cellCanvas.height);
+            cellContext.imageSmoothingEnabled = true;
+            cellContext.imageSmoothingQuality = 'high';
+            cellContext.drawImage(
+                sourceCanvas,
+                rect.left, rect.top, rect.width, rect.height,
+                padding, padding, Math.round(rect.width * scale), Math.round(rect.height * scale)
+            );
+            const upscaled = cellContext.getImageData(0, 0, cellCanvas.width, cellCanvas.height);
+            cellContext.putImageData(binarizeCellPixels(upscaled, stats), 0, 0);
+            return { cellData, stats, empty: false };
+        };
+
+        // Le o texto de uma celula de rotulo (cabecalho de hora ou coluna LBS).
+        // O OCR da celula isolada e muito mais confiavel do que o mesmo texto
+        // dentro do OCR da tabela inteira.
+        EvolutionAppClass.prototype._readPhotoTextCell = async function (sourceCanvas, context, cellCanvas, cellContext, rect, worker) {
+            const prepared = this._prepareCellCanvas(sourceCanvas, context, cellCanvas, cellContext, rect);
+            if (prepared.empty) return { text: '', confidence: 0, empty: true };
+            const result = await worker.recognize(cellCanvas, {}, { text: true });
+            const confidence = Number(result?.data?.confidence);
+            return {
+                text: String(result?.data?.text || '').trim(),
+                confidence: Number.isFinite(confidence) ? confidence : 0,
+                empty: false
+            };
+        };
+
         EvolutionAppClass.prototype._readPhotoCell = async function (sourceCanvas, context, cellCanvas, cellContext, rect, worker) {
             const cellData = context.getImageData(rect.left, rect.top, rect.width, rect.height);
             const stats = measureCellInk(cellData, rect.width, rect.height);
@@ -1399,6 +1862,132 @@
             };
         };
 
+        // Resolve as faixas da grade que a 1a passada nao conseguiu nomear,
+        // lendo APENAS a celula de rotulo correspondente. E o que torna a
+        // estrutura independente do OCR da tela inteira.
+        EvolutionAppClass.prototype._resolvePhotoStructure = async function (sourceCanvas, lattice, worker, Tesseract, token) {
+            // Sem nenhuma hora conhecida, o cabecalho inteiro precisa ser lido
+            // celula a celula. A faixa mais a esquerda nunca entra: e a coluna
+            // de rotulo ("Guindaste"/LBS), nao uma hora.
+            const pendingColumns = lattice.hourFit
+                ? lattice.columnBands.filter(band => band.hour === null && band !== lattice.labelColumn && band.index >= 1)
+                : lattice.columnBands.every(band => band.hour === null)
+                    ? lattice.columnBands.filter(band => band.index >= 1)
+                    : [];
+            const pending = { rows: lattice.rowBands, columns: pendingColumns };
+            if (!lattice.labelColumn && !pending.columns.length) return lattice;
+
+            const context = sourceCanvas.getContext('2d', { willReadFrequently: true });
+            const cellCanvas = document.createElement('canvas');
+            const cellContext = cellCanvas.getContext('2d', { willReadFrequently: true });
+            this._photoRefining = true;
+            try {
+                // Todas as linhas passam pela conferencia do rotulo, inclusive
+                // as que a 1a passada ja nomeou: atribuir producao ao guindaste
+                // errado e o pior erro possivel aqui.
+                if (lattice.labelColumn) {
+                    await worker.setParameters({
+                        tessedit_char_whitelist: '0123456789',
+                        tessedit_pageseg_mode: Tesseract.PSM?.SINGLE_LINE || '7',
+                        preserve_interword_spaces: '0'
+                    });
+                    const loose = [];
+                    for (const band of lattice.rowBands) {
+                        if (token !== this._photoOcrToken) return null;
+                        const rect = insetCellRect(lattice.labelColumn, band, sourceCanvas.width, sourceCanvas.height);
+                        if (!rect) continue;
+                        const cellData = context.getImageData(rect.left, rect.top, rect.width, rect.height);
+                        const stats = measureCellInk(cellData, rect.width, rect.height);
+                        if (stats.inkRatio < CELL_INK_RATIO) continue;
+                        const span = findLabelNumberSpan(cellData, rect.width, rect.height, stats);
+                        if (!span) { loose.push({ band, rect }); continue; }
+                        const reading = await this._readPhotoCell(sourceCanvas, context, cellCanvas, cellContext, {
+                            left: rect.left + span.left,
+                            top: rect.top,
+                            width: Math.max(4, span.right - span.left + 1),
+                            height: rect.height
+                        }, worker);
+                        // O desenho tem que ter a mesma quantidade de algarismos
+                        // que o OCR leu, e a mesma que a segmentacao encontrou.
+                        const digits = reading.status === 'value' ? String(reading.digits || '') : '';
+                        const strict = digits
+                            && reading.geometryOk !== false
+                            && Number(reading.confidence) >= LABEL_MIN_CONFIDENCE
+                            && digits.length === span.count;
+                        if (strict) band.cellKey = normalizeLbs(digits);
+                        else loose.push({ band, rect });
+                    }
+
+                    // Quando os algarismos do rótulo se encostam (desfoque), a
+                    // leitura estrita não decide. O rótulo inteiro entra então
+                    // como SEGUNDO candidato -- quem arbitra é a sequência.
+                    if (loose.length) {
+                        await worker.setParameters({ tessedit_char_whitelist: 'LBS0123456789 ' });
+                        for (const item of loose) {
+                            if (token !== this._photoOcrToken) return null;
+                            const reading = await this._readPhotoTextCell(sourceCanvas, context, cellCanvas, cellContext, item.rect, worker);
+                            if (reading.empty || reading.confidence < LABEL_MIN_CONFIDENCE) continue;
+                            const key = combinedLbs(reading.text);
+                            if (key) item.band.cellKey = key;
+                        }
+                    }
+                    reconcileRowKeys(lattice.rowBands);
+                }
+
+                // Cabecalho de hora conferido celula a celula. Uma hora lida so
+                // e aceita quando bate com a sequencia consecutiva do painel --
+                // atribuir producao a hora errada seria um erro silencioso.
+                const headerBand = lattice.rowBands[0];
+                if (pending.columns.length && headerBand) {
+                    await worker.setParameters({
+                        tessedit_char_whitelist: '0123456789:',
+                        tessedit_pageseg_mode: Tesseract.PSM?.SINGLE_LINE || '7'
+                    });
+                    const readings = [];
+                    for (const band of pending.columns) {
+                        if (token !== this._photoOcrToken) return null;
+                        const rect = insetCellRect(band, headerBand, sourceCanvas.width, sourceCanvas.height);
+                        if (!rect) continue;
+                        const reading = await this._readPhotoTextCell(sourceCanvas, context, cellCanvas, cellContext, rect, worker);
+                        if (reading.empty || reading.confidence < LABEL_MIN_CONFIDENCE) continue;
+                        const parsedHour = parseHourToken(reading.text);
+                        if (parsedHour) readings.push({ band, hour: parsedHour.value });
+                    }
+                    const fit = lattice.hourFit || fitHourSequence(readings.map(item => ({ index: item.band.index, hour: hourKey(item.hour) })));
+                    if (fit) {
+                        readings.forEach(item => {
+                            if (item.hour !== predictHour(fit, item.band.index)) return;
+                            item.band.hour = hourKey(item.hour);
+                            item.band.origin = 'cell';
+                        });
+                        // Buracos entre colunas confirmadas seguem a sequencia.
+                        const confirmed = lattice.columnBands.filter(band => band.hour !== null);
+                        if (confirmed.length >= 3) {
+                            const first = confirmed[0].index;
+                            const last = confirmed[confirmed.length - 1].index;
+                            lattice.columnBands.forEach(band => {
+                                if (band.hour !== null || band.index < first || band.index > last) return;
+                                band.hour = hourKey(predictHour(fit, band.index));
+                                band.origin = 'fit';
+                            });
+                        }
+                        lattice = { ...lattice, hourFit: fit };
+                    }
+                }
+            } finally {
+                this._photoRefining = false;
+                cellCanvas.width = 0;
+                cellCanvas.height = 0;
+            }
+
+            const columns = lattice.columnBands.filter(band => band.hour !== null)
+                .map(band => ({ hour: band.hour, left: band.left, right: band.right }));
+            const rows = lattice.rowBands.filter(band => band.key !== null)
+                .map(band => ({ key: band.key, top: band.top, bottom: band.bottom }));
+            markTruncatedColumns(columns);
+            return { ...lattice, columns, rows };
+        };
+
         EvolutionAppClass.prototype._refinePhotoCells = async function (sourceCanvas, lattice, worker, Tesseract, token) {
             const total = lattice.rows.length * lattice.columns.length;
             if (!total || total > MAX_REFINED_CELLS) return null;
@@ -1433,7 +2022,7 @@
                             retries.push({ key: row.key, hour: column.hour, rect, previous: reading });
                         }
                         done++;
-                        if (done % 3 === 0) this._setPhotoProgress('Conferindo célula por célula…', 90 + (done / total) * 8);
+                        if (done % 3 === 0) this._setPhotoProgress('Conferindo célula por célula…', 48 + (done / total) * 44);
                     }
                 }
 
@@ -1448,7 +2037,7 @@
                         else if (second.status === 'value' && second.geometryOk !== false) refined[retry.key][retry.hour] = second;
                         else if (second.bitmaps && second.bitmaps.length) refined[retry.key][retry.hour] = second;
                     }
-                    this._setPhotoProgress('Conferindo célula por célula…', 99);
+                    this._setPhotoProgress('Conferindo célula por célula…', 95);
                 }
 
                 // 3a tentativa: o que o OCR nao leu, decidimos pelo desenho,
@@ -1553,7 +2142,10 @@
             if (isReport) {
                 content.innerHTML = `<div class="photo-review-single"><h4>${escapeHtml(keys[0] || '')}</h4><div class="photo-review-single-grid">${hours.map(hour => `<div class="photo-review-cell"><label>${hour}h</label>${input(keys[0], hour)}</div>`).join('')}</div></div>`;
             } else {
-                content.innerHTML = `<table class="photo-review-table"><thead><tr><th scope="col">LBS</th>${hours.map(hour => `<th scope="col">${hour}h</th>`).join('')}</tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${escapeHtml(key)}</th>${hours.map(hour => `<td>${input(key, hour)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+                // data-hour serve ao layout: no celular a tabela vira um cartao
+                // por LBS e cada celula mostra a propria hora, sem rolagem
+                // horizontal. A estrutura da tabela nao muda.
+                content.innerHTML = `<table class="photo-review-table"><thead><tr><th scope="col">LBS</th>${hours.map(hour => `<th scope="col">${hour}h</th>`).join('')}</tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${escapeHtml(key)}</th>${hours.map(hour => `<td data-hour="${hour}h">${input(key, hour)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
             }
             this._updatePhotoReviewStatus();
         };
@@ -1724,6 +2316,11 @@
         hoursStartingInPeriod,
         getCellStatus,
         detectGridLines,
+        estimateSkewDegrees,
+        fitHourSequence,
+        predictHour,
+        latticeIsUsable,
+        demoteCoarseOnlyRows,
         findVisibleContentBounds,
         findGridTableBounds,
         buildCellLattice,
@@ -1732,6 +2329,10 @@
         mergeCellReadings,
         applyRefinedCells,
         extractGlyphBitmaps,
+        findLabelNumberSpan,
+        findGlyphRuns,
+        reconcileRowKeys,
+        keepConsistentRowKeys,
         bitmapSimilarity,
         collectGlyphTemplates,
         classifyByTemplates,

@@ -15,6 +15,14 @@ const {
     measureCellInk,
     mergeCellReadings,
     applyRefinedCells,
+    estimateSkewDegrees,
+    fitHourSequence,
+    predictHour,
+    latticeIsUsable,
+    demoteCoarseOnlyRows,
+    findLabelNumberSpan,
+    reconcileRowKeys,
+    keepConsistentRowKeys,
     normalizePhotoImportSettings,
     canUsePhotoImport,
     install
@@ -432,6 +440,177 @@ assert.equal(porMolde.value, 0);
 assert.equal(porMolde.source, 'template');
 assert.equal(getCellStatus(porMolde).status, 'recognized');
 
+
+// ===========================================================================
+// ESTRUTURA PELA GEOMETRIA (independente do OCR da tabela inteira)
+// ===========================================================================
+
+// --- sequencia de horas -----------------------------------------------------
+// Tres colunas lidas ja determinam todas as outras.
+const seq = fitHourSequence([
+    { index: 1, hour: '15' }, { index: 2, hour: '14' }, { index: 4, hour: '12' }
+]);
+assert.ok(seq, 'horas consecutivas precisam gerar uma sequencia');
+assert.equal(predictHour(seq, 3), 13);
+assert.equal(predictHour(seq, 5), 11);
+
+// Horas fora de ordem NAO viram sequencia (nada e inventado a partir de lixo).
+assert.equal(fitHourSequence([
+    { index: 1, hour: '02' }, { index: 2, hour: '19' }, { index: 3, hour: '07' }, { index: 4, hour: '13' }
+]), null);
+assert.equal(fitHourSequence([{ index: 1, hour: '15' }, { index: 2, hour: '14' }]), null);
+
+// Virada do dia (23 -> 00) faz parte da sequencia.
+const virada = fitHourSequence([
+    { index: 1, hour: '01' }, { index: 2, hour: '00' }, { index: 3, hour: '23' }
+]);
+assert.ok(virada);
+assert.equal(predictHour(virada, 4), 22);
+
+// --- lattice so com a grade -------------------------------------------------
+// Sem nenhuma pista da 1a passada, as FAIXAS da grade continuam disponiveis
+// para serem nomeadas por OCR de celula.
+const soGrade = buildCellLattice(gridLines, null);
+assert.ok(soGrade, 'a grade sozinha precisa gerar as faixas');
+assert.equal(soGrade.columns.length, 0);
+assert.equal(soGrade.rows.length, 0);
+assert.ok(soGrade.columnBands.length >= 3);
+assert.ok(soGrade.rowBands.length >= 2);
+assert.equal(latticeIsUsable(soGrade), false);
+assert.equal(latticeIsUsable(lattice), true);
+
+// Buraco no meio do cabecalho e preenchido pela sequencia: a coluna do meio
+// nao foi lida pelo OCR, mas a geometria sabe qual hora e.
+const comBuraco = buildCellLattice(gridLines, {
+    headers: [{ hour: 12, x: 150 }, { hour: 10, x: 350 }, { hour: 9, x: 450 }],
+    rows: layout.rows
+});
+assert.deepEqual(comBuraco.columns.map(c => c.hour), ['12', '11', '10', '09']);
+
+// Hora lida que contraria a sequencia e corrigida pela geometria.
+const comErro = buildCellLattice(gridLines, {
+    headers: [{ hour: 12, x: 150 }, { hour: 3, x: 250 }, { hour: 10, x: 350 }, { hour: 9, x: 450 }],
+    rows: layout.rows
+});
+assert.deepEqual(comErro.columns.map(c => c.hour), ['12', '11', '10', '09']);
+
+// --- rotulos das linhas -----------------------------------------------------
+// "LBS 48" lido numa foto inclinada: a sequencia das LBS corrige.
+const bandas = [
+    { index: 1, key: 'LBS 07', cellKey: 'LBS 07' },
+    { index: 2, key: 'LBS 48', cellKey: 'LBS 08' },
+    { index: 3, key: 'LBS 06', cellKey: 'LBS 09' }
+];
+reconcileRowKeys(bandas);
+assert.deepEqual(bandas.map(b => b.key), ['LBS 07', 'LBS 08', 'LBS 09']);
+
+// Sem sequencia e com as duas leituras discordando, a linha NAO entra
+// (o conferente adiciona a LBS na mao) -- nunca se escolhe no chute.
+const duvidosas = [
+    { index: 1, key: 'LBS 07', cellKey: 'LBS 07' },
+    { index: 2, key: 'LBS 44', cellKey: 'LBS 91' }
+];
+reconcileRowKeys(duvidosas);
+assert.deepEqual(duvidosas.map(b => b.key), ['LBS 07', null]);
+
+// Ordem crescente e obrigatoria: rotulo fora de ordem cai fora.
+const foraDeOrdem = [{ key: 'LBS 07' }, { key: 'LBS 08' }, { key: 'LBS 03' }];
+keepConsistentRowKeys(foraDeOrdem);
+assert.deepEqual(foraDeOrdem.map(b => b.key), ['LBS 07', 'LBS 08', null]);
+
+// --- celula de rotulo "LBS 07" ---------------------------------------------
+// O numero fica depois do maior espaco; "Paradas" nao tem esse formato.
+function buildLabelCell(groups) {
+    const width = 160;
+    const height = 40;
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let index = 0; index < data.length; index += 4) {
+        data[index] = data[index + 1] = data[index + 2] = 18;
+        data[index + 3] = 255;
+    }
+    groups.forEach(([from, to]) => {
+        for (let y = 10; y < 30; y++) {
+            for (let x = from; x <= to; x++) {
+                const index = (y * width + x) * 4;
+                data[index] = data[index + 1] = data[index + 2] = 250;
+            }
+        }
+    });
+    const imageData = { data };
+    return { imageData, width, height, stats: measureCellInk(imageData, width, height) };
+}
+// L B S  (espaco grande)  0 7
+const rotulo = buildLabelCell([[10, 22], [26, 38], [42, 54], [90, 102], [106, 118]]);
+const span = findLabelNumberSpan(rotulo.imageData, rotulo.width, rotulo.height, rotulo.stats);
+assert.ok(span, 'o numero do rotulo precisa ser isolado');
+assert.equal(span.count, 2);
+assert.ok(span.left >= 88 && span.right <= 120);
+// Palavra com muitos desenhos e vao uniforme ("Paradas") nao e rotulo de LBS.
+const palavra = buildLabelCell([[10, 20], [24, 34], [38, 48], [52, 62], [66, 76], [80, 90], [94, 104]]);
+assert.equal(findLabelNumberSpan(palavra.imageData, palavra.width, palavra.height, palavra.stats), null);
+
+// --- sem grade, leitura fraca vira revisao ---------------------------------
+const rebaixadas = demoteCoarseOnlyRows({
+    'LBS 07': { '15': { value: 9, confidence: 61 }, '14': { value: 4, confidence: 93 } }
+});
+assert.equal(getCellStatus(rebaixadas['LBS 07']['15']).status, 'unrecognized');
+assert.equal(getCellStatus(rebaixadas['LBS 07']['14']).value, 4);
+
+// --- linha inventada pela 1a passada nao sobrevive a grade ------------------
+const semFantasma = applyRefinedCells(
+    { 'LBS 07': { '15': { value: 3, confidence: 90 } }, 'LBS 48': { '15': { value: 9, confidence: 90 } } },
+    {},
+    ['LBS 07']
+);
+assert.deepEqual(Object.keys(semFantasma), ['LBS 07']);
+
+// --- inclinacao -------------------------------------------------------------
+// Grade sintetica reta e a mesma girada: o angulo tem que ser recuperado.
+function buildSkewedGrid(degrees) {
+    const width = 640;
+    const height = 360;
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let index = 0; index < data.length; index += 4) {
+        data[index] = data[index + 1] = data[index + 2] = 20;
+        data[index + 3] = 255;
+    }
+    const tangent = Math.tan(degrees * Math.PI / 180);
+    for (let line = 1; line <= 7; line++) {
+        const base = line * 45;
+        for (let x = 0; x < width; x++) {
+            const y = Math.round(base + x * tangent);
+            for (let thickness = 0; thickness < 2; thickness++) {
+                const target = y + thickness;
+                if (target < 0 || target >= height) continue;
+                const index = (target * width + x) * 4;
+                data[index] = data[index + 1] = data[index + 2] = 140;
+            }
+        }
+    }
+    return { data };
+}
+assert.equal(estimateSkewDegrees(buildSkewedGrid(0), 640, 360), 0);
+const inclinado = estimateSkewDegrees(buildSkewedGrid(2), 640, 360);
+assert.ok(Math.abs(inclinado - 2) <= .25, `esperado ~2 graus, obtido ${inclinado}`);
+const inclinadoNegativo = estimateSkewDegrees(buildSkewedGrid(-3.5), 640, 360);
+assert.ok(Math.abs(inclinadoNegativo + 3.5) <= .25, `esperado ~-3.5 graus, obtido ${inclinadoNegativo}`);
+
+// --- tema claro -------------------------------------------------------------
+// A mesma tabela com as cores invertidas (tema claro do painel) precisa gerar
+// exatamente a mesma grade: a deteccao olha contraste local, nao a cor.
+const claro = { data: new Uint8ClampedArray(fake.imageData.data.length) };
+for (let index = 0; index < claro.data.length; index += 4) {
+    claro.data[index] = 255 - fake.imageData.data[index];
+    claro.data[index + 1] = 255 - fake.imageData.data[index + 1];
+    claro.data[index + 2] = 255 - fake.imageData.data[index + 2];
+    claro.data[index + 3] = 255;
+}
+const gradeClara = detectGridLines(claro, fake.width, fake.height);
+assert.ok(gradeClara, 'a grade precisa ser detectada tambem no tema claro');
+assert.deepEqual(gradeClara.xs, fake.xs);
+assert.deepEqual(gradeClara.ys, fake.ys);
+
+
 class FakeEvolutionApp {}
 install(FakeEvolutionApp);
 assert.equal(typeof FakeEvolutionApp.prototype.startPhotoImport, 'function');
@@ -439,6 +618,8 @@ assert.equal(typeof FakeEvolutionApp.prototype.confirmPhotoImport, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype.transferPhotoReportToEntry, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype._refinePhotoCells, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype._readPhotoCell, 'function');
+assert.equal(typeof FakeEvolutionApp.prototype._resolvePhotoStructure, 'function');
+assert.equal(typeof FakeEvolutionApp.prototype._runPhotoPipeline, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype.canUsePhotoImport, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype.applyPhotoImportAccess, 'function');
 assert.equal(typeof FakeEvolutionApp.prototype.setPhotoImportSettings, 'function');
