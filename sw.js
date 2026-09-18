@@ -2,7 +2,7 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '7.1';
+const APP_VERSION = '7.5';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
 
 const LOCAL_ASSETS = [
@@ -13,6 +13,7 @@ const LOCAL_ASSETS = [
   './js/config.js',
   './js/main.js',
   './js/auth.js',
+  './js/auth-credentials.js',
   './js/firebase-sync.js',
   './js/ui.js',
   './js/entries.js',

@@ -2,16 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firebasestorage.googleapis.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0d0f13">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Evolution">
-    <title>EVOLUTION V7.1 | Felipe Prado Systems</title>
+    <title>EVOLUTION V7.5 | Felipe Prado Systems</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgcnk9IjEwMCIgZmlsbD0iIzE0MTAwZCIvPjxwYXRoIGQ9Ik0yNTYgNjAgTDQ1MCAxNjAgTDQ1MCAzNDAgUTI1NiA1MDAgNjIgMzQwIEw2MiAxNjAgWiIgc3Ryb2tlPSIjZmY3YTQ1IiBzdHJva2Utd2lkdGg9IjIwIiBmaWxsPSJyZ2JhKDI1NSwgMTIyLCA2OSwgMC4xKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ1cmwoI2cpIiBmb250LXNpemU9IjI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiPkU8L3RleHQ+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY3YTQ1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
-    <link rel="stylesheet" href="estilos.css?v=7.1">
-    <link rel="stylesheet" href="visual.css?v=7.1">
+    <link rel="stylesheet" href="estilos.css?v=7.5">
+    <link rel="stylesheet" href="visual.css?v=7.5">
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -229,6 +230,7 @@
 
             <div class="login-card">
                 <div class="login-section active" id="loginSection">
+                    <div id="pinLoginBlock">
                     <div class="pin-display" id="pinDisplay">
                         <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
                         <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -247,22 +249,41 @@
                         <button class="key-btn" onclick="app.addDigit(0, this)">0</button>
                         <button class="key-btn action" id="btnLoginAction" onclick="app.login()">→</button>
                     </div>
+                    </div>
+                    <!-- SEGURANCA v7.2: login por ID + senha (contas migradas) -->
+                    <div id="idLoginBlock" class="hidden">
+                        <div class="input-group">
+                            <label class="input-label">ID de acesso</label>
+                            <input type="text" id="loginIdInput" placeholder="Seu ID de acesso" maxlength="20" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Senha</label>
+                            <input type="password" id="loginPasswordInput" placeholder="Sua senha" maxlength="64" autocomplete="current-password">
+                        </div>
+                        <button class="btn btn-primary" id="btnCredentialLogin" onclick="app.loginWithCredentials()" style="width: 100%;">Entrar</button>
+                    </div>
+                    <button type="button" class="login-method-switch" id="btnLoginMethodSwitch" onclick="app.toggleLoginMethod()">Entrar com ID e senha</button>
                 </div>
 
                 <div class="register-section" id="registerSection">
                     <div id="registerForm">
                         <div class="input-group">
-                            <label class="input-label">Nome Completo</label>
-                            <input type="text" id="regName" placeholder="Digite seu nome completo" style="text-transform: uppercase;">
+                            <label class="input-label">Nome Completo (aparece nos relatórios)</label>
+                            <input type="text" id="regName" placeholder="Ex.: João da Silva" style="text-transform: uppercase;" autocomplete="name">
+                            <div class="input-hint">Seu nome real. É ele que aparece nos seus relatórios de produção.</div>
                         </div>
                         <div class="input-group">
-                            <label class="input-label">Senha (4 a 6 digitos)</label>
-                            <input type="password" id="regCode" placeholder="Crie uma senha numerica" maxlength="6" inputmode="numeric">
-                            <div class="input-hint">De 4 a 6 numeros. Esta sera sua senha de acesso.</div>
+                            <label class="input-label">ID de acesso (só para login)</label>
+                            <input type="text" id="regLoginId" placeholder="Ex.: joao.silva" maxlength="20" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+                            <div class="input-hint">Um apelido curto que você usa só para entrar no app — não aparece nos relatórios. 4 a 20 caracteres: letras, números, ponto, traço ou _.</div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Senha</label>
+                            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" maxlength="64" autocomplete="new-password">
                         </div>
                         <div class="input-group">
                             <label class="input-label">Confirmar Senha</label>
-                            <input type="password" id="regCodeConfirm" placeholder="Repita a senha" maxlength="6" inputmode="numeric">
+                            <input type="password" id="regPasswordConfirm" placeholder="Repita a senha" maxlength="64" autocomplete="new-password">
                         </div>
                         <button class="btn btn-orange" onclick="app.submitRegistration()">Solicitar Cadastro</button>
                     </div>
@@ -277,6 +298,72 @@
             </div>
 
             <div class="login-footer"><div>Felipe Prado Systems</div><div>Todos os direitos reservados © 2026</div></div>
+        </div>
+    </div>
+
+    <!-- SEGURANCA v7.2: MIGRACAO PIN -> ID + SENHA (aparece apos login antigo valido) -->
+    <div class="modal-overlay" id="credentialMigrationModal" role="dialog" aria-modal="true" aria-labelledby="credentialMigrationTitle">
+        <div class="modal-content" style="border: 1px solid var(--border);">
+            <div class="modal-header"><h3 class="modal-title" id="credentialMigrationTitle" style="color: var(--primary);">Atualização de segurança</h3></div>
+            <div class="modal-body" style="line-height: 1.6;">
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">Olá, <strong id="migUserName" style="color: var(--text);"></strong>. O Evolution recebeu uma atualização de segurança. Para proteger sua conta, crie agora um <strong>ID de acesso</strong> e uma <strong>senha</strong>. Nos próximos acessos você entrará com eles no lugar do PIN. Seus dados e seu histórico continuam os mesmos.</p>
+                <div class="input-group">
+                    <label class="input-label">ID de acesso (único)</label>
+                    <input type="text" id="migLoginId" placeholder="ex.: joao.silva" maxlength="20" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    <div class="input-hint">4 a 20 caracteres: letras, números, ponto, traço ou _</div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Senha</label>
+                    <input type="password" id="migPassword" placeholder="Mínimo 6 caracteres" maxlength="64" autocomplete="new-password">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Confirmar senha</label>
+                    <input type="password" id="migPasswordConfirm" placeholder="Repita a senha" maxlength="64" autocomplete="new-password">
+                </div>
+                <button class="btn btn-primary" id="btnSubmitMigration" onclick="app.submitCredentialMigration()" style="width: 100%;">Salvar novas credenciais</button>
+                <button class="btn btn-glass" onclick="app.postponeCredentialMigration()" style="width: 100%; margin-top: 10px;">Fazer depois</button>
+                <div class="input-hint" style="margin-top: 10px; text-align: center;">Guarde seu ID e senha. Se esquecer, o administrador pode liberar um novo cadastro de senha.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEGURANCA v7.3: ADMIN redefine a senha de um usuario (quando ele esquece) -->
+    <div class="modal-overlay" id="adminSetPasswordModal" role="dialog" aria-modal="true" aria-labelledby="adminSetPasswordTitle">
+        <div class="modal-content" style="border: 1px solid var(--border);">
+            <div class="modal-header"><h3 class="modal-title" id="adminSetPasswordTitle">Redefinir senha</h3><button class="modal-close" onclick="app.closeModal('adminSetPasswordModal')">✕</button></div>
+            <div class="modal-body" style="line-height: 1.6;">
+                <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 4px;">Usuário: <strong id="adminSetPwUserName" style="color: var(--text);"></strong></p>
+                <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 14px;">ID de acesso: <strong id="adminSetPwUserId" style="color: var(--text); font-family: 'JetBrains Mono';"></strong></p>
+                <p style="color: var(--text-muted); font-size: 0.72rem; margin-bottom: 14px;">Defina uma senha temporária e informe ao usuário. Ninguém consegue ver a senha atual dele (ela fica protegida). Ele poderá trocar por uma nova em Configurações depois de entrar.</p>
+                <div class="input-group">
+                    <label class="input-label">Nova senha temporária</label>
+                    <input type="text" id="adminNewPassword" placeholder="Mínimo 6 caracteres" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <div class="input-hint">Deixei visível de propósito para você anotar e passar ao usuário.</div>
+                </div>
+                <button class="btn btn-primary" id="btnAdminSetPassword" onclick="app.submitAdminSetPassword()" style="width: 100%;">Salvar nova senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEGURANCA v7.3: USUARIO troca a propria senha (pede a senha atual) -->
+    <div class="modal-overlay" id="changePasswordModal" role="dialog" aria-modal="true" aria-labelledby="changePasswordTitle">
+        <div class="modal-content" style="border: 1px solid var(--border);">
+            <div class="modal-header"><h3 class="modal-title" id="changePasswordTitle">Alterar minha senha</h3><button class="modal-close" onclick="app.closeModal('changePasswordModal')">✕</button></div>
+            <div class="modal-body" style="line-height: 1.6;">
+                <div class="input-group">
+                    <label class="input-label">Senha atual</label>
+                    <input type="password" id="curPassword" placeholder="Sua senha atual" maxlength="64" autocomplete="current-password">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Nova senha</label>
+                    <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" maxlength="64" autocomplete="new-password">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Confirmar nova senha</label>
+                    <input type="password" id="newPasswordConfirm" placeholder="Repita a nova senha" maxlength="64" autocomplete="new-password">
+                </div>
+                <button class="btn btn-primary" id="btnChangePasswordSubmit" onclick="app.submitChangePassword()" style="width: 100%;">Salvar nova senha</button>
+            </div>
         </div>
     </div>
 
@@ -310,7 +397,7 @@
             <a class="brand-lockup" href="#mainApp" data-workspace-target="overview"><span class="brand-symbol">E<span></span></span><span>EVOLUTION<small>GESTÃO DE PRODUÇÃO</small></span></a>
             <div class="sidebar-label">WORKSPACE</div>
             <nav class="sidebar-nav"><button type="button" class="workspace-nav active" data-workspace-target="overview" aria-current="page"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Visão geral</span></button><button type="button" class="workspace-nav" data-workspace-target="secNew"><span class="ui-icon icon-plus" aria-hidden="true"></span><span>Registrar produção</span><span class="nav-plus">+</span></button><button type="button" class="workspace-nav" data-workspace-target="secCal"><span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Calendário</span></button><button type="button" class="workspace-nav" data-workspace-target="secRel"><span class="ui-icon icon-report" aria-hidden="true"></span><span>Gerar relatório</span></button><button type="button" class="workspace-nav" data-workspace-target="secSim"><span class="ui-icon icon-calculator" aria-hidden="true"></span><span>Simulador rápido</span></button><button type="button" class="workspace-nav" data-workspace-target="secChart"><span class="ui-icon icon-chart" aria-hidden="true"></span><span>Performance</span></button><button type="button" class="workspace-nav" data-workspace-target="secHist"><span class="ui-icon icon-inbox" aria-hidden="true"></span><span>Histórico</span></button></nav>
-            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>7.1</b></span></div>
+            <div class="sidebar-bottom"><div class="sidebar-port"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Conectado à sua jornada<small>Do porto aos seus resultados.</small></span></div><button type="button" class="workspace-nav" onclick="app.openModal('configModal')"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>Configurações</span></button><span class="sidebar-version">EVOLUTION <b>7.5</b></span></div>
         </aside>
         <header class="app-header">
             <div class="header-location"><span class="ui-icon icon-anchor" aria-hidden="true"></span><span>Workspace <i>/</i> <strong>Visão geral</strong></span></div>
@@ -851,11 +938,11 @@
                     <div id="admUsers" class="admin-toggle-content">
                         <div class="input-group" style="margin-bottom: 12px;">
                             <label class="input-label">Adicionar Novo Usuario</label>
-                            <div class="admin-grid-fix" style="margin-bottom: 8px;">
-                                <input type="text" id="newUserName" placeholder="Nome" style="text-transform: uppercase;">
-                                <input type="text" id="newUserCode" placeholder="Senha (PIN)" maxlength="6" inputmode="numeric">
-                            </div>
+                            <input type="text" id="newUserName" placeholder="Nome completo (relatórios)" style="text-transform: uppercase; margin-bottom: 8px;">
+                            <input type="text" id="newUserLoginId" placeholder="ID de acesso (login)" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" style="margin-bottom: 8px;">
+                            <input type="password" id="newUserPassword" placeholder="Senha inicial (mín. 6)" maxlength="64" autocomplete="new-password" style="margin-bottom: 8px;">
                             <button class="btn btn-primary" onclick="app.addNewUser()"><span class="ui-icon icon-plus" aria-hidden="true"></span> Adicionar</button>
+                            <div class="input-hint" style="margin-top: 6px;">O usuário entra com esse ID e senha. Ele pode trocar a senha depois em Configurações.</div>
                         </div>
                         <div class="input-group">
                             <label class="input-label">Lista de Usuarios</label>
@@ -1026,6 +1113,28 @@
                     </div>
                 </div>
 
+                <!-- SEGURANCA v7.5: conta de administrador reserva (backup de acesso admin) -->
+                <div class="admin-section">
+                    <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admBackupAdmin')"><span><span class="ui-icon icon-shield" aria-hidden="true"></span> Admin Reserva</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
+                    <div id="admBackupAdmin" class="admin-toggle-content">
+                        <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
+                            Cria uma <strong>segunda conta de administrador</strong> que entra por <strong>ID + senha</strong> com os mesmos poderes desta conta
+                            (aprovar usuários, ver IDs, redefinir senhas, taxas, avisos). Serve como acesso de emergência.
+                            A conta atual <strong>não é alterada</strong>. Se o ID já for de um admin reserva, apenas a senha é atualizada.
+                        </p>
+                        <div id="backupAdminList" style="margin-bottom:12px; font-size:0.74rem; color:var(--text-muted); line-height:1.6;"></div>
+                        <div class="input-group" style="margin-bottom: 8px;">
+                            <input type="text" id="backupAdminName" placeholder="Nome de exibição (ex.: DECKARD ADM)" style="text-transform: uppercase; margin-bottom: 8px;">
+                            <input type="text" id="backupAdminLoginId" placeholder="ID de acesso (ex.: DeckardAdm)" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" style="margin-bottom: 8px;">
+                            <input type="password" id="backupAdminPassword" placeholder="Senha (mín. 6)" maxlength="64" autocomplete="new-password" style="margin-bottom: 8px;">
+                            <input type="password" id="backupAdminPasswordConfirm" placeholder="Confirmar senha" maxlength="64" autocomplete="new-password" style="margin-bottom: 8px;">
+                            <button class="btn btn-primary" id="btnSaveBackupAdmin" onclick="app.saveBackupAdmin()" style="width:100%;"><span class="ui-icon icon-shield" aria-hidden="true"></span> Criar / atualizar admin reserva</button>
+                            <div class="input-hint" style="margin-top: 6px;">A senha é guardada só como hash (PBKDF2). Anote-a em local seguro: ela não pode ser recuperada, apenas redefinida aqui.</div>
+                        </div>
+                        <div id="backupAdminStatus" style="display:none; margin-top:8px; font-size:0.78rem; font-weight:700; padding:10px 12px; background:var(--surface-elevated); border-radius:10px; border:1px solid var(--border); line-height:1.5;"></div>
+                    </div>
+                </div>
+
                 <div class="admin-section">
                     <button class="admin-toggle-btn" onclick="app.toggleAdminSection('admForceLogout')"><span>⚡ Manutenção / Atualização</span><span><span class="ui-icon icon-chevron" aria-hidden="true"></span></span></button>
                     <div id="admForceLogout" class="admin-toggle-content">
@@ -1050,7 +1159,7 @@
             <div class="modal-header"><h3 class="modal-title">Gerenciar Usuario</h3><button class="modal-close" onclick="app.closeModal('userManagementModal')">✕</button></div>
             <div class="modal-body">
                 <h4 id="manageUserName" style="text-align: center; margin-bottom: 8px; color: var(--text);">Nome</h4>
-                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 8px;">PIN: <span id="manageUserPin">000000</span></div>
+                <div style="text-align: center; font-family: 'JetBrains Mono'; color: var(--text-secondary); margin-bottom: 8px;"><span id="manageUserPin">—</span></div>
                 <div id="manageUserLastLogin" style="text-align: center; margin-bottom: 20px; font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 5px;">
                     <span><span class="ui-icon icon-clock" aria-hidden="true"></span></span><span id="manageUserLastLoginText">Ultimo acesso: sem registro</span>
                 </div>
@@ -1074,6 +1183,7 @@
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 16px 0;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <button class="btn btn-glass" id="btnBlockUser" onclick="app.toggleBlockFromModal()">Bloquear</button>
+                    <button class="btn btn-glass" id="btnResetCredentials" onclick="app.openAdminSetPassword()" style="display: none;">Redefinir senha</button>
                 </div>
                 <button class="btn btn-danger" onclick="app.openConfirmModal('deleteUser', 'Excluir usuario permanentemente?', app.managingUser)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2);"><span class="ui-icon icon-trash" aria-hidden="true"></span> Excluir Usuario</button>
             </div>
@@ -1194,6 +1304,7 @@
                     <button class="btn btn-glass" onclick="app.toggleMetaEditor()"><span class="ui-icon icon-chart" aria-hidden="true"></span> Meta</button>
                     <button class="btn btn-glass" onclick="app.openPdfOptions()"><span class="ui-icon icon-report" aria-hidden="true"></span> Baixar PDF</button>
                 </div>
+                <button id="btnChangePassword" class="btn btn-glass" onclick="app.openChangePassword()" style="width: 100%; margin-top: 10px; display: none;"><span class="ui-icon icon-shield" aria-hidden="true"></span> ALTERAR MINHA SENHA</button>
                 <button id="btnAddHome" class="btn btn-glass" onclick="app.addToHomeScreen()" style="width: 100%; margin-top: 10px; border-color: var(--primary);"><span class="ui-icon icon-plus" aria-hidden="true"></span> ADICIONAR A TELA INICIAL</button>
                 <button class="btn" onclick="app.showPix()" style="width: 100%; background: var(--gradient-gold); color: #0d1117; margin-top: 10px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); font-weight: 800;"><span class="ui-icon icon-star" aria-hidden="true"></span> APOIAR O PROJETO</button>
                 <button class="btn btn-danger" onclick="app.logout()" style="margin-top: 20px;">Sair do Sistema</button>
@@ -1309,20 +1420,29 @@
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
+        /* SEGURANCA v7.3: alternancia PIN / ID + senha na tela de login */
+        #pinLoginBlock.hidden, #idLoginBlock.hidden { display: none; }
+        #idLoginBlock input { width: 100%; }
+        .login-method-switch { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 16px; padding: 11px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--text-secondary); font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s ease; touch-action: manipulation; }
+        .login-method-switch:active { transform: scale(0.98); }
+        .login-method-switch:hover { color: var(--text); border-color: rgba(var(--primary-rgb), 0.4); }
+        /* SEGURANCA v7.4: modais de senha ficam acima dos outros modais (redefinir/alterar sobre o painel) */
+        #adminSetPasswordModal, #changePasswordModal { z-index: 1100; }
     </style>
 
-    <script src="js/config.js?v=7.1"></script>
-    <script src="js/main.js?v=7.1"></script>
-    <script src="js/auth.js?v=7.1"></script>
-    <script src="js/firebase-sync.js?v=7.1"></script>
-    <script src="js/ui.js?v=7.1"></script>
-    <script src="js/entries.js?v=7.1"></script>
-    <script src="js/admin.js?v=7.1"></script>
-    <script src="js/utils.js?v=7.1"></script>
-    <script src="js/photo-ocr.js?v=7.1"></script>
-    <script src="js/turtle.js?v=7.1"></script>
-    <script src="js/workspace.js?v=7.1"></script>
-    <script src="js/init.js?v=7.1"></script>
+    <script src="js/config.js?v=7.5"></script>
+    <script src="js/main.js?v=7.5"></script>
+    <script src="js/auth.js?v=7.5"></script>
+    <script src="js/auth-credentials.js?v=7.5"></script>
+    <script src="js/firebase-sync.js?v=7.5"></script>
+    <script src="js/ui.js?v=7.5"></script>
+    <script src="js/entries.js?v=7.5"></script>
+    <script src="js/admin.js?v=7.5"></script>
+    <script src="js/utils.js?v=7.5"></script>
+    <script src="js/photo-ocr.js?v=7.5"></script>
+    <script src="js/turtle.js?v=7.5"></script>
+    <script src="js/workspace.js?v=7.5"></script>
+    <script src="js/init.js?v=7.5"></script>
 
     <script>
         // Registra o Service Worker para controle de cache e atualizações automáticas
@@ -1330,7 +1450,7 @@
             // Flag: se já havia SW controlando a página antes de carregar
             const hadController = !!navigator.serviceWorker.controller;
 
-            navigator.serviceWorker.register('./sw.js?v=7.1', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=7.5', { updateViaCache: 'none' })
                 .then(reg => {
                     // Verifica se há uma atualização pendente logo ao carregar
                     reg.update();

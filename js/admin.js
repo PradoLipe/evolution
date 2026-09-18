@@ -114,7 +114,7 @@
             container.innerHTML = filtered.map(p => {
                 const docId = String(p.docId || p.code || '').trim();
                 const safeName = esc(p.name || 'SEM NOME');
-                const safeCode = esc(p.code || '------');
+                const accessLabel = p.loginId ? ('ID: ' + esc(p.loginId)) : ('PIN: ' + esc(p.code || '------'));
 
                 // Trata datas em varios formatos
                 let dt = null;
@@ -131,7 +131,7 @@
                     <div class="pending-item">
                         <div class="pending-info">
                             <span class="pending-name">${safeName}</span>
-                            <span class="pending-date">PIN: ${safeCode} &bull; ${dateTxt}</span>
+                            <span class="pending-date">${accessLabel} &bull; ${dateTxt}</span>
                         </div>
                         <div class="pending-actions">
                             <button class="btn-tiny btn-approve" data-action="approve" data-docid="${esc(docId)}" title="Aprovar">&#10003;</button>
@@ -149,9 +149,14 @@
             const pendingDocId = pending.docId || docId;
             const userDocId = pending.docId || docId;
 
-            const existing = Object.values(this.users).find(u => u.code === pending.code);
+            // SEGURANCA v7.3: cadastros novos vem com ID + senha (sem PIN).
+            // Checa se o ID ja esta em uso; cadastros antigos (com PIN/code) continuam validos.
+            const pendLoginId = pending.loginId ? String(pending.loginId).trim().toLowerCase() : null;
+            const existing = pendLoginId
+                ? Object.values(this.users).find(u => (u.loginId || '').toLowerCase() === pendLoginId)
+                : Object.values(this.users).find(u => u.code && u.code === pending.code);
             if (existing) {
-                this.showToast(`PIN ${pending.code} já em uso`, 'error');
+                this.showToast(pendLoginId ? `ID ${pending.loginId} já em uso` : 'PIN já em uso', 'error');
                 return;
             }
 
@@ -161,7 +166,6 @@
             const notifId = 'trial_' + userDocId + '_' + Date.now();
             const userData = {
                 name: pending.name,
-                code: pending.code,
                 blocked: false,
                 isAdmin: false,
                 approvedAt: new Date().toISOString(),
@@ -175,6 +179,17 @@
                 vipNotificationType: 'trial',
                 vipNotificationUntil: trialDate.toISOString()
             };
+            // Preserva as credenciais do cadastro: ID + senha (novo) ou PIN/code (legado)
+            if (pending.loginId) {
+                userData.loginId = pending.loginId;
+                userData.passwordHash = pending.passwordHash;
+                userData.passwordSalt = pending.passwordSalt;
+                userData.passwordAlgo = pending.passwordAlgo;
+                userData.passwordIter = pending.passwordIter;
+                userData.authMigrated = pending.authMigrated === true;
+            } else if (pending.code) {
+                userData.code = pending.code;
+            }
 
             try {
                 await this.ensureFirebaseReady();
@@ -594,7 +609,7 @@
                     <div class="user-item">
                         <div class="user-item-info">
                             <span class="user-item-name">${esc(u.name)} ${u.isAdmin ? '<span style="font-size:0.65rem;color:var(--accent);border:1px solid;padding:0 4px;border-radius:4px;margin-left:4px;">ADM</span>' : ''} ${isVip ? `<span style="font-size:0.8rem;margin-left:4px;">${vipIcon}</span>` : ''}</span>
-                            <span class="user-item-code">PIN: ${esc(u.code)}</span>
+                            <span class="user-item-code">${esc(this.describeUserAccess(u))}</span>
                             <span class="user-last-seen">${presence.label}</span>
                             ${vipDaysText}
                         </div>
@@ -605,28 +620,43 @@
                     </div>
                 `;
             }).join('');
+            if (typeof this.renderBackupAdminList === 'function') this.renderBackupAdminList();
         };
+        // SEGURANCA v7.2: PIN com hash nao e mais exibido; mostra o metodo de acesso da conta
+        EvolutionApp.prototype.describeUserAccess = function(u, detailed = false) {
+            if (!u) return '';
+            const migrated = typeof this.isUserMigrated === 'function' && this.isUserMigrated(u);
+            if (migrated) return detailed ? `ID de acesso: ${u.loginId} · senha protegida` : `ID: ${u.loginId}`;
+            const hashed = window.PinSecurity && PinSecurity.isHashed(u.code);
+            if (hashed) return detailed ? 'Acesso por PIN (ainda não criou ID/senha)' : 'PIN protegido';
+            return detailed ? `Acesso por PIN: ${u.code || '------'}` : `PIN: ${u.code || '------'}`;
+        };
+
         EvolutionApp.prototype.addNewUser = async function() {
             if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             const nameInput = document.getElementById('newUserName');
-            const codeInput = document.getElementById('newUserCode');
+            const idInput = document.getElementById('newUserLoginId');
+            const passInput = document.getElementById('newUserPassword');
             const name = nameInput.value.toUpperCase().trim();
-            const code = codeInput.value.trim();
+            const loginId = PasswordSecurity.normalizeLoginId(idInput.value);
+            const password = String(passInput.value || '');
 
-            if (!name || !/^\d{4,6}$/.test(code)) {
-                this.showToast('Preencha nome e PIN (4 a 6 digitos)', 'error');
-                return;
-            }
+            if (!name || name.length < 3) { this.showToast('Digite um nome válido (mínimo 3 caracteres)', 'error'); return; }
+            if (!PasswordSecurity.available()) { this.showToast('Este navegador não suporta o cadastro seguro.', 'error'); return; }
+            if (!PasswordSecurity.isValidLoginId(loginId)) { this.showToast('ID inválido: 4 a 20 caracteres (letras, números, ponto, traço ou _)', 'error'); return; }
+            if (!PasswordSecurity.isValidPassword(password)) { this.showToast('A senha deve ter entre 6 e 64 caracteres', 'error'); return; }
+            if (Object.values(this.users).some(u => (u.loginId || '').toLowerCase() === loginId)) { this.showToast('Este ID já está em uso', 'error'); return; }
 
-            if (Object.values(this.users).some(u => u.code === code)) {
-                this.showToast('PIN já existe', 'error');
-                return;
-            }
-
-            const docId = `${code}-${name.replace(/\s+/g, '_')}`;
+            const cred = await PasswordSecurity.create(password);
+            const docId = `ID-${loginId.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
             const newUser = {
                 name: name,
-                code: code,
+                loginId: loginId,
+                passwordHash: cred.passwordHash,
+                passwordSalt: cred.passwordSalt,
+                passwordAlgo: cred.passwordAlgo,
+                passwordIter: cred.passwordIter,
+                authMigrated: true,
                 blocked: false,
                 createdAt: new Date().toISOString(),
                 docId: docId
@@ -635,17 +665,157 @@
             this.users[docId] = newUser;
             this.saveUsersToCache();
             this.renderUserList();
+            nameInput.value = ''; idInput.value = ''; passInput.value = '';
 
-            nameInput.value = '';
-            codeInput.value = '';
+            if (db) { try { await db.collection('users').doc(docId).set(newUser); } catch (e) {} }
+            this.showToast(`Usuário ${name} adicionado! ID: ${loginId}`, 'success');
+        };
 
-            if (db) {
-                try {
-                    await db.collection('users').doc(docId).set(newUser);
-                } catch (e) {}
+        // ============================================
+        // SEGURANCA v7.5: ADMIN RESERVA (backup do acesso administrativo)
+        //
+        // O admin principal e reconhecido pelo PIN remoto (config/settings.adminPin)
+        // e pelo flag isAdmin no documento users/<id>. Esta secao cria uma SEGUNDA
+        // conta com isAdmin: true que entra por ID + senha (auth-credentials.js), com
+        // os mesmos poderes no app. A conta principal nunca e alterada aqui.
+        // ============================================
+        EvolutionApp.prototype.getAdminUsers = function() {
+            return Object.values(this.users || {}).filter(u => u && u.isAdmin);
+        };
+
+        EvolutionApp.prototype.renderBackupAdminList = function() {
+            const box = document.getElementById('backupAdminList');
+            if (!box) return;
+            const esc = (s) => this.escHtml(s);
+            const admins = this.getAdminUsers().sort((a, b) => (a.docId === this.currentUserId ? -1 : b.docId === this.currentUserId ? 1 : 0));
+            if (admins.length === 0) { box.innerHTML = ''; return; }
+            box.innerHTML = '<div style="margin-bottom:4px;">Administradores atuais:</div>' + admins.map(u => {
+                const you = u.docId === this.currentUserId ? ' <span style="color:var(--accent);">(você)</span>' : '';
+                const kind = u.adminRole === 'backup' ? ' · reserva' : ' · principal';
+                return `<div>• ${esc(u.name || u.docId)}${you} — ${esc(this.describeUserAccess(u))}${kind}</div>`;
+            }).join('');
+        };
+
+        EvolutionApp.prototype.setBackupAdminStatus = function(text, ok) {
+            const el = document.getElementById('backupAdminStatus');
+            if (!el) return;
+            if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+            el.textContent = text;
+            el.style.color = ok ? 'var(--success)' : 'var(--danger)';
+            el.style.display = 'block';
+        };
+
+        EvolutionApp.prototype.saveBackupAdmin = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
+            const nameInput = document.getElementById('backupAdminName');
+            const idInput = document.getElementById('backupAdminLoginId');
+            const passInput = document.getElementById('backupAdminPassword');
+            const confirmInput = document.getElementById('backupAdminPasswordConfirm');
+            const btn = document.getElementById('btnSaveBackupAdmin');
+            const name = String(nameInput?.value || '').toUpperCase().trim();
+            const loginId = PasswordSecurity.normalizeLoginId(idInput?.value);
+            const password = String(passInput?.value || '');
+            const confirm = String(confirmInput?.value || '');
+
+            this.setBackupAdminStatus('');
+            if (!PasswordSecurity.available()) { this.showToast('Este navegador não suporta o cadastro seguro.', 'error'); return; }
+            if (!PasswordSecurity.isValidLoginId(loginId)) { this.showToast('ID inválido: 4 a 20 caracteres (letras, números, ponto, traço ou _)', 'error'); return; }
+            if (!PasswordSecurity.isValidPassword(password)) { this.showToast('A senha deve ter entre 6 e 64 caracteres', 'error'); return; }
+            if (password !== confirm) { this.showToast('As senhas não coincidem', 'error'); return; }
+            if (password === loginId) { this.showToast('A senha não pode ser igual ao ID', 'error'); return; }
+            if (this._backupAdminBusy) return;
+            this._backupAdminBusy = true;
+            if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+            try {
+                // Exige o servidor: um admin reserva so vale se estiver gravado no Firestore.
+                await this.ensureFirebaseReady();
+
+                // Procura o ID sempre no servidor (nunca confia so no cache local)
+                const existing = await this.findUserByLoginId(loginId, true);
+                if (existing) {
+                    if (existing.docId === this.currentUserId) {
+                        this.showToast('Esse é o seu próprio ID. Para trocar sua senha use Configurações → Alterar minha senha.', 'warning');
+                        return;
+                    }
+                    if (!existing.isAdmin) {
+                        // Nunca promove um usuario comum silenciosamente
+                        this.showToast(`O ID ${loginId} já pertence a um usuário comum. Escolha outro ID.`, 'error');
+                        return;
+                    }
+                }
+
+                const docId = existing ? existing.docId : `ID-${loginId.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+                if (!existing) {
+                    // Garante que o docId gerado esta livre (ex.: conta antiga sem loginId)
+                    const clash = await db.collection('users').doc(docId).get();
+                    if (clash.exists) { this.showToast('Já existe uma conta com esse identificador. Escolha outro ID.', 'error'); return; }
+                }
+
+                const template = this.users[this.currentUserId] || {};
+                const cred = await PasswordSecurity.create(password);
+                const nowIso = new Date().toISOString();
+                const payload = {
+                    loginId: loginId,
+                    passwordHash: cred.passwordHash,
+                    passwordSalt: cred.passwordSalt,
+                    passwordAlgo: cred.passwordAlgo,
+                    passwordIter: cred.passwordIter,
+                    authMigrated: true,
+                    authMigratedAt: existing?.authMigratedAt || nowIso,
+                    // Espelho das permissoes do admin atual
+                    isAdmin: true,
+                    vip: true,
+                    blocked: false,
+                    adminRole: 'backup',
+                    adminMirrorOf: this.currentUserId,
+                    adminUpdatedAt: nowIso,
+                    adminUpdatedBy: this.currentUserId
+                };
+                if (template.photoImportBeta !== undefined) payload.photoImportBeta = template.photoImportBeta;
+                if (!existing) {
+                    payload.name = name || loginId.toUpperCase();
+                    payload.docId = docId;
+                    payload.createdAt = nowIso;
+                    payload.createdBy = this.currentUserId;
+                } else if (name) {
+                    payload.name = name;
+                }
+                if (!existing && !name) {
+                    this.showToast('Digite um nome de exibição para o admin reserva', 'error');
+                    return;
+                }
+
+                // 1) grava (merge: nao apaga nada que ja exista no documento)
+                await db.collection('users').doc(docId).set(payload, { merge: true });
+                // 2) confirma lendo do servidor antes de avisar que deu certo
+                const snap = await db.collection('users').doc(docId).get({ source: 'server' });
+                const saved = snap.exists ? snap.data() : null;
+                if (!saved || saved.isAdmin !== true || saved.loginId !== loginId || saved.passwordHash !== cred.passwordHash) {
+                    throw new Error('verify-failed');
+                }
+
+                this.users[docId] = { ...(this.users[docId] || {}), ...saved, docId };
+                this.saveUsersToCache();
+                this.renderUserList();
+                this.renderBackupAdminList();
+                if (nameInput) nameInput.value = '';
+                if (idInput) idInput.value = '';
+                const msg = existing
+                    ? `Senha do admin reserva "${loginId}" atualizada.`
+                    : `Admin reserva "${loginId}" criado. Ele já entra por ID + senha com acesso ao painel.`;
+                this.setBackupAdminStatus('✓ ' + msg, true);
+                this.showToast(msg, 'success');
+            } catch (e) {
+                console.error('Falha ao salvar admin reserva:', e);
+                this.setBackupAdminStatus('✕ Não foi possível gravar no Firebase. Nada foi alterado. Verifique a internet e tente de novo.', false);
+                this.showToast('Não foi possível gravar o admin reserva. Tente novamente.', 'error');
+            } finally {
+                this._backupAdminBusy = false;
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span class="ui-icon icon-shield" aria-hidden="true"></span> Criar / atualizar admin reserva'; }
+                if (passInput) passInput.value = '';
+                if (confirmInput) confirmInput.value = '';
             }
-
-            this.showToast(`Usuário ${name} adicionado!`, 'success');
         };
 
         EvolutionApp.prototype.openUserManagement = function(docId) {
@@ -653,7 +823,9 @@
             if (!user) return;
             this.managingUser = docId;
             document.getElementById('manageUserName').textContent = user.name;
-            document.getElementById('manageUserPin').textContent = user.code;
+            document.getElementById('manageUserPin').textContent = this.describeUserAccess(user, true);
+            if (typeof this.updateCredentialResetButton === 'function') this.updateCredentialResetButton(user);
+            this._manageUserRef = user;
 
             // Exibir ultimo login
             const lastLoginEl = document.getElementById('manageUserLastLoginText');
@@ -778,6 +950,8 @@
             if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!this.managingUser) return;
             const user = this.users[this.managingUser];
+            // SEGURANCA v7.5: contas de administrador nunca sao bloqueadas pelo painel
+            if (user?.isAdmin) { this.showToast('Contas de administrador não podem ser bloqueadas.', 'warning'); return; }
             const newStatus = !user.blocked;
             this.users[this.managingUser].blocked = newStatus;
             this.saveUsersToCache();
@@ -796,6 +970,13 @@
             if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
             if (!docId || docId === this.currentUserId) {
                 this.showToast('Nao pode excluir a si mesmo', 'error');
+                return;
+            }
+            // SEGURANCA v7.5: nenhuma conta de administrador pode ser excluida pelo painel
+            // (protege o admin principal e o admin reserva contra clique acidental)
+            if (this.users[docId]?.isAdmin) {
+                this.showToast('Contas de administrador não podem ser excluídas pelo painel.', 'error');
+                this.closeModal('confirmActionModal');
                 return;
             }
 
@@ -989,7 +1170,7 @@
                     <label class="photo-beta-user">
                         <span class="photo-beta-user-info">
                             <strong>${esc(u.name)}</strong>
-                            <span>PIN: ${esc(u.code)}</span>
+                            <span>${esc(this.describeUserAccess(u))}</span>
                         </span>
                         <span class="toggle-switch">
                             <input type="checkbox" data-photo-beta-uid="${esc(uid)}" ${u.photoImportBeta ? 'checked' : ''} onchange="app.updatePhotoImportCount()">

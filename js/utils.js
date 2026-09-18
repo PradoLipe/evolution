@@ -1054,6 +1054,7 @@
                 const cc = document.getElementById('cancelMetaContainer');
                 if (me) me.style.display = 'none';
                 if (cc) cc.innerHTML = '';
+                if (typeof this.updateChangePasswordButton === 'function') this.updateChangePasswordButton();
             }
         };
 

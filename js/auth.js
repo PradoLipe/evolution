@@ -247,15 +247,27 @@
                 }
                 return;
             }
+            const lockedMs = LoginRateLimit.checkLocked();
+            if (lockedMs) {
+                if (!options?.silentIfNotFound) {
+                    this.showPinError(`Muitas tentativas. Aguarde ${Math.ceil(lockedMs / 1000)}s.`);
+                } else {
+                    this.pinValue = '';
+                    this.updatePinDisplay();
+                }
+                return;
+            }
+
             clearTimeout(this.pinAutoLoginTimer);
             this.pinAutoLoginTimer = null;
             this.isLoggingIn = true;
 
             try {
             const enteredPin = this.pinValue;
+            const enteredPinHash = await PinSecurity.hash(enteredPin);
 
             // Verificar se e admin
-            if (REMOTE_ADMIN_PIN && enteredPin === REMOTE_ADMIN_PIN) {
+            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, enteredPin, enteredPinHash)) {
                 const adminId = `${enteredPin}-FELIPE_PRADO`;
                 const adminUser = {
                     name: 'FELIPE PRADO',
@@ -267,7 +279,10 @@
                 };
                 this.users[adminId] = { ...(this.users[adminId] || {}), ...adminUser };
                 this.saveUsersToCache();
+                LoginRateLimit.registerSuccess();
                 this.restoreUserSession(this.users[adminId], { user: adminUser.name, code: adminUser.code, docId: adminId });
+                // SEGURANCA v7.2: oferece ID + senha tambem ao admin (o PIN de admin continua como acesso de recuperacao)
+                if (typeof this.maybeOfferCredentialMigration === 'function') this.maybeOfferCredentialMigration(this.users[adminId]);
                 return;
             }
 
@@ -276,7 +291,7 @@
 
             // Verificar no cache local (fallback para modo offline)
             for (const [id, user] of Object.entries(this.users)) {
-                if (user.code === enteredPin) {
+                if (await PinSecurity.matches(user.code, enteredPin, enteredPinHash)) {
                     foundUser = { ...user, docId: id };
                     break;
                 }
@@ -290,6 +305,13 @@
                     if (foundUser?.docId) {
                         const doc = await db.collection('users').doc(foundUser.docId).get();
                         if (doc.exists) fbUser = { ...doc.data(), docId: doc.id };
+                    }
+                    if (!fbUser && enteredPinHash) {
+                        const qh = await db.collection('users').where('code', '==', enteredPinHash).get();
+                        if (!qh.empty) {
+                            const doc = qh.docs[0];
+                            fbUser = { ...doc.data(), docId: doc.id };
+                        }
                     }
                     if (!fbUser) {
                         const q = await db.collection('users').where('code', '==', enteredPin).get();
@@ -312,7 +334,7 @@
 
             // Verificar se esta pendente
             if (!foundUser) {
-                const pending = this.pendingUsers.find(p => p.code === enteredPin);
+                const pending = this.pendingUsers.find(p => p.code === enteredPin || (enteredPinHash && p.code === enteredPinHash));
                 if (pending) {
                     this.showToast('Seu cadastro está aguardando aprovação', 'warning');
                     this.pinValue = '';
@@ -322,6 +344,7 @@
                     // maior; aguarda a continuacao sem exibir um falso erro.
                     return;
                 } else {
+                    LoginRateLimit.registerFailure();
                     this.showPinError('PIN não encontrado');
                 }
                 return;
@@ -336,10 +359,30 @@
             }
 
             // Garantir que o flag isAdmin está correto (admin identificado pelo PIN)
-            if (REMOTE_ADMIN_PIN && foundUser.code === REMOTE_ADMIN_PIN) {
+            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, enteredPin, enteredPinHash)) {
                 foundUser.isAdmin = true;
                 foundUser.vip = true;
             }
+
+            // SEGURANCA v7.2: conta ja migrada para ID + senha nao entra mais pelo PIN
+            // (o admin continua podendo usar o PIN remoto como acesso de recuperacao)
+            if (!foundUser.isAdmin && typeof this.isUserMigrated === 'function' && this.isUserMigrated(foundUser)) {
+                this.pinValue = '';
+                this.updatePinDisplay();
+                this.showToast('Sua conta já usa ID e senha. Entre por ID e senha.', 'warning');
+                if (typeof this.setLoginMethod === 'function') this.setLoginMethod('id', true);
+                return;
+            }
+
+            // SEGURANCA: migra PIN antigo (texto puro) para hash no primeiro login OK apos a atualizacao
+            if (enteredPinHash && !PinSecurity.isHashed(foundUser.code) && db && foundUser.docId) {
+                foundUser.code = enteredPinHash;
+                if (this.users[foundUser.docId]) this.users[foundUser.docId].code = enteredPinHash;
+                this.saveUsersToCache();
+                db.collection('users').doc(foundUser.docId).set({ code: enteredPinHash }, { merge: true }).catch(() => {});
+            }
+
+            LoginRateLimit.registerSuccess();
 
             // Login bem-sucedido
             this.restoreUserSession(foundUser, {
@@ -373,6 +416,9 @@
 
             this.pinValue = '';
 
+            // SEGURANCA v7.2: login antigo valido -> pede a criacao de ID + senha (se ainda nao migrou)
+            if (typeof this.maybeOfferCredentialMigration === 'function') this.maybeOfferCredentialMigration(foundUser, enteredPin);
+
             } catch(loginErr) {
                 console.error('Erro inesperado no login:', loginErr);
                 this.showPinError('Erro ao autenticar. Tente novamente.');
@@ -384,33 +430,65 @@
 
         EvolutionApp.prototype.submitRegistration = async function() {
             const name = document.getElementById('regName').value.toUpperCase().trim();
-            const code = document.getElementById('regCode').value.trim();
-            const codeConfirm = document.getElementById('regCodeConfirm').value.trim();
+            const loginId = PasswordSecurity.normalizeLoginId(document.getElementById('regLoginId').value);
+            const password = String(document.getElementById('regPassword').value || '');
+            const passwordConfirm = String(document.getElementById('regPasswordConfirm').value || '');
 
             if (!name || name.length < 3) {
                 this.showToast('Digite um nome válido (mínimo 3 caracteres)', 'error');
                 return;
             }
-            if (!code || !/^\d{4,6}$/.test(code)) {
-                this.showToast('A senha deve ter de 4 a 6 dígitos numéricos', 'error');
+            if (!PasswordSecurity.available()) {
+                this.showToast('Este navegador não suporta o cadastro seguro. Atualize o navegador.', 'error');
                 return;
             }
-            if (code !== codeConfirm) {
+            if (!PasswordSecurity.isValidLoginId(loginId)) {
+                this.showToast('ID inválido: use de 4 a 20 caracteres (letras, números, ponto, traço ou _)', 'error');
+                return;
+            }
+            if (!PasswordSecurity.isValidPassword(password)) {
+                this.showToast('A senha deve ter entre 6 e 64 caracteres', 'error');
+                return;
+            }
+            if (password !== passwordConfirm) {
                 this.showToast('As senhas não coincidem', 'error');
                 return;
             }
-
-            // Verificar se PIN ja existe
-            const existing = Object.values(this.users).find(u => u.code === code);
-            if (existing) {
-                this.showToast('Este PIN já está em uso', 'error');
+            if (password === loginId) {
+                this.showToast('A senha não pode ser igual ao ID', 'error');
                 return;
             }
 
-            const uniqueId = `${code}-${name.replace(/\s+/g, '_')}`;
+            // Verificar se o ID ja esta em uso (usuarios ativos, pendentes locais e servidor)
+            const idInUse = Object.values(this.users).some(u => PasswordSecurity.normalizeLoginId(u.loginId) === loginId)
+                || this.pendingUsers.some(pp => PasswordSecurity.normalizeLoginId(pp.loginId) === loginId);
+            if (idInUse) {
+                this.showToast('Este ID já está em uso. Escolha outro.', 'error');
+                return;
+            }
+            if (db) {
+                try {
+                    const dupUser = await db.collection('users').where('loginId', '==', loginId).limit(1).get();
+                    const dupPend = await db.collection('pendingUsers').where('loginId', '==', loginId).limit(1).get();
+                    if (!dupUser.empty || !dupPend.empty) {
+                        this.showToast('Este ID já está em uso. Escolha outro.', 'error');
+                        return;
+                    }
+                } catch (e) { /* offline: segue com a checagem local */ }
+            }
+
+            // SEGURANCA v7.3: cadastro ja nasce com ID + senha (sem PIN).
+            // A senha e gravada como hash PBKDF2 (nunca em texto puro).
+            const cred = await PasswordSecurity.create(password);
+            const uniqueId = `ID-${loginId.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
             const registration = {
                 name: name,
-                code: code,
+                loginId: loginId,
+                passwordHash: cred.passwordHash,
+                passwordSalt: cred.passwordSalt,
+                passwordAlgo: cred.passwordAlgo,
+                passwordIter: cred.passwordIter,
+                authMigrated: true,
                 requestedAt: new Date().toISOString(),
                 deviceId: this.deviceId,
                 status: 'pending',
@@ -432,7 +510,12 @@
 
         EvolutionApp.prototype.savePendingUserLocally = function(registration) {
             let pending = JSON.parse(safeStorage.getItem('evo_pending_users') || '[]');
-            pending = pending.filter(p => p.code !== registration.code);
+            // Dedup por docId (cadastros novos usam ID; legados usavam PIN/code)
+            pending = pending.filter(p => {
+                if (registration.docId && p.docId) return p.docId !== registration.docId;
+                if (registration.loginId && p.loginId) return p.loginId !== registration.loginId;
+                return p.code !== registration.code;
+            });
             pending.push(registration);
             safeStorage.setItem('evo_pending_users', JSON.stringify(pending));
         };
@@ -469,7 +552,7 @@
         // ============================================
         // SESSAO E RESTAURACAO
         // ============================================
-        EvolutionApp.prototype.checkSession = function() {
+        EvolutionApp.prototype.checkSession = async function() {
             const s = safeStorage.getItem('evo_session_v516');
             if (!s) return;
             try {
@@ -487,7 +570,7 @@
                 this.pendingSessionData = d;
 
                 // 1. Verifica se é admin pelo PIN remoto (REMOTE_ADMIN_PIN ja foi carregado do cache local)
-                if (REMOTE_ADMIN_PIN && d.code === REMOTE_ADMIN_PIN) {
+                if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, d.code)) {
                     const adminDocId = d.docId || `${d.code}-FELIPE_PRADO`;
                     const adminUser = {
                         name: d.user || 'FELIPE PRADO',
@@ -530,7 +613,7 @@
             if (!d || this.currentUserId) return;
 
             // Verifica PIN de admin antes de ir ao Firestore
-            if (REMOTE_ADMIN_PIN && d.code === REMOTE_ADMIN_PIN) {
+            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, d.code)) {
                 const adminDocId = d.docId || `${d.code}-FELIPE_PRADO`;
                 const adminUser = {
                     name: d.user || 'FELIPE PRADO',
