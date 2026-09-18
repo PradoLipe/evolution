@@ -266,25 +266,10 @@
             const enteredPin = this.pinValue;
             const enteredPinHash = await PinSecurity.hash(enteredPin);
 
-            // Verificar se e admin
-            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, enteredPin, enteredPinHash)) {
-                const adminId = `${enteredPin}-FELIPE_PRADO`;
-                const adminUser = {
-                    name: 'FELIPE PRADO',
-                    code: enteredPin,
-                    docId: adminId,
-                    blocked: false,
-                    vip: true,
-                    isAdmin: true
-                };
-                this.users[adminId] = { ...(this.users[adminId] || {}), ...adminUser };
-                this.saveUsersToCache();
-                LoginRateLimit.registerSuccess();
-                this.restoreUserSession(this.users[adminId], { user: adminUser.name, code: adminUser.code, docId: adminId });
-                // SEGURANCA v7.2: oferece ID + senha tambem ao admin (o PIN de admin continua como acesso de recuperacao)
-                if (typeof this.maybeOfferCredentialMigration === 'function') this.maybeOfferCredentialMigration(this.users[adminId]);
-                return;
-            }
+            // SEGURANCA v7.6: o PIN NAO da mais acesso de administrador.
+            // O admin entra com e-mail + senha (Firebase Auth) — ver
+            // auth-credentials.js. O PIN abaixo serve apenas para contas
+            // comuns antigas que ainda nao migraram para ID + senha.
 
             // Buscar usuario pelo PIN
             let foundUser = null;
@@ -358,15 +343,8 @@
                 return;
             }
 
-            // Garantir que o flag isAdmin está correto (admin identificado pelo PIN)
-            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, enteredPin, enteredPinHash)) {
-                foundUser.isAdmin = true;
-                foundUser.vip = true;
-            }
-
             // SEGURANCA v7.2: conta ja migrada para ID + senha nao entra mais pelo PIN
-            // (o admin continua podendo usar o PIN remoto como acesso de recuperacao)
-            if (!foundUser.isAdmin && typeof this.isUserMigrated === 'function' && this.isUserMigrated(foundUser)) {
+            if (typeof this.isUserMigrated === 'function' && this.isUserMigrated(foundUser)) {
                 this.pinValue = '';
                 this.updatePinDisplay();
                 this.showToast('Sua conta já usa ID e senha. Entre por ID e senha.', 'warning');
@@ -569,24 +547,19 @@
                 }
                 this.pendingSessionData = d;
 
-                // 1. Verifica se é admin pelo PIN remoto (REMOTE_ADMIN_PIN ja foi carregado do cache local)
-                if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, d.code)) {
-                    const adminDocId = d.docId || `${d.code}-FELIPE_PRADO`;
-                    const adminUser = {
-                        name: d.user || 'FELIPE PRADO',
-                        code: d.code,
-                        docId: adminDocId,
-                        blocked: false,
-                        vip: true,
-                        isAdmin: true
-                    };
-                    this.users[adminDocId] = { ...(this.users[adminDocId] || {}), ...adminUser };
-                    this.saveUsersToCache();
-                    this.restoreUserSession(this.users[adminDocId], { ...d, docId: adminDocId });
+                // SEGURANCA v7.6: sessao de admin nao e restaurada pelo PIN.
+                // Quem manda e o Firebase Auth: se a sessao de e-mail + senha
+                // ainda estiver valida, resumeSessionAfterFirebase restaura o
+                // admin quando o onAuthStateChanged disparar.
+                if (d.isAdmin) {
+                    if (typeof currentAuthIsAdmin === 'function' && currentAuthIsAdmin()) {
+                        this.resumeSessionAfterFirebase();
+                    }
+                    // Sem sessao valida no Firebase Auth, a sessao de admin morre aqui.
                     return;
                 }
 
-                // 2. Verifica cache local — tambem aceita usuarios marcados como admin no cache
+                // Verifica cache local (usuario comum)
                 const cachedUser = this.users[d.docId];
                 // FIX 8: Verifica bloqueio do cache local para impedir acesso offline de usuario bloqueado
                 if (cachedUser && cachedUser.blocked) {
@@ -612,22 +585,16 @@
             const d = this.pendingSessionData;
             if (!d || this.currentUserId) return;
 
-            // Verifica PIN de admin antes de ir ao Firestore
-            if (REMOTE_ADMIN_PIN && await PinSecurity.matches(REMOTE_ADMIN_PIN, d.code)) {
-                const adminDocId = d.docId || `${d.code}-FELIPE_PRADO`;
-                const adminUser = {
-                    name: d.user || 'FELIPE PRADO',
-                    code: d.code,
-                    docId: adminDocId,
-                    blocked: false,
-                    vip: true,
-                    isAdmin: true
-                };
-                this.users[adminDocId] = { ...(this.users[adminDocId] || {}), ...adminUser };
-                this.saveUsersToCache();
-                this.restoreUserSession(this.users[adminDocId], { ...d, docId: adminDocId });
-                return;
+            // SEGURANCA v7.6: admin so volta se a sessao do Firebase Auth
+            // (e-mail + senha) continuar valida neste navegador.
+            if (typeof currentAuthIsAdmin === 'function' && currentAuthIsAdmin()) {
+                const adminDocId = adminDocIdForCurrentAuth();
+                if (adminDocId && typeof this.restoreAdminSession === 'function') {
+                    await this.restoreAdminSession(adminDocId);
+                    return;
+                }
             }
+            if (d.isAdmin) return;  // sessao de admin sem Firebase Auth: nao restaura
 
             if (!db) return;
             try {
@@ -657,7 +624,12 @@
             this.currentUser = sessionData.user;
             this.currentUserCode = sessionData.code;
             this.currentUserId = userData.docId || sessionData.docId;
-            this.isAdmin = userData.isAdmin || false;
+            // SEGURANCA v7.6: a unica fonte de "sou admin" e a sessao autenticada
+            // do Firebase Auth. O campo isAdmin do documento NAO e mais aceito —
+            // qualquer visitante anonimo consegue grava-lo no Firestore.
+            this.isAdmin = (typeof currentAuthIsAdmin === 'function')
+                ? currentAuthIsAdmin() && adminDocIdForCurrentAuth() === this.currentUserId
+                : false;
             this.pendingSessionData = { ...sessionData, docId: this.currentUserId };
             // Mantem todos os campos remotos do perfil (incluindo avatarData) ao
             // restaurar caminhos especiais de login, como a conta administradora.

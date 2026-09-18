@@ -1028,6 +1028,17 @@
             const m = document.getElementById(id);
             if (!m) return;
 
+            // SEGURANCA v7.6: os modais administrativos so abrem para uma sessao
+            // de admin autenticada no Firebase Auth. Isso impede que alguem
+            // chame app.openModal('adminModal') pelo console do navegador.
+            // (A protecao que vale mesmo e a regra do Firestore; esta so evita
+            // que o painel seja desenhado na tela de quem nao deve ve-lo.)
+            const ADMIN_MODALS = ['adminModal', 'userManagementModal', 'adminSetPasswordModal'];
+            if (ADMIN_MODALS.indexOf(id) !== -1) {
+                const ehAdmin = (typeof currentAuthIsAdmin === 'function') && currentAuthIsAdmin() && this.isAdmin;
+                if (!ehAdmin) return;
+            }
+
             // FIX 9: Conta modais abertos para nao restaurar scroll prematuramente
             // FIX 10: so conta se o modal ainda NAO estava aberto. Abrir duas vezes o
             // mesmo modal inflava o contador e deixava o scroll da pagina travado.
@@ -1242,6 +1253,17 @@
             document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
             this._openModalCount = 0;
             document.body.style.overflow = '';
+
+            // SEGURANCA v7.6: encerra tambem a sessao autenticada do Firebase
+            // (admin por e-mail + senha) e volta ao anonimo. Sem isso o proximo
+            // usuario do mesmo aparelho herdaria a sessao de administrador.
+            try {
+                if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
+                    auth.signOut().then(() => {
+                        if (auth && !auth.currentUser) auth.signInAnonymously().catch(() => {});
+                    }).catch(() => {});
+                }
+            } catch (_) {}
 
             // Limpar sessao e estado
             safeStorage.removeItem('evo_session_v516');

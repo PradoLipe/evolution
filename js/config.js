@@ -3,7 +3,7 @@
     // ============================================
 
         // Versao do App
-    window.EVOLUTION_APP_VERSION = 'V7.5';
+    window.EVOLUTION_APP_VERSION = 'V7.6';
 
 // Configuracao Firebase
     const firebaseConfig = {
@@ -17,7 +17,55 @@
 
     // Variaveis globais
     let db = null, auth = null, storage = null;
-    let REMOTE_ADMIN_PIN = null;
+
+    // ============================================
+    // SEGURANCA v7.6: ADMINISTRADOR = CONTA REAL DO FIREBASE AUTH
+    //
+    // Antes o admin era "quem digita o PIN certo" (config/settings.adminPin) ou
+    // "quem tem isAdmin: true no documento". Os dois eram controlaveis pelo
+    // proprio usuario: o PIN ficava no localStorage dele e o campo isAdmin era
+    // gravavel por qualquer visitante anonimo.
+    //
+    // Agora o admin entra com e-mail + senha no Firebase Auth e so e admin se o
+    // UID da sessao estiver nesta lista. A MESMA lista esta nas regras do
+    // Firestore, entao forjar isAdmin no navegador nao da poder nenhum: o
+    // servidor recusa a gravacao. O UID nao e segredo (a regra e publica).
+    //
+    // Para adicionar um admin reserva: crie a conta em Firebase Console ->
+    // Authentication -> Users, acrescente o UID aqui E na regra do Firestore.
+    // ============================================
+    const ADMIN_ACCOUNTS = {
+        // '<UID do Firebase Auth>': '<docId do usuario em users/>'
+        'zynU3DplXveEhzQkIaBNwseaPPv1': '290988-FELIPE_PRADO'
+    };
+
+    function isAdminUid(uid) {
+        // Uma sessao anonima nunca e admin, mesmo que o UID coincidisse.
+        return !!uid && Object.prototype.hasOwnProperty.call(ADMIN_ACCOUNTS, uid);
+    }
+
+    function currentAuthIsAdmin() {
+        const u = (typeof auth !== 'undefined' && auth) ? auth.currentUser : null;
+        if (!u || u.isAnonymous) return false;
+        return isAdminUid(u.uid);
+    }
+
+    function adminDocIdForCurrentAuth() {
+        const u = (typeof auth !== 'undefined' && auth) ? auth.currentUser : null;
+        if (!u || u.isAnonymous) return null;
+        return ADMIN_ACCOUNTS[u.uid] || null;
+    }
+
+    function isAdminDocId(docId) {
+        if (!docId) return false;
+        return Object.values(ADMIN_ACCOUNTS).indexOf(String(docId)) !== -1;
+    }
+
+    window.ADMIN_ACCOUNTS = ADMIN_ACCOUNTS;
+    window.isAdminUid = isAdminUid;
+    window.currentAuthIsAdmin = currentAuthIsAdmin;
+    window.adminDocIdForCurrentAuth = adminDocIdForCurrentAuth;
+    window.isAdminDocId = isAdminDocId;
 
     // Taxas padrao
     const DEFAULT_TAXAS = {

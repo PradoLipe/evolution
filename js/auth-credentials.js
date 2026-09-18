@@ -105,6 +105,62 @@
                 return found;
             };
 
+            // ---------- SEGURANCA v7.6: login de ADMINISTRADOR (e-mail + senha) ----------
+            // O admin digita o e-mail no mesmo campo de ID. Nada na tela revela
+            // que existe um caminho de admin. A identidade vem do Firebase Auth
+            // e e conferida contra ADMIN_ACCOUNTS (config.js) — a mesma lista
+            // que esta nas regras do Firestore.
+            EvolutionApp.prototype.loginAsAdmin = async function(email, password) {
+                if (!auth) return { ok: false };
+                let cred = null;
+                try {
+                    cred = await auth.signInWithEmailAndPassword(String(email).trim(), password);
+                } catch (e) {
+                    // Credencial errada, conta inexistente, rede: mensagem generica
+                    return { ok: false, code: e?.code || 'auth-failed' };
+                }
+                const uid = cred?.user?.uid || (auth.currentUser && auth.currentUser.uid);
+                if (!isAdminUid(uid)) {
+                    // Conta valida no Firebase, mas nao autorizada como admin:
+                    // desfaz a sessao para nao deixar um login "meio logado".
+                    try { await auth.signOut(); } catch (_) {}
+                    return { ok: false, code: 'not-admin' };
+                }
+                const docId = ADMIN_ACCOUNTS[uid];
+                await this.restoreAdminSession(docId);
+                return { ok: true };
+            };
+
+            // Monta a sessao do admin a partir do documento dele no Firestore.
+            // Se o documento nao existir ou o Firestore falhar, ainda assim entra
+            // (a identidade ja foi provada pelo Firebase Auth) — o admin nunca
+            // fica trancado do lado de fora por causa de um doc faltando.
+            EvolutionApp.prototype.restoreAdminSession = async function(docId) {
+                if (!docId) return;
+                let userData = { ...(this.users[docId] || {}), docId };
+                if (db) {
+                    try {
+                        const doc = await db.collection('users').doc(docId).get();
+                        if (doc.exists) userData = { ...doc.data(), docId };
+                    } catch (e) {
+                        console.warn('[admin] nao foi possivel ler o proprio documento:', e?.code || e);
+                    }
+                }
+                if (!userData.name) userData.name = 'ADMINISTRADOR';
+                userData.blocked = false;
+                this.users[docId] = { ...(this.users[docId] || {}), ...userData };
+                this.saveUsersToCache();
+                LoginRateLimit.registerSuccess();
+                this.restoreUserSession(this.users[docId], {
+                    user: userData.name,
+                    code: null,
+                    docId: docId,
+                    isAdmin: true
+                });
+                const loginTs = new Date().toISOString();
+                if (db) db.collection('users').doc(docId).set({ lastLoginAt: loginTs }, { merge: true }).catch(() => {});
+            };
+
             // ---------- Login por ID + senha ----------
             EvolutionApp.prototype.loginWithCredentials = async function() {
                 const idInput = document.getElementById('loginIdInput');
@@ -131,6 +187,20 @@
                 if (btn) btn.disabled = true;
 
                 try {
+                    // SEGURANCA v7.6: um e-mail no campo de ID = tentativa de
+                    // login administrativo pelo Firebase Auth.
+                    if (String(idInput?.value || '').indexOf('@') !== -1) {
+                        const r = await this.loginAsAdmin(idInput.value, password);
+                        if (!r.ok) {
+                            LoginRateLimit.registerFailure();
+                            this.showToast('ID ou senha incorretos', 'error');
+                        } else if (passInput) {
+                            passInput.value = '';
+                            this.setPreferredLoginMethod('id');
+                        }
+                        return;
+                    }
+
                     const user = await this.findUserByLoginId(loginId);
                     const ok = user && this.isUserMigrated(user) && await PasswordSecurity.verify(user, password);
                     if (!ok) {
@@ -176,6 +246,8 @@
             // ---------- Modal de migracao (apos login antigo valido) ----------
             EvolutionApp.prototype.maybeOfferCredentialMigration = function(user, enteredPin) {
                 if (!user || !user.docId) return;
+                // SEGURANCA v7.6: o admin entra por e-mail + senha; nao ha o que migrar.
+                if (this.isAdmin || (typeof isAdminDocId === 'function' && isAdminDocId(user.docId))) return;
                 if (this.isUserMigrated(user)) return;
                 if (!db || !this.firebaseReady) return;            // sem servidor nao ha como confirmar a gravacao
                 if (!PasswordSecurity.available()) return;
@@ -263,8 +335,9 @@
                         passwordIter: cred.passwordIter,
                         authMigrationStartedAt: startedAt
                     };
-                    // O admin logado pelo PIN remoto passa a poder entrar por ID + senha tambem
-                    if (this.isAdmin) payload.isAdmin = true;
+                    // SEGURANCA v7.6: nunca gravar isAdmin daqui — a regra do
+                    // Firestore recusa esse campo vindo de sessao nao-admin, e o
+                    // app nao o usa mais para decidir quem e administrador.
 
                     // 1) grava as novas credenciais (ainda sem invalidar o PIN)
                     await withTimeout(db.collection('users').doc(docId).set(payload, { merge: true }), MIGRATION_TIMEOUT_MS, 'timeout-write');

@@ -102,7 +102,16 @@
                         this.firebaseReady = true;
                         this.loadRates();
                         this.syncUsersFromFirebase();
-                        this.loadPendingUsers();
+                        // SEGURANCA v7.6: a lista de cadastros pendentes e so do
+                        // admin (a regra do Firestore tambem passa a exigir isso).
+                        if (typeof currentAuthIsAdmin === 'function' && currentAuthIsAdmin()) {
+                            this.loadPendingUsers();
+                        } else {
+                            // Usuario comum: so as pendencias deste aparelho, para a
+                            // mensagem "seu cadastro esta aguardando aprovacao".
+                            const localPending = this.getLocalPendingUsers();
+                            this.pendingUsers = Array.isArray(localPending) ? localPending : [];
+                        }
                         this.fetchAdminSettings();
                         // So tenta restaurar sessao se ha sessao pendente E usuario ainda nao logou
                         // (evita re-restaurar sessao apos logout manual)
@@ -120,12 +129,9 @@
             // Carregar cache de usuarios
             this.loadUsersFromCache();
 
-            // Restaurar REMOTE_ADMIN_PIN do cache local ANTES de checkSession
-            // (fetchAdminSettings e async — sem isso o admin perderia sessao no refresh)
-            try {
-                const cachedPin = safeStorage.getItem('evo_admin_pin_enc');
-                if (cachedPin) REMOTE_ADMIN_PIN = atob(cachedPin);
-            } catch(e) {}
+            // SEGURANCA v7.6: o PIN de admin nao existe mais no cliente.
+            // Limpa o resto deixado pelas versoes anteriores neste aparelho.
+            try { safeStorage.removeItem('evo_admin_pin_enc'); } catch(e) {}
 
             // Configurar datas
             const hoje = getCurrentDateStringManaus();
