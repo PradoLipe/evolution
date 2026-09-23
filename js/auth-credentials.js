@@ -21,8 +21,18 @@
             }
 
             // ---------- Estado da conta ----------
+            // v7.8: "migrado" passa a incluir quem ja tem conta real no Firebase
+            // Auth (authUid). Esses documentos nao guardam mais hash de senha —
+            // quem confere a senha e o proprio Firebase.
             EvolutionApp.prototype.isUserMigrated = function(u) {
-                return !!(u && u.authMigrated === true && u.loginId && u.passwordHash && u.passwordSalt);
+                if (!u || !u.loginId) return false;
+                if (u.authUid) return true;
+                return !!(u.authMigrated === true && u.passwordHash && u.passwordSalt);
+            };
+
+            // Conta que ja vive no Firebase Auth (cadeado fechado no servidor).
+            EvolutionApp.prototype.hasAuthAccount = function(u) {
+                return !!(u && u.authUid);
             };
 
             // ---------- Tela de login: alternar PIN / ID + senha ----------
@@ -76,33 +86,68 @@
             };
 
             // ---------- Busca por ID ----------
-            EvolutionApp.prototype.findUserByLoginId = async function(loginId, preferServer = false) {
+            // v7.8: a consulta "where('loginId','==',x)" morre assim que o
+            // primeiro documento fecha — o Firestore recusa a consulta inteira
+            // quando nao consegue garantir que TODOS os resultados possiveis sao
+            // permitidos. Agora o caminho normal e ler o ponteiro
+            // loginIndex/{hash do ID} direto pelo id do documento. A consulta
+            // antiga fica so como ultimo recurso, para contas que ainda nao
+            // tiveram o ponteiro gerado.
+            EvolutionApp.prototype.resolveLoginTarget = async function(loginId) {
                 const id = PasswordSecurity.normalizeLoginId(loginId);
                 if (!id) return null;
-                let found = null;
-                if (!preferServer) {
-                    for (const [docId, u] of Object.entries(this.users || {})) {
-                        if (u && PasswordSecurity.normalizeLoginId(u.loginId) === id) { found = { ...u, docId }; break; }
+
+                let docId = null;
+                let version = 1;
+
+                const idx = await AuthIdentity.readLoginIndex(id);
+                if (idx) { docId = idx.docId; version = idx.v || 1; }
+
+                if (!docId) {
+                    for (const [k, u] of Object.entries(this.users || {})) {
+                        if (u && PasswordSecurity.normalizeLoginId(u.loginId) === id) { docId = k; break; }
                     }
                 }
-                if (db && this.firebaseReady) {
+                if (!docId && db && this.firebaseReady) {
                     try {
-                        if (found?.docId) {
-                            const doc = await db.collection('users').doc(found.docId).get();
-                            if (doc.exists) found = { ...doc.data(), docId: doc.id };
-                        } else {
-                            const q = await db.collection('users').where('loginId', '==', id).limit(1).get();
-                            if (!q.empty) found = { ...q.docs[0].data(), docId: q.docs[0].id };
-                        }
-                        if (found) {
-                            this.users[found.docId] = found;
-                            this.saveUsersToCache();
-                        }
+                        const q = await db.collection('users').where('loginId', '==', id).limit(1).get();
+                        if (!q.empty) docId = q.docs[0].id;
                     } catch (e) {
-                        // offline: segue com o cache local
+                        // Esperado depois que a colecao fecha: sem ponteiro, sem login.
                     }
                 }
-                return found;
+                if (!docId) return null;
+
+                let user = null;
+                let restricted = false;
+                if (db) {
+                    try {
+                        const doc = await db.collection('users').doc(docId).get();
+                        if (doc.exists) user = { ...doc.data(), docId: doc.id };
+                    } catch (e) {
+                        // Documento ja fechado pela regra: e sinal de que existe
+                        // conta no Auth. Nao caimos no cache — ele poderia estar
+                        // velho e conter um hash que nao vale mais.
+                        if (e?.code === 'permission-denied') restricted = true;
+                    }
+                }
+                if (!user && !restricted && this.users[docId]) {
+                    user = { ...this.users[docId], docId };   // offline
+                }
+                if (user) {
+                    this.users[docId] = user;
+                    this.saveUsersToCache();
+                    if (user.authEmailVersion) version = Number(user.authEmailVersion) || version;
+                }
+                return { docId, version, user, restricted };
+            };
+
+            // Mantida para o cadastro e a migracao, que so precisam saber se o ID
+            // ja pertence a alguem.
+            EvolutionApp.prototype.findUserByLoginId = async function(loginId) {
+                const target = await this.resolveLoginTarget(loginId);
+                if (!target) return null;
+                return target.user ? target.user : { docId: target.docId, loginId: PasswordSecurity.normalizeLoginId(loginId) };
             };
 
             // ---------- SEGURANCA v7.6: login de ADMINISTRADOR (e-mail + senha) ----------
@@ -148,6 +193,19 @@
                 }
                 if (!userData.name) userData.name = 'ADMINISTRADOR';
                 userData.blocked = false;
+                // v7.8: o documento do admin tambem fecha. Sem isso ele ficaria
+                // sendo o unico perfil legivel por qualquer visitante depois que
+                // todo mundo migrasse.
+                const authUser = auth && auth.currentUser;
+                if (db && authUser && !authUser.isAnonymous && !userData.authUid) {
+                    const marca = { authUid: authUser.uid, authClaimedAt: new Date().toISOString(), authClaimedDevice: this.deviceId || null };
+                    try {
+                        await db.collection('users').doc(docId).set(marca, { merge: true });
+                        userData = { ...userData, ...marca };
+                    } catch (e) {
+                        console.warn('[admin] cadeado do proprio documento adiado:', e?.code || e);
+                    }
+                }
                 this.users[docId] = { ...(this.users[docId] || {}), ...userData };
                 this.saveUsersToCache();
                 LoginRateLimit.registerSuccess();
@@ -201,9 +259,82 @@
                         return;
                     }
 
-                    const user = await this.findUserByLoginId(loginId);
-                    const ok = user && this.isUserMigrated(user) && await PasswordSecurity.verify(user, password);
-                    if (!ok) {
+                    const target = await this.resolveLoginTarget(loginId);
+                    if (!target) {
+                        LoginRateLimit.registerFailure();
+                        this.showToast('ID ou senha incorretos', 'error');
+                        return;
+                    }
+
+                    // v7.8: tres estados possiveis do documento, e o app escolhe
+                    // sozinho — para a pessoa a tela e sempre a mesma.
+                    //
+                    //   a) ja tem conta no Auth  -> entra pelo Firebase;
+                    //   b) senha temporaria do admin (reset) -> confere o hash
+                    //      temporario e cria a conta versionada;
+                    //   c) ainda no hash local  -> confere o hash e, dando certo,
+                    //      cria a conta do Auth em silencio (migracao automatica).
+                    let user = target.user;
+                    const emReset = !!(user && user.authResetRequested === true && user.passwordHash);
+                    const usaAuth = target.restricted || (!!user && !!user.authUid && !emReset);
+
+                    if (usaAuth) {
+                        const r = await this.signInExistingAuthAccount(loginId, password, target.version);
+                        if (!r.ok) {
+                            LoginRateLimit.registerFailure();
+                            this.showToast('ID ou senha incorretos', 'error');
+                            return;
+                        }
+                        // Agora somos o dono: o documento volta a ser legivel.
+                        try {
+                            const doc = await db.collection('users').doc(target.docId).get();
+                            if (doc.exists) user = { ...doc.data(), docId: doc.id };
+                        } catch (e) {
+                            if (!user) user = { ...(this.users[target.docId] || {}), docId: target.docId };
+                        }
+                        // Sobrou hash de uma limpeza que nao completou? Sai agora.
+                        if (user && user.passwordHash) {
+                            db.collection('users').doc(target.docId).set({
+                                passwordHash: firebase.firestore.FieldValue.delete(),
+                                passwordSalt: firebase.firestore.FieldValue.delete(),
+                                passwordAlgo: firebase.firestore.FieldValue.delete(),
+                                passwordIter: firebase.firestore.FieldValue.delete()
+                            }, { merge: true }).catch(() => {});
+                        }
+                    } else {
+                        const ok = user && user.passwordHash && await PasswordSecurity.verify(user, password);
+                        if (!ok) {
+                            LoginRateLimit.registerFailure();
+                            this.showToast('ID ou senha incorretos', 'error');
+                            return;
+                        }
+                        if (user.blocked && !user.isAdmin) {
+                            this.showToast('Usuário bloqueado', 'error');
+                            return;
+                        }
+                        // A senha confere: a partir daqui o acesso esta garantido.
+                        // A criacao da conta no Auth e um bonus — se falhar, o
+                        // login segue pelo caminho antigo e tenta de novo depois.
+                        try {
+                            const mig = await this.attachFirebaseAuthAccount({
+                                docId: target.docId,
+                                loginId: loginId,
+                                password: password,
+                                version: target.version,
+                                isReset: emReset,
+                                oldCode: user.code || null
+                            });
+                            if (mig.ok) {
+                                user = { ...(this.users[target.docId] || user), docId: target.docId };
+                            } else {
+                                console.warn('[seguranca] conta do Auth nao criada agora:', mig.code);
+                            }
+                        } catch (e) {
+                            console.warn('[seguranca] migracao adiada:', e?.code || e?.message || e);
+                        }
+                    }
+
+                    if (!user) {
                         LoginRateLimit.registerFailure();
                         this.showToast('ID ou senha incorretos', 'error');
                         return;
@@ -212,6 +343,9 @@
                         this.showToast('Usuário bloqueado', 'error');
                         return;
                     }
+                    if (!user.docId) user.docId = target.docId;
+                    // Conta sem ponteiro (aprovada antes da v7.8): cria agora.
+                    AuthIdentity.ensureLoginIndex(loginId, target.docId).catch(() => {});
 
                     LoginRateLimit.registerSuccess();
                     if (passInput) passInput.value = '';
@@ -318,8 +452,8 @@
                 try {
                     await this.ensureFirebaseReady();
 
-                    // ID precisa ser unico (consulta sempre o servidor)
-                    const existing = await withTimeout(this.findUserByLoginId(loginId, true), MIGRATION_TIMEOUT_MS, 'timeout-lookup');
+                    // ID precisa ser unico (le o ponteiro no servidor)
+                    const existing = await withTimeout(this.findUserByLoginId(loginId), MIGRATION_TIMEOUT_MS, 'timeout-lookup');
                     if (existing && existing.docId !== docId) {
                         this.showToast('Este ID já está em uso. Escolha outro.', 'error');
                         return;
@@ -356,6 +490,27 @@
                     this.users[docId] = { ...(this.users[docId] || {}), ...payload, authMigrated: true, authMigratedAt: migratedAt, docId };
                     this.saveUsersToCache();
                     this.setPreferredLoginMethod('id');
+
+                    // v7.8: a conta do Firebase Auth nasce AQUI, no mesmo passo —
+                    // a pessoa acabou de digitar a senha, nao ha por que esperar
+                    // o proximo login. O bloco acima ja gravou e conferiu o hash,
+                    // entao se esta parte falhar (offline, e-mail em uso, o que
+                    // for) ela sai daqui com ID + senha funcionando e a conta do
+                    // Auth e criada sozinha no acesso seguinte.
+                    const codigoAntigo = (this.users[docId] || {}).code || null;
+                    try {
+                        const mig = await withTimeout(this.attachFirebaseAuthAccount({
+                            docId: docId,
+                            loginId: loginId,
+                            password: password,
+                            version: 1,
+                            oldCode: codigoAntigo
+                        }), MIGRATION_TIMEOUT_MS, 'timeout-auth');
+                        if (!mig.ok) console.warn('[seguranca] conta do Auth adiada:', mig.code);
+                    } catch (e) {
+                        console.warn('[seguranca] conta do Auth adiada:', e?.code || e?.message || e);
+                    }
+                    await AuthIdentity.ensureLoginIndex(loginId, docId);
                     this._migrationPin = null;
 
                     this.closeModal('credentialMigrationModal');
@@ -411,8 +566,50 @@
                 try {
                     await this.ensureFirebaseReady();
                     const cred = await PasswordSecurity.create(password);
-                    const payload = { passwordHash: cred.passwordHash, passwordSalt: cred.passwordSalt, passwordAlgo: cred.passwordAlgo, passwordIter: cred.passwordIter, authMigrated: true, passwordResetByAdminAt: new Date().toISOString() };
+
+                    // ============================================
+                    // v7.8: RECUPERACAO DE SENHA POR CONTA VERSIONADA
+                    //
+                    // O Firebase nao deixa um cliente trocar a senha de outra
+                    // pessoa — isso exigiria o Admin SDK, que roda em Cloud
+                    // Function (pago). Entao o admin faz o que sempre fez: define
+                    // uma senha temporaria. O documento recebe o hash dela,
+                    // authResetRequested = true (que reabre o documento so para
+                    // esta pessoa entrar) e a versao do e-mail sobe. No proximo
+                    // login o app cria a conta nova (joao+v2@...), aponta o
+                    // authUid para ela e fecha tudo de novo. A conta antiga fica
+                    // orfa: nada aponta para ela, nao alcanca documento nenhum.
+                    //
+                    // O usuario nao perde NADA: o docId e o mesmo, users/{id}/data
+                    // nao e tocado, e meta, VIP e nome ficam como estavam.
+                    // ============================================
+                    const versaoAtual = Number(user.authEmailVersion) || 1;
+                    const novaVersao = user.authUid ? versaoAtual + 1 : versaoAtual;
+                    const payload = {
+                        passwordHash: cred.passwordHash,
+                        passwordSalt: cred.passwordSalt,
+                        passwordAlgo: cred.passwordAlgo,
+                        passwordIter: cred.passwordIter,
+                        authMigrated: true,
+                        authResetRequested: true,
+                        // A reabertura do documento tem prazo: se a pessoa nao
+                        // entrar em 7 dias, ele volta a ficar fechado e o admin
+                        // redefine de novo. Encurta a janela em que um estranho
+                        // poderia reivindicar a conta.
+                        authResetExpiresMs: Date.now() + 7 * 24 * 60 * 60 * 1000,
+                        authEmailVersion: novaVersao,
+                        passwordResetByAdminAt: new Date().toISOString()
+                    };
                     await db.collection('users').doc(docId).set(payload, { merge: true });
+                    // O ponteiro guarda a versao para que o login saiba qual
+                    // e-mail usar antes mesmo de conseguir ler o documento.
+                    if (user.loginId) {
+                        const key = await AuthIdentity.loginIndexKey(user.loginId);
+                        if (key) {
+                            try { await db.collection('loginIndex').doc(key).set({ docId: docId, v: novaVersao }, { merge: true }); }
+                            catch (e) { console.warn('[indice] versao nao gravada:', e?.code || e); }
+                        }
+                    }
                     this.users[docId] = { ...(this.users[docId] || {}), ...payload };
                     this.saveUsersToCache();
                     this.closeModal('adminSetPasswordModal');
@@ -456,10 +653,37 @@
                 const btn = document.getElementById('btnChangePasswordSubmit');
                 if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
                 try {
-                    // Confere a senha atual antes de trocar
+                    if (next === current) { this.showToast('A nova senha deve ser diferente da atual', 'error'); return; }
+
+                    // v7.8: conta ja no Firebase Auth — quem guarda a senha e o
+                    // Firebase. Confere a atual reautenticando e troca por la.
+                    if (this.hasAuthAccount(user)) {
+                        const authUser = auth && auth.currentUser;
+                        if (!authUser || authUser.isAnonymous || authUser.uid !== user.authUid) {
+                            this.showToast('Entre de novo com seu ID e senha para trocar a senha.', 'error');
+                            return;
+                        }
+                        const email = AuthIdentity.emailFor(user.loginId, user.authEmailVersion);
+                        try {
+                            const credential = firebase.auth.EmailAuthProvider.credential(email, current);
+                            await authUser.reauthenticateWithCredential(credential);
+                        } catch (e) {
+                            this.showToast('Senha atual incorreta', 'error');
+                            return;
+                        }
+                        await authUser.updatePassword(next);
+                        const marca = { passwordChangedAt: new Date().toISOString() };
+                        try { await db.collection('users').doc(docId).set(marca, { merge: true }); } catch (e) {}
+                        this.users[docId] = { ...(this.users[docId] || {}), ...marca };
+                        this.saveUsersToCache();
+                        this.closeModal('changePasswordModal');
+                        this.showToast('Senha alterada com sucesso!', 'success');
+                        return;
+                    }
+
+                    // Conta ainda no hash local (nao migrou): caminho antigo.
                     const ok = await PasswordSecurity.verify(user, current);
                     if (!ok) { this.showToast('Senha atual incorreta', 'error'); return; }
-                    if (next === current) { this.showToast('A nova senha deve ser diferente da atual', 'error'); return; }
                     await this.ensureFirebaseReady();
                     const cred = await PasswordSecurity.create(next);
                     const payload = { passwordHash: cred.passwordHash, passwordSalt: cred.passwordSalt, passwordAlgo: cred.passwordAlgo, passwordIter: cred.passwordIter, passwordChangedAt: new Date().toISOString() };

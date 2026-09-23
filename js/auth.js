@@ -284,26 +284,50 @@
 
             // Sempre buscar no Firebase quando disponivel para garantir dados atualizados
             // (ex: status VIP alterado pelo admin nao reflete no cache local ate uma nova consulta)
+            // v7.8: o PIN deixa de ser encontrado por consulta.
+            //
+            // "where('code','==',x)" varre a colecao inteira, e o Firestore
+            // recusa a consulta assim que qualquer documento fica restrito — o
+            // que acontece na primeira pessoa que migra. Sem substituto, quem
+            // ainda esta no PIN nao entraria em aparelho novo, e como e o login
+            // por PIN que abre o modal de migracao, essa pessoa ficaria presa.
+            //
+            // Entao existe pinIndex/{hash do PIN} -> { docId }: uma ponte lida
+            // direto pelo id do documento. A entrada e apagada quando a pessoa
+            // migra, e a colecao se esvazia sozinha. As consultas antigas ficam
+            // como ultimo recurso enquanto a colecao ainda estiver aberta.
             if (this.firebaseReady && db) {
                 try {
                     let fbUser = null;
-                    if (foundUser?.docId) {
+
+                    if (!foundUser?.docId) {
+                        const ponte = await AuthIdentity.readPinIndex(enteredPin);
+                        if (ponte?.docId) {
+                            const doc = await db.collection('users').doc(ponte.docId).get();
+                            if (doc.exists) fbUser = { ...doc.data(), docId: doc.id };
+                        }
+                    }
+                    if (!fbUser && foundUser?.docId) {
                         const doc = await db.collection('users').doc(foundUser.docId).get();
                         if (doc.exists) fbUser = { ...doc.data(), docId: doc.id };
                     }
                     if (!fbUser && enteredPinHash) {
-                        const qh = await db.collection('users').where('code', '==', enteredPinHash).get();
-                        if (!qh.empty) {
-                            const doc = qh.docs[0];
-                            fbUser = { ...doc.data(), docId: doc.id };
-                        }
+                        try {
+                            const qh = await db.collection('users').where('code', '==', enteredPinHash).get();
+                            if (!qh.empty) {
+                                const doc = qh.docs[0];
+                                fbUser = { ...doc.data(), docId: doc.id };
+                            }
+                        } catch (e) { /* colecao ja fechada: a ponte e o caminho */ }
                     }
                     if (!fbUser) {
-                        const q = await db.collection('users').where('code', '==', enteredPin).get();
-                        if (!q.empty) {
-                            const doc = q.docs[0];
-                            fbUser = { ...doc.data(), docId: doc.id };
-                        }
+                        try {
+                            const q = await db.collection('users').where('code', '==', enteredPin).get();
+                            if (!q.empty) {
+                                const doc = q.docs[0];
+                                fbUser = { ...doc.data(), docId: doc.id };
+                            }
+                        } catch (e) { /* idem */ }
                     }
                     if (fbUser) {
                         foundUser = fbUser;
@@ -361,6 +385,13 @@
             }
 
             LoginRateLimit.registerSuccess();
+
+            // v7.8: garante a ponte do PIN para esta conta (contas encontradas
+            // pelo cache ou pela consulta antiga podem nao ter ponteiro ainda).
+            // A ponte sai sozinha quando a pessoa migrar.
+            if (db && foundUser.docId && typeof AuthIdentity !== 'undefined') {
+                AuthIdentity.ensurePinIndex(enteredPin, foundUser.docId).catch(() => {});
+            }
 
             // Login bem-sucedido
             this.restoreUserSession(foundUser, {
@@ -445,10 +476,12 @@
                 return;
             }
             if (db) {
+                // v7.8: a checagem de ID em uso passa pelo ponteiro, pelo mesmo
+                // motivo do login — a consulta na colecao "users" e recusada
+                // inteira assim que parte dos documentos fecha.
                 try {
-                    const dupUser = await db.collection('users').where('loginId', '==', loginId).limit(1).get();
-                    const dupPend = await db.collection('pendingUsers').where('loginId', '==', loginId).limit(1).get();
-                    if (!dupUser.empty || !dupPend.empty) {
+                    const ponteiro = await AuthIdentity.readLoginIndex(loginId);
+                    if (ponteiro) {
                         this.showToast('Este ID já está em uso. Escolha outro.', 'error');
                         return;
                     }
@@ -600,15 +633,25 @@
             try {
                 let foundUser = null;
                 if (d.docId) {
-                    const doc = await db.collection('users').doc(d.docId).get();
-                    if (doc.exists) foundUser = { ...doc.data(), docId: doc.id };
+                    try {
+                        const doc = await db.collection('users').doc(d.docId).get();
+                        if (doc.exists) foundUser = { ...doc.data(), docId: doc.id };
+                    } catch (e) {
+                        // v7.8: documento ja fechado e sem a sessao do Auth deste
+                        // dono (outro navegador, cache limpo). Nao ha sessao a
+                        // restaurar — a pessoa entra de novo com ID e senha.
+                        if (e?.code === 'permission-denied') return;
+                        throw e;
+                    }
                 }
                 if (!foundUser && d.code) {
-                    const q = await db.collection('users').where('code', '==', d.code).limit(1).get();
-                    if (!q.empty) {
-                        const doc = q.docs[0];
-                        foundUser = { ...doc.data(), docId: doc.id };
-                    }
+                    try {
+                        const q = await db.collection('users').where('code', '==', d.code).limit(1).get();
+                        if (!q.empty) {
+                            const doc = q.docs[0];
+                            foundUser = { ...doc.data(), docId: doc.id };
+                        }
+                    } catch (e) { /* colecao fechada: sem consulta, e tudo bem */ }
                 }
                 if (foundUser && !foundUser.blocked) {
                     this.users[foundUser.docId] = foundUser;

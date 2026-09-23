@@ -1,8 +1,21 @@
         // ============================================
         // FIREBASE - SYNC
         // ============================================
+        // ============================================
+        // v7.8: QUEM ESCUTA O QUE
+        //
+        // Ate a v7.7 TODO usuario ficava ouvindo a colecao "users" inteira.
+        // Com a regra progressiva isso passa a ser recusado para usuario comum
+        // (e com razao: ele nao tem nada que ver a conta dos outros). Entao:
+        //   - admin  -> continua ouvindo a colecao, que e o painel dele;
+        //   - comum  -> ouve so o proprio documento, que e de onde vinham VIP em
+        //               tempo real, bloqueio e liberacao do beta de foto.
+        // Nenhuma funcao se perde, e o console fica limpo.
+        // ============================================
         EvolutionApp.prototype.syncUsersFromFirebase = async function() {
             if (!db) return;
+            const ehAdmin = (typeof currentAuthIsAdmin === 'function') ? currentAuthIsAdmin() : false;
+            if (!ehAdmin) return this.watchOwnUserDoc();
 
             if (this.unsubscribeUsers) this.unsubscribeUsers();
 
@@ -29,6 +42,100 @@
                 }
             }, (error) => {
                 console.error('Erro sync usuarios:', error);
+            });
+        };
+
+        // ============================================
+        // v7.8: GERAR OS PONTEIROS DAS CONTAS QUE JA EXISTEM
+        //
+        // Contas criadas antes da v7.8 nao tem entrada em loginIndex/pinIndex.
+        // Como o admin le a colecao inteira, e ele quem consegue gerar todas de
+        // uma vez. Roda antes de publicar a regra nova: assim, no momento em que
+        // a colecao fechar, todo mundo ja tem por onde entrar.
+        //
+        // E seguro rodar quantas vezes quiser: entradas que ja existem sao
+        // deixadas como estao (a regra so permite "create", nunca repontar).
+        // ============================================
+        EvolutionApp.prototype.gerarIndicesDeLogin = async function() {
+            if (!this.isAdmin) { this.showToast('Acesso restrito a administradores.', 'error'); return; }
+            const status = document.getElementById('authIndexStatus');
+            const btn = document.getElementById('btnGerarIndices');
+            const mostra = (txt) => { if (status) { status.style.display = 'block'; status.innerHTML = txt; } };
+            if (this._indicesBusy) return;
+            this._indicesBusy = true;
+            if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
+
+            let ids = 0, pins = 0, jaTinha = 0, falhas = 0;
+            try {
+                await this.ensureFirebaseReady();
+                const snap = await db.collection('users').get();
+                const total = snap.size;
+                let feitos = 0;
+                for (const doc of snap.docs) {
+                    const u = doc.data() || {};
+                    const docId = doc.id;
+                    try {
+                        if (u.loginId) {
+                            const key = await AuthIdentity.loginIndexKey(u.loginId);
+                            const ref = db.collection('loginIndex').doc(key);
+                            const atual = await ref.get();
+                            if (!atual.exists) {
+                                const entrada = { docId: docId };
+                                const v = Number(u.authEmailVersion) || 1;
+                                if (v > 1) entrada.v = v;
+                                await ref.set(entrada);
+                                ids++;
+                            } else jaTinha++;
+                        }
+                        // A ponte do PIN so interessa a quem ainda nao migrou.
+                        if (u.code && !u.authUid) {
+                            const ok = await AuthIdentity.ensurePinIndexForStoredCode(u.code, docId);
+                            if (ok) pins++;
+                        }
+                    } catch (e) {
+                        falhas++;
+                        console.warn('[indice] falhou para', docId, e?.code || e?.message || e);
+                    }
+                    feitos++;
+                    mostra(`Processando ${feitos} de ${total}...`);
+                }
+                mostra(
+                    `<strong>Pronto.</strong><br>` +
+                    `${ids} ponteiro(s) de ID criado(s)<br>` +
+                    `${pins} ponte(s) de PIN criada(s)<br>` +
+                    `${jaTinha} ja existiam<br>` +
+                    (falhas ? `<span style="color:var(--warning)">${falhas} falha(s) — rode de novo</span>` : 'nenhuma falha')
+                );
+                this.showToast('Índices de login gerados.', 'success');
+            } catch (e) {
+                console.error('Falha ao gerar indices:', e);
+                mostra('<span style="color:var(--danger)">Não foi possível concluir. Verifique a internet e tente de novo.</span>');
+                this.showToast('Não foi possível gerar agora.', 'error');
+            } finally {
+                this._indicesBusy = false;
+                if (btn) { btn.disabled = false; btn.textContent = 'Gerar índices de login'; }
+            }
+        };
+
+        // Usuario comum: escuta apenas o proprio documento.
+        EvolutionApp.prototype.watchOwnUserDoc = function() {
+            if (!db || !this.currentUserId) return;
+            if (this._watchedUserDocId === this.currentUserId && this.unsubscribeUsers) return;
+            if (this.unsubscribeUsers) this.unsubscribeUsers();
+            const docId = this.currentUserId;
+            this._watchedUserDocId = docId;
+            this.unsubscribeUsers = db.collection('users').doc(docId).onSnapshot((snap) => {
+                try {
+                    if (!snap.exists) return;
+                    const data = { ...snap.data(), docId: docId };
+                    if (this.currentUserId === docId) this.handleCurrentUserRemoteUpdate(data);
+                    else this.users[docId] = data;
+                    this.saveUsersToCache();
+                } catch (e) {
+                    console.error('Erro processando o proprio documento:', e);
+                }
+            }, (error) => {
+                console.warn('[sync] documento proprio:', error?.code || error?.message || error);
             });
         };
 
@@ -194,6 +301,11 @@
             try {
                 await this.ensureFirebaseReady();
                 await db.collection('users').doc(userDocId).set(userData, { merge: true });
+                // v7.8: o ponteiro do ID nasce junto com a conta. Sem ele, a
+                // pessoa nao seria encontrada no login depois que a colecao
+                // fechar (o Firestore recusa a consulta, nao o documento).
+                if (userData.loginId) await AuthIdentity.ensureLoginIndex(userData.loginId, userDocId);
+                if (userData.code) await AuthIdentity.ensurePinIndexForStoredCode(userData.code, userDocId);
                 await db.collection('pendingUsers').doc(pendingDocId).delete();
 
                 // So depois de gravar no Firebase, atualiza o local
@@ -663,7 +775,11 @@
             this.renderUserList();
             nameInput.value = ''; idInput.value = ''; passInput.value = '';
 
-            if (db) { try { await db.collection('users').doc(docId).set(newUser); } catch (e) {} }
+            if (db) {
+                try { await db.collection('users').doc(docId).set(newUser); } catch (e) {}
+                // v7.8: ponteiro do ID junto com a conta (ver approveUser).
+                try { await AuthIdentity.ensureLoginIndex(loginId, docId); } catch (e) {}
+            }
             this.showToast(`Usuário ${name} adicionado! ID: ${loginId}`, 'success');
         };
 
@@ -854,6 +970,7 @@
                 return;
             }
 
+            const excluido = this.users[docId] || {};
             delete this.users[docId];
             this.saveUsersToCache();
             this.renderUserList();
@@ -861,6 +978,16 @@
             if (db) {
                 try {
                     await db.collection('users').doc(docId).delete();
+                } catch (e) {}
+                // v7.8: ponteiros orfaos apontariam para um documento que nao
+                // existe mais — e pior, poderiam ser reaproveitados por um
+                // cadastro futuro com o mesmo ID.
+                try {
+                    if (excluido.loginId) {
+                        const k = await AuthIdentity.loginIndexKey(excluido.loginId);
+                        if (k) await db.collection('loginIndex').doc(k).delete();
+                    }
+                    if (excluido.code) await AuthIdentity.dropPinIndexForCode(excluido.code);
                 } catch (e) {}
             }
 

@@ -240,7 +240,9 @@
         };
 
         EvolutionApp.prototype.copyVipRenewalPix = function() {
-            this.copyToClipboard('00245116257', 'Chave PIX copiada!');
+            // SEGURANCA v7.7: chave PIX passou a ser o celular (PicPay).
+            // O CPF saiu do site — era dado pessoal exposto publicamente.
+            this.copyToClipboard('92994821868', 'Chave PIX copiada!');
         };
 
         EvolutionApp.prototype.checkVipNotification = function(userData) {
