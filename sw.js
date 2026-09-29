@@ -2,8 +2,12 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '7.8';
+const APP_VERSION = '7.9';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
+// O index.html pede css/js com ?v=<APP_VERSION>. Como o cache guarda a URL
+// completa (query incluida), o pre-cache precisa usar o mesmo sufixo — senao o
+// modo offline nao encontra os arquivos versionados.
+const ASSET_QUERY = `?v=${APP_VERSION}`;
 
 const LOCAL_ASSETS = [
   './',
@@ -30,9 +34,15 @@ const LOCAL_ASSETS = [
 // INSTALL: pré-cacheia todos os assets locais e ativa imediatamente
 self.addEventListener('install', event => {
   self.skipWaiting(); // Não espera fechar abas — ativa na hora
+  const VERSIONED_ASSETS = LOCAL_ASSETS
+    .filter(path => /\.(css|js)$/.test(path))
+    .map(path => path + ASSET_QUERY);
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(LOCAL_ASSETS))
+      // allSettled: um asset que falhe nao derruba o pre-cache inteiro.
+      .then(cache => Promise.allSettled(
+        LOCAL_ASSETS.concat(VERSIONED_ASSETS).map(path => cache.add(path))
+      ))
       .catch(err => console.warn('[SW] Precache parcial:', err))
   );
 });

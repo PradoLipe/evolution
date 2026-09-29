@@ -2246,6 +2246,9 @@
             const mode = this._photoImportMode;
             const turno = this._photoImportTurno;
             if (mode === 'report') {
+                // O turno vem da leitura da foto: conta como escolha do usuario,
+                // para que nenhuma sugestao automatica o sobrescreva depois.
+                this.markTurnoAsChosen?.('rel');
                 this._applyPhotoTotals('rel', turno, aggregation.totals);
                 this._photoReportHandoff = {
                     rows: this._photoOcrData,
@@ -2270,9 +2273,13 @@
                 const turnoField = document.getElementById('calcTurno');
                 if (navio) navio.value = prefill.navio;
                 if (data) data.value = prefill.data;
-                if (turnoField) turnoField.value = prefill.turno;
+                if (turnoField && prefill.turno) {
+                    turnoField.value = prefill.turno;
+                    this.markTurnoAsChosen?.('calc');
+                }
                 this.adjustCalcTipoForDate();
             }
+            this.markTurnoAsChosen?.('calc');
             this._applyPhotoTotals('calc', turno, aggregation.totals);
             this.closeModal('photoReviewModal');
             this.navigateWorkspace('secNew');

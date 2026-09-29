@@ -259,6 +259,11 @@
         .chart-area-path { fill: url(#gradChart); opacity: 0.6; transition: d 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .chart-line-path { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 8px var(--primary-glow)); transition: d 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .chart-line-prev { fill: none; stroke: rgba(255,255,255,0.3); stroke-width: 2; stroke-dasharray: 4, 4; stroke-linecap: round; stroke-linejoin: round; transition: d 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Tema claro: a linha da semana anterior era branca a 30% e desaparecia no fundo claro. */
+        body.light-mode .chart-line-prev { stroke: rgba(20, 35, 66, 0.55); stroke-width: 2.2; }
+        .chart-day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-top: 6px; padding: 0 4px; }
+        .chart-day-label { text-align: center; font-size: 0.6rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+        .chart-week-range { margin-top: 6px; padding: 0 4px; font-size: 0.6rem; color: var(--text-secondary); text-align: center; }
         .chart-point { fill: var(--bg); stroke: var(--primary); stroke-width: 2; transition: cy 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .chart-stats-overlay { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding: 0 4px; }
         .chart-stat-item { display: flex; flex-direction: column; }

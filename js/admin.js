@@ -66,6 +66,7 @@
             if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
 
             let ids = 0, pins = 0, jaTinha = 0, falhas = 0;
+            const motivos = [];
             try {
                 await this.ensureFirebaseReady();
                 const snap = await db.collection('users').get();
@@ -94,7 +95,9 @@
                         }
                     } catch (e) {
                         falhas++;
-                        console.warn('[indice] falhou para', docId, e?.code || e?.message || e);
+                        const motivo = e?.code || e?.message || String(e);
+                        if (motivos.indexOf(motivo) === -1) motivos.push(motivo);
+                        console.warn('[indice] falhou para', docId, motivo);
                     }
                     feitos++;
                     mostra(`Processando ${feitos} de ${total}...`);
@@ -104,7 +107,12 @@
                     `${ids} ponteiro(s) de ID criado(s)<br>` +
                     `${pins} ponte(s) de PIN criada(s)<br>` +
                     `${jaTinha} ja existiam<br>` +
-                    (falhas ? `<span style="color:var(--warning)">${falhas} falha(s) — rode de novo</span>` : 'nenhuma falha')
+                    (falhas
+                        ? `<span style="color:var(--warning)">${falhas} falha(s): ${motivos.join(', ')}</span>` +
+                          (motivos.indexOf('permission-denied') !== -1
+                            ? '<br><span style="color:var(--warning)">A regra publicada ainda não libera as coleções loginIndex/pinIndex. Publique primeiro a regra de TRANSIÇÃO e clique de novo.</span>'
+                            : '<br>Rode de novo.')
+                        : 'nenhuma falha')
                 );
                 this.showToast('Índices de login gerados.', 'success');
             } catch (e) {

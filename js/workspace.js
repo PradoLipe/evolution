@@ -50,7 +50,7 @@
         if (id !== 'overview') {
             target.classList.add('expanded');
             syncSection(target);
-            if (id === 'secNew') this.suggestDefaultTurno();
+            if (id === 'secNew' || id === 'secRel') this.suggestDefaultTurno();
             if (id === 'secChart') this.renderChart();
         }
         setActiveNavigation(id);

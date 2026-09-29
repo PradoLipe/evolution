@@ -1021,43 +1021,97 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         // CALENDÁRIO E EDIÇÃO
         // ============================================
 
+        // Turnos aceitos pelos seletores do app. Registros antigos (sem turno) ou
+        // com valor fora desta lista sao simplesmente ignorados pelas sugestoes.
+        EvolutionApp.prototype.isKnownTurno = function(turno) {
+            return ['07x15', '15x23', '23x07', '07x19', '19x07'].indexOf(String(turno || '')) !== -1;
+        };
+
+        // Momento em que o registro foi gravado. Usa o timestamp da gravacao e cai
+        // para a data da producao quando o registro e antigo e nao tem timestamp.
+        EvolutionApp.prototype._entryStamp = function(entry) {
+            if (!entry) return 0;
+            const t = Date.parse(entry.timestamp || entry.createdAt || '');
+            if (!isNaN(t)) return t;
+            const d = Date.parse(`${entry.data || ''}T00:00:00`);
+            return isNaN(d) ? 0 : d;
+        };
+
+        // ULTIMO registro salvo: o mais recente pela data de gravacao.
+        EvolutionApp.prototype.getLastSavedEntry = function() {
+            const list = (Array.isArray(this.entries) ? this.entries : []).filter(Boolean);
+            if (!list.length) return null;
+            return list.reduce((best, e) => (this._entryStamp(e) >= this._entryStamp(best) ? e : best), list[0]);
+        };
+
+        // Turno do ULTIMO registro salvo. Se o registro mais recente for antigo e
+        // nao tiver turno, procura o registro mais recente que tenha um turno valido.
+        // Sem nenhum registro utilizavel, devolve null (o formulario fica como esta).
+        EvolutionApp.prototype.getLastSavedTurno = function() {
+            const list = (Array.isArray(this.entries) ? this.entries : [])
+                .filter(e => e && this.isKnownTurno(e.turno));
+            if (!list.length) return null;
+            return list.reduce((best, e) => (this._entryStamp(e) >= this._entryStamp(best) ? e : best), list[0]).turno;
+        };
+
+        // O usuario escolheu o turno na tela: a partir daqui nenhuma sugestao
+        // automatica sobrescreve essa escolha.
+        EvolutionApp.prototype.onTurnoChanged = function(prefix) {
+            if (!this._turnoManualChoice) this._turnoManualChoice = {};
+            this._turnoManualChoice[prefix === 'rel' ? 'rel' : 'calc'] = true;
+            if (prefix === 'rel') this.toggleRelatorioCampos();
+            else this.adjustCalcFields();
+        };
+
+        EvolutionApp.prototype.markTurnoAsChosen = function(prefix) {
+            if (!this._turnoManualChoice) this._turnoManualChoice = {};
+            this._turnoManualChoice[prefix === 'rel' ? 'rel' : 'calc'] = true;
+        };
+
+        // Formulario em uso: navio ou producao ja digitados. Trocar o turno recria
+        // os campos de producao (FIX 9) e apagaria o que a pessoa escreveu.
+        EvolutionApp.prototype.isTurnoFormBusy = function(prefix) {
+            const navio = document.getElementById(prefix === 'rel' ? 'relNavio' : 'calcNavio');
+            if (navio && String(navio.value || '').trim() !== '') return true;
+            const ids = prefix === 'rel' ? ['relP1', 'relP2', 'relPT'] : ['calcP1', 'calcP2', 'calcPT'];
+            return ids.some(id => {
+                const el = document.getElementById(id);
+                return el && String(el.value || '').trim() !== '';
+            });
+        };
+
         /**
-         * Sugere automaticamente o turno mais frequente com base nos registros existentes.
-         * Ao invocar este metodo, o campo calcTurno sera atualizado para o turno
-         * mais usado pelo usuario. Caso nao existam registros, permanece o valor atual.
+         * Preenche o turno de um formulario (registro de producao ou relatorio) com
+         * o turno do ULTIMO registro salvo. Nao mexe em escolha manual do usuario,
+         * em formulario ja preenchido, nem em secao fechada.
+         */
+        EvolutionApp.prototype.applySuggestedTurno = function(prefix) {
+            const isRel = prefix === 'rel';
+            const sel = document.getElementById(isRel ? 'relTurno' : 'calcTurno');
+            if (!sel) return;
+            if (this._turnoManualChoice && this._turnoManualChoice[isRel ? 'rel' : 'calc']) return;
+            const sec = document.getElementById(isRel ? 'secRel' : 'secNew');
+            // FIX 9: a funcao e chamada pelo mesmo clique que abre E fecha a secao.
+            if (sec && !sec.classList.contains('expanded')) return;
+            if (this.isTurnoFormBusy(prefix)) return;
+            const best = this.getLastSavedTurno();
+            if (!best || sel.value === best) return;
+            sel.value = best;
+            if (isRel) this.toggleRelatorioCampos();
+            else this.adjustCalcFields();
+        };
+
+        /**
+         * Sugere o turno do ultimo registro salvo nos dois formularios que usam
+         * turno: Registrar Producao e Gerar Relatorio. Antes desta versao a
+         * sugestao era o turno MAIS FREQUENTE do historico, o que fazia o app
+         * "esquecer" o turno escolhido na vez anterior.
          */
         EvolutionApp.prototype.suggestDefaultTurno = function() {
             try {
-                // FIX 9: esta funcao e chamada pelo mesmo clique que abre E fecha a secao.
-                // Sem as guardas abaixo ela trocava o turno tambem ao FECHAR e, ao trocar,
-                // adjustCalcFields() recria o HTML e apaga a producao ja digitada.
-                const sec = document.getElementById('secNew');
-                if (sec && !sec.classList.contains('expanded')) return;
                 this.adjustCalcTipoForDate?.();
-                const navioVal = document.getElementById('calcNavio')?.value || '';
-                const jaPreencheu = navioVal.trim() !== '' || ['calcP1', 'calcP2', 'calcPT'].some(fid => {
-                    const el = document.getElementById(fid);
-                    return el && String(el.value || '').trim() !== '';
-                });
-                if (jaPreencheu) return;
-
-                const freq = {};
-                (this.entries || []).forEach(e => {
-                    if (!e || !e.turno) return;
-                    freq[e.turno] = (freq[e.turno] || 0) + 1;
-                });
-                let max = 0;
-                let best = null;
-                Object.keys(freq).forEach(k => {
-                    if (freq[k] > max) { max = freq[k]; best = k; }
-                });
-                if (best) {
-                    const sel = document.getElementById('calcTurno');
-                    if (sel && sel.value !== best) {
-                        sel.value = best;
-                        this.adjustCalcFields();
-                    }
-                }
+                this.applySuggestedTurno('calc');
+                this.applySuggestedTurno('rel');
             } catch (err) {
                 console.error('Erro ao sugerir turno', err);
             }
@@ -1806,38 +1860,69 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         // ============================================
         // GRAFICO
         // ============================================
+        // Domingo 00:00 da semana-calendario a que a data pertence (fuso de Manaus).
+        EvolutionApp.prototype.getWeekStart = function(date) {
+            const base = new Date(date.getTime());
+            base.setHours(0, 0, 0, 0);
+            base.setDate(base.getDate() - base.getDay());
+            return base;
+        };
+
+        // Soma o bruto (em centavos) de cada dia de uma semana-calendario completa,
+        // de domingo 00:00 a sabado 23:59:59. Dias sem producao entram como zero,
+        // mantendo os sete dias alinhados entre as duas semanas.
+        EvolutionApp.prototype.getWeekSeries = function(weekStart, entries) {
+            const pts = [];
+            let total = 0;
+            const labels = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(weekStart.getTime());
+                d.setDate(weekStart.getDate() + i);
+                // FIX 15: formatDateManaus evita o desvio de timezone do toISOString
+                const ds = formatDateManaus(d);
+                const v = entries.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
+                total += v;
+                pts.push({ val: v / 100, dateStr: ds });
+                labels.push(String(d.getDate()).padStart(2, '0'));
+            }
+            return { pts, total, labels };
+        };
+
         EvolutionApp.prototype.renderChart = function() {
             const svg = document.getElementById('evolutionChart');
             if (!svg) return;
 
             const days = 7;
             const today = getManausDate();
-            let cPts = [], cTot = 0, pPts = [], pTot = 0;
+            // Semanas-calendario completas (domingo 00:00 -> sabado 23:59:59), nao
+            // mais uma janela movel de 7 dias.
+            const currWeekStart = this.getWeekStart(today);
+            const prevWeekStart = new Date(currWeekStart.getTime());
+            prevWeekStart.setDate(currWeekStart.getDate() - 7);
+
             // FIX 12: usa o mesmo recorte do dashboard/historico (nao-VIP: 15 dias)
             const visible = this.getVisibleEntries();
 
-            for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
-                // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
-                const ds = formatDateManaus(d);
-                const v = visible.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
-                cTot += v;
-                cPts.push({ val: v / 100 });
-            }
-
-            for (let i = days - 1; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - (i + days));
-                // FIX 15: usa formatDateManaus para evitar desvio de timezone UTC
-                const ds = formatDateManaus(d);
-                const v = visible.filter(e => e.data === ds).reduce((s, e) => s + (Number(e.bruto) || 0), 0);
-                pTot += v;
-                pPts.push({ val: v / 100 });
-            }
+            const curr = this.getWeekSeries(currWeekStart, visible);
+            const prev = this.getWeekSeries(prevWeekStart, visible);
+            const cPts = curr.pts, cTot = curr.total;
+            const pPts = prev.pts, pTot = prev.total;
 
             document.getElementById('chartTotalCurr').textContent = this.formatMoney(cTot);
             document.getElementById('chartTotalPrev').textContent = this.formatMoney(pTot);
+
+            // Rotulos: apenas os dias da semana, na mesma ordem das duas series.
+            const labelsEl = document.getElementById('chartDayLabels');
+            if (labelsEl) {
+                const names = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+                labelsEl.innerHTML = names.map(n => `<span class="chart-day-label">${n}</span>`).join('');
+            }
+            // Datas de inicio e fim de cada semana-calendario, fora do eixo.
+            const rangeEl = document.getElementById('chartWeekRange');
+            if (rangeEl) {
+                const fmt = (ds) => { const [y, m, d] = ds.split('-'); return `${d}/${m}`; };
+                rangeEl.textContent = `Semana atual ${fmt(cPts[0].dateStr)}–${fmt(cPts[6].dateStr)} · anterior ${fmt(pPts[0].dateStr)}–${fmt(pPts[6].dateStr)}`;
+            }
 
             let g = 0;
             if (pTot > 0) g = ((cTot - pTot) / pTot) * 100;
