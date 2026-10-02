@@ -72,7 +72,7 @@
                 const idInput = document.getElementById('loginIdInput');
                 const passInput = document.getElementById('loginPasswordInput');
                 if (idInput) idInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); passInput?.focus(); } });
-                if (passInput) passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.loginWithCredentials(); } });
+                if (passInput) passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.submitCredentialLoginForm(); } });
                 ['migLoginId', 'migPassword', 'migPasswordConfirm'].forEach((id, i, arr) => {
                     const el = document.getElementById(id);
                     if (!el) return;
@@ -219,6 +219,35 @@
                 if (db) db.collection('users').doc(docId).set({ lastLoginAt: loginTs }, { merge: true }).catch(() => {});
             };
 
+            // ---------- v8.1: SALVAR SENHA (Face ID / digital) ----------
+            // Enter no campo de senha passa pelo envio do <form>, que e o sinal que
+            // o iPhone (Chaves do iCloud) e o Android usam para oferecer "Salvar senha".
+            EvolutionApp.prototype.submitCredentialLoginForm = function() {
+                const form = document.getElementById('idLoginForm');
+                if (form && typeof form.requestSubmit === 'function') form.requestSubmit();
+                else this.loginWithCredentials();
+            };
+
+            // Depois de um login bem-sucedido, pede ao navegador (Chrome/Android/Edge)
+            // para salvar o ID e a senha no gerenciador de senhas do aparelho. No
+            // iPhone o proprio Safari oferece ao enviar o formulario. Nada e guardado
+            // pelo Evolution: a senha fica so no cofre do sistema, protegido por
+            // Face ID / digital. Qualquer falha aqui e ignorada — nunca afeta o login.
+            EvolutionApp.prototype.offerSaveLoginCredential = function(loginId, password, displayName) {
+                try {
+                    if (!loginId || !password) return;
+                    if (typeof window === 'undefined' || !window.PasswordCredential || !navigator.credentials || !navigator.credentials.store) return;
+                    const cred = new window.PasswordCredential({
+                        id: String(loginId),
+                        password: String(password),
+                        name: displayName ? String(displayName) : String(loginId)
+                    });
+                    navigator.credentials.store(cred).catch(() => {});
+                } catch (e) {
+                    // Navegador sem suporte ou recusou: segue normalmente.
+                }
+            };
+
             // ---------- Login por ID + senha ----------
             EvolutionApp.prototype.loginWithCredentials = async function() {
                 const idInput = document.getElementById('loginIdInput');
@@ -252,9 +281,12 @@
                         if (!r.ok) {
                             LoginRateLimit.registerFailure();
                             this.showToast('ID ou senha incorretos', 'error');
-                        } else if (passInput) {
-                            passInput.value = '';
-                            this.setPreferredLoginMethod('id');
+                        } else {
+                            this.offerSaveLoginCredential(String(idInput.value).trim(), password, 'Administrador');
+                            if (passInput) {
+                                passInput.value = '';
+                                this.setPreferredLoginMethod('id');
+                            }
                         }
                         return;
                     }
@@ -348,6 +380,7 @@
                     AuthIdentity.ensureLoginIndex(loginId, target.docId).catch(() => {});
 
                     LoginRateLimit.registerSuccess();
+                    this.offerSaveLoginCredential(String(idInput?.value || '').trim() || loginId, password, user.name);
                     if (passInput) passInput.value = '';
                     this.setPreferredLoginMethod('id');
 

@@ -1136,3 +1136,6 @@
 .custom-turno-box { margin-top: -2px; }
 .custom-turno-info { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin: -4px 0 10px; }
 .custom-turno-info.is-error { color: var(--danger); }
+
+/* v8.1: dica de salvar senha no login por ID */
+.login-save-hint { text-align: center; margin-top: 10px; line-height: 1.45; }
