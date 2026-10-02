@@ -1139,3 +1139,6 @@
 
 /* v8.1: dica de salvar senha no login por ID */
 .login-save-hint { text-align: center; margin-top: 10px; line-height: 1.45; }
+
+/* v8.2: campo unico "Producao Total" com a mesma largura de um campo do 15x23, centralizado */
+.production-single { width: 100%; max-width: calc(50% - 8px); margin-left: auto; margin-right: auto; }
