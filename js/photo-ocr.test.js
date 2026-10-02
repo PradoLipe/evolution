@@ -626,3 +626,57 @@ assert.equal(typeof FakeEvolutionApp.prototype.setPhotoImportSettings, 'function
 assert.equal(typeof FakeEvolutionApp.prototype.renderPhotoReview, 'function');
 
 console.log('photo-ocr: testes concluídos com sucesso');
+
+// ---------------------------------------------------------------------------
+// v8.0 — TURNO PERSONALIZADO NA IMPORTACAO POR FOTO
+// Tabela com todas as 24 horas: a LBS 01 tem valor = hora + 1 (00 -> 1,
+// 07 -> 8, 23 -> 24). Assim e possivel saber exatamente quais horas entraram.
+// ---------------------------------------------------------------------------
+{
+    const allHours = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'));
+    const dayRows = { 'LBS 01': {}, 'LBS 02': {} };
+    allHours.forEach(h => {
+        dayRows['LBS 01'][h] = { value: Number(h) + 1 };
+        dayRows['LBS 02'][h] = { value: 100 };
+    });
+    const sumHours = hrs => hrs.reduce((s, h) => s + h + 1, 0);
+
+    // 13x23 nunca importa 12h nem 23h
+    const seg1323 = getTurnSegments('13x23');
+    const hrs1323 = seg1323.flatMap(s => s.hours);
+    assert.deepEqual(hrs1323, ['13', '14', '15', '16', '17', '18', '19', '20', '21', '22']);
+    assert.ok(!hrs1323.includes('12') && !hrs1323.includes('23'));
+    assert.deepEqual(aggregateRows(dayRows, '13x23', ['LBS 01']).totals,
+        [sumHours([13, 14, 15, 16, 17, 18]), sumHours([19, 20, 21, 22])]);
+    assert.deepEqual(aggregateRows(dayRows, '13x23', ['LBS 02']).totals, [600, 400]);
+
+    // 21x07 nunca importa 20h nem 07h
+    const hrs2107 = getTurnSegments('21x07').flatMap(s => s.hours);
+    assert.deepEqual(hrs2107, ['21', '22', '23', '00', '01', '02', '03', '04', '05', '06']);
+    assert.ok(!hrs2107.includes('20') && !hrs2107.includes('07'));
+    assert.deepEqual(aggregateRows(dayRows, '21x07', ['LBS 01']).totals, [sumHours([21, 22, 23, 0, 1, 2, 3, 4, 5, 6])]);
+    assert.deepEqual(aggregateRows(dayRows, '21x07').totals, [sumHours([21, 22, 23, 0, 1, 2, 3, 4, 5, 6]) + 1000]);
+
+    // 08x17 -> 08..16
+    assert.deepEqual(aggregateRows(dayRows, '08x17', ['LBS 01']).totals, [sumHours([8, 9, 10, 11, 12, 13, 14, 15, 16])]);
+
+    // Turnos antigos continuam com o mesmo resultado
+    assert.deepEqual(aggregateRows(dayRows, '07x15', ['LBS 01']).totals, [sumHours([7, 8, 9, 10, 11, 12, 13, 14])]);
+    assert.deepEqual(aggregateRows(dayRows, '15x23', ['LBS 01']).totals, [sumHours([15, 16, 17, 18]), sumHours([19, 20, 21, 22])]);
+    assert.deepEqual(aggregateRows(dayRows, '23x07', ['LBS 01']).totals, [sumHours([23, 0, 1, 2, 3, 4, 5, 6])]);
+    assert.deepEqual(aggregateRows(dayRows, '07x19', ['LBS 02']).totals, [1200]);
+    assert.deepEqual(aggregateRows(dayRows, '19x07', ['LBS 02']).totals, [1200]);
+
+    // Invalido: 13x13 nao gera horas (a importacao e bloqueada)
+    assert.deepEqual(getTurnSegments('13x13'), []);
+
+    // Hora ausente na foto segue a regra atual (vazia = 0, nao reconhecida = revisar)
+    const partial = { 'LBS 05': { '13': { value: 4 }, '14': { value: null, uncertain: true } } };
+    const agg = aggregateRows(partial, '13x23');
+    assert.deepEqual(agg.unresolved, [{ key: 'LBS 05', hour: '14' }]);
+    assert.deepEqual(agg.totals, [4, 0]);
+
+    // Leitura real (TSV) de tabela 00..08: 21x07 soma so 00..06
+    assert.deepEqual(aggregateRows(parsed.rows, '21x07', ['LBS 08']).totals, [22 + 18 + 15 + 19 + 15 + 14 + 11]);
+}
+console.log('photo-ocr: testes v8.0 (turno personalizado) concluídos com sucesso');

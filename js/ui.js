@@ -1024,7 +1024,118 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         // Turnos aceitos pelos seletores do app. Registros antigos (sem turno) ou
         // com valor fora desta lista sao simplesmente ignorados pelas sugestoes.
         EvolutionApp.prototype.isKnownTurno = function(turno) {
-            return ['07x15', '15x23', '23x07', '07x19', '19x07'].indexOf(String(turno || '')) !== -1;
+            if (['07x15', '15x23', '23x07', '07x19', '19x07'].indexOf(String(turno || '')) !== -1) return true;
+            // v8.0: turno personalizado valido (ex.: 13x23) tambem e sugerido.
+            return typeof EvolutionShifts !== 'undefined' && EvolutionShifts.isValidShift(turno);
+        };
+
+        // ============================================
+        // v8.0: TURNO PERSONALIZADO
+        // ============================================
+        // prefix: 'calc' (Registrar Producao), 'rel' (Gerar Relatorio), 'edit' (Editar registro)
+        EvolutionApp.prototype._turnoIds = function(prefix) {
+            const base = prefix === 'rel' ? 'relTurno' : prefix === 'edit' ? 'editTurno' : 'calcTurno';
+            return { select: base, box: `${base}Custom`, start: `${base}Inicio`, end: `${base}Fim`, info: `${base}CustomInfo` };
+        };
+
+        /**
+         * Le o turno escolhido no formulario. Para o turno personalizado valida
+         * Inicio/Fim e devolve o rotulo HHxHH (ex.: "13x23").
+         * @returns {{ok:boolean, turno:string|null, custom?:boolean, error?:string}}
+         */
+        EvolutionApp.prototype.readSelectedTurno = function(prefix) {
+            const ids = this._turnoIds(prefix);
+            const sel = document.getElementById(ids.select);
+            if (!sel || !sel.value) return { ok: false, turno: null, error: 'Selecione um turno.' };
+            if (sel.value !== EvolutionShifts.CUSTOM_SHIFT_VALUE) return { ok: true, turno: sel.value, custom: false };
+            const result = EvolutionShifts.validateCustomShift(
+                document.getElementById(ids.start)?.value,
+                document.getElementById(ids.end)?.value
+            );
+            return result.ok
+                ? { ok: true, turno: result.label, custom: true }
+                : { ok: false, turno: null, custom: true, error: result.error };
+        };
+
+        EvolutionApp.prototype.getSelectedTurno = function(prefix) {
+            const info = this.readSelectedTurno(prefix);
+            return info.ok ? info.turno : null;
+        };
+
+        // Seleciona um turno salvo (pre-definido ou personalizado) no formulario.
+        EvolutionApp.prototype.setSelectedTurno = function(prefix, turno) {
+            const ids = this._turnoIds(prefix);
+            const sel = document.getElementById(ids.select);
+            if (!sel) return;
+            if (EvolutionShifts.isCustomShift(turno)) {
+                const parsed = EvolutionShifts.parseShiftLabel(turno);
+                sel.value = EvolutionShifts.CUSTOM_SHIFT_VALUE;
+                this.updateCustomTurnoUI(prefix);
+                const start = document.getElementById(ids.start);
+                const end = document.getElementById(ids.end);
+                if (start) start.value = String(parsed.start).padStart(2, '0');
+                if (end) end.value = String(parsed.end).padStart(2, '0');
+            } else {
+                sel.value = turno || '';
+            }
+            this.updateCustomTurnoUI(prefix);
+        };
+
+        // Mostra/oculta os campos Inicio/Fim e o resumo "Turno selecionado: 13x23".
+        EvolutionApp.prototype.updateCustomTurnoUI = function(prefix) {
+            const ids = this._turnoIds(prefix);
+            const sel = document.getElementById(ids.select);
+            const box = document.getElementById(ids.box);
+            if (!sel || !box) return;
+            const isCustom = sel.value === EvolutionShifts.CUSTOM_SHIFT_VALUE;
+            box.style.display = isCustom ? '' : 'none';
+            if (!isCustom) return;
+            [ids.start, ids.end].forEach(id => {
+                const field = document.getElementById(id);
+                if (field && !field.options.length) field.innerHTML = EvolutionShifts.hourOptionsHtml('');
+            });
+            const info = document.getElementById(ids.info);
+            if (!info) return;
+            const result = this.readSelectedTurno(prefix);
+            const startValue = document.getElementById(ids.start)?.value;
+            const endValue = document.getElementById(ids.end)?.value;
+            info.classList.toggle('is-error', !result.ok && !!startValue && !!endValue);
+            info.textContent = result.ok
+                ? `Turno selecionado: ${result.turno}`
+                : (startValue && endValue ? result.error : 'Informe o horário de início e de fim.');
+        };
+
+        // Assinatura da divisao dos campos de producao exibidos (ex.: "13h-19h|19h-23h").
+        EvolutionApp.prototype._turnoFieldsKey = function(segs) {
+            return (segs && segs.length === 2) ? segs.map(seg => seg.rate || seg.label).join('|') : 'total';
+        };
+
+        EvolutionApp.prototype._rememberTurnoFields = function(prefix, segs) {
+            if (!this._turnoFieldsSignature) this._turnoFieldsSignature = {};
+            this._turnoFieldsSignature[prefix] = this._turnoFieldsKey(segs);
+        };
+
+        // Inicio/Fim alterados: so recria os campos de producao se a divisao mudar,
+        // para nao apagar o que o usuario ja digitou.
+        EvolutionApp.prototype.onCustomTurnoChanged = function(prefix) {
+            if (prefix !== 'edit') this.markTurnoAsChosen(prefix);
+            this.updateCustomTurnoUI(prefix);
+            const turno = this.getSelectedTurno(prefix);
+            const segs = turno ? EvolutionShifts.getShiftSegments(turno) : [];
+            const signature = this._turnoFieldsKey(segs);
+            if (this._turnoFieldsSignature && this._turnoFieldsSignature[prefix] === signature) {
+                // Mesma divisao (ex.: 13x23 -> 14x23): so atualiza os titulos dos campos.
+                if (segs.length === 2) {
+                    ['P1', 'P2'].forEach((suffix, index) => {
+                        const label = document.getElementById(`${prefix}${suffix}`)?.closest('.input-group')?.querySelector('.input-label');
+                        if (label) label.textContent = segs[index].label;
+                    });
+                }
+                return;
+            }
+            if (prefix === 'rel') this.toggleRelatorioCampos();
+            else if (prefix === 'edit') this.adjustEditFields();
+            else this.adjustCalcFields();
         };
 
         // Momento em que o registro foi gravado. Usa o timestamp da gravacao e cai
@@ -1059,6 +1170,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
         EvolutionApp.prototype.onTurnoChanged = function(prefix) {
             if (!this._turnoManualChoice) this._turnoManualChoice = {};
             this._turnoManualChoice[prefix === 'rel' ? 'rel' : 'calc'] = true;
+            this.updateCustomTurnoUI(prefix);
             if (prefix === 'rel') this.toggleRelatorioCampos();
             else this.adjustCalcFields();
         };
@@ -1095,8 +1207,8 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (sec && !sec.classList.contains('expanded')) return;
             if (this.isTurnoFormBusy(prefix)) return;
             const best = this.getLastSavedTurno();
-            if (!best || sel.value === best) return;
-            sel.value = best;
+            if (!best || this.getSelectedTurno(prefix) === best) return;
+            this.setSelectedTurno(prefix, best);
             if (isRel) this.toggleRelatorioCampos();
             else this.adjustCalcFields();
         };
@@ -1123,11 +1235,13 @@ Liquido: ${this.formatMoney(e.liquido)}`;
          * exibe 2 campos de producao; nos demais, apenas o total.
          */
         EvolutionApp.prototype.adjustEditFields = function() {
-            const turno = document.getElementById('editTurno')?.value;
+            const turno = this.getSelectedTurno('edit');
             const container = document.getElementById('editCampos');
             if (!container) return;
-            if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><input type="number" id="editP1" placeholder="0"></div><div class="input-group"><label class="input-label">19h-23h</label><input type="number" id="editP2" placeholder="0"></div></div>`;
+            const segs = turno ? EvolutionShifts.getShiftSegments(turno) : [];
+            this._rememberTurnoFields('edit', segs);
+            if (segs.length === 2) {
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">${segs[0].label}</label><input type="number" id="editP1" placeholder="0"></div><div class="input-group"><label class="input-label">${segs[1].label}</label><input type="number" id="editP2" placeholder="0"></div></div>`;
             } else {
                 container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><input type="number" id="editPT" placeholder="0"></div>`;
             }
@@ -1154,14 +1268,14 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             if (navioInput) navioInput.value = entry.navio || '';
             if (dataInput) dataInput.value = entry.data || '';
             if (confInput) confInput.value = entry.conferentes || 1;
-            if (turnoInput) turnoInput.value = entry.turno || '';
+            if (turnoInput) this.setSelectedTurno('edit', entry.turno || '');
             if (tipoInput) tipoInput.value = entry.tipo || 'normal';
             if (portoInput) portoInput.value = entry.porto || 'brmao';
             this.adjustEditTipoForDate?.(true);
             // Ajustar campos de producao
             this.adjustEditFields();
             // FIX 7: Verificacao de nulo antes de acessar .value nos campos de producao
-            if (entry.turno === '15x23') {
+            if (EvolutionShifts.isSplitShift(entry.turno)) {
                 const p1 = document.getElementById('editP1');
                 const p2 = document.getElementById('editP2');
                 if (p1) p1.value = Array.isArray(entry.valores) ? (entry.valores[0] || '') : '';
@@ -1185,7 +1299,12 @@ Liquido: ${this.formatMoney(e.liquido)}`;
             const navio = document.getElementById('editNavio')?.value?.toUpperCase().trim() || '';
             const data = document.getElementById('editData')?.value || '';
             const conf = parseInt(document.getElementById('editQtdConf')?.value) || 1;
-            const turno = document.getElementById('editTurno')?.value || '';
+            const turnoInfo = this.readSelectedTurno('edit');
+            if (!turnoInfo.ok && turnoInfo.custom) {
+                this.showToast(turnoInfo.error, 'error');
+                return;
+            }
+            const turno = turnoInfo.ok ? turnoInfo.turno : '';
             this.adjustEditTipoForDate?.();
             const tipo = document.getElementById('editTipo')?.value || 'normal';
             const porto = document.getElementById('editPorto')?.value || 'brmao';
@@ -1194,7 +1313,7 @@ Liquido: ${this.formatMoney(e.liquido)}`;
                 return;
             }
             let valores;
-            if (turno === '15x23') {
+            if (EvolutionShifts.isSplitShift(turno)) {
                 const p1 = document.getElementById('editP1')?.value || 0;
                 const p2 = document.getElementById('editP2')?.value || 0;
                 valores = [p1, p2];

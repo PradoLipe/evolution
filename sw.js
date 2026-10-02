@@ -2,7 +2,7 @@
 // EVOLUTION SERVICE WORKER
 // Para forçar atualização nos usuários: incremente APP_VERSION
 // ============================================================
-const APP_VERSION = '7.9';
+const APP_VERSION = '8.0';
 const CACHE_NAME = `evolution-v${APP_VERSION}`;
 // O index.html pede css/js com ?v=<APP_VERSION>. Como o cache guarda a URL
 // completa (query incluida), o pre-cache precisa usar o mesmo sufixo — senao o
@@ -20,6 +20,7 @@ const LOCAL_ASSETS = [
   './js/auth.js',
   './js/auth-credentials.js',
   './js/firebase-sync.js',
+  './js/shifts.js',
   './js/ui.js',
   './js/entries.js',
   './js/admin.js',

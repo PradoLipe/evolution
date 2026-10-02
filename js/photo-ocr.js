@@ -37,6 +37,10 @@
     const COARSE_ONLY_CONFIDENCE = 80;     // sem grade mapeada, so passa leitura muito confiante
 
     const hourKey = value => String(value).padStart(2, '0');
+    // Regra central de turnos (js/shifts.js). No navegador vem do script
+    // carregado antes; no Node (testes) e carregada via require.
+    const Shifts = (typeof globalThis !== 'undefined' && globalThis.EvolutionShifts)
+        || (typeof require === 'function' ? require('./shifts.js') : null);
 
     function normalizeLbs(value) {
         const match = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').match(/^(?:LBS)?0*(\d{1,2})$/);
@@ -321,32 +325,18 @@
     // respeitando a virada do dia.
     // NAO adicionar excecoes especificas por turno aqui: qualquer turno no
     // formato HHxHH deve funcionar a partir desta unica regra.
+    // v8.0: a regra de horas do turno vem do modulo central js/shifts.js
+    // (EvolutionShifts.getShiftHours / getShiftSegments). Vale para os turnos
+    // pre-definidos e para o turno personalizado (ex.: 13x23, 21x07).
     function hoursStartingInPeriod(start, end) {
-        const hours = [];
-        let current = ((start % 24) + 24) % 24;
-        const stop = ((end % 24) + 24) % 24;
-        let guard = 0;
-        while (guard++ < 24) {
-            hours.push(hourKey(current));
-            const next = (current + 1) % 24;
-            if (next === stop) break;
-            current = next;
-        }
-        return hours;
+        return Shifts.getShiftHours(((start % 24) + 24) % 24, ((end % 24) + 24) % 24).map(hourKey);
     }
 
     function getTurnSegments(turno) {
-        const match = String(turno || '').match(/^(\d{2})x(\d{2})$/);
-        if (!match) return [];
-        const start = Number(match[1]);
-        const end = Number(match[2]);
-        if (turno === '15x23') {
-            return [
-                { label: '15h-19h', hours: hoursStartingInPeriod(15, 19) },
-                { label: '19h-23h', hours: hoursStartingInPeriod(19, 23) }
-            ];
-        }
-        return [{ label: 'Produção Total', hours: hoursStartingInPeriod(start, end) }];
+        return Shifts.getShiftSegments(turno).map(segment => ({
+            label: segment.label,
+            hours: segment.hours.map(hourKey)
+        }));
     }
 
     // Distingue os tres estados possiveis de uma celula lida por OCR:
@@ -1738,9 +1728,10 @@
                 return;
             }
 
-            const turno = document.getElementById(isReport ? 'relTurno' : 'calcTurno')?.value;
+            const turnoInfo = this.readSelectedTurno ? this.readSelectedTurno(isReport ? 'rel' : 'calc') : { ok: true, turno: document.getElementById(isReport ? 'relTurno' : 'calcTurno')?.value };
+            const turno = turnoInfo.ok ? turnoInfo.turno : null;
             if (!getTurnSegments(turno).length) {
-                this.showToast('Selecione um turno válido.', 'error');
+                this.showToast(turnoInfo.error || 'Selecione um turno válido.', 'error');
                 this._resetPhotoFileInputs();
                 return;
             }
@@ -2223,7 +2214,7 @@
         EvolutionAppClass.prototype._applyPhotoTotals = function (prefix, turno, totals) {
             if (prefix === 'rel') this.toggleRelatorioCampos();
             else this.adjustCalcFields();
-            if (turno === '15x23') {
+            if (Shifts.isSplitShift(turno)) {
                 const first = document.getElementById(`${prefix}P1`);
                 const second = document.getElementById(`${prefix}P2`);
                 if (first) first.value = String(totals[0]);
@@ -2274,7 +2265,8 @@
                 if (navio) navio.value = prefill.navio;
                 if (data) data.value = prefill.data;
                 if (turnoField && prefill.turno) {
-                    turnoField.value = prefill.turno;
+                    if (this.setSelectedTurno) this.setSelectedTurno('calc', prefill.turno);
+                    else turnoField.value = prefill.turno;
                     this.markTurnoAsChosen?.('calc');
                 }
                 this.adjustCalcTipoForDate();

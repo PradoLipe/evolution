@@ -1131,3 +1131,8 @@
         @media (prefers-reduced-motion: reduce) {
             .photo-import-button, .photo-progress-track span { transition: none; }
         }
+
+/* v8.0: turno personalizado (Inicio/Fim abaixo do seletor de turno) */
+.custom-turno-box { margin-top: -2px; }
+.custom-turno-info { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin: -4px 0 10px; }
+.custom-turno-info.is-error { color: var(--danger); }

@@ -108,6 +108,19 @@
         EvolutionApp.prototype.calcularValores = function(tipo, turno, valores, qtdConf, porto = 'brmao') {
             // Protecao: se a taxa do turno nao estiver disponivel, usa os defaults para evitar NaN/crash
             const portRates = this.getPortRates(porto);
+            // v8.0: turno personalizado (ex.: 13x23). Horas entre 07h e 19h usam a
+            // taxa do 07x19 e horas entre 19h e 07h a taxa do 19x07, respeitando
+            // normal/feriado. Turnos pre-definidos seguem exatamente como antes.
+            if (typeof EvolutionShifts !== 'undefined' && EvolutionShifts.isCustomShift(turno)) {
+                const pick = key => (portRates && portRates[key]) ? portRates[key] : DEFAULT_TAXAS[key];
+                const rateKey = tipo === 'feriado' ? 'feriado' : 'normal';
+                const dayRate = pick(EvolutionShifts.DAY_RATE_SHIFT)[rateKey];
+                const nightRate = pick(EvolutionShifts.NIGHT_RATE_SHIFT)[rateKey];
+                const customBruto = EvolutionShifts.getShiftSegments(turno).reduce((sum, segment, index) =>
+                    sum + (parseInt(valores[index]) || 0) * (segment.rate === 'day' ? dayRate : nightRate), 0);
+                const customPorPessoa = customBruto / (parseInt(qtdConf) || 1);
+                return { bruto: Math.round(customPorPessoa * 100), liquido: Math.round(customPorPessoa * 82) };
+            }
             const taxa = (portRates && portRates[turno]) ? portRates[turno] : DEFAULT_TAXAS[turno];
             if (!taxa) return { bruto: 0, liquido: 0 };
             const numConf = parseInt(qtdConf) || 1;
@@ -128,9 +141,11 @@
             const turnoEl = document.getElementById('calcTurno');
             const container = document.getElementById('calcCampos');
             if (!turnoEl || !container) return;
-            const turno = turnoEl.value;
-            if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
+            const turno = this.getSelectedTurno('calc');
+            const segs = turno ? EvolutionShifts.getShiftSegments(turno) : [];
+            this._rememberTurnoFields('calc', segs);
+            if (segs.length === 2) {
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">${segs[0].label}</label><div class="input-with-calc"><input type="number" id="calcP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">${segs[1].label}</label><div class="input-with-calc"><input type="number" id="calcP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
             } else {
                 container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="calcPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('calcPT')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>`;
             }
@@ -140,9 +155,11 @@
             const turnoEl = document.getElementById('relTurno');
             const container = document.getElementById('relCamposProducao');
             if (!turnoEl || !container) return;
-            const turno = turnoEl.value;
-            if (turno === '15x23') {
-                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">15h-19h</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">19h-23h</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
+            const turno = this.getSelectedTurno('rel');
+            const segs = turno ? EvolutionShifts.getShiftSegments(turno) : [];
+            this._rememberTurnoFields('rel', segs);
+            if (segs.length === 2) {
+                container.innerHTML = `<div class="input-row"><div class="input-group"><label class="input-label">${segs[0].label}</label><div class="input-with-calc"><input type="number" id="relP1" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP1')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div><div class="input-group"><label class="input-label">${segs[1].label}</label><div class="input-with-calc"><input type="number" id="relP2" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relP2')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div></div>`;
             } else {
                 container.innerHTML = `<div class="input-group"><label class="input-label">Producao Total</label><div class="input-with-calc"><input type="number" id="relPT" placeholder="0" inputmode="numeric"><button type="button" class="calc-helper-btn" onclick="app.openCalcHelper('relPT')" title="Somar produtividade" aria-label="Somar produtividade"><span class="ui-icon icon-calculator" aria-hidden="true"></span></button></div></div>`;
             }
@@ -225,7 +242,12 @@
                 return;
             }
 
-            const turno = document.getElementById('calcTurno').value;
+            const turnoInfo = this.readSelectedTurno('calc');
+            if (!turnoInfo.ok) {
+                this.showToast(turnoInfo.error || 'Selecione um turno válido.', 'error');
+                return;
+            }
+            const turno = turnoInfo.turno;
             this.adjustCalcTipoForDate();
             const tipo = document.getElementById('calcTipoDia').value;
             const conf = document.getElementById('calcQtdConf').value;
@@ -234,7 +256,7 @@
                 this.showBritaUnavailable();
                 return;
             }
-            let valores = turno === '15x23'
+            let valores = EvolutionShifts.isSplitShift(turno)
                 ? [document.getElementById('calcP1')?.value, document.getElementById('calcP2')?.value]
                 : [document.getElementById('calcPT')?.value];
 
@@ -486,11 +508,16 @@
 
             const navio = document.getElementById('relNavio').value.toUpperCase().trim();
             const dataInput = document.getElementById('relData').value;
-            const turno = document.getElementById('relTurno').value;
+            const turnoInfo = this.readSelectedTurno('rel');
+            const turno = turnoInfo.turno;
             const terno = document.getElementById('relTernoSelecao').value;
 
             if (!navio || !dataInput) {
                 this.showToast('Preencha navio e data', 'error');
+                return;
+            }
+            if (!turnoInfo.ok) {
+                this.showToast(turnoInfo.error || 'Selecione um turno válido.', 'error');
                 return;
             }
 
@@ -505,11 +532,12 @@
 Data: ${dataFormatada} - ${turnoLabel}
 Terno: ${terno}
 `;
-            if (turno === '15x23') {
+            const relSegs = EvolutionShifts.getShiftSegments(turno);
+            if (relSegs.length === 2) {
                 const p1 = document.getElementById('relP1')?.value || 0;
                 const p2 = document.getElementById('relP2')?.value || 0;
-                msg += `15x19: ${p1}
-19x23: ${p2}
+                msg += `${relSegs[0].reportLabel}: ${p1}
+${relSegs[1].reportLabel}: ${p2}
 TOTAL: ${(parseInt(p1, 10) || 0) + (parseInt(p2, 10) || 0)}
 `;
             } else {
