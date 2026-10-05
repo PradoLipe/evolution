@@ -79,11 +79,11 @@
     // O BrIta inicia visivel para comunicar a implantacao, mas bloqueado ate
     // que o administrador confirme os valores e libere a operacao.
     const DEFAULT_TAXAS_BRITA = {
-        '07x15': { normal: 0, feriado: 0 },
-        '15x23': { normal: { p1: 0, p2: 0 }, feriado: { p1: 0, p2: 0 } },
-        '23x07': { normal: 0, feriado: 0 },
-        '07x19': { normal: 0, feriado: 0 },
-        '19x07': { normal: 0, feriado: 0 }
+        '07x15': { normal: 7.45, feriado: 11.19 },
+        '15x23': { normal: { p1: 7.45, p2: 8.94 }, feriado: { p1: 11.19, p2: 13.42 } },
+        '23x07': { normal: 8.94, feriado: 13.42 },
+        '07x19': { normal: 7.45, feriado: 11.19 },
+        '19x07': { normal: 8.94, feriado: 13.42 }
     };
 
     // Mantem as taxas salvas em versoes anteriores compativeis com novos turnos.
